@@ -2070,6 +2070,17 @@
         const clean = (name || 'GUEST').trim().toUpperCase();
         const wk = getMondaySundayWeekInfo().weekKey;
         if (isPlaceholderUsername(clean) && !forcePersist) {
+          try {
+            const lastU = (localStorage.getItem('oddandeven_last_user_v1') || '').trim().toUpperCase();
+            if (lastU && !isPlaceholderUsername(lastU) && STATE.humanPlayers && STATE.humanPlayers[lastU]) {
+              return STATE.humanPlayers[lastU];
+            }
+            const realList = Object.values(STATE.humanPlayers || {}).filter((p) => p && typeof p.elo === 'number' && !isPlaceholderUsername(p.name));
+            if (realList.length > 0) {
+              realList.sort((a, b) => b.elo - a.elo || (b.totalRuns || 0) - (a.totalRuns || 0));
+              return realList[0];
+            }
+          } catch (e) {}
           // Return transient guest record without polluting the published Global Leaderboard
           if (!STATE._guestTransientRec || STATE._guestTransientRec.name !== clean) {
             STATE._guestTransientRec = {
@@ -2282,6 +2293,44 @@
           STATE.p2CountryCode = STATE.myCountryCode;
           STATE.p2CountryFlag = STATE.myCountryFlag;
           STATE.p2CountryName = STATE.myCountryName;
+        }
+
+        // Sanitize any legacy Bot-match Elo increases in eloHistory so Bot matches NEVER increase rating
+        if (Array.isArray(STATE.eloHistory) && STATE.eloHistory.length > 0) {
+          let hadLegacyBotEloIncrease = false;
+          STATE.eloHistory.forEach((h) => {
+            if (h && typeof h.mode === 'string' && h.mode.toLowerCase().includes('bot')) {
+              if (h.delta !== '0' && h.delta !== 'FROZEN') {
+                hadLegacyBotEloIncrease = true;
+              }
+              h.delta = 'FROZEN';
+              h.isBotMatch = true;
+            }
+          });
+          if (hadLegacyBotEloIncrease) {
+            // Recompute true Multiplayer Elo from starting 1500 + Multiplayer matches only
+            const mpEntries = STATE.eloHistory.filter((h) => h && typeof h.mode === 'string' && !h.mode.toLowerCase().includes('bot'));
+            let trueElo = 1500;
+            let truePeak = 1500;
+            for (let i = mpEntries.length - 1; i >= 0; i--) {
+              const item = mpEntries[i];
+              const d = item.result === 'WIN' ? 8 : (item.result === 'LOSS' ? -8 : 0);
+              trueElo = Math.max(100, trueElo + d);
+              if (trueElo > truePeak) truePeak = trueElo;
+              item.newElo = trueElo;
+            }
+            STATE.eloRating = trueElo;
+            STATE.peakElo = truePeak;
+            if (STATE.humanPlayers[STATE.myUsername]) {
+              STATE.humanPlayers[STATE.myUsername].elo = trueElo;
+              STATE.humanPlayers[STATE.myUsername].peak = truePeak;
+            }
+            STATE.eloHistory.forEach((h) => {
+              if (h && h.isBotMatch) {
+                h.newElo = STATE.eloRating;
+              }
+            });
+          }
         }
 
         const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
@@ -4652,107 +4701,135 @@
         const p1 = getP1Label();
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
+        const amIGuest = mpMatch && STATE.onlineRole === 'GUEST';
 
-        const p1Rec = ensureHumanPlayerRecord(p1, STATE.eloRating, {
+        const p1Rec = ensureHumanPlayerRecord(p1, amIGuest ? STATE.friendEloRating : STATE.eloRating, {
           countryCode: STATE.p1CountryCode,
           countryFlag: STATE.p1CountryFlag
         });
 
         if (mpMatch) {
-          const p2Rec = ensureHumanPlayerRecord(p2, STATE.friendEloRating, {
+          const p2Rec = ensureHumanPlayerRecord(p2, amIGuest ? STATE.eloRating : STATE.friendEloRating, {
             countryCode: STATE.p2CountryCode,
             countryFlag: STATE.p2CountryFlag
           });
 
-          const p1Delta = winner === 'USER' ? 8 : -8;
-          const p2Delta = winner === 'USER' ? -8 : 8;
+          if (STATE.isTossForfeit) {
+            // Toss countdown expired before the match started -> Match Forfeited
+            STATE.eloRating = amIGuest ? p2Rec.elo : p1Rec.elo;
+            STATE.peakElo = amIGuest ? p2Rec.peak : p1Rec.peak;
+            STATE.friendEloRating = amIGuest ? p1Rec.elo : p2Rec.elo;
+            STATE.lastEloDelta = 0;
 
-          const prevP1Elo = p1Rec.elo;
-          p1Rec.elo = Math.max(100, p1Rec.elo + p1Delta);
-          if (p1Rec.elo > p1Rec.peak) p1Rec.peak = p1Rec.elo;
-          p1Rec.matches += 1;
-          p1Rec.weeklyMatches += 1;
-          p1Rec.weeklyEloGain += p1Delta;
-          if (winner === 'USER') {
-            p1Rec.wins += 1;
-            p1Rec.weeklyWins += 1;
+            STATE.eloHistory.unshift({
+              id: Date.now() + Math.random(),
+              opponent: amIGuest ? p1 : p2,
+              p1Name: amIGuest ? p2 : p1,
+              mode: 'Multiplayer (Toss Forfeit)',
+              result: 'FORFEIT',
+              delta: '0',
+              newElo: STATE.eloRating,
+              runsScored: 0,
+              wicketsTaken: 0
+            });
+
+            STATE.winMarginText = `${marginDescription} • Toss Forfeit (Rating Unchanged: ${STATE.eloRating} ELO)`;
+            STATE.lastOutcomeText = `🏳️ Match Forfeited during Toss! (${winner === 'USER' ? p1 : p2} wins by Toss Forfeit)`;
           } else {
-            p1Rec.losses += 1;
-            p1Rec.weeklyLosses += 1;
+            // Ranked Multiplayer Match: Winner +8 ELO, Loser -8 ELO
+            const p1Delta = winner === 'USER' ? 8 : -8;
+            const p2Delta = winner === 'USER' ? -8 : 8;
+
+            const prevP1Elo = p1Rec.elo;
+            const prevP2Elo = p2Rec.elo;
+            p1Rec.elo = Math.max(100, p1Rec.elo + p1Delta);
+            if (p1Rec.elo > p1Rec.peak) p1Rec.peak = p1Rec.elo;
+            p1Rec.matches += 1;
+            p1Rec.weeklyMatches += 1;
+            p1Rec.weeklyEloGain = (p1Rec.weeklyEloGain || 0) + p1Delta;
+            if (winner === 'USER') {
+              p1Rec.wins += 1;
+              p1Rec.weeklyWins += 1;
+            } else {
+              p1Rec.losses += 1;
+              p1Rec.weeklyLosses += 1;
+            }
+            p1Rec.updatedAt = Date.now();
+
+            p2Rec.elo = Math.max(100, p2Rec.elo + p2Delta);
+            if (p2Rec.elo > p2Rec.peak) p2Rec.peak = p2Rec.elo;
+            p2Rec.matches += 1;
+            p2Rec.weeklyMatches += 1;
+            p2Rec.weeklyEloGain = (p2Rec.weeklyEloGain || 0) + p2Delta;
+            if (winner === 'AI') {
+              p2Rec.wins += 1;
+              p2Rec.weeklyWins += 1;
+            } else {
+              p2Rec.losses += 1;
+              p2Rec.weeklyLosses += 1;
+            }
+            p2Rec.updatedAt = Date.now();
+
+            STATE.eloRating = amIGuest ? p2Rec.elo : p1Rec.elo;
+            STATE.peakElo = amIGuest ? p2Rec.peak : p1Rec.peak;
+            STATE.friendEloRating = amIGuest ? p1Rec.elo : p2Rec.elo;
+            STATE.lastEloDelta = amIGuest ? p2Delta : p1Delta;
+
+            const eloSign = p1Delta > 0 ? `+${p1Delta}` : `${p1Delta}`;
+            const p2Sign = p2Delta > 0 ? `+${p2Delta}` : `${p2Delta}`;
+
+            STATE.eloHistory.unshift({
+              id: Date.now() + Math.random(),
+              opponent: amIGuest ? p1 : p2,
+              p1Name: amIGuest ? p2 : p1,
+              mode: 'Online Room Multiplayer',
+              result: (amIGuest ? winner === 'AI' : winner === 'USER') ? 'WIN' : 'LOSS',
+              delta: amIGuest ? p2Sign : eloSign,
+              newElo: STATE.eloRating,
+              runsScored: amIGuest ? STATE.aiScore : STATE.userScore,
+              wicketsTaken: amIGuest ? STATE.aiMatchWickets : STATE.userMatchWickets,
+              friendDelta: amIGuest ? eloSign : p2Sign,
+              friendNewElo: STATE.friendEloRating
+            });
+
+            STATE.winMarginText = `${marginDescription} • Ranked Multiplayer Elo: ${p1} ${prevP1Elo} → ${p1Rec.elo} (${eloSign}), ${p2} ${prevP2Elo} → ${p2Rec.elo} (${p2Sign})`;
+            STATE.lastOutcomeText = winner === 'USER'
+              ? `🏆 ${p1} (P1) Wins! (${eloSign} ELO → ${p1Rec.elo})`
+              : `🏆 ${p2} (P2) Wins! (${p2Sign} ELO → ${p2Rec.elo})`;
           }
-          p1Rec.updatedAt = Date.now();
-
-          p2Rec.elo = Math.max(100, p2Rec.elo + p2Delta);
-          if (p2Rec.elo > p2Rec.peak) p2Rec.peak = p2Rec.elo;
-          p2Rec.matches += 1;
-          p2Rec.weeklyMatches += 1;
-          p2Rec.weeklyEloGain += p2Delta;
-          if (winner === 'AI') {
-            p2Rec.wins += 1;
-            p2Rec.weeklyWins += 1;
-          } else {
-            p2Rec.losses += 1;
-            p2Rec.weeklyLosses += 1;
-          }
-          p2Rec.updatedAt = Date.now();
-
-          const amIGuest = STATE.onlineRole === 'GUEST';
-          STATE.eloRating = amIGuest ? p2Rec.elo : p1Rec.elo;
-          STATE.peakElo = amIGuest ? p2Rec.peak : p1Rec.peak;
-          STATE.friendEloRating = amIGuest ? p1Rec.elo : p2Rec.elo;
-          STATE.lastEloDelta = amIGuest ? p2Delta : p1Delta;
-
-          const eloSign = p1Delta > 0 ? `+${p1Delta}` : `${p1Delta}`;
-          const p2Sign = p2Delta > 0 ? `+${p2Delta}` : `${p2Delta}`;
-
-          STATE.eloHistory.unshift({
-            id: Date.now() + Math.random(),
-            opponent: amIGuest ? p1 : p2,
-            p1Name: amIGuest ? p2 : p1,
-            mode: 'Online Room Multiplayer',
-            result: (amIGuest ? winner === 'AI' : winner === 'USER') ? 'WIN' : 'LOSS',
-            delta: amIGuest ? p2Sign : eloSign,
-            newElo: STATE.eloRating,
-            runsScored: amIGuest ? STATE.aiScore : STATE.userScore,
-            wicketsTaken: amIGuest ? STATE.aiMatchWickets : STATE.userMatchWickets,
-            friendDelta: amIGuest ? eloSign : p2Sign,
-            friendNewElo: STATE.friendEloRating
-          });
-
-          STATE.winMarginText = `${marginDescription} • Multiplayer Elo: ${p1} ${prevP1Elo} → ${p1Rec.elo} (${eloSign}), ${p2} → ${p2Rec.elo} (${p2Sign})`;
-          STATE.lastOutcomeText = winner === 'USER'
-            ? `🏆 ${p1} (P1) Wins! (${eloSign} ELO → ${p1Rec.elo})`
-            : `🏆 ${p2} (P2) Wins! (${p2Sign} ELO → ${p2Rec.elo})`;
         } else {
-          // Bot matches are UNRATED: do NOT increase or change the user's Elo rating when playing against a Bot!
-          p1Rec.matches += 1;
-          p1Rec.weeklyMatches += 1;
-          if (winner === 'USER') {
-            p1Rec.wins += 1;
-            p1Rec.weeklyWins += 1;
-          } else {
-            p1Rec.losses += 1;
-            p1Rec.weeklyLosses += 1;
-          }
+          // Bot matches: RATING IS FROZEN! Never increase or decrease p1Rec.elo, peak, or weeklyEloGain
+          const frozenElo = p1Rec.elo;
+          const frozenPeak = p1Rec.peak;
+          const frozenWeeklyElo = p1Rec.weeklyEloGain || 0;
+
+          p1Rec.elo = frozenElo;
+          p1Rec.peak = frozenPeak;
+          p1Rec.weeklyEloGain = frozenWeeklyElo;
           p1Rec.updatedAt = Date.now();
-          STATE.eloRating = p1Rec.elo;
-          STATE.peakElo = p1Rec.peak;
+
+          STATE.eloRating = frozenElo;
+          STATE.peakElo = frozenPeak;
           STATE.lastEloDelta = null;
+
           STATE.eloHistory.unshift({
             id: Date.now() + Math.random(),
             opponent: p2,
             p1Name: p1,
-            mode: 'vs Bot (Unrated)',
-            result: winner === 'USER' ? 'WIN' : 'LOSS',
-            delta: '0',
-            newElo: STATE.eloRating,
+            mode: 'vs Bot (Rating Frozen)',
+            isBotMatch: true,
+            result: STATE.isTossForfeit ? 'FORFEIT' : (winner === 'USER' ? 'WIN' : 'LOSS'),
+            delta: 'FROZEN',
+            newElo: frozenElo,
             runsScored: STATE.userScore,
             wicketsTaken: STATE.userMatchWickets
           });
-          STATE.winMarginText = `${marginDescription} • Bot Match (Unrated • Rating stays ${p1Rec.elo} ELO)`;
-          STATE.lastOutcomeText = winner === 'USER'
-            ? `🏆 VICTORY! ${p1} defeated ${p2}! (Bot Match • ${p1Rec.elo} ELO Unchanged)`
-            : `${p2} won the match! (Bot Match • ${p1Rec.elo} ELO Unchanged)`;
+          STATE.winMarginText = `${marginDescription} • ❄️ Bot Match: Rating Frozen at ${frozenElo} ELO (No Rating Change vs Bots)`;
+          STATE.lastOutcomeText = STATE.isTossForfeit
+            ? `🏳️ Match Forfeited vs ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
+            : (winner === 'USER'
+                ? `🏆 VICTORY! ${p1} defeated ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
+                : `❌ ${p2} won the match! (❄️ Rating Frozen: ${frozenElo} ELO)`);
         }
 
         const didIWin = isMultiplayer() && STATE.onlineRole === 'GUEST' ? winner === 'AI' : winner === 'USER';
@@ -5092,19 +5169,37 @@
 
         // Update Elo displays across Header, Sidebar, Start Hub & Leaderboard
         el.headerEloValue.textContent = `${STATE.eloRating} ELO`;
-        el.sideNavEloSub.textContent = `${STATE.eloRating} ELO`;
-        el.sidebarEloDisplay.textContent = `${STATE.eloRating} ELO`;
-        el.startHubEloChip.textContent = `♟️ ${myCleanName}: ${STATE.eloRating} ELO • ${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`;
+        el.sideNavEloSub.textContent = mpActive ? `${STATE.eloRating} ELO (±8)` : `${STATE.eloRating} ELO ❄️`;
+        el.sidebarEloDisplay.textContent = mpActive ? `${STATE.eloRating} ELO` : `${STATE.eloRating} ELO (❄️ Frozen)`;
+        el.startHubEloChip.textContent = mpActive
+          ? `♟️ ${myCleanName}: ${STATE.eloRating} ELO (Ranked ±8) • ${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`
+          : `♟️ ${myCleanName}: ${STATE.eloRating} ELO (❄️ Frozen vs Bots) • ${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`;
 
-        if (STATE.lastEloDelta !== null) {
+        if (!mpActive) {
+          // When playing against Bots, explicitly show that Rating is FROZEN
+          el.headerEloDelta.classList.remove('hidden');
+          el.headerEloDelta.textContent = '❄️ FROZEN';
+          el.headerEloDelta.className = 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30';
+          if (el.btnHeaderElo) {
+            el.btnHeaderElo.title = `Current Rating: ${STATE.eloRating} ELO (Frozen while playing against Bots • Play Multiplayer to increase/decrease rating)`;
+          }
+        } else if (STATE.lastEloDelta !== null && STATE.lastEloDelta !== 0) {
           el.headerEloDelta.classList.remove('hidden');
           const dStr = STATE.lastEloDelta > 0 ? `+${STATE.lastEloDelta}` : `${STATE.lastEloDelta}`;
           el.headerEloDelta.textContent = dStr;
           el.headerEloDelta.className = STATE.lastEloDelta > 0
-            ? 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-emerald-500/20 text-emerald-300'
-            : 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-rose-500/20 text-rose-300';
+            ? 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+            : 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30';
+          if (el.btnHeaderElo) {
+            el.btnHeaderElo.title = `Current Rating: ${STATE.eloRating} ELO (Ranked Multiplayer: +8 Win / -8 Loss)`;
+          }
         } else {
-          el.headerEloDelta.classList.add('hidden');
+          el.headerEloDelta.classList.remove('hidden');
+          el.headerEloDelta.textContent = '±8 RANKED';
+          el.headerEloDelta.className = 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-purple-500/25 text-purple-200 border border-purple-400/40';
+          if (el.btnHeaderElo) {
+            el.btnHeaderElo.title = `Current Rating: ${STATE.eloRating} ELO (Ranked Multiplayer: +8 Win / -8 Loss)`;
+          }
         }
 
         // Show/Hide Center Screens cleanly
@@ -5506,19 +5601,31 @@
           }
 
           if (STATE.eloHistory.length === 0) {
-            el.eloHistoryList.innerHTML = `<div class="text-slate-300 text-center py-3">Play matches as <strong>${myCleanName}</strong> — every run, wicket, and result is synced to the worldwide leaderboard!</div>`;
+            el.eloHistoryList.innerHTML = `<div class="text-slate-300 text-center py-3">Play Multiplayer matches as <strong>${myCleanName}</strong> to increase or decrease your Elo rating (±8)! Bot matches keep your rating frozen.</div>`;
           } else {
-            el.eloHistoryList.innerHTML = STATE.eloHistory.map((h) => `
-              <div class="p-2.5 rounded-lg bg-[#262421] border border-[#45423e] flex items-center justify-between">
-                <div>
-                  <span class="font-bold text-white">${h.result === 'WIN' ? `🏆 ${h.p1Name || myCleanName} defeated ${h.opponent}` : `🏆 ${h.opponent} defeated ${h.p1Name || myCleanName}`}</span>
-                  <span class="text-[10px] text-slate-300 ml-1.5">(${h.mode} • ${h.runsScored || 0} Runs • ${h.wicketsTaken || 0} Wkts)</span>
+            el.eloHistoryList.innerHTML = STATE.eloHistory.map((h) => {
+              const isBotOrFrozen = Boolean(h.isBotMatch) || h.delta === 'FROZEN' || h.delta === '0' || (typeof h.mode === 'string' && h.mode.toLowerCase().includes('bot'));
+              const rightLabel = isBotOrFrozen
+                ? `❄️ FROZEN (${h.newElo} ELO)`
+                : `${h.delta} ELO → ${h.newElo}`;
+              const rightColor = isBotOrFrozen
+                ? 'text-cyan-300'
+                : (h.result === 'WIN' ? 'text-[#81b64c]' : 'text-rose-400');
+              const titleText = h.result === 'FORFEIT'
+                ? `🏳️ Match Forfeited vs ${h.opponent}`
+                : (h.result === 'WIN' ? `🏆 ${h.p1Name || myCleanName} defeated ${h.opponent}` : `❌ ${h.opponent} defeated ${h.p1Name || myCleanName}`);
+              return `
+                <div class="p-2.5 rounded-lg bg-[#262421] border border-[#45423e] flex items-center justify-between gap-2">
+                  <div class="min-w-0">
+                    <span class="font-bold text-white">${titleText}</span>
+                    <span class="text-[10px] text-slate-300 ml-1.5">(${h.mode} • ${h.runsScored || 0} Runs • ${h.wicketsTaken || 0} Wkts)</span>
+                  </div>
+                  <div class="font-mono-num font-extrabold ${rightColor} shrink-0">
+                    ${rightLabel}
+                  </div>
                 </div>
-                <div class="font-mono-num font-extrabold ${h.result === 'WIN' ? 'text-[#81b64c]' : 'text-rose-400'}">
-                  ${h.delta} ELO → ${h.newElo}
-                </div>
-              </div>
-            `).join('');
+              `;
+            }).join('');
           }
         }
 
@@ -6515,6 +6622,10 @@
         const signOutCurrentAccount = () => {
           SoundFX.click();
           try {
+            if (STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+              localStorage.setItem('oddandeven_last_user_v1', STATE.myUsername.trim().toUpperCase());
+            }
+            saveSessionStats();
             sessionStorage.removeItem(SESSION_STORAGE_KEY);
             localStorage.removeItem(SESSION_STORAGE_KEY);
             localStorage.removeItem('oddandeven_just_logged_in');
@@ -6729,6 +6840,7 @@
               const encSess = encryptPayload(sessObj);
               sessionStorage.setItem(SESSION_STORAGE_KEY, encSess);
               localStorage.setItem(SESSION_STORAGE_KEY, encSess);
+              localStorage.setItem('oddandeven_last_user_v1', activeProf.username);
               localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
             } catch (e) {}
 
