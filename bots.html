@@ -1,0 +1,3733 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hand Cricket Bots Arena — 250 to 2800 Elo Challengers (bots.html)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #262421;
+      background-image: radial-gradient(circle at 50% 0%, #312e2b 0%, #262421 60%, #1b1a17 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .glass-card {
+      background: #302e2b;
+      border: 1px solid #45423e;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
+    .glass-card-active {
+      background: #363431;
+      border: 2px solid #81b64c;
+      box-shadow: 0 8px 24px rgba(129, 182, 76, 0.22);
+    }
+    .chess-green-btn {
+      background: #81b64c;
+      color: #ffffff;
+      border-bottom: 4px solid #5d8c32;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      transition: all 0.12s ease;
+    }
+    .chess-green-btn:hover:not(:disabled) {
+      background: #95c95e;
+      transform: translateY(-1px);
+    }
+    .chess-green-btn:active:not(:disabled) {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+    }
+    .num-btn {
+      background: #3c3934;
+      border: 1px solid #524e48;
+      border-bottom: 4px solid #22201d;
+      color: #ffffff;
+      transition: all 0.12s ease;
+    }
+    .num-btn:hover:not(:disabled) {
+      background: #81b64c;
+      border-color: #95c95e;
+      border-bottom-color: #537d2b;
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+    .num-btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+    .num-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+      50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    }
+    .pulse-cta {
+      animation: pulseGlow 2s infinite;
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.88) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop {
+      animation: popIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-5 lg:p-6">
+
+  <!-- Top Navigation & Match Status Header -->
+  <header class="w-full max-w-6xl mx-auto mb-3 sm:mb-4">
+    <div class="glass-card rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-slate-950 font-black text-lg">
+          🏏
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">HAND CRICKET ARENA</h1>
+            <span id="phaseBadge" class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              Toss Phase
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">1–10 Rules • Match Numbers for Wicket • Beat Target to Win</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btnHeaderElo" type="button" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/35 transition flex items-center gap-1.5" title="View Elo Leaderboard">
+          <span>♟️</span>
+          <span id="headerEloValue" class="font-mono-num">1500 ELO</span>
+          <span id="headerEloDelta" class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 hidden">+8</span>
+        </button>
+        <button id="btnMultiplayer" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/25 border border-purple-300/40 transition flex items-center gap-1.5">
+          <span id="mpBtnIcon">👥</span>
+          <span id="mpBtnLabel">Multiplayer</span>
+        </button>
+        <button id="btnRules" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+          <span>📖</span>
+          <span>Rules</span>
+        </button>
+        <button id="btnMute" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5" aria-label="Toggle sound">
+          <span id="muteIcon">🔊</span>
+          <span id="muteLabel" class="hidden sm:inline">Sound On</span>
+        </button>
+        <button id="btnQuickRestart" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 transition flex items-center gap-1.5">
+          <span>↺</span>
+          <span>New Match</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace Container -->
+  <main class="w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+
+    <!-- Left Navigation Sidebar (Play Bot, Multiplayer, Leaderboard, Start Hub & Pitch) -->
+    <nav aria-label="Game Mode Sidebar" class="lg:col-span-2 glass-card rounded-2xl p-2.5 flex lg:flex-col items-stretch justify-between gap-2 overflow-x-auto">
+      <div class="flex lg:flex-col gap-2 w-full">
+        <div class="hidden lg:flex items-center justify-between px-2.5 py-1.5 border-b border-slate-800/80 mb-1">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Arena Menu</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        </div>
+
+        <!-- Sidebar 1: Play Bot (250 - 2800 Elo Bots) -->
+        <button id="sideNavBot" type="button" class="w-full px-3 py-3 rounded-xl text-left transition flex items-center gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
+          <span class="w-9 h-9 shrink-0 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-lg">🤖</span>
+          <div class="min-w-0">
+            <div class="text-xs font-extrabold tracking-tight text-white truncate">Play Bot</div>
+            <div class="text-[10px] text-slate-400 truncate" id="sideBotSubLabel">Bot Setup</div>
+          </div>
+        </button>
+
+        <!-- Sidebar 2: Play Multiplayer -->
+        <button id="sideNavMultiplayer" type="button" class="w-full px-3 py-3 rounded-xl text-left transition flex items-center gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
+          <span class="w-9 h-9 shrink-0 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center text-lg">👥</span>
+          <div class="min-w-0">
+            <div class="text-xs font-extrabold tracking-tight text-white truncate">Play Multiplayer</div>
+            <div class="text-[10px] text-slate-400 truncate">2P & Room Setup</div>
+          </div>
+        </button>
+
+        <!-- Sidebar 3: Leaderboard (Elo Rating Tracker) -->
+        <button id="sideNavLeaderboard" type="button" class="w-full px-3 py-3 rounded-xl text-left transition flex items-center gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
+          <span class="w-9 h-9 shrink-0 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-lg">🏆</span>
+          <div class="min-w-0">
+            <div class="text-xs font-extrabold tracking-tight text-white truncate">Leaderboard</div>
+            <div class="text-[10px] text-amber-300/90 font-mono-num truncate" id="sideNavEloSub">1500 ELO</div>
+          </div>
+        </button>
+
+        <!-- Sidebar 4: Clean Starting UI / Game Hub -->
+        <button id="sideNavShowcase" type="button" class="w-full px-3 py-3 rounded-xl text-left transition flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 shadow-sm">
+          <span class="w-9 h-9 shrink-0 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-lg">✨</span>
+          <div class="min-w-0">
+            <div class="text-xs font-extrabold tracking-tight text-white truncate">Game Hub</div>
+            <div class="text-[10px] text-slate-400 truncate">Features & Modes</div>
+          </div>
+        </button>
+
+        <!-- Sidebar 5: Active Match Pitch -->
+        <button id="sideNavPitch" type="button" class="w-full px-3 py-3 rounded-xl text-left transition flex items-center gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
+          <span class="w-9 h-9 shrink-0 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-lg">🏏</span>
+          <div class="min-w-0">
+            <div class="text-xs font-extrabold tracking-tight text-white truncate">Arena Pitch</div>
+            <div class="text-[10px] text-emerald-300/80 truncate">Live Match</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Player Live Elo & Opponent Status Card -->
+      <div class="hidden lg:block p-3 rounded-xl bg-slate-950/90 border border-slate-800/90 space-y-2 mt-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Your Rating</span>
+          <span class="text-xs font-black font-mono-num text-amber-300" id="sidebarEloDisplay">1500</span>
+        </div>
+        <div class="border-t border-slate-800/80 pt-1.5">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Opponent</div>
+          <div id="sidebarOpponentBadge" class="text-xs font-extrabold text-cyan-300 flex items-center gap-1.5 mt-0.5">
+            <span>⚡</span>
+            <span>Rohan (1100)</span>
+          </div>
+          <div id="sidebarCommentaryStyleBadge" class="text-[10px] text-amber-300/90 font-medium mt-0.5">
+            🎙️ Hype Broadcast
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Middle Column (Aesthetic Hand Cricket Hub + Bot Setup + Multiplayer Setup + Active Pitch) -->
+    <div class="lg:col-span-6 flex flex-col gap-4">
+
+      <!-- CLEAN STARTING UI (Two Hero Buttons: Play Bot & Play Multiplayer + Game Features) -->
+      <section id="centerShowcasePanel" class="glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-cyan-500/35 animate-pop">
+        <div class="absolute -right-12 -top-12 w-52 h-52 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-12 -bottom-12 w-52 h-52 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+              🏏 HAND CRICKET ARENA
+            </span>
+            <span class="px-3 py-1 rounded-full text-[10px] font-mono-num font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30" id="startHubEloChip">
+              ♟️ Rating: 1500 ELO (±8)
+            </span>
+          </div>
+          <button id="btnToggleShowcaseCompact" type="button" class="text-[11px] font-bold text-slate-400 hover:text-white transition">
+            Minimize ▲
+          </button>
+        </div>
+
+        <div id="showcaseBodyContent" class="space-y-5">
+          <!-- Hero Headline -->
+          <div class="text-center max-w-xl mx-auto space-y-1.5 py-1">
+            <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Choose Your Arena Mode
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300">
+              Challenge Elo-rated AI bots from <strong class="text-emerald-300">250 to 2800 Elo</strong> or play live <strong class="text-purple-300">Multiplayer</strong> with friends to climb the 1500+ Elo Leaderboard.
+            </p>
+          </div>
+
+          <!-- TWO MAIN HERO BUTTONS IN THE MIDDLE: PLAY BOT & PLAY MULTIPLAYER -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button id="cardQuickBot" type="button" class="p-5 rounded-2xl text-left bg-gradient-to-br from-emerald-500/20 via-slate-900/95 to-cyan-950/80 hover:from-emerald-500/30 hover:to-cyan-900/80 border-2 border-emerald-400/50 hover:border-emerald-300 shadow-xl shadow-emerald-500/10 transition group flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-2xl shadow-md">🤖</span>
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950">
+                    250 – 2800 ELO
+                  </span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white group-hover:text-emerald-300 transition">
+                  Play Bot
+                </h3>
+                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Face 4 Elo tiers — from friendly Basic (450) & Intermediate (1100) to mind-reading Advanced (1850) & Grandmaster Oracle (2650).
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-extrabold text-emerald-300">
+                <span>Select Bot & Difficulty</span>
+                <span class="group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </button>
+
+            <button id="cardQuickMp" type="button" class="p-5 rounded-2xl text-left bg-gradient-to-br from-purple-500/20 via-slate-900/95 to-indigo-950/80 hover:from-purple-500/30 hover:to-indigo-900/80 border-2 border-purple-400/50 hover:border-purple-300 shadow-xl shadow-purple-500/10 transition group flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-2xl shadow-md">👥</span>
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-400 text-slate-950">
+                    RANKED +8 / -8 ELO
+                  </span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white group-hover:text-purple-300 transition">
+                  Play Multiplayer
+                </h3>
+                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Play against a friend via Live Online Room Code or Same-Screen Pass & Play. Win to gain +8 Elo or lose -8 Elo!
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-extrabold text-purple-300">
+                <span>Create / Join Room or 2P</span>
+                <span class="group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Clean Game Features Strip -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+            <div class="p-3 rounded-xl bg-slate-900/85 border border-slate-800 flex items-start gap-2.5">
+              <span class="text-base mt-0.5">♟️</span>
+              <div>
+                <div class="text-xs font-extrabold text-white">Chess Elo Rating (1500)</div>
+                <p class="text-[11px] text-slate-400 mt-0.5">+8 Elo for every win, -8 Elo per loss, tracked on the Leaderboard.</p>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900/85 border border-slate-800 flex items-start gap-2.5">
+              <span class="text-base mt-0.5">🧠</span>
+              <div>
+                <div class="text-xs font-extrabold text-white">Adaptive Markov AI</div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Advanced & Master bots analyze your number sequences in real time.</p>
+              </div>
+            </div>
+
+            <button id="cardQuickCommentary" type="button" class="p-3 rounded-xl bg-slate-900/85 hover:bg-slate-800/90 border border-amber-500/30 text-left flex items-start gap-2.5 transition">
+              <span class="text-base mt-0.5">🎙️</span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-extrabold text-white">Live Commentary</span>
+                  <span id="commentaryMoodChip" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">HYPE</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Click to cycle Hype, Tactical & Classic broadcast styles.</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- INLINE SCREEN 1: ELO BOTS ARENA (bots.html View — Basic 250-700, Intermediate 700-1400, Advanced 1400-2200, Master 2200-2800) -->
+      <section id="screenBotSetup" class="hidden glass-card rounded-2xl p-5 border border-cyan-500/40 space-y-4 animate-pop">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-2xl">
+              🤖
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-black text-white">Bot Challengers (Elo Tiers)</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">bots.html</span>
+              </div>
+              <p class="text-xs text-slate-400">1 Bot in each Elo bracket — Advanced (1850) & Master (2650) use pattern-reading AI!</p>
+            </div>
+          </div>
+          <button id="btnBackFromBotSetup" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+            ← Back to Pitch
+          </button>
+        </div>
+
+        <!-- 4 ELO TIER BOT CARDS (1 Bot per bracket as requested) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- 1. BASIC BOT (250 - 700 ELO) -->
+          <button id="btnBotRookie" type="button" class="text-left p-4 rounded-xl bg-slate-900/90 border-2 border-slate-800 hover:border-emerald-400/60 transition space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                BASIC TIER • 250–700 ELO
+              </span>
+              <span class="font-mono-num text-xs font-black text-emerald-300">450 ELO</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🌱</span>
+              <div>
+                <div class="font-extrabold text-sm text-white">Sunny "Friendly" Bot</div>
+                <div class="text-[11px] text-emerald-300/90 font-medium">Very Simple • Lets You Score Big</div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Plays simple, predictable hands and avoids bowling your favorite numbers so you can smash big boundaries and build massive scores!
+            </p>
+          </button>
+
+          <!-- 2. INTERMEDIATE BOT (700 - 1400 ELO) -->
+          <button id="btnBotTactician" type="button" class="text-left p-4 rounded-xl bg-slate-900/90 border-2 border-cyan-400 shadow-lg shadow-cyan-500/10 transition space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                INTERMEDIATE • 700–1400 ELO
+              </span>
+              <span class="font-mono-num text-xs font-black text-cyan-300">1100 ELO</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">⚡</span>
+              <div>
+                <div class="font-extrabold text-sm text-white">Rohan "Challenger" Bot</div>
+                <div class="text-[11px] text-cyan-300/90 font-medium">Balanced • Solid Attack & Defense</div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Tests your skills in both scoring and defending runs! Mixes middle-and-high shots while watching for repeated numbers.
+            </p>
+          </button>
+
+          <!-- 3. ADVANCED BOT (1400 - 2200 ELO) -->
+          <button id="btnBotAggressor" type="button" class="text-left p-4 rounded-xl bg-slate-900/90 border-2 border-slate-800 hover:border-amber-400/60 transition space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                ADVANCED • 1400–2200 ELO
+              </span>
+              <span class="font-mono-num text-xs font-black text-amber-300">1850 ELO</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🧠</span>
+              <div>
+                <div class="font-extrabold text-sm text-white">Vikram "Tactician" AI</div>
+                <div class="text-[11px] text-amber-300/90 font-medium">Very Difficult • Markov Sequence Reader</div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Tracks your number transitions and frequency hotspots! Sets lethal bowling traps and dodges your preferred bowling numbers.
+            </p>
+          </button>
+
+          <!-- 4. MASTER BOT (2200 - 2800 ELO) -->
+          <button id="btnBotWall" type="button" class="text-left p-4 rounded-xl bg-slate-900/90 border-2 border-slate-800 hover:border-rose-400/60 transition space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
+                MASTER TIER • 2200–2800 ELO
+              </span>
+              <span class="font-mono-num text-xs font-black text-rose-300">2650 ELO</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">👑</span>
+              <div>
+                <div class="font-extrabold text-sm text-white">Apex "Grandmaster" Oracle</div>
+                <div class="text-[11px] text-rose-300/90 font-medium">Toughest Boss • N-Gram & EV Engine</div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Our toughest AI! Uses multi-order pattern prediction, delta-shift traps, and expected-value optimization to punish every habit.
+            </p>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div>
+            <label for="botSetupPlayerName" class="block text-[11px] font-bold uppercase tracking-wider text-emerald-300 mb-1">Your Player Name</label>
+            <input id="botSetupPlayerName" type="text" maxlength="16" value="YOU" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-bold focus:outline-none focus:border-emerald-400" />
+          </div>
+          <div>
+            <label for="botSetupCommentaryStyle" class="block text-[11px] font-bold uppercase tracking-wider text-amber-300 mb-1">Commentary Broadcast Style</label>
+            <select id="botSetupCommentaryStyle" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-bold focus:outline-none focus:border-amber-400">
+              <option value="HYPE">🔥 Stadium Hype Broadcast (Energetic)</option>
+              <option value="TACTICAL">🧠 Pro Analyst & Mind-Games</option>
+              <option value="CLASSIC">📻 Classic Crisp Cricket Feed</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="btnLaunchBotMatch" type="button" class="w-full py-3.5 px-5 rounded-xl font-black text-sm sm:text-base bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2">
+          <span>🏏</span>
+          <span>START BOT MATCH ON PITCH →</span>
+        </button>
+      </section>
+
+      <!-- INLINE SCREEN 3: ELO LEADERBOARD & RATING TRACKER (Loaded when clicking Leaderboard in Sidebar) -->
+      <section id="screenLeaderboard" class="hidden glass-card rounded-2xl p-5 border border-amber-500/40 space-y-4 animate-pop">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-2xl">
+              🏆
+            </div>
+            <div>
+              <h2 class="text-lg sm:text-xl font-black text-white">Arena Elo Leaderboard</h2>
+              <p class="text-xs text-slate-300">Humans Only Standings • Start: 1500 Elo • Multiplayer Win: +8 Elo • Loss: -8 Elo</p>
+            </div>
+          </div>
+          <button id="btnBackFromLeaderboard" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+            ← Back to Pitch
+          </button>
+        </div>
+
+        <!-- User Rating Summary Banner -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-400/30 text-center">
+            <div class="text-[10px] font-bold uppercase text-amber-300">Current Rating</div>
+            <div id="lbUserEloBig" class="text-2xl font-black font-mono-num text-white mt-0.5">1500</div>
+          </div>
+          <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-center">
+            <div class="text-[10px] font-bold uppercase text-emerald-300">Peak Elo</div>
+            <div id="lbPeakEloBig" class="text-2xl font-black font-mono-num text-emerald-300 mt-0.5">1500</div>
+          </div>
+          <div class="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-center">
+            <div class="text-[10px] font-bold uppercase text-cyan-300">Win / Loss</div>
+            <div id="lbWinLossBig" class="text-xl font-black font-mono-num text-cyan-300 mt-0.5">0W – 0L</div>
+          </div>
+          <div class="p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 text-center">
+            <div class="text-[10px] font-bold uppercase text-purple-300">Net Elo Change</div>
+            <div id="lbNetDeltaBig" class="text-xl font-black font-mono-num text-purple-300 mt-0.5">+0</div>
+          </div>
+        </div>
+
+        <!-- Standings Table (User + Bots + Multiplayer Rivals) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+            <span>Arena Standings (Ranked by Elo)</span>
+            <span>Rating & Tier</span>
+          </div>
+          <div id="leaderboardStandingsList" class="space-y-2"></div>
+        </div>
+
+        <!-- Recent Elo Match History (+8 / -8 Log) -->
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Recent Rating Changes (+8 / -8 Elo)</div>
+          <div id="eloHistoryList" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 text-xs"></div>
+        </div>
+      </section>
+
+      <!-- INLINE SCREEN 2: MULTIPLAYER SETUP SCREEN (Loaded when clicking Play Multiplayer in Sidebar) -->
+      <section id="screenMpSetup" class="hidden glass-card rounded-2xl p-5 border border-purple-500/40 space-y-4 animate-pop">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-2xl">
+              👥
+            </div>
+            <div>
+              <h2 class="text-lg sm:text-xl font-black text-white">Play Multiplayer — Friend Setup</h2>
+              <p class="text-xs text-slate-400">Play together on the same device or connect live via Room Code</p>
+            </div>
+          </div>
+          <button id="btnBackFromMpSetup" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+            ← Back to Pitch
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="btnInlineSelectLocal2P" type="button" class="p-4 rounded-xl text-left border-2 border-purple-400 bg-slate-900/90 space-y-1 transition">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-sm text-white">🎮 Same-Screen 2P</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300">Secret Lock / Dual Keys</span>
+            </div>
+            <p class="text-xs text-slate-400">Player 1 picks first (locked as 🔒), then Friend picks — or play simultaneously with keys <kbd class="px-1 bg-slate-800 rounded">1–0</kbd> vs <kbd class="px-1 bg-slate-800 rounded">Q–P</kbd>/Numpad!</p>
+          </button>
+
+          <button id="btnInlineSelectOnline2P" type="button" class="p-4 rounded-xl text-left border-2 border-slate-800 hover:border-cyan-400/60 bg-slate-900/90 space-y-1 transition">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-sm text-white">🌐 Online Room Code</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">2 Tabs / 2 Devices</span>
+            </div>
+            <p class="text-xs text-slate-400">Create a room code and share it with your friend for live synced P2P Hand Cricket!</p>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="inlineP1Name" class="block text-[11px] font-bold uppercase tracking-wider text-emerald-300 mb-1">Player 1 Name (You)</label>
+            <input id="inlineP1Name" type="text" maxlength="16" value="YOU" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-bold focus:outline-none focus:border-emerald-400" />
+          </div>
+          <div>
+            <label for="inlineP2Name" class="block text-[11px] font-bold uppercase tracking-wider text-cyan-300 mb-1">Player 2 Name (Friend)</label>
+            <input id="inlineP2Name" type="text" maxlength="16" value="FRIEND" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-bold focus:outline-none focus:border-cyan-400" />
+          </div>
+        </div>
+
+        <!-- Inline Online Room Code Controls -->
+        <div id="inlineRoomCodeSection" class="hidden p-3.5 rounded-xl bg-slate-950/90 border border-cyan-500/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-cyan-300">🌐 Live Room Sync</span>
+            <span id="inlineNetStatusBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+              Ready to Connect
+            </span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="text-xs font-bold text-white">1. Host a Room</div>
+              <button id="btnInlineCreateRoom" type="button" class="w-full py-2 px-3 rounded-lg font-extrabold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+                ⚡ Generate Room Code
+              </button>
+              <div id="inlineHostCodeDisplay" class="hidden text-center pt-1">
+                <span class="text-[10px] text-slate-400 block">Share Code with Friend:</span>
+                <span id="inlineHostCodeValue" class="font-mono-num text-base font-black text-amber-300 tracking-widest">------</span>
+              </div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="text-xs font-bold text-white">2. Join Friend's Code</div>
+              <div class="flex gap-1.5">
+                <input id="inlineInputJoinCode" type="text" maxlength="10" placeholder="HC1234" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono-num text-xs font-bold uppercase" />
+                <button id="btnInlineJoinRoom" type="button" class="px-3 py-1.5 rounded-lg font-extrabold text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition">
+                  Join
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btnLaunchMpMatch" type="button" class="w-full py-3.5 px-5 rounded-xl font-black text-sm sm:text-base bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/25 transition flex items-center justify-center gap-2">
+          <span>👥</span>
+          <span>START MULTIPLAYER MATCH ON PITCH →</span>
+        </button>
+      </section>
+
+      <!-- Live Broadcast Commentary Box (Dynamic, Engaging Play-by-Play) -->
+      <section id="liveCommentaryBanner" class="glass-card rounded-2xl p-3.5 border border-amber-500/35 bg-gradient-to-r from-slate-900/95 via-slate-900/90 to-amber-950/25 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0 w-full">
+          <div class="w-10 h-10 shrink-0 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-lg shadow-inner">
+            🎙️
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-amber-300">LIVE STADIUM COMMENTARY</span>
+                <span id="commentaryExcitementTag" class="px-2 py-0.5 rounded text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  PRE-MATCH BUILDUP
+                </span>
+              </div>
+              <span id="commentaryStreakTag" class="text-[10px] font-mono-num font-bold text-cyan-300">
+                Streak: 0
+              </span>
+            </div>
+            <p id="liveBroadcastLine" class="text-xs sm:text-sm font-bold text-slate-100 mt-1 leading-snug">
+              "Welcome to Hand Cricket Arena! The floodlights are blazing — step up to the toss and set the tone!"
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Pitch Wrapper (Scoreboard + Canvas + Phase Controls) -->
+      <div id="activePitchWrapper" class="flex flex-col gap-4">
+
+      <!-- Live Scoreboard Strip -->
+      <section aria-label="Match Scoreboard" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Human Player Card -->
+        <div id="userScoreCard" class="glass-card rounded-2xl p-4 relative overflow-hidden transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <span id="p1CardTitle" class="text-xs font-bold uppercase tracking-wider text-slate-300">YOU (HUMAN)</span>
+            </div>
+            <span id="userRoleBadge" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+              READY
+            </span>
+          </div>
+
+          <div class="flex items-baseline justify-between mt-1">
+            <div>
+              <div id="userMainScore" class="text-3xl sm:text-4xl font-extrabold font-mono-num text-white tracking-tight">0</div>
+              <div id="userSubMeta" class="text-xs text-slate-400 mt-0.5">Balls: 0 • SR: 0.0</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Last Played</div>
+              <div id="userLastPlayedBadge" class="mt-1 inline-flex items-center justify-center w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-xl font-black font-mono-num text-emerald-300">
+                -
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Match Equation / Target Card -->
+        <div class="glass-card rounded-2xl p-4 flex flex-col justify-between items-center text-center relative overflow-hidden">
+          <div class="w-full flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span id="inningsLabel">PRE-MATCH</span>
+            <span id="ballsCounterLabel">BALL 0</span>
+          </div>
+
+          <div class="my-2">
+            <div class="text-[11px] uppercase tracking-widest text-cyan-300/90 font-bold" id="targetHeaderLabel">TARGET TO WIN</div>
+            <div id="targetValueDisplay" class="text-3xl sm:text-4xl font-black font-mono-num text-amber-300 tracking-tight mt-0.5">
+              —
+            </div>
+          </div>
+
+          <div class="w-full">
+            <div id="chaseProgressWrap" class="hidden w-full bg-slate-800/90 h-2 rounded-full overflow-hidden mb-1.5 border border-slate-700/60">
+              <div id="chaseProgressBar" class="bg-gradient-to-r from-emerald-400 to-cyan-400 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="equationStatusText" class="text-xs font-medium text-slate-300 truncate">
+              Win the toss to control the pitch
+            </p>
+          </div>
+        </div>
+
+        <!-- AI Opponent Card -->
+        <div id="aiScoreCard" class="glass-card rounded-2xl p-4 relative overflow-hidden transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+              <span id="p2CardTitle" class="text-xs font-bold uppercase tracking-wider text-slate-300">AI OPPONENT</span>
+            </div>
+            <span id="aiRoleBadge" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+              READY
+            </span>
+          </div>
+
+          <div class="flex items-baseline justify-between mt-1">
+            <div>
+              <div id="aiMainScore" class="text-3xl sm:text-4xl font-extrabold font-mono-num text-white tracking-tight">0</div>
+              <div id="aiSubMeta" class="text-xs text-slate-400 mt-0.5">Balls: 0 • SR: 0.0</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Last Played</div>
+              <div id="aiLastPlayedBadge" class="mt-1 inline-flex items-center justify-center w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-xl font-black font-mono-num text-cyan-300">
+                -
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Visual Pitch & Hand Clash Canvas -->
+      <section class="glass-card rounded-2xl p-3 relative overflow-hidden">
+        <div class="relative w-full h-56 sm:h-64 rounded-xl overflow-hidden bg-slate-950 border border-slate-800/80">
+          <canvas id="arenaCanvas" class="w-full h-full block"></canvas>
+
+          <!-- Floating Last Turn Outcome Pill -->
+          <div class="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none">
+            <div id="turnOutcomeBanner" class="px-3.5 py-1 rounded-full text-xs sm:text-sm font-bold tracking-wide bg-slate-900/90 text-slate-200 border border-slate-700/80 shadow-lg whitespace-nowrap">
+              Select Odd or Even to start the Toss!
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dynamic Phase Controls Area -->
+      <section class="glass-card rounded-2xl p-4 sm:p-5">
+
+        <!-- Chess.com Style 10-Second Turn Clock Bar -->
+        <div id="turnTimerBar" class="mb-4 p-3 rounded-xl bg-[#211f1c] border border-[#45423e] flex flex-col gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span id="timerClockIcon" class="w-8 h-8 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/50 flex items-center justify-center text-base">⏱️</span>
+              <div>
+                <div id="timerStatusTitle" class="text-xs sm:text-sm font-extrabold text-white tracking-tight">
+                  10s Shot Clock Active
+                </div>
+                <div id="timerStatusSub" class="text-[11px] text-slate-300">
+                  Pick a number within 10s or forfeit the toss / lose to waiting opponent!
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div id="timerDigitalDisplay" class="px-3.5 py-1.5 rounded-lg font-mono-num text-lg sm:text-xl font-black bg-[#161512] text-[#81b64c] border border-[#45423e] tracking-wider">
+                00:10
+              </div>
+            </div>
+          </div>
+          <div class="w-full h-2 rounded-full bg-[#161512] overflow-hidden border border-[#383530]">
+            <div id="timerProgressBar" class="h-full bg-[#81b64c] transition-all duration-300" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <!-- Multiplayer Turn & Lock-In Status Bar (Hidden in vs-AI mode) -->
+        <div id="mpTurnStatusBar" class="hidden mb-4 p-3 rounded-xl bg-gradient-to-r from-indigo-950/90 via-purple-950/80 to-slate-900 border border-purple-500/40 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span id="mpTurnIndicatorDot" class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div>
+              <div id="mpTurnBannerTitle" class="text-xs sm:text-sm font-extrabold text-white">
+                Multiplayer Mode Active (2 Players)
+              </div>
+              <div id="mpTurnBannerSub" class="text-[11px] text-purple-200/80">
+                Player 1 picks first (locked secretly), then Friend picks to reveal!
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="mpLockedBadge" class="px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-bold bg-slate-900/90 text-purple-300 border border-purple-500/30">
+              P1: Waiting • P2: Waiting
+            </span>
+            <button id="btnOpenMpSettings" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 transition">
+              ⚙️ Setup
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 1: TOSS PHASE -->
+        <div id="viewToss" class="space-y-4 animate-pop">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>🪙</span>
+                <span>Phase 1: The Toss (Odd or Even)</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Step 1: Call <strong class="text-slate-200">Odd</strong> or <strong class="text-slate-200">Even</strong>. Step 2: Pick a number from <strong class="text-slate-200">1 to 10</strong>.
+              </p>
+            </div>
+            <div id="tossCallIndicator" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 self-start sm:self-auto">
+              Selected Call: ODD
+            </div>
+          </div>
+
+          <!-- Multiplayer Odd/Even Lock Notice -->
+          <div id="mpTossLockNotice" class="hidden p-2.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-xs font-bold text-amber-200 flex items-center justify-between gap-2">
+            <span id="mpTossLockText">🔒 Friend chose EVEN — your call is locked to ODD!</span>
+            <span class="px-2 py-0.5 rounded bg-slate-900 text-[10px] font-mono-num text-emerald-300">NO TIE POSSIBLE</span>
+          </div>
+
+          <!-- Odd / Even Toggle Buttons -->
+          <div class="grid grid-cols-2 gap-3">
+            <button id="btnCallOdd" type="button" class="py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25 border border-emerald-300">
+              <span>⚡</span>
+              <span>CALL ODD</span>
+            </button>
+            <button id="btnCallEven" type="button" class="py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700">
+              <span>⚖️</span>
+              <span>CALL EVEN</span>
+            </button>
+          </div>
+
+          <!-- Toss Number Picker 1-10 -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Throw Your Toss Number (1–10):</span>
+              <span class="text-[11px] text-slate-400 hidden sm:inline">Keyboard: keys <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">1</kbd>–<kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">9</kbd>, <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">0</kbd> = 10</span>
+            </div>
+            <div id="tossNumberGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-2"></div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: TOSS RESULT & BAT/BOWL DECISION -->
+        <div id="viewTossDecision" class="hidden space-y-4 animate-pop">
+          <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span id="tossWinnerTag" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                YOU WON THE TOSS!
+              </span>
+              <span id="tossMathSummary" class="text-xs font-mono-num text-slate-300 bg-slate-800 px-3 py-1 rounded-lg">
+                You: 5 + AI: 4 = 9 (ODD)
+              </span>
+            </div>
+
+            <h3 id="tossResultHeadline" class="text-lg sm:text-xl font-extrabold text-white">
+              You called ODD and the sum is 9 (ODD)!
+            </h3>
+            <p id="tossDecisionSubtext" class="text-xs sm:text-sm text-slate-300">
+              Choose whether you want to set a target by batting first or chase by bowling first.
+            </p>
+          </div>
+
+          <!-- Shown when User wins Toss -->
+          <div id="userTossChoiceButtons" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button id="btnChooseBat" type="button" class="py-3.5 px-5 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2">
+              <span>🏏</span>
+              <span>BAT FIRST (Set Target)</span>
+            </button>
+            <button id="btnChooseBowl" type="button" class="py-3.5 px-5 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2">
+              <span>⚾</span>
+              <span>BOWL FIRST (Chase Target)</span>
+            </button>
+          </div>
+
+          <!-- Shown when AI wins Toss -->
+          <div id="aiTossChoiceContinue" class="hidden">
+            <button id="btnStartAfterAiToss" type="button" class="w-full py-3.5 px-5 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 pulse-cta">
+              <span>🏟️</span>
+              <span>START 1ST INNINGS →</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 3: ACTIVE INNINGS GAMEPLAY (INNINGS 1 & INNINGS 2) -->
+        <div id="viewGameplay" class="hidden space-y-4 animate-pop">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h2 id="gameplayHeading" class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>🏏</span>
+                <span>You are Batting — Pick a Shot (1–10)</span>
+              </h2>
+              <p id="gameplayHint" class="text-xs text-slate-400 mt-0.5">
+                Every number you pick adds to your total unless the AI picks the exact same number!
+              </p>
+            </div>
+            <div class="text-xs font-mono-num text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800">
+              Keys: <span class="text-emerald-400 font-bold">1–9</span>, <span class="text-emerald-400 font-bold">0</span>=10
+            </div>
+          </div>
+
+          <!-- Play Number Buttons 1-10 -->
+          <div id="playNumberGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-2.5"></div>
+        </div>
+
+        <!-- VIEW 4: INNINGS BREAK (TRANSITION FROM INNINGS 1 TO INNINGS 2) -->
+        <div id="viewInningsBreak" class="hidden space-y-4 animate-pop">
+          <div class="p-4 sm:p-5 rounded-xl bg-slate-900/95 border border-amber-500/30 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                END OF 1ST INNINGS
+              </span>
+              <span id="breakWicketDetail" class="text-xs font-mono-num text-rose-300 bg-rose-500/15 border border-rose-500/30 px-2.5 py-1 rounded-lg">
+                OUT! Matched on 7
+              </span>
+            </div>
+
+            <h3 id="breakHeadline" class="text-xl sm:text-2xl font-black text-white">
+              1st Innings Total: 42 Runs
+            </h3>
+            <p id="breakTargetExplanation" class="text-sm text-slate-300">
+              Target for 2nd Innings is <strong class="text-amber-300 font-mono-num">43 runs</strong> (Final Score + 1).
+            </p>
+          </div>
+
+          <button id="btnStartSecondInnings" type="button" class="w-full py-3.5 px-5 rounded-xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2 pulse-cta">
+            <span>🔥</span>
+            <span>START 2ND INNINGS (THE CHASE) →</span>
+          </button>
+        </div>
+
+        <!-- VIEW 5: GAME OVER & PLAY AGAIN -->
+        <div id="viewGameOver" class="hidden space-y-4 animate-pop">
+          <div id="gameOverBannerBox" class="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 border border-emerald-500/40 space-y-3 text-center">
+            <div id="gameOverBadge" class="inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+              MATCH COMPLETED
+            </div>
+            <h2 id="gameOverTitle" class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              🏆 YOU WON THE MATCH!
+            </h2>
+            <p id="gameOverMargin" class="text-sm sm:text-base text-slate-200 font-medium">
+              You chased down the target of 35 in 6 balls!
+            </p>
+
+            <!-- Summary Comparison Grid -->
+            <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-800/90 text-xs">
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-slate-400 uppercase text-[10px] font-bold">Your Score</div>
+                <div id="summaryUserScore" class="text-base sm:text-lg font-extrabold font-mono-num text-emerald-300 mt-0.5">0</div>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-slate-400 uppercase text-[10px] font-bold">Target Set</div>
+                <div id="summaryTarget" class="text-base sm:text-lg font-extrabold font-mono-num text-amber-300 mt-0.5">0</div>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-slate-400 uppercase text-[10px] font-bold">AI Score</div>
+                <div id="summaryAiScore" class="text-base sm:text-lg font-extrabold font-mono-num text-cyan-300 mt-0.5">0</div>
+              </div>
+            </div>
+          </div>
+
+          <button id="btnPlayAgain" type="button" class="w-full py-4 px-6 rounded-xl font-black text-base bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 shadow-xl shadow-emerald-500/25 transition flex items-center justify-center gap-2 pulse-cta">
+            <span>🔄</span>
+            <span>PLAY AGAIN</span>
+          </button>
+        </div>
+
+      </section>
+      </div><!-- /#activePitchWrapper -->
+    </div>
+
+    <!-- Right Column: Match Info, Innings Breakdown & Ball-by-Ball Log -->
+    <aside class="lg:col-span-4 flex flex-col gap-4">
+
+      <!-- Match Scorecard Summary Box -->
+      <div class="glass-card rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+            <span>📊</span>
+            <span>Innings Scorecard</span>
+          </h3>
+          <span id="tossInfoSmall" class="text-[11px] text-slate-400">Toss Pending</span>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80">
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">1st Innings</div>
+              <div id="cardInn1Team" class="font-bold text-slate-200 mt-0.5">—</div>
+            </div>
+            <div id="cardInn1Score" class="font-mono-num text-sm font-extrabold text-white">—</div>
+          </div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80">
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">2nd Innings (Chase)</div>
+              <div id="cardInn2Team" class="font-bold text-slate-200 mt-0.5">—</div>
+            </div>
+            <div id="cardInn2Score" class="font-mono-num text-sm font-extrabold text-white">—</div>
+          </div>
+        </div>
+
+        <!-- Session Win/Loss Record -->
+        <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+          <div class="bg-slate-900/60 rounded-xl p-2 border border-slate-800/70">
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Matches</div>
+            <div id="statMatches" class="font-mono-num font-bold text-sm text-white">0</div>
+          </div>
+          <div class="bg-emerald-500/10 rounded-xl p-2 border border-emerald-500/20">
+            <div class="text-[10px] text-emerald-300 uppercase font-semibold">Your Wins</div>
+            <div id="statUserWins" class="font-mono-num font-bold text-sm text-emerald-300">0</div>
+          </div>
+          <div class="bg-cyan-500/10 rounded-xl p-2 border border-cyan-500/20">
+            <div class="text-[10px] text-cyan-300 uppercase font-semibold">AI Wins</div>
+            <div id="statAiWins" class="font-mono-num font-bold text-sm text-cyan-300">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ball-by-Ball Commentary & Turn History -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col h-80 sm:h-96">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-2.5">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+            <span>🎙️</span>
+            <span>Ball-by-Ball Feed</span>
+          </h3>
+          <span id="logCountBadge" class="text-[11px] font-mono-num px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+            0 turns
+          </span>
+        </div>
+
+        <div id="ballLogContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
+          <div class="h-full flex flex-col items-center justify-center text-center text-slate-400 px-4">
+            <span class="text-2xl mb-1">🏟️</span>
+            <p>Every toss & delivery will be logged here in real time.</p>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Rules Modal -->
+  <div id="rulesModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div class="glass-card max-w-lg w-full rounded-2xl p-5 sm:p-6 border border-slate-700 shadow-2xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
+          <span>📖</span>
+          <span>Hand Cricket Official Rules</span>
+        </h2>
+        <button id="btnCloseRules" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-h-[65vh] overflow-y-auto pr-1">
+        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
+          <h3 class="font-bold text-emerald-300 mb-1">1. The Toss Phase</h3>
+          <p>Choose <strong>Odd</strong> or <strong>Even</strong> and pick a number from <strong>1 to 10</strong>. The AI simultaneously picks a random number from 1 to 10. If the sum of both numbers matches your Odd/Even call, you win the toss and choose whether to <strong>Bat</strong> or <strong>Bowl</strong> first. Otherwise, the AI wins the toss and randomly decides.</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
+          <h3 class="font-bold text-cyan-300 mb-1">2. 1st Innings (Setting the Target)</h3>
+          <p>Each ball, both you and the AI choose an integer from <strong>1 to 10</strong>. If the numbers are different, the batter's number is added to their total score. If both numbers <strong>match exactly</strong>, the batter is <strong>OUT!</strong> The target for the 2nd innings becomes <strong>1st Innings Score + 1</strong>.</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
+          <h3 class="font-bold text-amber-300 mb-1">3. 2nd Innings (The Chase)</h3>
+          <p>Roles swap! The chasing side bats to reach the <strong>Target</strong>. If their accumulated score meets or surpasses the Target, they <strong>instantly win</strong>. If the bowler matches the batter's number before the Target is reached, the chasing side is <strong>OUT</strong> and the defending side wins!</p>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="btnGotItRules" type="button" class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+          Got It, Let's Play!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiplayer Setup & Room Modal -->
+  <div id="mpModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4">
+    <div class="glass-card max-w-lg w-full rounded-2xl p-5 sm:p-6 border border-purple-500/40 shadow-2xl space-y-4 animate-pop">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
+            <span>👥</span>
+            <span>Multiplayer Arena (Play with a Friend)</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">Play together on the same device or connect live via Room Code</p>
+        </div>
+        <button id="btnCloseMpModal" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="grid grid-cols-3 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+        <button id="tabModeAi" type="button" class="py-2 px-3 rounded-lg text-xs font-extrabold transition bg-emerald-500 text-slate-950">
+          🤖 vs AI (Solo)
+        </button>
+        <button id="tabModeLocal2P" type="button" class="py-2 px-3 rounded-lg text-xs font-extrabold transition text-slate-300 hover:text-white">
+          🎮 2P Same Screen
+        </button>
+        <button id="tabModeOnline2P" type="button" class="py-2 px-3 rounded-lg text-xs font-extrabold transition text-slate-300 hover:text-white">
+          🌐 Room Code
+        </button>
+      </div>
+
+      <!-- Player Names Configuration -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label for="inputP1Name" class="block text-[11px] font-bold uppercase tracking-wider text-emerald-300 mb-1">Player 1 Name (You)</label>
+          <input id="inputP1Name" type="text" maxlength="16" value="YOU" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-bold focus:outline-none focus:border-emerald-400" />
+        </div>
+        <div>
+          <label for="inputP2Name" class="block text-[11px] font-bold uppercase tracking-wider text-cyan-300 mb-1">Player 2 Name (Friend)</label>
+          <input id="inputP2Name" type="text" maxlength="16" value="FRIEND" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-bold focus:outline-none focus:border-cyan-400" />
+        </div>
+      </div>
+
+      <!-- Panel A: vs AI Info -->
+      <div id="mpPanelAi" class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 space-y-1.5">
+        <div class="font-bold text-emerald-300">🤖 Classic Singleplayer (User vs. AI)</div>
+        <p>Play against the instant AI opponent with standard 1–10 Hand Cricket rules.</p>
+      </div>
+
+      <!-- Panel B: Local 2-Player Same Device Info -->
+      <div id="mpPanelLocal" class="hidden p-3.5 rounded-xl bg-slate-900/90 border border-purple-500/30 text-xs text-slate-300 space-y-2">
+        <div class="font-bold text-purple-300">🎮 How 2-Player Same Screen Works (No Peeking!)</div>
+        <ul class="space-y-1.5 text-slate-300">
+          <li>• <strong>Secret Turn Lock-In (Tap/Click):</strong> Player 1 picks a number (1–10) first — it locks in secretly as <span class="text-emerald-300 font-mono-num">🔒 LOCKED</span>. Then Friend picks their number (1–10) to reveal both hands at once!</li>
+          <li>• <strong>Simultaneous Keyboard Clash:</strong> Player 1 can press top-row keys <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-emerald-300">1–9, 0</kbd> while Friend presses Numpad <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-cyan-300">1–9, 0</kbd> (or keys <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-cyan-300">Q W E R T Y U I O P</kbd> for 1–10)!</li>
+        </ul>
+      </div>
+
+      <!-- Panel C: Online / Cross-Tab Room Code -->
+      <div id="mpPanelOnline" class="hidden p-3.5 rounded-xl bg-slate-900/90 border border-cyan-500/30 text-xs text-slate-300 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-cyan-300">🌐 Live Room Code (2 Tabs or 2 Devices)</span>
+          <span id="mpNetStatusBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+            Not Connected
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <!-- Host a Room -->
+          <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="text-[11px] font-bold text-slate-200">1. Create a Room</div>
+            <button id="btnCreateRoom" type="button" class="w-full py-2 px-3 rounded-lg font-extrabold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+              ⚡ Generate Room Code
+            </button>
+            <div id="hostRoomCodeBox" class="hidden pt-1 text-center">
+              <div class="text-[10px] text-slate-400 uppercase">Share Code with Friend:</div>
+              <div class="mt-1 flex items-center justify-center gap-1.5">
+                <span id="hostRoomCodeText" class="font-mono-num text-base font-black tracking-widest text-amber-300 bg-slate-900 px-3 py-1 rounded-lg border border-amber-400/30">
+                  ------
+                </span>
+                <button id="btnCopyRoomCode" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-200 border border-slate-700">
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Join a Room -->
+          <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="text-[11px] font-bold text-slate-200">2. Join Friend's Room</div>
+            <div class="flex gap-1.5">
+              <input id="inputJoinRoomCode" type="text" maxlength="10" placeholder="Enter Code" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono-num text-xs font-bold uppercase focus:outline-none focus:border-cyan-400" />
+              <button id="btnJoinRoom" type="button" class="shrink-0 px-3 py-1.5 rounded-lg font-extrabold text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition">
+                Join
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-400">Works across devices (WebRTC) or across browser windows/tabs!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-between gap-2 border-t border-slate-800">
+        <button id="btnCancelMpModal" type="button" class="px-4 py-2.5 rounded-xl font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          Close
+        </button>
+        <button id="btnApplyMpMode" type="button" class="px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/25 transition">
+          Start Selected Mode →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ==========================================
+      // 1. SYNTHESIZED SOUND ENGINE (Web Audio API)
+      // ==========================================
+      const SoundFX = {
+        ctx: null,
+        muted: false,
+        init() {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+              this.ctx = new AudioCtx();
+            }
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+        },
+        playTone(freq, type, duration, gainVal = 0.12, slideTo = null) {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            if (slideTo) {
+              osc.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
+            }
+            gain.gain.setValueAtTime(gainVal, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+          } catch (e) {}
+        },
+        click() {
+          this.playTone(520, 'sine', 0.07, 0.08, 660);
+        },
+        runScored(runs) {
+          if (runs >= 6) {
+            this.playTone(440, 'triangle', 0.12, 0.14, 660);
+            setTimeout(() => this.playTone(660, 'triangle', 0.18, 0.14, 880), 90);
+          } else {
+            this.playTone(380 + runs * 30, 'sine', 0.11, 0.1, 520 + runs * 35);
+          }
+        },
+        wicket() {
+          this.playTone(300, 'sawtooth', 0.18, 0.15, 140);
+          setTimeout(() => this.playTone(180, 'sawtooth', 0.28, 0.15, 85), 130);
+        },
+        victory() {
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((n, idx) => {
+            setTimeout(() => this.playTone(n, 'triangle', 0.18, 0.14), idx * 100);
+          });
+        },
+        defeat() {
+          const notes = [392.0, 349.23, 311.13, 261.63];
+          notes.forEach((n, idx) => {
+            setTimeout(() => this.playTone(n, 'sawtooth', 0.2, 0.11), idx * 110);
+          });
+        }
+      };
+
+      // ==========================================
+      // 2. GAME STATE
+      // ==========================================
+      const STATE = {
+        mode: 'AI', // 'AI' | 'LOCAL_2P' | 'ONLINE_2P'
+        activeScreen: 'BOT_SETUP', // 'SHOWCASE' | 'PITCH' | 'BOT_SETUP' | 'MP_SETUP' | 'LEADERBOARD'
+        eloRating: 1500,
+        peakElo: 1500,
+        friendEloRating: 1500,
+        humanPlayers: {},
+        eloHistory: [],
+        lastEloDelta: null,
+        p1TossCall: 'ODD',
+        p2TossCall: 'EVEN',
+        friendLockedTossCall: null, // 'ODD' | 'EVEN' | null
+        localTossCallerLocked: false,
+        turnSecondsLeft: 10,
+        turnTimerId: null,
+        botDifficulty: 'TACTICIAN', // 'ROOKIE' | 'TACTICIAN' | 'AGGRESSOR' | 'WALL'
+        commentaryStyle: 'HYPE', // 'HYPE' | 'TACTICAL' | 'CLASSIC'
+        showcaseCompact: false,
+        inlineMpType: 'LOCAL_2P',
+        userNumHistory: [],
+        currentStreak: 0,
+        liveBroadcastQuote: '"Welcome to Hand Cricket Arena! The floodlights are blazing — step up to the toss and set the tone!"',
+        liveExcitementLabel: 'PRE-MATCH BUILDUP',
+        selectedModalMode: 'LOCAL_2P',
+        p1Name: 'YOU',
+        p2Name: 'FRIEND',
+        pendingP1Num: null,
+        pendingP2Num: null,
+        onlineRole: null, // 'HOST' | 'GUEST'
+        roomCode: null,
+        peer: null,
+        conn: null,
+        bc: null,
+        onlineConnected: false,
+
+        phase: 'TOSS', // 'TOSS' | 'TOSS_DECISION' | 'INNINGS_1' | 'INNINGS_BREAK' | 'INNINGS_2' | 'GAME_OVER'
+        tossCall: 'ODD', // 'ODD' | 'EVEN'
+        tossUserNum: null,
+        tossAiNum: null,
+        tossSum: null,
+        tossWinner: null, // 'USER' | 'AI'
+        firstBatter: null, // 'USER' | 'AI'
+        currentBatter: null, // 'USER' | 'AI'
+        currentInnings: 0, // 1 or 2
+
+        userScore: 0,
+        userBalls: 0,
+        aiScore: 0,
+        aiBalls: 0,
+
+        target: null,
+        lastUserNum: null,
+        lastAiNum: null,
+        lastOutcomeText: 'Select Odd or Even to start the Toss!',
+        lastOutcomeType: 'neutral', // 'neutral' | 'runs' | 'big_runs' | 'out' | 'win' | 'loss'
+
+        winner: null, // 'USER' | 'AI'
+        winMarginText: '',
+
+        history: [],
+        sessionStats: {
+          matches: 0,
+          userWins: 0,
+          aiWins: 0
+        },
+
+        // Canvas animation state
+        anim: {
+          revealProgress: 1,
+          flashAlpha: 0,
+          flashColor: '#10b981',
+          calloutText: 'TOSS TIME',
+          calloutSub: 'Choose Odd or Even & Pick 1–10',
+          particles: []
+        }
+      };
+
+      // Load session stats safely
+      try {
+        const saved = localStorage.getItem('hc_arena_stats_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (typeof parsed.matches === 'number') STATE.sessionStats = parsed;
+        }
+      } catch (e) {}
+
+      function ensureHumanPlayerRecord(name, defaultElo = 1500) {
+        const clean = (name || 'PLAYER').trim().toUpperCase();
+        if (!STATE.humanPlayers[clean]) {
+          STATE.humanPlayers[clean] = {
+            name: clean,
+            elo: defaultElo,
+            peak: defaultElo,
+            wins: 0,
+            losses: 0,
+            matches: 0
+          };
+        }
+        return STATE.humanPlayers[clean];
+      }
+
+      try {
+        const savedElo = localStorage.getItem('hc_arena_elo_v2');
+        if (savedElo) {
+          const parsedElo = JSON.parse(savedElo);
+          if (typeof parsedElo.eloRating === 'number') STATE.eloRating = parsedElo.eloRating;
+          if (typeof parsedElo.peakElo === 'number') STATE.peakElo = parsedElo.peakElo;
+          if (typeof parsedElo.friendEloRating === 'number') STATE.friendEloRating = parsedElo.friendEloRating;
+          if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
+            STATE.humanPlayers = parsedElo.humanPlayers;
+          }
+          if (Array.isArray(parsedElo.eloHistory)) STATE.eloHistory = parsedElo.eloHistory;
+        }
+      } catch (e) {}
+
+      ensureHumanPlayerRecord('YOU', STATE.eloRating);
+      ensureHumanPlayerRecord('FRIEND', STATE.friendEloRating);
+
+      function saveSessionStats() {
+        try {
+          localStorage.setItem('hc_arena_stats_v1', JSON.stringify(STATE.sessionStats));
+          localStorage.setItem('hc_arena_elo_v2', JSON.stringify({
+            eloRating: STATE.eloRating,
+            peakElo: STATE.peakElo,
+            friendEloRating: STATE.friendEloRating,
+            humanPlayers: STATE.humanPlayers,
+            eloHistory: STATE.eloHistory.slice(0, 30)
+          }));
+        } catch (e) {}
+      }
+
+      // ==========================================
+      // 3. DOM REFERENCES
+      // ==========================================
+      const el = {
+        phaseBadge: document.getElementById('phaseBadge'),
+        turnTimerBar: document.getElementById('turnTimerBar'),
+        timerClockIcon: document.getElementById('timerClockIcon'),
+        timerStatusTitle: document.getElementById('timerStatusTitle'),
+        timerStatusSub: document.getElementById('timerStatusSub'),
+        timerDigitalDisplay: document.getElementById('timerDigitalDisplay'),
+        timerProgressBar: document.getElementById('timerProgressBar'),
+        mpTossLockNotice: document.getElementById('mpTossLockNotice'),
+        mpTossLockText: document.getElementById('mpTossLockText'),
+        sideNavPitch: document.getElementById('sideNavPitch'),
+        sideNavBot: document.getElementById('sideNavBot'),
+        sideNavMultiplayer: document.getElementById('sideNavMultiplayer'),
+        sideNavShowcase: document.getElementById('sideNavShowcase'),
+        sideNavLeaderboard: document.getElementById('sideNavLeaderboard'),
+        sideNavEloSub: document.getElementById('sideNavEloSub'),
+        sidebarEloDisplay: document.getElementById('sidebarEloDisplay'),
+        btnHeaderElo: document.getElementById('btnHeaderElo'),
+        headerEloValue: document.getElementById('headerEloValue'),
+        headerEloDelta: document.getElementById('headerEloDelta'),
+        startHubEloChip: document.getElementById('startHubEloChip'),
+        screenLeaderboard: document.getElementById('screenLeaderboard'),
+        btnBackFromLeaderboard: document.getElementById('btnBackFromLeaderboard'),
+        lbUserEloBig: document.getElementById('lbUserEloBig'),
+        lbPeakEloBig: document.getElementById('lbPeakEloBig'),
+        lbWinLossBig: document.getElementById('lbWinLossBig'),
+        lbNetDeltaBig: document.getElementById('lbNetDeltaBig'),
+        leaderboardStandingsList: document.getElementById('leaderboardStandingsList'),
+        eloHistoryList: document.getElementById('eloHistoryList'),
+        sideBotSubLabel: document.getElementById('sideBotSubLabel'),
+        sidebarOpponentBadge: document.getElementById('sidebarOpponentBadge'),
+        sidebarCommentaryStyleBadge: document.getElementById('sidebarCommentaryStyleBadge'),
+        centerShowcasePanel: document.getElementById('centerShowcasePanel'),
+        btnToggleShowcaseCompact: document.getElementById('btnToggleShowcaseCompact'),
+        showcaseBodyContent: document.getElementById('showcaseBodyContent'),
+        cardQuickBot: document.getElementById('cardQuickBot'),
+        cardQuickMp: document.getElementById('cardQuickMp'),
+        cardQuickCommentary: document.getElementById('cardQuickCommentary'),
+        commentaryMoodChip: document.getElementById('commentaryMoodChip'),
+        screenBotSetup: document.getElementById('screenBotSetup'),
+        btnBackFromBotSetup: document.getElementById('btnBackFromBotSetup'),
+        btnBotRookie: document.getElementById('btnBotRookie'),
+        btnBotTactician: document.getElementById('btnBotTactician'),
+        btnBotAggressor: document.getElementById('btnBotAggressor'),
+        btnBotWall: document.getElementById('btnBotWall'),
+        botSetupPlayerName: document.getElementById('botSetupPlayerName'),
+        botSetupCommentaryStyle: document.getElementById('botSetupCommentaryStyle'),
+        btnLaunchBotMatch: document.getElementById('btnLaunchBotMatch'),
+        screenMpSetup: document.getElementById('screenMpSetup'),
+        btnBackFromMpSetup: document.getElementById('btnBackFromMpSetup'),
+        btnInlineSelectLocal2P: document.getElementById('btnInlineSelectLocal2P'),
+        btnInlineSelectOnline2P: document.getElementById('btnInlineSelectOnline2P'),
+        inlineP1Name: document.getElementById('inlineP1Name'),
+        inlineP2Name: document.getElementById('inlineP2Name'),
+        inlineRoomCodeSection: document.getElementById('inlineRoomCodeSection'),
+        inlineNetStatusBadge: document.getElementById('inlineNetStatusBadge'),
+        btnInlineCreateRoom: document.getElementById('btnInlineCreateRoom'),
+        inlineHostCodeDisplay: document.getElementById('inlineHostCodeDisplay'),
+        inlineHostCodeValue: document.getElementById('inlineHostCodeValue'),
+        inlineInputJoinCode: document.getElementById('inlineInputJoinCode'),
+        btnInlineJoinRoom: document.getElementById('btnInlineJoinRoom'),
+        btnLaunchMpMatch: document.getElementById('btnLaunchMpMatch'),
+        liveCommentaryBanner: document.getElementById('liveCommentaryBanner'),
+        commentaryExcitementTag: document.getElementById('commentaryExcitementTag'),
+        commentaryStreakTag: document.getElementById('commentaryStreakTag'),
+        liveBroadcastLine: document.getElementById('liveBroadcastLine'),
+        activePitchWrapper: document.getElementById('activePitchWrapper'),
+        btnMultiplayer: document.getElementById('btnMultiplayer'),
+        mpBtnIcon: document.getElementById('mpBtnIcon'),
+        mpBtnLabel: document.getElementById('mpBtnLabel'),
+        p1CardTitle: document.getElementById('p1CardTitle'),
+        p2CardTitle: document.getElementById('p2CardTitle'),
+        mpTurnStatusBar: document.getElementById('mpTurnStatusBar'),
+        mpTurnIndicatorDot: document.getElementById('mpTurnIndicatorDot'),
+        mpTurnBannerTitle: document.getElementById('mpTurnBannerTitle'),
+        mpTurnBannerSub: document.getElementById('mpTurnBannerSub'),
+        mpLockedBadge: document.getElementById('mpLockedBadge'),
+        btnOpenMpSettings: document.getElementById('btnOpenMpSettings'),
+        mpModal: document.getElementById('mpModal'),
+        btnCloseMpModal: document.getElementById('btnCloseMpModal'),
+        btnCancelMpModal: document.getElementById('btnCancelMpModal'),
+        btnApplyMpMode: document.getElementById('btnApplyMpMode'),
+        tabModeAi: document.getElementById('tabModeAi'),
+        tabModeLocal2P: document.getElementById('tabModeLocal2P'),
+        tabModeOnline2P: document.getElementById('tabModeOnline2P'),
+        inputP1Name: document.getElementById('inputP1Name'),
+        inputP2Name: document.getElementById('inputP2Name'),
+        mpPanelAi: document.getElementById('mpPanelAi'),
+        mpPanelLocal: document.getElementById('mpPanelLocal'),
+        mpPanelOnline: document.getElementById('mpPanelOnline'),
+        mpNetStatusBadge: document.getElementById('mpNetStatusBadge'),
+        btnCreateRoom: document.getElementById('btnCreateRoom'),
+        hostRoomCodeBox: document.getElementById('hostRoomCodeBox'),
+        hostRoomCodeText: document.getElementById('hostRoomCodeText'),
+        btnCopyRoomCode: document.getElementById('btnCopyRoomCode'),
+        inputJoinRoomCode: document.getElementById('inputJoinRoomCode'),
+        btnJoinRoom: document.getElementById('btnJoinRoom'),
+        btnRules: document.getElementById('btnRules'),
+        btnCloseRules: document.getElementById('btnCloseRules'),
+        btnGotItRules: document.getElementById('btnGotItRules'),
+        rulesModal: document.getElementById('rulesModal'),
+        btnMute: document.getElementById('btnMute'),
+        muteIcon: document.getElementById('muteIcon'),
+        muteLabel: document.getElementById('muteLabel'),
+        btnQuickRestart: document.getElementById('btnQuickRestart'),
+
+        userScoreCard: document.getElementById('userScoreCard'),
+        userRoleBadge: document.getElementById('userRoleBadge'),
+        userMainScore: document.getElementById('userMainScore'),
+        userSubMeta: document.getElementById('userSubMeta'),
+        userLastPlayedBadge: document.getElementById('userLastPlayedBadge'),
+
+        aiScoreCard: document.getElementById('aiScoreCard'),
+        aiRoleBadge: document.getElementById('aiRoleBadge'),
+        aiMainScore: document.getElementById('aiMainScore'),
+        aiSubMeta: document.getElementById('aiSubMeta'),
+        aiLastPlayedBadge: document.getElementById('aiLastPlayedBadge'),
+
+        inningsLabel: document.getElementById('inningsLabel'),
+        ballsCounterLabel: document.getElementById('ballsCounterLabel'),
+        targetHeaderLabel: document.getElementById('targetHeaderLabel'),
+        targetValueDisplay: document.getElementById('targetValueDisplay'),
+        chaseProgressWrap: document.getElementById('chaseProgressWrap'),
+        chaseProgressBar: document.getElementById('chaseProgressBar'),
+        equationStatusText: document.getElementById('equationStatusText'),
+
+        turnOutcomeBanner: document.getElementById('turnOutcomeBanner'),
+        arenaCanvas: document.getElementById('arenaCanvas'),
+
+        // Views
+        viewToss: document.getElementById('viewToss'),
+        viewTossDecision: document.getElementById('viewTossDecision'),
+        viewGameplay: document.getElementById('viewGameplay'),
+        viewInningsBreak: document.getElementById('viewInningsBreak'),
+        viewGameOver: document.getElementById('viewGameOver'),
+
+        // Toss elements
+        tossCallIndicator: document.getElementById('tossCallIndicator'),
+        btnCallOdd: document.getElementById('btnCallOdd'),
+        btnCallEven: document.getElementById('btnCallEven'),
+        tossNumberGrid: document.getElementById('tossNumberGrid'),
+
+        // Toss decision elements
+        tossWinnerTag: document.getElementById('tossWinnerTag'),
+        tossMathSummary: document.getElementById('tossMathSummary'),
+        tossResultHeadline: document.getElementById('tossResultHeadline'),
+        tossDecisionSubtext: document.getElementById('tossDecisionSubtext'),
+        userTossChoiceButtons: document.getElementById('userTossChoiceButtons'),
+        aiTossChoiceContinue: document.getElementById('aiTossChoiceContinue'),
+        btnChooseBat: document.getElementById('btnChooseBat'),
+        btnChooseBowl: document.getElementById('btnChooseBowl'),
+        btnStartAfterAiToss: document.getElementById('btnStartAfterAiToss'),
+
+        // Gameplay elements
+        gameplayHeading: document.getElementById('gameplayHeading'),
+        gameplayHint: document.getElementById('gameplayHint'),
+        playNumberGrid: document.getElementById('playNumberGrid'),
+
+        // Innings break elements
+        breakWicketDetail: document.getElementById('breakWicketDetail'),
+        breakHeadline: document.getElementById('breakHeadline'),
+        breakTargetExplanation: document.getElementById('breakTargetExplanation'),
+        btnStartSecondInnings: document.getElementById('btnStartSecondInnings'),
+
+        // Game over elements
+        gameOverBannerBox: document.getElementById('gameOverBannerBox'),
+        gameOverBadge: document.getElementById('gameOverBadge'),
+        gameOverTitle: document.getElementById('gameOverTitle'),
+        gameOverMargin: document.getElementById('gameOverMargin'),
+        summaryUserScore: document.getElementById('summaryUserScore'),
+        summaryTarget: document.getElementById('summaryTarget'),
+        summaryAiScore: document.getElementById('summaryAiScore'),
+        btnPlayAgain: document.getElementById('btnPlayAgain'),
+
+        // Scorecard & Log elements
+        tossInfoSmall: document.getElementById('tossInfoSmall'),
+        cardInn1Team: document.getElementById('cardInn1Team'),
+        cardInn1Score: document.getElementById('cardInn1Score'),
+        cardInn2Team: document.getElementById('cardInn2Team'),
+        cardInn2Score: document.getElementById('cardInn2Score'),
+        statMatches: document.getElementById('statMatches'),
+        statUserWins: document.getElementById('statUserWins'),
+        statAiWins: document.getElementById('statAiWins'),
+        logCountBadge: document.getElementById('logCountBadge'),
+        ballLogContainer: document.getElementById('ballLogContainer')
+      };
+
+      // ==========================================
+      // 4. HELPER UTILITIES
+      // ==========================================
+      function randomInt1To10() {
+        return Math.floor(Math.random() * 10) + 1;
+      }
+
+      const BOT_PROFILES = {
+        ROOKIE: {
+          name: 'Sunny (Basic Bot)',
+          shortName: 'Sunny',
+          elo: 450,
+          bracket: '250–700 ELO',
+          tier: 'Basic Tier',
+          icon: '🌱',
+          badge: 'SUNNY • 450 ELO'
+        },
+        TACTICIAN: {
+          name: 'Rohan (Interm. Bot)',
+          shortName: 'Rohan',
+          elo: 1100,
+          bracket: '700–1400 ELO',
+          tier: 'Intermediate Tier',
+          icon: '⚡',
+          badge: 'ROHAN • 1100 ELO'
+        },
+        AGGRESSOR: {
+          name: 'Vikram (Advanced AI)',
+          shortName: 'Vikram',
+          elo: 1850,
+          bracket: '1400–2200 ELO',
+          tier: 'Advanced Tier',
+          icon: '🧠',
+          badge: 'VIKRAM • 1850 ELO'
+        },
+        WALL: {
+          name: 'Apex Oracle (Master)',
+          shortName: 'Apex Oracle',
+          elo: 2650,
+          bracket: '2200–2800 ELO',
+          tier: 'Master Tier',
+          icon: '👑',
+          badge: 'ORACLE • 2650 ELO'
+        }
+      };
+
+      // Helper: Predict user's next number probabilities using Frequency + 1st-order Markov + 2nd-order N-gram + Delta shifts
+      function analyzeUserPatterns(hist) {
+        const scores = {};
+        for (let n = 1; n <= 10; n++) scores[n] = 1.0;
+        if (!hist || hist.length === 0) return scores;
+
+        // 1. Overall & Recent Frequency weight
+        hist.forEach((n, idx) => {
+          const recencyBoost = idx >= hist.length - 6 ? 2.4 : 1.0;
+          scores[n] = (scores[n] || 1) + recencyBoost;
+        });
+
+        // 2. 1st-Order Markov Transition (What user plays after hist[last])
+        const last = hist[hist.length - 1];
+        for (let i = 0; i < hist.length - 1; i++) {
+          if (hist[i] === last) {
+            const nextVal = hist[i + 1];
+            scores[nextVal] += 3.8;
+          }
+        }
+
+        // 3. 2nd-Order N-Gram (What user plays after [secondLast, last])
+        if (hist.length >= 2) {
+          const prev2 = hist[hist.length - 2];
+          for (let i = 0; i < hist.length - 2; i++) {
+            if (hist[i] === prev2 && hist[i + 1] === last) {
+              const nextVal = hist[i + 2];
+              scores[nextVal] += 6.5;
+            }
+          }
+          // 4. Delta Shift Habit (e.g. user consistently increments/decrements by same delta)
+          const lastDelta = last - prev2;
+          const projected = last + lastDelta;
+          if (projected >= 1 && projected <= 10) {
+            scores[projected] += 2.2;
+          }
+        }
+
+        return scores;
+      }
+
+      // Smart AI number selection across the 4 Elo Tiers (250-700, 700-1400, 1400-2200, 2200-2800)
+      function generateBotNumber(isBotBatting) {
+        const diff = STATE.botDifficulty || 'TACTICIAN';
+        const hist = STATE.userNumHistory;
+
+        // TIER 1: BASIC BOT (450 ELO, 250-700) — Very simple, lets user score runs!
+        if (diff === 'ROOKIE') {
+          if (!isBotBatting) {
+            // User is batting: Basic bot deliberately avoids user's recent & common numbers 85% of the time so user can score freely!
+            const recentUser = new Set(hist.slice(-4));
+            const safeForUser = [1, 2, 3, 4, 5].filter((n) => !recentUser.has(n));
+            if (safeForUser.length > 0 && Math.random() < 0.85) {
+              return safeForUser[Math.floor(Math.random() * safeForUser.length)];
+            }
+            return Math.floor(Math.random() * 4) + 1;
+          } else {
+            // Basic bot is batting: plays simple low numbers (1-4) and often repeats so user can easily get its wicket
+            if (STATE.lastAiNum && Math.random() < 0.45) return STATE.lastAiNum;
+            return Math.floor(Math.random() * 4) + 1;
+          }
+        }
+
+        // TIER 2: INTERMEDIATE BOT (1100 ELO, 700-1400) — Balanced challenge in scoring & defending
+        if (diff === 'TACTICIAN') {
+          const patternScores = analyzeUserPatterns(hist);
+          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
+          if (!isBotBatting) {
+            // Bowling: 32% chance to target one of user's top 3 predicted numbers
+            if (hist.length >= 2 && Math.random() < 0.32) {
+              const top3 = rankedUserNums.slice(0, 3);
+              return top3[Math.floor(Math.random() * top3.length)];
+            }
+            return randomInt1To10();
+          } else {
+            // Batting: prefers 4..9 while avoiding user's #1 most frequent number
+            const pool = [4, 5, 6, 7, 8, 9].filter((n) => n !== rankedUserNums[0]);
+            if (pool.length > 0 && Math.random() < 0.65) {
+              return pool[Math.floor(Math.random() * pool.length)];
+            }
+            return randomInt1To10();
+          }
+        }
+
+        // TIER 3: ADVANCED BOT (1850 ELO, 1400-2200) — Very difficult! Markov sequence hunter & smart batter
+        if (diff === 'AGGRESSOR') {
+          const patternScores = analyzeUserPatterns(hist);
+          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
+
+          if (!isBotBatting) {
+            // Advanced Bot Bowling: 62% chance to snipe from top 2 Markov/frequency predictions, else high-value power trap (6-10)
+            if (hist.length >= 1 && Math.random() < 0.62) {
+              return Math.random() < 0.7 ? rankedUserNums[0] : rankedUserNums[1];
+            }
+            const highTraps = [6, 7, 8, 9, 10];
+            return highTraps[Math.floor(Math.random() * highTraps.length)];
+          } else {
+            // Advanced Bot Batting: Evades user's top 3 predicted bowling numbers and hits high runs (6-10)
+            const dangerSet = new Set(rankedUserNums.slice(0, 3));
+            const safePower = [10, 9, 8, 7, 6, 5].filter((n) => !dangerSet.has(n));
+            if (safePower.length > 0) {
+              return safePower[Math.floor(Math.random() * Math.min(3, safePower.length))];
+            }
+            return rankedUserNums[rankedUserNums.length - 1];
+          }
+        }
+
+        // TIER 4: MASTER BOT (2650 ELO, 2200-2800) — Toughest Oracle AI! N-Gram + Expected-Value (EV) Optimizer
+        const patternScores = analyzeUserPatterns(hist);
+        const totalWeight = Object.values(patternScores).reduce((acc, v) => acc + v, 0);
+        const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
+
+        if (!isBotBatting) {
+          // Master Bot Bowling: Ruthlessly targets user's #1 or #2 highest-probability next hand, plus psychological high-number traps
+          if (hist.length === 0) {
+            // On ball 1, humans overwhelmingly pick 6, 7, 10, or 4
+            const openerTraps = [6, 10, 7, 4];
+            return openerTraps[Math.floor(Math.random() * openerTraps.length)];
+          }
+          if (Math.random() < 0.78) {
+            return Math.random() < 0.72 ? rankedUserNums[0] : rankedUserNums[1];
+          }
+          return rankedUserNums[2];
+        } else {
+          // Master Bot Batting: Maximizes Expected Runs EV(n) = n * (1 - P(user picks n))
+          // If chasing in 2nd innings and only needing `need` runs, factors in safe clincher shots!
+          const need = STATE.currentInnings === 2 && STATE.target ? Math.max(1, STATE.target - STATE.aiScore) : 999;
+          let bestNums = [];
+          for (let n = 1; n <= 10; n++) {
+            const probUserMatches = patternScores[n] / totalWeight;
+            const survivalProb = Math.max(0.05, 1 - probUserMatches * 2.2);
+            const effectiveRuns = n >= need ? need + 4 : n;
+            const ev = effectiveRuns * survivalProb;
+            bestNums.push({ n, ev });
+          }
+          bestNums.sort((a, b) => b.ev - a.ev);
+          // Pick from top 2 highest-EV un-trapped numbers
+          return Math.random() < 0.75 ? bestNums[0].n : bestNums[1].n;
+        }
+      }
+
+      // Rich Broadcast Commentary Generator
+      function buildEngagingCommentary(eventType, ctx) {
+        const style = STATE.commentaryStyle || 'HYPE';
+        const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+        if (eventType === 'TOSS') {
+          if (style === 'TACTICAL') {
+            return {
+              tag: 'TOSS ANALYSIS',
+              quote: `"${ctx.p1} called ${ctx.call} and threw ${ctx.u} against ${ctx.p2}'s ${ctx.a} (Sum: ${ctx.sum}). ${ctx.winner} takes control of the tactical toss!"`
+            };
+          }
+          return {
+            tag: 'COIN & HAND TOSS',
+            quote: `"Hands fly out at center pitch! ${ctx.u} plus ${ctx.a} makes ${ctx.sum} (${ctx.parity}) — ${ctx.winner} wins the toss under the lights!"`
+          };
+        }
+
+        if (eventType === 'WICKET') {
+          const hypeWickets = [
+            `"HOWZAT?! CLEAN BOWLED ON ${ctx.u}! ${ctx.bowler} read ${ctx.batter}'s mind like an open book! The stumps go cartwheeling!"`,
+            `"GOT HIM! Exact match on ${ctx.u}! ${ctx.batter} walked right into ${ctx.bowler}'s trap — huge breakthrough in the arena!"`,
+            `"TIMBER! Both hands flashed ${ctx.u} at the exact same instant! ${ctx.batter} has to walk back for ${ctx.score}!"`
+          ];
+          const tacticalWickets = [
+            `" brilliant mind-game execution by ${ctx.bowler}! Predicted the ${ctx.u} delivery to dismiss ${ctx.batter} on ${ctx.score} (${ctx.balls} balls)."`,
+            `"Pattern read complete! ${ctx.bowler} traps ${ctx.batter} on ${ctx.u} — a textbook Hand Cricket dismissal!"`
+          ];
+          return {
+            tag: '💥 WICKET FALLS!',
+            quote: style === 'TACTICAL' ? pick(tacticalWickets) : pick(hypeWickets)
+          };
+        }
+
+        if (eventType === 'RUNS') {
+          const r = ctx.runs;
+          const diff = Math.abs(ctx.u - ctx.a);
+          const closeCallNote = diff === 1
+            ? ` Ooh, razor-thin margin (${ctx.u} vs ${ctx.a} — just 1 finger away from OUT)!`
+            : '';
+          const milestoneNote = ctx.total >= 50 && (ctx.total - r) < 50
+            ? ` 🏏 FIFTY UP for ${ctx.batter}! Raise the bat!`
+            : '';
+          const chaseNote = ctx.need !== null && ctx.need <= 10 && ctx.need > 0
+            ? ` Only ${ctx.need} needed now!`
+            : '';
+
+          let baseQuote = '';
+          let tag = `+${r} RUNS`;
+
+          if (r === 10) {
+            tag = '🚀 ULTIMATE 10!';
+            baseQuote = style === 'TACTICAL'
+              ? `"Maximum-value execution! ${ctx.batter} commits to the 10 while ${ctx.bowler} bowls ${ctx.bowlerNum} — huge +10 swing in momentum!"`
+              : pick([
+                  `"ULTIMATE TEN! ${ctx.batter} unleashes the full 10-finger thunderbolt out of the stadium roof!"`,
+                  `"DECISIVE 10! That ball is in orbit! ${ctx.batter} takes maximum toll as ${ctx.bowler} plays ${ctx.bowlerNum}!"`
+                ]);
+          } else if (r >= 6) {
+            tag = `🔥 BIG HIT +${r}`;
+            baseQuote = style === 'TACTICAL'
+              ? `"High-leverage power play from ${ctx.batter}: +${r} runs added (${ctx.u} vs ${ctx.a}), pushing the total to ${ctx.total}."`
+              : pick([
+                  `"BOOM! ${ctx.batter} launches a massive +${r} into the upper deck! Crowd is on its feet!"`,
+                  `"CRACKED! ${ctx.batter} muscles +${r} runs past the ropes with pure authority!"`,
+                  `"MONSTER STRIKE! +${r} runs added in a flash — ${ctx.bowler} had no answer with ${ctx.bowlerNum}!"`
+                ]);
+          } else if (r >= 4) {
+            tag = diff === 1 ? '⚡ CLOSE CALL!' : `⚡ BOUNDARY +${r}`;
+            baseQuote = pick([
+              `"Crisp timing! ${ctx.batter} threads the gap for a slick +${r} runs (Total: ${ctx.total})."`,
+              `" Pierced through the covers! ${ctx.batter} picks up a vital +${r} runs off that delivery."`
+            ]);
+          } else {
+            tag = diff === 1 ? '😅 SURVIVED BY 1!' : '🏏 STRIKE ROTATED';
+            baseQuote = pick([
+              `"Smart,Composed cricket from ${ctx.batter} — nudges +${r} into the gap to keep the scoreboard ticking."`,
+              `"Deft touch with soft hands! ${ctx.batter} sneaks +${r} run${r > 1 ? 's' : ''} to move to ${ctx.total}."`
+            ]);
+          }
+
+          return {
+            tag,
+            quote: baseQuote + closeCallNote + milestoneNote + chaseNote
+          };
+        }
+
+        return {
+          tag: 'LIVE UPDATE',
+          quote: `"${ctx.text || 'Play continues in the Hand Cricket Arena!'}"`
+        };
+      }
+
+      function formatSR(runs, balls) {
+        if (!balls) return '0.0';
+        return ((runs / balls) * 100).toFixed(1);
+      }
+
+      function spawnParticles(color, count = 28) {
+        const canvas = el.arenaCanvas;
+        const w = canvas.clientWidth || 600;
+        const h = canvas.clientHeight || 240;
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 1.5 + Math.random() * 5.5;
+          STATE.anim.particles.push({
+            x: w / 2,
+            y: h / 2,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1.2,
+            radius: 2.5 + Math.random() * 4,
+            color,
+            alpha: 1
+          });
+        }
+      }
+
+      function triggerCanvasReveal(calloutText, calloutSub, flashColor, withParticles = false) {
+        STATE.anim.revealProgress = 0;
+        STATE.anim.flashAlpha = 0.38;
+        STATE.anim.flashColor = flashColor;
+        STATE.anim.calloutText = calloutText;
+        STATE.anim.calloutSub = calloutSub;
+        if (withParticles) {
+          spawnParticles(flashColor, 32);
+        }
+      }
+
+      function isMultiplayer() {
+        return STATE.mode === 'LOCAL_2P' || STATE.mode === 'ONLINE_2P';
+      }
+
+      function getP1Label() {
+        return isMultiplayer() ? (STATE.p1Name || 'PLAYER 1') : 'You';
+      }
+
+      function getP2Label() {
+        if (isMultiplayer()) return STATE.p2Name || 'FRIEND';
+        const prof = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
+        return prof.name;
+      }
+
+      function sendNetMessage(payload) {
+        if (STATE.conn && STATE.conn.open) {
+          try { STATE.conn.send(payload); } catch (e) {}
+        }
+        if (STATE.bc) {
+          try { STATE.bc.postMessage(payload); } catch (e) {}
+        }
+      }
+
+      function setupBroadcastFallback(code) {
+        if (STATE.bc) {
+          try { STATE.bc.close(); } catch (e) {}
+        }
+        if (typeof BroadcastChannel !== 'undefined') {
+          STATE.bc = new BroadcastChannel('hc_arena_room_' + code);
+          STATE.bc.onmessage = (ev) => {
+            if (ev && ev.data) handleNetMessage(ev.data);
+          };
+        }
+      }
+
+      function handleNetMessage(msg) {
+        if (!msg || typeof msg !== 'object') return;
+        if (msg.type === 'JOIN_HELLO') {
+          STATE.onlineConnected = true;
+          if (msg.p2Name) {
+            STATE.p2Name = msg.p2Name;
+            el.inputP2Name.value = msg.p2Name;
+          }
+          updateNetStatusUI('Connected with ' + STATE.p2Name + '!', true);
+          sendNetMessage({
+            type: 'HOST_WELCOME',
+            p1Name: STATE.p1Name,
+            p2Name: STATE.p2Name
+          });
+          renderAll();
+        } else if (msg.type === 'HOST_WELCOME') {
+          STATE.onlineConnected = true;
+          if (msg.p1Name) {
+            STATE.p1Name = msg.p1Name;
+            el.inputP1Name.value = msg.p1Name;
+          }
+          updateNetStatusUI('Connected to Room ' + STATE.roomCode + '!', true);
+          renderAll();
+        } else if (msg.type === 'TOSS_CALL') {
+          // Friend chose `msg.callType` ('ODD' or 'EVEN') -> lock that option on our screen and assign us the opposite!
+          const friendChosen = msg.callType === 'EVEN' ? 'EVEN' : 'ODD';
+          const myForcedOpposite = friendChosen === 'EVEN' ? 'ODD' : 'EVEN';
+          STATE.friendLockedTossCall = friendChosen;
+
+          if (msg.caller === 'P1') {
+            STATE.p1TossCall = friendChosen;
+            STATE.p2TossCall = myForcedOpposite;
+          } else {
+            STATE.p2TossCall = friendChosen;
+            STATE.p1TossCall = myForcedOpposite;
+          }
+          // On Guest screen, my call is P2's call; on Host screen, my call is P1's call
+          STATE.tossCall = STATE.onlineRole === 'GUEST' ? STATE.p2TossCall : STATE.p1TossCall;
+          renderAll();
+        } else if (msg.type === 'TIMEOUT_FORFEIT') {
+          stopTurnTimer();
+          finishMatch(msg.winner, msg.reason, true);
+          renderAll();
+        } else if (msg.type === 'PICK_NUM') {
+          if (msg.player === 'P1') {
+            STATE.pendingP1Num = msg.num;
+          } else if (msg.player === 'P2') {
+            STATE.pendingP2Num = msg.num;
+          }
+          checkAndResolveMultiplayerTurn();
+          renderAll();
+        } else if (msg.type === 'TOSS_DECISION_CHOICE') {
+          STATE.firstBatter = msg.firstBatter;
+          startFirstInnings();
+        } else if (msg.type === 'START_INN_2') {
+          startSecondInnings();
+        } else if (msg.type === 'RESET_MATCH') {
+          resetGame(true);
+        }
+      }
+
+      function updateNetStatusUI(text, connected) {
+        el.mpNetStatusBadge.textContent = text;
+        el.mpNetStatusBadge.className = connected
+          ? 'px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+          : 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
+      }
+
+      function createMultiplayerRoom() {
+        SoundFX.click();
+        const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
+        STATE.roomCode = code;
+        STATE.onlineRole = 'HOST';
+        STATE.onlineConnected = false;
+        el.hostRoomCodeBox.classList.remove('hidden');
+        el.hostRoomCodeText.textContent = code;
+        updateNetStatusUI('Waiting for friend...', false);
+
+        setupBroadcastFallback(code);
+
+        if (typeof Peer !== 'undefined') {
+          try {
+            if (STATE.peer) STATE.peer.destroy();
+            STATE.peer = new Peer('handcricket-arena-' + code);
+            STATE.peer.on('connection', (conn) => {
+              STATE.conn = conn;
+              conn.on('data', (data) => handleNetMessage(data));
+              conn.on('open', () => {
+                STATE.onlineConnected = true;
+                updateNetStatusUI('Friend Connected!', true);
+              });
+            });
+          } catch (e) {}
+        }
+      }
+
+      function joinMultiplayerRoom() {
+        SoundFX.click();
+        const raw = (el.inputJoinRoomCode.value || '').trim().toUpperCase();
+        if (!raw) return;
+        STATE.roomCode = raw;
+        STATE.onlineRole = 'GUEST';
+        STATE.p2Name = (el.inputP2Name.value || 'FRIEND').trim().toUpperCase();
+        updateNetStatusUI('Connecting to ' + raw + '...', false);
+
+        setupBroadcastFallback(raw);
+        sendNetMessage({ type: 'JOIN_HELLO', p2Name: STATE.p2Name });
+
+        if (typeof Peer !== 'undefined') {
+          try {
+            if (STATE.peer) STATE.peer.destroy();
+            STATE.peer = new Peer();
+            STATE.peer.on('open', () => {
+              const conn = STATE.peer.connect('handcricket-arena-' + raw);
+              STATE.conn = conn;
+              conn.on('open', () => {
+                STATE.onlineConnected = true;
+                updateNetStatusUI('Connected to ' + raw + '!', true);
+                conn.send({ type: 'JOIN_HELLO', p2Name: STATE.p2Name });
+              });
+              conn.on('data', (data) => handleNetMessage(data));
+            });
+          } catch (e) {}
+        }
+      }
+
+      // ==========================================
+      // 5. BUILD NUMBER BUTTON GRIDS (1 TO 10)
+      // ==========================================
+      function buildNumberButtons() {
+        el.tossNumberGrid.innerHTML = '';
+        el.playNumberGrid.innerHTML = '';
+
+        for (let num = 1; num <= 10; num++) {
+          // Toss button
+          const tBtn = document.createElement('button');
+          tBtn.type = 'button';
+          tBtn.className = 'num-btn py-3 rounded-xl font-mono-num font-extrabold text-base sm:text-lg bg-slate-800/90 hover:bg-emerald-500 hover:text-slate-950 text-white border border-slate-700 hover:border-emerald-300 shadow-sm flex flex-col items-center justify-center';
+          tBtn.innerHTML = `<span>${num}</span><span class="text-[9px] font-sans font-medium opacity-60">${num === 10 ? 'Key 0' : 'Key ' + num}</span>`;
+          tBtn.addEventListener('click', () => handleTossNumberPick(num));
+          el.tossNumberGrid.appendChild(tBtn);
+
+          // Gameplay button
+          const pBtn = document.createElement('button');
+          pBtn.type = 'button';
+          pBtn.className = 'num-btn py-3.5 rounded-xl font-mono-num font-extrabold text-lg sm:text-xl bg-gradient-to-b from-slate-800 to-slate-900 hover:from-emerald-500 hover:to-teal-500 hover:text-slate-950 text-white border border-slate-700 hover:border-emerald-300 shadow-md flex flex-col items-center justify-center';
+          pBtn.innerHTML = `<span>${num}</span><span class="text-[10px] font-sans font-semibold opacity-65">${num === 10 ? '[0]' : '[' + num + ']'}</span>`;
+          pBtn.addEventListener('click', () => handleGameplayTurn(num));
+          el.playNumberGrid.appendChild(pBtn);
+        }
+      }
+
+      // ==========================================
+      // 6. CORE GAME LOGIC & TRANSITIONS
+      // ==========================================
+
+      // ==========================================
+      // 10-SECOND SHOT CLOCK / TURN TIMER ENGINE
+      // ==========================================
+      function stopTurnTimer() {
+        if (STATE.turnTimerId !== null) {
+          clearInterval(STATE.turnTimerId);
+          STATE.turnTimerId = null;
+        }
+      }
+
+      function isTimerActiveState() {
+        return (
+          STATE.activeScreen === 'PITCH' &&
+          (STATE.phase === 'TOSS' || STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2')
+        );
+      }
+
+      function updateTimerUI() {
+        if (!el.turnTimerBar) return;
+        const active = isTimerActiveState();
+        el.turnTimerBar.classList.toggle('hidden', !active);
+        if (!active) return;
+
+        const sec = Math.max(0, STATE.turnSecondsLeft);
+        el.timerDigitalDisplay.textContent = `00:${sec < 10 ? '0' + sec : sec}`;
+        const pct = Math.max(0, Math.min(100, (sec / 10) * 100));
+        el.timerProgressBar.style.width = `${pct}%`;
+
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+
+        if (isMultiplayer()) {
+          const waitingOn = STATE.pendingP1Num === null ? p1 : p2;
+          const waitingFor = STATE.pendingP1Num === null ? p2 : p1;
+          el.timerStatusTitle.textContent =
+            STATE.phase === 'TOSS'
+              ? `⏱️ Toss Clock: ${waitingOn} has ${sec}s to play a number`
+              : `⏱️ Turn Clock: ${waitingOn} has ${sec}s (${waitingFor} is waiting)`;
+          el.timerStatusSub.textContent =
+            STATE.phase === 'TOSS'
+              ? `If no number is selected in 10s, the toss is forfeited!`
+              : `If ${waitingOn} doesn't pick in 10s, ${waitingFor} wins the match!`;
+        } else {
+          el.timerStatusTitle.textContent =
+            STATE.phase === 'TOSS'
+              ? `⏱️ Toss Clock: ${sec}s remaining to throw your toss hand`
+              : `⏱️ Shot Clock: ${sec}s remaining (${p2} is waiting for your turn)`;
+          el.timerStatusSub.textContent =
+            STATE.phase === 'TOSS'
+              ? `Pick a number (1–10) within 10s or the match is forfeited!`
+              : `Pick a number (1–10) within 10s or ${p2} wins by timeout!`;
+        }
+
+        if (sec <= 3) {
+          el.timerDigitalDisplay.className = 'px-3.5 py-1.5 rounded-lg font-mono-num text-lg sm:text-xl font-black bg-rose-950 text-rose-300 border border-rose-500 animate-pulse tracking-wider';
+          el.timerProgressBar.className = 'h-full bg-rose-500 transition-all duration-300';
+        } else if (sec <= 6) {
+          el.timerDigitalDisplay.className = 'px-3.5 py-1.5 rounded-lg font-mono-num text-lg sm:text-xl font-black bg-[#161512] text-amber-300 border border-amber-500/50 tracking-wider';
+          el.timerProgressBar.className = 'h-full bg-amber-400 transition-all duration-300';
+        } else {
+          el.timerDigitalDisplay.className = 'px-3.5 py-1.5 rounded-lg font-mono-num text-lg sm:text-xl font-black bg-[#161512] text-[#81b64c] border border-[#45423e] tracking-wider';
+          el.timerProgressBar.className = 'h-full bg-[#81b64c] transition-all duration-300';
+        }
+      }
+
+      function startTurnTimer() {
+        stopTurnTimer();
+        STATE.turnSecondsLeft = 10;
+        updateTimerUI();
+        if (!isTimerActiveState()) return;
+
+        STATE.turnTimerId = setInterval(() => {
+          if (!isTimerActiveState()) {
+            stopTurnTimer();
+            return;
+          }
+          STATE.turnSecondsLeft -= 1;
+          if (STATE.turnSecondsLeft <= 3 && STATE.turnSecondsLeft > 0) {
+            SoundFX.playTone(680, 'sine', 0.06, 0.08);
+          }
+          updateTimerUI();
+
+          if (STATE.turnSecondsLeft <= 0) {
+            stopTurnTimer();
+            handleTurnTimeout();
+          }
+        }, 1000);
+      }
+
+      function handleTurnTimeout() {
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+
+        // Determine who timed out and who was waiting for the turn
+        let winnerSide = 'AI'; // Default opposite side (P2 / Bot) wins if P1 timed out
+        let timedOutPlayer = p1;
+        let waitingWinnerName = p2;
+
+        if (isMultiplayer()) {
+          if (STATE.pendingP1Num !== null && STATE.pendingP2Num === null) {
+            // P1 already played and was waiting for P2 (Friend) -> P1 wins!
+            winnerSide = 'USER';
+            timedOutPlayer = p2;
+            waitingWinnerName = p1;
+          } else {
+            // P1 failed to play while P2 was waiting -> P2 wins!
+            winnerSide = 'AI';
+            timedOutPlayer = p1;
+            waitingWinnerName = p2;
+          }
+        }
+
+        const isTossTimeout = STATE.phase === 'TOSS';
+        const reason = isTossTimeout
+          ? `⏱️ 10s Toss Timeout! ${timedOutPlayer} failed to select a number in 10 seconds — Match Forfeited to ${waitingWinnerName}!`
+          : `⏱️ 10s Turn Timeout! ${timedOutPlayer} failed to play a number in 10 seconds — ${waitingWinnerName} (waiting for turn) wins the match!`;
+
+        STATE.liveBroadcastQuote = `"${reason}"`;
+        STATE.liveExcitementLabel = isTossTimeout ? '⏱️ TOSS FORFEIT' : '⏱️ TIMEOUT WIN';
+
+        if (STATE.mode === 'ONLINE_2P') {
+          sendNetMessage({ type: 'TIMEOUT_FORFEIT', winner: winnerSide, reason });
+        }
+        finishMatch(winnerSide, reason, true);
+        renderAll();
+      }
+
+      // Set Odd / Even Call (With Multiplayer Opposite-Call Lock so both players NEVER pick the same call!)
+      function setTossCall(callType) {
+        if (STATE.phase !== 'TOSS') return;
+
+        // If Friend already locked this call in Online 2P, or if P1 already locked their hand in Local 2P, prevent duplicate selection
+        if (isMultiplayer()) {
+          if (STATE.mode === 'ONLINE_2P' && STATE.friendLockedTossCall === callType) {
+            return; // Locked by friend!
+          }
+          if (STATE.mode === 'LOCAL_2P' && STATE.pendingP1Num !== null) {
+            return; // P1 already locked call & hand; P2 gets the opposite call automatically!
+          }
+        }
+
+        SoundFX.click();
+        STATE.tossCall = callType;
+        STATE.p1TossCall = callType;
+        STATE.p2TossCall = callType === 'EVEN' ? 'ODD' : 'EVEN';
+
+        if (STATE.mode === 'ONLINE_2P') {
+          const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
+          if (mySlot === 'P2') {
+            STATE.p2TossCall = callType;
+            STATE.p1TossCall = callType === 'EVEN' ? 'ODD' : 'EVEN';
+          }
+          sendNetMessage({ type: 'TOSS_CALL', caller: mySlot, callType });
+        }
+
+        startTurnTimer();
+        renderAll();
+      }
+
+      function checkAndResolveMultiplayerTurn() {
+        if (STATE.pendingP1Num !== null && STATE.pendingP2Num !== null) {
+          const p1Num = STATE.pendingP1Num;
+          const p2Num = STATE.pendingP2Num;
+          STATE.pendingP1Num = null;
+          STATE.pendingP2Num = null;
+          stopTurnTimer();
+          if (STATE.phase === 'TOSS') {
+            resolveTossNumbers(p1Num, p2Num);
+          } else if (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') {
+            resolveGameplayNumbers(p1Num, p2Num);
+          }
+        }
+      }
+
+      function submitPlayerInput(num, forcedSlot = null) {
+        if (!isMultiplayer()) {
+          if (STATE.phase === 'TOSS') handleTossNumberPick(num);
+          else if (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') handleGameplayTurn(num);
+          return;
+        }
+
+        if (STATE.phase !== 'TOSS' && STATE.phase !== 'INNINGS_1' && STATE.phase !== 'INNINGS_2') return;
+        SoundFX.click();
+
+        if (STATE.mode === 'ONLINE_2P') {
+          const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
+          if (mySlot === 'P1') STATE.pendingP1Num = num;
+          else STATE.pendingP2Num = num;
+          sendNetMessage({ type: 'PICK_NUM', player: mySlot, num });
+          startTurnTimer();
+          checkAndResolveMultiplayerTurn();
+          renderAll();
+          return;
+        }
+
+        // LOCAL_2P: sequential P1 lock -> P2 reveal (or dual keyboard)
+        if (forcedSlot === 'P1') {
+          STATE.pendingP1Num = num;
+        } else if (forcedSlot === 'P2') {
+          STATE.pendingP2Num = num;
+        } else {
+          if (STATE.pendingP1Num === null) {
+            STATE.pendingP1Num = num;
+          } else {
+            STATE.pendingP2Num = num;
+          }
+        }
+
+        if (STATE.pendingP1Num !== null && STATE.pendingP2Num === null) {
+          const p1Call = STATE.p1TossCall;
+          const p2AutoCall = p1Call === 'EVEN' ? 'ODD' : 'EVEN';
+          STATE.p2TossCall = p2AutoCall;
+          triggerCanvasReveal(
+            '🔒 ' + getP1Label() + ' LOCKED!',
+            STATE.phase === 'TOSS'
+              ? `${getP1Label()} called ${p1Call} (${getP2Label()} is ${p2AutoCall}) — Now ${getP2Label()} pick 1–10!`
+              : `Now ${getP2Label()}: Pick a number (1–10) within 10s!`,
+            '#81b64c',
+            false
+          );
+          startTurnTimer();
+        }
+        checkAndResolveMultiplayerTurn();
+        renderAll();
+      }
+
+      // Execute Toss when User picks 1..10
+      function handleTossNumberPick(userNum) {
+        if (STATE.phase !== 'TOSS') return;
+        if (isMultiplayer()) {
+          submitPlayerInput(userNum);
+          return;
+        }
+        stopTurnTimer();
+        resolveTossNumbers(userNum, randomInt1To10());
+      }
+
+      function resolveTossNumbers(userNum, aiNum) {
+        if (STATE.phase !== 'TOSS') return;
+        stopTurnTimer();
+        const sum = userNum + aiNum;
+        const sumParity = sum % 2 === 1 ? 'ODD' : 'EVEN';
+
+        // Guarantee P1 and P2 have strictly opposite calls (p1TossCall vs p2TossCall) so one wins and one loses!
+        const p1Call = isMultiplayer() ? (STATE.p1TossCall || STATE.tossCall) : STATE.tossCall;
+        const p2Call = p1Call === 'EVEN' ? 'ODD' : 'EVEN';
+        STATE.p1TossCall = p1Call;
+        STATE.p2TossCall = p2Call;
+
+        const userWon = p1Call === sumParity;
+
+        STATE.tossUserNum = userNum;
+        STATE.tossAiNum = aiNum;
+        STATE.tossSum = sum;
+        STATE.lastUserNum = userNum;
+        STATE.lastAiNum = aiNum;
+        STATE.tossWinner = userWon ? 'USER' : 'AI';
+        STATE.phase = 'TOSS_DECISION';
+
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+
+        const tossComm = buildEngagingCommentary('TOSS', {
+          p1,
+          p2,
+          call: `${p1}: ${p1Call} / ${p2}: ${p2Call}`,
+          u: userNum,
+          a: aiNum,
+          sum,
+          parity: sumParity,
+          winner: userWon ? p1 : p2
+        });
+        STATE.liveBroadcastQuote = tossComm.quote;
+        STATE.liveExcitementLabel = tossComm.tag;
+
+        // Log toss event
+        STATE.history.unshift({
+          id: Date.now() + Math.random(),
+          tag: 'TOSS',
+          title: `${p1} (${p1Call}) vs ${p2} (${p2Call}) • Sum = ${sum} (${sumParity})`,
+          detail: `${p1} played ${userNum}, ${p2} played ${aiNum}`,
+          commentary: tossComm.quote,
+          badge: userWon ? `${p1.toUpperCase()} WON TOSS` : `${p2.toUpperCase()} WON TOSS`,
+          badgeColor: userWon ? 'emerald' : 'cyan'
+        });
+
+        if (userWon) {
+          SoundFX.runScored(6);
+          STATE.lastOutcomeText = `${p1} Won Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
+          triggerCanvasReveal(`${p1.toUpperCase()} WON TOSS!`, `Sum is ${sum} (${sumParity}) — ${p1} chooses Bat or Bowl`, '#81b64c', true);
+        } else if (isMultiplayer()) {
+          SoundFX.runScored(6);
+          STATE.lastOutcomeText = `${p2} Won Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
+          triggerCanvasReveal(`${p2.toUpperCase()} WON TOSS!`, `Sum is ${sum} (${sumParity}) — ${p2} chooses Bat or Bowl`, '#38bdf8', true);
+        } else {
+          const aiChoosesBat = Math.random() < 0.5;
+          STATE.firstBatter = aiChoosesBat ? 'AI' : 'USER';
+          SoundFX.click();
+          STATE.lastOutcomeText = `${p2} Won Toss (${userNum} + ${aiNum} = ${sum}) & chose to ${aiChoosesBat ? 'BAT' : 'BOWL'} first!`;
+          triggerCanvasReveal(
+            `${p2.toUpperCase()} WON TOSS`,
+            `${p2} elected to ${aiChoosesBat ? 'BAT' : 'BOWL'} first!`,
+            '#38bdf8',
+            false
+          );
+        }
+
+        renderAll();
+      }
+
+      // Toss Winner selects Bat or Bowl after winning toss
+      function handleUserTossDecision(choice) {
+        if (STATE.phase !== 'TOSS_DECISION') return;
+        SoundFX.click();
+        if (isMultiplayer() && STATE.tossWinner === 'AI') {
+          // Friend (P2) won the toss and clicked Bat or Bowl
+          STATE.firstBatter = choice === 'BAT' ? 'AI' : 'USER';
+        } else {
+          STATE.firstBatter = choice === 'BAT' ? 'USER' : 'AI';
+        }
+        if (STATE.mode === 'ONLINE_2P') {
+          sendNetMessage({ type: 'TOSS_DECISION_CHOICE', firstBatter: STATE.firstBatter });
+        }
+        startFirstInnings();
+      }
+
+      function startFirstInnings() {
+        STATE.phase = 'INNINGS_1';
+        STATE.currentInnings = 1;
+        STATE.currentBatter = STATE.firstBatter;
+        STATE.lastUserNum = null;
+        STATE.lastAiNum = null;
+
+        const userBatting = STATE.currentBatter === 'USER';
+        STATE.lastOutcomeText = userBatting
+          ? '1st Innings started! You are Batting first.'
+          : '1st Innings started! You are Bowling first.';
+
+        STATE.history.unshift({
+          id: Date.now() + Math.random(),
+          tag: '1ST INNINGS',
+          title: userBatting ? 'You started Batting (1st Innings)' : 'AI started Batting (1st Innings)',
+          detail: 'Setting the target score',
+          badge: 'START',
+          badgeColor: 'amber'
+        });
+
+        triggerCanvasReveal(
+          '1ST INNINGS',
+          userBatting ? 'You are Batting — Set a big target!' : 'You are Bowling — Match AI number for Wicket!',
+          '#f59e0b',
+          false
+        );
+
+        renderAll();
+        startTurnTimer();
+      }
+
+      // Handle a single ball in Innings 1 or Innings 2
+      function handleGameplayTurn(userNum) {
+        if (STATE.phase !== 'INNINGS_1' && STATE.phase !== 'INNINGS_2') return;
+        if (isMultiplayer()) {
+          submitPlayerInput(userNum);
+          return;
+        }
+        const isBotBatting = STATE.currentBatter === 'AI';
+        const botNum = generateBotNumber(isBotBatting);
+        STATE.userNumHistory.push(userNum);
+        resolveGameplayNumbers(userNum, botNum);
+      }
+
+      function resolveGameplayNumbers(userNum, aiNum) {
+        if (STATE.phase !== 'INNINGS_1' && STATE.phase !== 'INNINGS_2') return;
+        stopTurnTimer();
+        STATE.lastUserNum = userNum;
+        STATE.lastAiNum = aiNum;
+
+        const isUserBatting = STATE.currentBatter === 'USER';
+        const batterNum = isUserBatting ? userNum : aiNum;
+        const isOut = userNum === aiNum;
+
+        if (isUserBatting) {
+          STATE.userBalls += 1;
+        } else {
+          STATE.aiBalls += 1;
+        }
+
+        const ballNumber = isUserBatting ? STATE.userBalls : STATE.aiBalls;
+        const inningsTag = STATE.currentInnings === 1 ? 'INN 1' : 'INN 2';
+
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+        const batterName = isUserBatting ? p1 : p2;
+        const bowlerName = isUserBatting ? p2 : p1;
+
+        // CASE A: WICKET (Both numbers matched!)
+        if (isOut) {
+          SoundFX.wicket();
+          STATE.currentStreak = 0;
+
+          const wComm = buildEngagingCommentary('WICKET', {
+            u: userNum,
+            batter: batterName,
+            bowler: bowlerName,
+            score: isUserBatting ? STATE.userScore : STATE.aiScore,
+            balls: ballNumber
+          });
+          STATE.liveBroadcastQuote = wComm.quote;
+          STATE.liveExcitementLabel = wComm.tag;
+
+          STATE.history.unshift({
+            id: Date.now() + Math.random(),
+            tag: `${inningsTag} • B${ballNumber}`,
+            title: `HOWZAT! Both played ${userNum}!`,
+            detail: isUserBatting
+              ? `${p1} OUT for ${STATE.userScore} (${STATE.userBalls} balls)`
+              : `${p2} OUT for ${STATE.aiScore} (${STATE.aiBalls} balls)`,
+            commentary: wComm.quote,
+            badge: 'WICKET!',
+            badgeColor: 'rose'
+          });
+
+          if (STATE.currentInnings === 1) {
+            // End of 1st Innings -> set Target = final score + 1
+            const firstInningsScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+            STATE.target = firstInningsScore + 1;
+            STATE.phase = 'INNINGS_BREAK';
+            STATE.lastOutcomeText = `OUT! Both played ${userNum}! Target set at ${STATE.target}.`;
+            triggerCanvasReveal(
+              `OUT ON ${userNum}!`,
+              `Target for 2nd Innings: ${STATE.target} Runs`,
+              '#f43f5e',
+              true
+            );
+          } else {
+            // End of 2nd Innings -> Chasing side is All Out before reaching target! Defending side wins!
+            const defendingWinner = isUserBatting ? 'AI' : 'USER';
+            const runsShort = STATE.target - (isUserBatting ? STATE.userScore : STATE.aiScore) - 1;
+            finishMatch(
+              defendingWinner,
+              runsShort === 0
+                ? `What a thriller! Matched on ${userNum} with scores level — ${defendingWinner === 'USER' ? 'You defended' : 'AI defended'} the target of ${STATE.target} by 1 run!`
+                : `OUT on ${userNum}! ${defendingWinner === 'USER' ? 'You bowled out the AI' : 'AI bowled you out'} and won by ${runsShort} run${runsShort === 1 ? '' : 's'}!`
+            );
+          }
+
+          renderAll();
+          return;
+        }
+
+        // CASE B: RUNS SCORED (Numbers did not match)
+        if (isUserBatting) {
+          STATE.userScore += batterNum;
+        } else {
+          STATE.aiScore += batterNum;
+        }
+
+        const currentBatScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+        STATE.currentStreak += 1;
+        SoundFX.runScored(batterNum);
+
+        const needNow = STATE.currentInnings === 2 ? Math.max(0, STATE.target - currentBatScore) : null;
+        const rComm = buildEngagingCommentary('RUNS', {
+          runs: batterNum,
+          u: userNum,
+          a: aiNum,
+          batter: batterName,
+          bowler: bowlerName,
+          bowlerNum: isUserBatting ? aiNum : userNum,
+          total: currentBatScore,
+          need: needNow
+        });
+        STATE.liveBroadcastQuote = rComm.quote;
+        STATE.liveExcitementLabel = rComm.tag;
+
+        STATE.history.unshift({
+          id: Date.now() + Math.random(),
+          tag: `${inningsTag} • B${ballNumber}`,
+          title: `${batterName} scored +${batterNum} run${batterNum > 1 ? 's' : ''}`,
+          detail: `${p1}: ${userNum} • ${p2}: ${aiNum} (Total: ${currentBatScore})`,
+          commentary: rComm.quote,
+          badge: `+${batterNum}`,
+          badgeColor: batterNum >= 6 ? 'emerald' : 'slate'
+        });
+
+        // Check if Target reached in Innings 2
+        if (STATE.currentInnings === 2 && currentBatScore >= STATE.target) {
+          const chasingWinner = isUserBatting ? 'USER' : 'AI';
+          const ballsUsed = isUserBatting ? STATE.userBalls : STATE.aiBalls;
+          finishMatch(
+            chasingWinner,
+            `${chasingWinner === 'USER' ? 'You' : 'AI'} successfully chased down the target of ${STATE.target} in ${ballsUsed} ball${ballsUsed === 1 ? '' : 's'} (Final Score: ${currentBatScore})!`
+          );
+          renderAll();
+          return;
+        }
+
+        // Normal continuation of innings
+        const remainingNote =
+          STATE.currentInnings === 2
+            ? ` • Need ${Math.max(0, STATE.target - currentBatScore)} more`
+            : '';
+
+        STATE.lastOutcomeText = `${isUserBatting ? 'You' : 'AI'} hit +${batterNum}! (You: ${userNum}, AI: ${aiNum})${remainingNote}`;
+        triggerCanvasReveal(
+          `+${batterNum} RUN${batterNum > 1 ? 'S' : ''}!`,
+          `You played ${userNum} vs AI ${aiNum}${remainingNote}`,
+          batterNum >= 6 ? '#10b981' : '#38bdf8',
+          batterNum >= 8
+        );
+
+        renderAll();
+        startTurnTimer();
+      }
+
+      // Start Innings 2 (The Chase)
+      function startSecondInnings() {
+        if (STATE.phase !== 'INNINGS_BREAK') return;
+        SoundFX.click();
+        STATE.phase = 'INNINGS_2';
+        STATE.currentInnings = 2;
+        STATE.currentBatter = STATE.firstBatter === 'USER' ? 'AI' : 'USER';
+        STATE.lastUserNum = null;
+        STATE.lastAiNum = null;
+
+        const userChasing = STATE.currentBatter === 'USER';
+        STATE.lastOutcomeText = userChasing
+          ? `2nd Innings! You need ${STATE.target} runs to win.`
+          : `2nd Innings! Defend ${STATE.target} runs — match AI's number!`;
+
+        STATE.history.unshift({
+          id: Date.now() + Math.random(),
+          tag: '2ND INNINGS',
+          title: userChasing ? `You are Chasing ${STATE.target} runs` : `AI is Chasing ${STATE.target} runs`,
+          detail: 'Target chase underway',
+          badge: `TARGET ${STATE.target}`,
+          badgeColor: 'amber'
+        });
+
+        triggerCanvasReveal(
+          'THE CHASE BEGINS',
+          `Target: ${STATE.target} Runs`,
+          '#f59e0b',
+          false
+        );
+
+        renderAll();
+        startTurnTimer();
+      }
+
+      // Finish Match (Updates Human-Only Elo Leaderboard after every Multiplayer match: +8 Win / -8 Loss from 1500)
+      function finishMatch(winner, marginDescription, isTimeoutForfeit = false) {
+        stopTurnTimer();
+        STATE.phase = 'GAME_OVER';
+        STATE.winner = winner;
+
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+        const mpMatch = isMultiplayer();
+
+        if (mpMatch) {
+          const p1Rec = ensureHumanPlayerRecord(p1, STATE.eloRating);
+          const p2Rec = ensureHumanPlayerRecord(p2, STATE.friendEloRating);
+
+          const p1Delta = winner === 'USER' ? 8 : -8;
+          const p2Delta = winner === 'USER' ? -8 : 8;
+
+          const prevP1Elo = p1Rec.elo;
+          p1Rec.elo = Math.max(100, p1Rec.elo + p1Delta);
+          if (p1Rec.elo > p1Rec.peak) p1Rec.peak = p1Rec.elo;
+          p1Rec.matches += 1;
+          if (winner === 'USER') p1Rec.wins += 1;
+          else p1Rec.losses += 1;
+
+          p2Rec.elo = Math.max(100, p2Rec.elo + p2Delta);
+          if (p2Rec.elo > p2Rec.peak) p2Rec.peak = p2Rec.elo;
+          p2Rec.matches += 1;
+          if (winner === 'AI') p2Rec.wins += 1;
+          else p2Rec.losses += 1;
+
+          STATE.eloRating = p1Rec.elo;
+          STATE.peakElo = p1Rec.peak;
+          STATE.friendEloRating = p2Rec.elo;
+          STATE.lastEloDelta = p1Delta;
+
+          const eloSign = p1Delta > 0 ? `+${p1Delta}` : `${p1Delta}`;
+          const p2Sign = p2Delta > 0 ? `+${p2Delta}` : `${p2Delta}`;
+
+          STATE.eloHistory.unshift({
+            id: Date.now() + Math.random(),
+            opponent: p2,
+            p1Name: p1,
+            mode: STATE.mode === 'ONLINE_2P' ? 'Online Multiplayer' : '2P Multiplayer',
+            result: winner === 'USER' ? 'WIN' : 'LOSS',
+            delta: eloSign,
+            newElo: STATE.eloRating,
+            friendDelta: p2Sign,
+            friendNewElo: STATE.friendEloRating
+          });
+
+          STATE.winMarginText = `${marginDescription} •Multiplayer Elo: ${p1} ${prevP1Elo} → ${STATE.eloRating} (${eloSign}), ${p2} → ${STATE.friendEloRating} (${p2Sign})`;
+          STATE.lastOutcomeText = winner === 'USER'
+            ? `🏆 ${p1} Wins! (${eloSign} ELO → ${STATE.eloRating})`
+            : `🏆 ${p2} Wins! (${p2Sign} ELO → ${STATE.friendEloRating})`;
+        } else {
+          STATE.winMarginText = marginDescription;
+          STATE.lastOutcomeText = winner === 'USER' ? `VICTORY! You defeated ${p2}!` : `${p2} won the match!`;
+        }
+
+        STATE.sessionStats.matches += 1;
+        if (winner === 'USER') {
+          STATE.sessionStats.userWins += 1;
+          SoundFX.victory();
+          triggerCanvasReveal(`${p1.toUpperCase()} WINS! 🏆`, STATE.winMarginText, '#81b64c', true);
+        } else {
+          STATE.sessionStats.aiWins += 1;
+          SoundFX.defeat();
+          triggerCanvasReveal(`${p2.toUpperCase()} WINS!`, STATE.winMarginText, '#f43f5e', true);
+        }
+        saveSessionStats();
+
+        STATE.history.unshift({
+          id: Date.now() + Math.random(),
+          tag: isTimeoutForfeit ? 'TIMEOUT' : 'RESULT',
+          title: winner === 'USER' ? `🏆 ${p1.toUpperCase()} WON THE MATCH!` : `🏆 ${p2.toUpperCase()} WON THE MATCH!`,
+          detail: STATE.winMarginText,
+          badge: 'FINAL',
+          badgeColor: winner === 'USER' ? 'emerald' : 'rose'
+        });
+      }
+
+      // Full Reset for "Play Again"
+      function resetGame(fromNetwork = false) {
+        SoundFX.click();
+        if (STATE.mode === 'ONLINE_2P' && !fromNetwork) {
+          sendNetMessage({ type: 'RESET_MATCH' });
+        }
+        STATE.pendingP1Num = null;
+        STATE.pendingP2Num = null;
+        STATE.friendLockedTossCall = null;
+        STATE.p1TossCall = STATE.tossCall || 'ODD';
+        STATE.p2TossCall = STATE.p1TossCall === 'EVEN' ? 'ODD' : 'EVEN';
+        STATE.phase = 'TOSS';
+        STATE.tossUserNum = null;
+        STATE.tossAiNum = null;
+        STATE.tossSum = null;
+        STATE.tossWinner = null;
+        STATE.firstBatter = null;
+        STATE.currentBatter = null;
+        STATE.currentInnings = 0;
+
+        STATE.userScore = 0;
+        STATE.userBalls = 0;
+        STATE.aiScore = 0;
+        STATE.aiBalls = 0;
+
+        STATE.target = null;
+        STATE.lastUserNum = null;
+        STATE.lastAiNum = null;
+        STATE.lastOutcomeText = 'Select Odd or Even to start the Toss!';
+        STATE.winner = null;
+        STATE.winMarginText = '';
+        STATE.history = [];
+        STATE.currentStreak = 0;
+        STATE.userNumHistory = [];
+        STATE.liveBroadcastQuote = `"New match underway! ${getP1Label()} vs ${getP2Label()} — step up to the toss and make your call!"`;
+        STATE.liveExcitementLabel = 'FRESH MATCH';
+
+        triggerCanvasReveal('NEW MATCH', 'Call Odd or Even & Pick 1–10 for Toss (10s Clock)', '#81b64c', false);
+        renderAll();
+        startTurnTimer();
+      }
+
+      // ==========================================
+      // 7. UI RENDERING
+      // ==========================================
+      function renderAll() {
+        // 0. Sidebar Navigation, Screen Switching & Header Titles
+        const mpActive = isMultiplayer();
+        const p1Name = getP1Label();
+        const p2Name = getP2Label();
+        const botProf = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
+
+        el.p1CardTitle.textContent = mpActive ? `${p1Name.toUpperCase()} (P1)` : `${(STATE.p1Name || 'YOU').toUpperCase()} (HUMAN)`;
+        el.p2CardTitle.textContent = mpActive ? `${p2Name.toUpperCase()} (FRIEND)` : `${botProf.badge}`;
+
+        // Sidebar active states
+        const navActiveCls = 'w-full px-3 py-3 rounded-xl text-left transition flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 shadow-sm';
+        const navIdleCls = 'w-full px-3 py-3 rounded-xl text-left transition flex items-center gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800';
+        el.sideNavPitch.className = STATE.activeScreen === 'PITCH' ? navActiveCls : navIdleCls;
+        el.sideNavBot.className = STATE.activeScreen === 'BOT_SETUP' ? navActiveCls : navIdleCls;
+        el.sideNavMultiplayer.className = STATE.activeScreen === 'MP_SETUP' ? navActiveCls : navIdleCls;
+        el.sideNavShowcase.className = STATE.activeScreen === 'SHOWCASE' ? navActiveCls : navIdleCls;
+
+        el.sideBotSubLabel.textContent = botProf.name;
+        el.sidebarOpponentBadge.innerHTML = mpActive
+          ? `<span>👥</span><span>${p2Name}</span>`
+          : `<span>${botProf.icon}</span><span>${botProf.name}</span>`;
+
+        const styleNames = { HYPE: '🎙️ Hype Broadcast', TACTICAL: '🧠 Tactical Analyst', CLASSIC: '📻 Classic Feed' };
+        el.sidebarCommentaryStyleBadge.textContent = styleNames[STATE.commentaryStyle] || styleNames.HYPE;
+        el.commentaryMoodChip.textContent = STATE.commentaryStyle + ' MODE';
+
+        // Update Elo displays across Header, Sidebar, Start Hub & Leaderboard
+        el.headerEloValue.textContent = `${STATE.eloRating} ELO`;
+        el.sideNavEloSub.textContent = `${STATE.eloRating} ELO`;
+        el.sidebarEloDisplay.textContent = `${STATE.eloRating} ELO`;
+        el.startHubEloChip.textContent = `♟️ Rating: ${STATE.eloRating} ELO (±8)`;
+
+        if (STATE.lastEloDelta !== null) {
+          el.headerEloDelta.classList.remove('hidden');
+          const dStr = STATE.lastEloDelta > 0 ? `+${STATE.lastEloDelta}` : `${STATE.lastEloDelta}`;
+          el.headerEloDelta.textContent = dStr;
+          el.headerEloDelta.className = STATE.lastEloDelta > 0
+            ? 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-emerald-500/20 text-emerald-300'
+            : 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-rose-500/20 text-rose-300';
+        }
+
+        if (el.sideNavLeaderboard) {
+          el.sideNavLeaderboard.className = STATE.activeScreen === 'LEADERBOARD' ? navActiveCls : navIdleCls;
+        }
+
+        // Show/Hide Center Screens cleanly (Chess.com style: one clean focused view at a time!)
+        el.centerShowcasePanel.classList.toggle('hidden', STATE.activeScreen !== 'SHOWCASE');
+        el.screenBotSetup.classList.toggle('hidden', STATE.activeScreen !== 'BOT_SETUP');
+        el.screenMpSetup.classList.toggle('hidden', STATE.activeScreen !== 'MP_SETUP');
+        if (el.screenLeaderboard) {
+          el.screenLeaderboard.classList.toggle('hidden', STATE.activeScreen !== 'LEADERBOARD');
+        }
+        el.liveCommentaryBanner.classList.toggle('hidden', STATE.activeScreen !== 'PITCH');
+        el.activePitchWrapper.classList.toggle('hidden', STATE.activeScreen !== 'PITCH');
+        el.btnToggleShowcaseCompact.textContent = 'Minimize ▲';
+
+        // Update Odd/Even Toss Call Buttons & Multiplayer Lock State
+        if (STATE.phase === 'TOSS') {
+          const activeBtnCls = 'py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition flex items-center justify-center gap-2 bg-[#81b64c] text-white shadow-lg border-b-4 border-[#5d8c32]';
+          const idleBtnCls = 'py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 bg-[#3c3934] hover:bg-[#4a4640] text-slate-200 border border-[#524e48]';
+          const lockedBtnCls = 'py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 bg-slate-900/90 text-rose-300/70 border border-rose-500/30 opacity-60 cursor-not-allowed';
+
+          if (isMultiplayer()) {
+            const p1 = getP1Label();
+            const p2 = getP2Label();
+            const p1Call = STATE.p1TossCall || 'ODD';
+            const p2Call = p1Call === 'EVEN' ? 'ODD' : 'EVEN';
+
+            if (STATE.mode === 'ONLINE_2P' && STATE.friendLockedTossCall) {
+              // Friend locked `friendLockedTossCall` -> lock that button on our screen so we can ONLY choose the opposite!
+              const friendPick = STATE.friendLockedTossCall;
+              const myOpposite = friendPick === 'EVEN' ? 'ODD' : 'EVEN';
+              el.mpTossLockNotice.classList.remove('hidden');
+              el.mpTossLockText.textContent = `🔒 ${p2} chose ${friendPick} — ${friendPick} is locked! Your call is ${myOpposite}.`;
+              el.tossCallIndicator.textContent = `Your Call: ${myOpposite} (${p2}: ${friendPick})`;
+
+              el.btnCallOdd.disabled = friendPick === 'ODD';
+              el.btnCallEven.disabled = friendPick === 'EVEN';
+              el.btnCallOdd.innerHTML = friendPick === 'ODD' ? `<span>🔒</span><span>ODD (Locked by ${p2})</span>` : `<span>⚡</span><span>CALL ODD (Your Call)</span>`;
+              el.btnCallEven.innerHTML = friendPick === 'EVEN' ? `<span>🔒</span><span>EVEN (Locked by ${p2})</span>` : `<span>⚖️</span><span>CALL EVEN (Your Call)</span>`;
+              el.btnCallOdd.className = friendPick === 'ODD' ? lockedBtnCls : activeBtnCls;
+              el.btnCallEven.className = friendPick === 'EVEN' ? lockedBtnCls : activeBtnCls;
+            } else if (STATE.mode === 'LOCAL_2P' && STATE.pendingP1Num !== null) {
+              // In Same-Screen 2P, P1 already locked their call (`p1Call`) and number -> lock P1's call button so P2 is automatically the opposite (`p2Call`)!
+              el.mpTossLockNotice.classList.remove('hidden');
+              el.mpTossLockText.textContent = `🔒 ${p1} chose ${p1Call} — ${p1Call} is locked! ${p2} is assigned ${p2Call}.`;
+              el.tossCallIndicator.textContent = `${p1}: ${p1Call} • ${p2}: ${p2Call}`;
+
+              el.btnCallOdd.disabled = p1Call === 'ODD';
+              el.btnCallEven.disabled = p1Call === 'EVEN';
+              el.btnCallOdd.innerHTML = p1Call === 'ODD' ? `<span>🔒</span><span>ODD (${p1})</span>` : `<span>⚡</span><span>ODD (${p2}'s Call)</span>`;
+              el.btnCallEven.innerHTML = p1Call === 'EVEN' ? `<span>🔒</span><span>EVEN (${p1})</span>` : `<span>⚖️</span><span>EVEN (${p2}'s Call)</span>`;
+              el.btnCallOdd.className = p1Call === 'ODD' ? lockedBtnCls : activeBtnCls;
+              el.btnCallEven.className = p1Call === 'EVEN' ? lockedBtnCls : activeBtnCls;
+            } else {
+              // P1 is choosing their call -> show that Friend automatically gets the opposite call
+              el.mpTossLockNotice.classList.remove('hidden');
+              el.mpTossLockText.textContent = `⚡ ${p1} calls ${p1Call} → ${p2} automatically gets ${p2Call} (both cannot pick the same call)`;
+              el.tossCallIndicator.textContent = `${p1}: ${p1Call} • ${p2}: ${p2Call}`;
+              el.btnCallOdd.disabled = false;
+              el.btnCallEven.disabled = false;
+              el.btnCallOdd.innerHTML = `<span>⚡</span><span>CALL ODD</span>`;
+              el.btnCallEven.innerHTML = `<span>⚖️</span><span>CALL EVEN</span>`;
+              el.btnCallOdd.className = p1Call === 'ODD' ? activeBtnCls : idleBtnCls;
+              el.btnCallEven.className = p1Call === 'EVEN' ? activeBtnCls : idleBtnCls;
+            }
+          } else {
+            el.mpTossLockNotice.classList.add('hidden');
+            el.btnCallOdd.disabled = false;
+            el.btnCallEven.disabled = false;
+            el.btnCallOdd.innerHTML = `<span>⚡</span><span>CALL ODD</span>`;
+            el.btnCallEven.innerHTML = `<span>⚖️</span><span>CALL EVEN</span>`;
+            el.btnCallOdd.className = STATE.tossCall === 'ODD' ? activeBtnCls : idleBtnCls;
+            el.btnCallEven.className = STATE.tossCall === 'EVEN' ? activeBtnCls : idleBtnCls;
+            el.tossCallIndicator.textContent = `Selected Call: ${STATE.tossCall}`;
+          }
+        }
+
+        // Update 10s Turn Timer UI
+        updateTimerUI();
+
+        // Populate HUMAN-ONLY Leaderboard Standings (No Bots included — updated after every Multiplayer Match!)
+        if (el.leaderboardStandingsList) {
+          ensureHumanPlayerRecord(STATE.p1Name || 'YOU', STATE.eloRating);
+          ensureHumanPlayerRecord(STATE.p2Name || 'FRIEND', STATE.friendEloRating);
+
+          const humanEntries = Object.values(STATE.humanPlayers)
+            .filter((p) => p && typeof p.elo === 'number')
+            .sort((a, b) => b.elo - a.elo);
+
+          const myCleanName = (STATE.p1Name || 'YOU').trim().toUpperCase();
+
+          el.leaderboardStandingsList.innerHTML = humanEntries.map((ent, idx) => {
+            const isMe = ent.name === myCleanName;
+            const wlText = `${ent.wins || 0}W – ${ent.losses || 0}L (${ent.matches || 0} multiplayer games)`;
+            return `
+              <div class="p-3.5 rounded-xl flex items-center justify-between gap-2 border ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c] shadow-md' : 'bg-[#262421] border-[#45423e]'}">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-7 h-7 rounded-lg bg-[#1b1a17] flex items-center justify-center font-mono-num text-xs font-black ${idx === 0 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-300'}">#${idx + 1}</span>
+                  <span class="text-lg">${isMe ? '👤' : '🧑‍🤝‍🧑'}</span>
+                  <div class="min-w-0">
+                    <div class="text-xs sm:text-sm font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate">
+                      ${ent.name} ${isMe ? '(You)' : '(Human Player)'}
+                    </div>
+                    <div class="text-[11px] text-slate-300 truncate">${wlText}</div>
+                  </div>
+                </div>
+                <span class="font-mono-num text-xs sm:text-sm font-black px-3 py-1 rounded-lg ${isMe ? 'bg-[#81b64c] text-white' : 'bg-[#3c3934] text-amber-300 border border-[#524e48]'}">
+                  ${ent.elo} ELO
+                </span>
+              </div>
+            `;
+          }).join('');
+
+          const myRec = ensureHumanPlayerRecord(STATE.p1Name || 'YOU', STATE.eloRating);
+          const netDelta = myRec.elo - 1500;
+          el.lbUserEloBig.textContent = myRec.elo;
+          el.lbPeakEloBig.textContent = myRec.peak;
+          el.lbWinLossBig.textContent = `${myRec.wins}W – ${myRec.losses}L`;
+          el.lbNetDeltaBig.textContent = netDelta >= 0 ? `+${netDelta}` : `${netDelta}`;
+
+          if (STATE.eloHistory.length === 0) {
+            el.eloHistoryList.innerHTML = `<div class="text-slate-300 text-center py-3">Play a Multiplayer match with your friend to record +8 / -8 Elo rating changes on the human leaderboard!</div>`;
+          } else {
+            el.eloHistoryList.innerHTML = STATE.eloHistory.map((h) => `
+              <div class="p-2.5 rounded-lg bg-[#262421] border border-[#45423e] flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-white">${h.result === 'WIN' ? `🏆 ${h.p1Name || 'You'} defeated ${h.opponent}` : `🏆 ${h.opponent} defeated ${h.p1Name || 'You'}`}</span>
+                  <span class="text-[10px] text-slate-300 ml-1.5">(${h.mode})</span>
+                </div>
+                <div class="font-mono-num font-extrabold ${h.result === 'WIN' ? 'text-[#81b64c]' : 'text-rose-400'}">
+                  ${h.delta} ELO → ${h.newElo}
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+
+        // Update Live Broadcast Box
+        el.liveBroadcastLine.textContent = STATE.liveBroadcastQuote;
+        el.commentaryExcitementTag.textContent = STATE.liveExcitementLabel;
+        el.commentaryStreakTag.textContent = `Scoring Streak: ${STATE.currentStreak}🔥`;
+
+        if (mpActive) {
+          el.mpBtnIcon.textContent = '🟢';
+          el.mpBtnLabel.textContent = STATE.mode === 'ONLINE_2P'
+            ? `2P Room: ${STATE.roomCode || 'Live'}`
+            : `2P: ${p1Name} vs ${p2Name}`;
+          el.mpTurnStatusBar.classList.remove('hidden');
+
+          const p1Locked = STATE.pendingP1Num !== null;
+          const p2Locked = STATE.pendingP2Num !== null;
+          el.mpLockedBadge.textContent = `${p1Name}: ${p1Locked ? '🔒 Locked' : 'Waiting'} • ${p2Name}: ${p2Locked ? '🔒 Locked' : 'Waiting'}`;
+
+          if (STATE.phase === 'TOSS' || STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') {
+            if (!p1Locked) {
+              el.mpTurnBannerTitle.textContent = `${p1Name}'s Turn to Pick (1–10)`;
+              el.mpTurnBannerSub.textContent = `Pick a number below — it will lock in secretly before ${p2Name} picks!`;
+            } else if (!p2Locked) {
+              el.mpTurnBannerTitle.textContent = `${p2Name}'s Turn to Pick (1–10)!`;
+              el.mpTurnBannerSub.textContent = `${p1Name}'s hand is locked in secretly (🔒). Now ${p2Name} picks a number to reveal!`;
+            }
+          } else {
+            el.mpTurnBannerTitle.textContent = `${p1Name} vs ${p2Name} — Multiplayer Match`;
+            el.mpTurnBannerSub.textContent = 'Both players ready on the pitch!';
+          }
+        } else {
+          el.mpBtnIcon.textContent = '👥';
+          el.mpBtnLabel.textContent = 'Multiplayer';
+          el.mpTurnStatusBar.classList.add('hidden');
+        }
+
+        // 1. Phase Badge
+        const phaseLabels = {
+          TOSS: { text: 'Toss Phase', cls: 'bg-amber-500/20 text-amber-300 border-amber-400/30' },
+          TOSS_DECISION: { text: 'Toss Result', cls: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30' },
+          INNINGS_1: { text: '1st Innings', cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' },
+          INNINGS_BREAK: { text: 'Innings Break', cls: 'bg-amber-500/20 text-amber-300 border-amber-400/30' },
+          INNINGS_2: { text: '2nd Innings • The Chase', cls: 'bg-purple-500/20 text-purple-300 border-purple-400/30' },
+          GAME_OVER: { text: 'Match Finished', cls: 'bg-rose-500/20 text-rose-300 border-rose-400/30' }
+        };
+        const pInfo = phaseLabels[STATE.phase];
+        el.phaseBadge.textContent = pInfo.text;
+        el.phaseBadge.className = `px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded-full border ${pInfo.cls}`;
+
+        // 2. Role Badges & Active Score Card Highlight
+        const isPlayPhase = STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2';
+        if (isPlayPhase) {
+          const userBatting = STATE.currentBatter === 'USER';
+          el.userRoleBadge.textContent = userBatting ? '🏏 BATTING' : '⚾ BOWLING';
+          el.userRoleBadge.className = userBatting
+            ? 'px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+            : 'px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
+
+          el.aiRoleBadge.textContent = !userBatting ? '🏏 BATTING' : '⚾ BOWLING';
+          el.aiRoleBadge.className = !userBatting
+            ? 'px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+            : 'px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
+
+          el.userScoreCard.className = userBatting
+            ? 'glass-card-active rounded-2xl p-4 relative overflow-hidden transition-all'
+            : 'glass-card rounded-2xl p-4 relative overflow-hidden transition-all';
+          el.aiScoreCard.className = !userBatting
+            ? 'glass-card-active rounded-2xl p-4 relative overflow-hidden transition-all'
+            : 'glass-card rounded-2xl p-4 relative overflow-hidden transition-all';
+        } else {
+          el.userRoleBadge.textContent = STATE.phase === 'GAME_OVER' ? (STATE.winner === 'USER' ? '🏆 WINNER' : 'FINISHED') : 'READY';
+          el.userRoleBadge.className = 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
+          el.aiRoleBadge.textContent = STATE.phase === 'GAME_OVER' ? (STATE.winner === 'AI' ? '🏆 WINNER' : 'FINISHED') : 'READY';
+          el.aiRoleBadge.className = 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
+          el.userScoreCard.className = 'glass-card rounded-2xl p-4 relative overflow-hidden transition-all';
+          el.aiScoreCard.className = 'glass-card rounded-2xl p-4 relative overflow-hidden transition-all';
+        }
+
+        // 3. Scores, Balls, Last Played Numbers
+        el.userMainScore.textContent = STATE.userScore;
+        el.userSubMeta.textContent = `Balls: ${STATE.userBalls} • SR: ${formatSR(STATE.userScore, STATE.userBalls)}`;
+        el.userLastPlayedBadge.textContent = STATE.lastUserNum !== null ? STATE.lastUserNum : '-';
+
+        el.aiMainScore.textContent = STATE.aiScore;
+        el.aiSubMeta.textContent = `Balls: ${STATE.aiBalls} • SR: ${formatSR(STATE.aiScore, STATE.aiBalls)}`;
+        el.aiLastPlayedBadge.textContent = STATE.lastAiNum !== null ? STATE.lastAiNum : '-';
+
+        // 4. Center Target & Match Equation Card
+        if (STATE.currentInnings === 0) {
+          el.inningsLabel.textContent = 'TOSS PHASE';
+          el.ballsCounterLabel.textContent = '0 BALLS';
+          el.targetHeaderLabel.textContent = 'TARGET TO WIN';
+          el.targetValueDisplay.textContent = '—';
+          el.chaseProgressWrap.classList.add('hidden');
+          el.equationStatusText.textContent = 'Win the toss to Bat or Bowl first';
+        } else if (STATE.currentInnings === 1) {
+          const balls = STATE.currentBatter === 'USER' ? STATE.userBalls : STATE.aiBalls;
+          const score = STATE.currentBatter === 'USER' ? STATE.userScore : STATE.aiScore;
+          el.inningsLabel.textContent = '1ST INNINGS';
+          el.ballsCounterLabel.textContent = `BALL ${balls}`;
+          el.targetHeaderLabel.textContent = 'PROJECTED TARGET';
+          el.targetValueDisplay.textContent = score + 1;
+          el.chaseProgressWrap.classList.add('hidden');
+          el.equationStatusText.textContent =
+            STATE.currentBatter === 'USER'
+              ? 'You are setting the target score'
+              : 'AI is setting the target — match number to get wicket!';
+        } else {
+          const chaserIsUser = STATE.currentBatter === 'USER';
+          const chaserScore = chaserIsUser ? STATE.userScore : STATE.aiScore;
+          const chaserBalls = chaserIsUser ? STATE.userBalls : STATE.aiBalls;
+          const runsNeeded = Math.max(0, STATE.target - chaserScore);
+          const pct = STATE.target > 0 ? Math.min(100, Math.round((chaserScore / STATE.target) * 100)) : 0;
+
+          el.inningsLabel.textContent = '2ND INNINGS (CHASE)';
+          el.ballsCounterLabel.textContent = `BALL ${chaserBalls}`;
+          el.targetHeaderLabel.textContent = 'TARGET TO WIN';
+          el.targetValueDisplay.textContent = STATE.target;
+          el.chaseProgressWrap.classList.remove('hidden');
+          el.chaseProgressBar.style.width = `${pct}%`;
+
+          if (STATE.phase === 'GAME_OVER') {
+            el.equationStatusText.textContent = STATE.winner === 'USER' ? 'You won the match!' : 'AI won the match!';
+          } else {
+            el.equationStatusText.textContent = chaserIsUser
+              ? `You need ${runsNeeded} more run${runsNeeded === 1 ? '' : 's'} to win`
+              : `AI needs ${runsNeeded} more run${runsNeeded === 1 ? '' : 's'} to win`;
+          }
+        }
+
+        // 5. Turn Outcome Banner
+        el.turnOutcomeBanner.textContent = STATE.lastOutcomeText;
+
+        // 6. Toggle Active Phase View
+        el.viewToss.classList.toggle('hidden', STATE.phase !== 'TOSS');
+        el.viewTossDecision.classList.toggle('hidden', STATE.phase !== 'TOSS_DECISION');
+        el.viewGameplay.classList.toggle('hidden', !isPlayPhase);
+        el.viewInningsBreak.classList.toggle('hidden', STATE.phase !== 'INNINGS_BREAK');
+        el.viewGameOver.classList.toggle('hidden', STATE.phase !== 'GAME_OVER');
+
+        // Populate Phase-Specific Details
+        if (STATE.phase === 'TOSS_DECISION') {
+          const sumParity = STATE.tossSum % 2 === 1 ? 'ODD' : 'EVEN';
+          el.tossMathSummary.textContent = `You: ${STATE.tossUserNum} + AI: ${STATE.tossAiNum} = ${STATE.tossSum} (${sumParity})`;
+
+          if (STATE.tossWinner === 'USER') {
+            el.tossWinnerTag.textContent = '🎉 YOU WON THE TOSS!';
+            el.tossWinnerTag.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
+            el.tossResultHeadline.textContent = `You called ${STATE.tossCall} and the sum is ${STATE.tossSum} (${sumParity})!`;
+            el.tossDecisionSubtext.textContent = 'Would you like to Bat first and set a target, or Bowl first and chase?';
+            el.userTossChoiceButtons.classList.remove('hidden');
+            el.aiTossChoiceContinue.classList.add('hidden');
+          } else if (isMultiplayer()) {
+            const p2 = getP2Label();
+            el.tossWinnerTag.textContent = `🎉 ${p2.toUpperCase()} WON THE TOSS!`;
+            el.tossWinnerTag.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30';
+            el.tossResultHeadline.textContent = `${getP1Label()} called ${STATE.tossCall}, and ${STATE.tossUserNum} + ${STATE.tossAiNum} = ${STATE.tossSum} (${sumParity})!`;
+            el.tossDecisionSubtext.textContent = `${p2}, choose whether you want to Bat first or Bowl first:`;
+            el.userTossChoiceButtons.classList.remove('hidden');
+            el.aiTossChoiceContinue.classList.add('hidden');
+          } else {
+            const aiRole = STATE.firstBatter === 'AI' ? 'BAT FIRST' : 'BOWL FIRST';
+            el.tossWinnerTag.textContent = '🤖 AI WON THE TOSS';
+            el.tossWinnerTag.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30';
+            el.tossResultHeadline.textContent = `You called ${STATE.tossCall}, but ${STATE.tossUserNum} + ${STATE.tossAiNum} = ${STATE.tossSum} (${sumParity}).`;
+            el.tossDecisionSubtext.textContent = `The AI won the toss and randomly chose to ${aiRole}!`;
+            el.userTossChoiceButtons.classList.add('hidden');
+            el.aiTossChoiceContinue.classList.remove('hidden');
+          }
+        }
+
+        if (isPlayPhase) {
+          const userBatting = STATE.currentBatter === 'USER';
+          if (userBatting) {
+            el.gameplayHeading.innerHTML = `<span>🏏</span><span>You are BATTING — Pick a Shot (1–10)</span>`;
+            el.gameplayHint.textContent =
+              STATE.currentInnings === 1
+                ? 'Your picked numbers accumulate into your score. If AI picks the same number, you are OUT!'
+                : `Chase Target: ${STATE.target}. Reach ${STATE.target} runs before AI matches your number!`;
+          } else {
+            el.gameplayHeading.innerHTML = `<span>⚾</span><span>You are BOWLING — Pick a Delivery (1–10)</span>`;
+            el.gameplayHint.textContent =
+              STATE.currentInnings === 1
+                ? "Try to guess & match the AI's number (1–10) to take a Wicket and end its innings!"
+                : `Defend Target: ${STATE.target}. Match the AI's number to bowl it out before it reaches ${STATE.target}!`;
+          }
+        }
+
+        if (STATE.phase === 'INNINGS_BREAK') {
+          const firstWasUser = STATE.firstBatter === 'USER';
+          const inn1Score = firstWasUser ? STATE.userScore : STATE.aiScore;
+          const inn1Balls = firstWasUser ? STATE.userBalls : STATE.aiBalls;
+          el.breakWicketDetail.textContent = `OUT! Both played ${STATE.lastUserNum}`;
+          el.breakHeadline.textContent = `${firstWasUser ? 'Your' : 'AI'} 1st Innings: ${inn1Score} Runs (${inn1Balls} balls)`;
+          el.breakTargetExplanation.innerHTML = `${firstWasUser ? 'The AI' : 'You'} must score <strong class="text-amber-300 font-mono-num">${STATE.target} runs</strong> in the 2nd Innings to win!`;
+        }
+
+        if (STATE.phase === 'GAME_OVER') {
+          const userWon = STATE.winner === 'USER';
+          el.gameOverBadge.textContent = userWon ? 'VICTORY' : 'DEFEAT';
+          el.gameOverBadge.className = userWon
+            ? 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+            : 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-500/20 text-rose-300 border border-rose-400/30';
+          el.gameOverTitle.textContent = userWon ? '🏆 YOU WON THE MATCH!' : '🤖 AI WON THE MATCH!';
+          el.gameOverMargin.textContent = STATE.winMarginText;
+          el.summaryUserScore.textContent = `${STATE.userScore} (${STATE.userBalls}b)`;
+          el.summaryTarget.textContent = STATE.target !== null ? STATE.target : '—';
+          el.summaryAiScore.textContent = `${STATE.aiScore} (${STATE.aiBalls}b)`;
+        }
+
+        // 7. Right Sidebar Scorecard & Session Stats
+        if (STATE.tossWinner) {
+          el.tossInfoSmall.textContent = `${STATE.tossWinner === 'USER' ? 'You' : 'AI'} won toss (${STATE.firstBatter === 'USER' ? 'You batted 1st' : 'AI batted 1st'})`;
+        } else {
+          el.tossInfoSmall.textContent = 'Toss Pending';
+        }
+
+        if (!STATE.firstBatter) {
+          el.cardInn1Team.textContent = 'Waiting for Toss';
+          el.cardInn1Score.textContent = '—';
+          el.cardInn2Team.textContent = 'Waiting for 1st Innings';
+          el.cardInn2Score.textContent = '—';
+        } else {
+          const userFirst = STATE.firstBatter === 'USER';
+          el.cardInn1Team.textContent = userFirst ? 'You (Human)' : 'AI Opponent';
+          const inn1Runs = userFirst ? STATE.userScore : STATE.aiScore;
+          const inn1Balls = userFirst ? STATE.userBalls : STATE.aiBalls;
+          const inn1Done = STATE.currentInnings === 2 || STATE.phase === 'INNINGS_BREAK' || STATE.phase === 'GAME_OVER';
+          el.cardInn1Score.textContent =
+            STATE.currentInnings >= 1 ? `${inn1Runs}/${inn1Done ? '1' : '0'} (${inn1Balls}b)` : '0/0';
+
+          el.cardInn2Team.textContent = userFirst ? 'AI Opponent' : 'You (Human)';
+          if (STATE.currentInnings === 2 || STATE.phase === 'GAME_OVER') {
+            const inn2Runs = userFirst ? STATE.aiScore : STATE.userScore;
+            const inn2Balls = userFirst ? STATE.aiBalls : STATE.userBalls;
+            const inn2Out = STATE.phase === 'GAME_OVER' && inn2Runs < STATE.target;
+            el.cardInn2Score.textContent = `${inn2Runs}/${inn2Out ? '1' : '0'} (${inn2Balls}b)`;
+          } else {
+            el.cardInn2Score.textContent = STATE.target ? `Target: ${STATE.target}` : '—';
+          }
+        }
+
+        el.statMatches.textContent = STATE.sessionStats.matches;
+        el.statUserWins.textContent = STATE.sessionStats.userWins;
+        el.statAiWins.textContent = STATE.sessionStats.aiWins;
+
+        // 8. Ball-by-Ball Log Feed
+        el.logCountBadge.textContent = `${STATE.history.length} event${STATE.history.length === 1 ? '' : 's'}`;
+        if (STATE.history.length === 0) {
+          el.ballLogContainer.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-center text-slate-400 px-4">
+              <span class="text-2xl mb-1">🏟️</span>
+              <p>Every toss & delivery will be logged here in real time.</p>
+            </div>
+          `;
+        } else {
+          const colorMap = {
+            emerald: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+            cyan: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+            amber: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+            rose: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+            slate: 'bg-slate-800 text-slate-300 border-slate-700'
+          };
+          el.ballLogContainer.innerHTML = STATE.history
+            .slice(0, 40)
+            .map((item) => {
+              const bCls = colorMap[item.badgeColor] || colorMap.slate;
+              const commHtml = item.commentary
+                ? `<div class="text-[11px] text-amber-200/90 italic mt-1 leading-snug border-l-2 border-amber-400/50 pl-2">${item.commentary}</div>`
+                : '';
+              return `
+                <div class="p-2.5 rounded-xl bg-slate-900/85 border border-slate-800/90 space-y-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] font-mono-num uppercase text-slate-400">${item.tag}</span>
+                        <span class="font-bold text-slate-100 truncate">${item.title}</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 truncate mt-0.5">${item.detail}</div>
+                    </div>
+                    <span class="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-mono-num font-extrabold border ${bCls}">
+                      ${item.badge}
+                    </span>
+                  </div>
+                  ${commHtml}
+                </div>
+              `;
+            })
+            .join('');
+        }
+      }
+
+      // ==========================================
+      // 8. CANVAS STADIUM & HAND GESTURE RENDERER
+      // ==========================================
+      let rafId = null;
+
+      function resizeCanvas() {
+        const canvas = el.arenaCanvas;
+        if (!canvas) return;
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(300, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(180, Math.floor(rect.height * dpr));
+        drawArenaFrame();
+      }
+
+      function drawRoundedRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      // Draw visual finger/dot pattern for numbers 1..10 inside each hand card
+      function drawFingerPips(ctx, cx, cy, num, color) {
+        if (!num) return;
+        const cols = num <= 5 ? num : 5;
+        const rows = num <= 5 ? 1 : 2;
+        const spacingX = 12;
+        const spacingY = 12;
+        const startX = cx - ((cols - 1) * spacingX) / 2;
+        const startY = cy - ((rows - 1) * spacingY) / 2;
+
+        ctx.fillStyle = color;
+        for (let i = 0; i < num; i++) {
+          const r = Math.floor(i / 5);
+          const c = i % 5;
+          const px = startX + c * spacingX;
+          const py = startY + r * spacingY;
+          ctx.beginPath();
+          ctx.arc(px, py, 3.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function drawArenaFrame() {
+        const canvas = el.arenaCanvas;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = canvas.width / dpr;
+        const h = canvas.height / dpr;
+
+        ctx.save();
+        ctx.scale(dpr, dpr);
+
+        // 1. Stadium Night Sky & Turf Gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+        bgGrad.addColorStop(0, '#06101e');
+        bgGrad.addColorStop(0.62, '#0b1e33');
+        bgGrad.addColorStop(1, '#092e26');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Subtle turf perspective ellipses
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.12)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(w / 2, h * 0.88, w * 0.42, h * 0.22, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Center pitch strip
+        const pitchW = Math.min(180, w * 0.3);
+        const pitchH = h * 0.36;
+        ctx.fillStyle = 'rgba(217, 183, 122, 0.10)';
+        drawRoundedRect(ctx, w / 2 - pitchW / 2, h * 0.56, pitchW, pitchH, 8);
+        ctx.fill();
+
+        // Flash overlay on turn outcome
+        if (STATE.anim.flashAlpha > 0.01) {
+          ctx.fillStyle = STATE.anim.flashColor;
+          ctx.globalAlpha = STATE.anim.flashAlpha;
+          ctx.fillRect(0, 0, w, h);
+          ctx.globalAlpha = 1;
+          STATE.anim.flashAlpha *= 0.9;
+        }
+
+        // Smooth pop-in progress
+        if (STATE.anim.revealProgress < 1) {
+          STATE.anim.revealProgress = Math.min(1, STATE.anim.revealProgress + 0.08);
+        }
+        const scalePop = 0.85 + 0.15 * Math.sin(STATE.anim.revealProgress * (Math.PI / 2));
+
+        // 2. Left Card (USER HAND) & Right Card (AI HAND)
+        const cardW = Math.min(132, w * 0.27);
+        const cardH = Math.min(126, h * 0.56);
+        const leftX = Math.max(16, w * 0.18 - cardW / 2);
+        const rightX = Math.min(w - cardW - 16, w * 0.82 - cardW / 2);
+        const cardY = h * 0.54 - cardH / 2;
+
+        const isMatchedOut =
+          STATE.lastUserNum !== null &&
+          STATE.lastUserNum === STATE.lastAiNum &&
+          (STATE.phase === 'INNINGS_BREAK' || STATE.phase === 'GAME_OVER');
+
+        // Draw User Hand Pod
+        ctx.save();
+        ctx.translate(leftX + cardW / 2, cardY + cardH / 2);
+        ctx.scale(scalePop, scalePop);
+        ctx.translate(-(leftX + cardW / 2), -(cardY + cardH / 2));
+
+        ctx.fillStyle = isMatchedOut ? 'rgba(244, 63, 94, 0.18)' : 'rgba(16, 185, 129, 0.13)';
+        ctx.strokeStyle = isMatchedOut ? 'rgba(244, 63, 94, 0.7)' : 'rgba(16, 185, 129, 0.55)';
+        ctx.lineWidth = 2;
+        drawRoundedRect(ctx, leftX, cardY, cardW, cardH, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '700 10px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(isMultiplayer() ? getP1Label().toUpperCase() + ' HAND' : 'YOUR HAND', leftX + cardW / 2, cardY + 20);
+
+        ctx.fillStyle = '#ecfdf5';
+        ctx.font = '900 40px "JetBrains Mono", monospace';
+        const leftDisplayVal = STATE.pendingP1Num !== null ? '🔒' : (STATE.lastUserNum !== null ? String(STATE.lastUserNum) : '?');
+        ctx.fillText(
+          leftDisplayVal,
+          leftX + cardW / 2,
+          cardY + cardH * 0.62
+        );
+
+        drawFingerPips(
+          ctx,
+          leftX + cardW / 2,
+          cardY + cardH - 18,
+          STATE.lastUserNum,
+          isMatchedOut ? '#fda4af' : '#34d399'
+        );
+        ctx.restore();
+
+        // Draw AI Hand Pod
+        ctx.save();
+        ctx.translate(rightX + cardW / 2, cardY + cardH / 2);
+        ctx.scale(scalePop, scalePop);
+        ctx.translate(-(rightX + cardW / 2), -(cardY + cardH / 2));
+
+        ctx.fillStyle = isMatchedOut ? 'rgba(244, 63, 94, 0.18)' : 'rgba(56, 189, 248, 0.13)';
+        ctx.strokeStyle = isMatchedOut ? 'rgba(244, 63, 94, 0.7)' : 'rgba(56, 189, 248, 0.55)';
+        ctx.lineWidth = 2;
+        drawRoundedRect(ctx, rightX, cardY, cardW, cardH, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '700 10px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(isMultiplayer() ? getP2Label().toUpperCase() + ' HAND' : 'AI HAND', rightX + cardW / 2, cardY + 20);
+
+        ctx.fillStyle = '#f0f9ff';
+        ctx.font = '900 40px "JetBrains Mono", monospace';
+        const rightDisplayVal = STATE.pendingP2Num !== null ? '🔒' : (STATE.lastAiNum !== null ? String(STATE.lastAiNum) : '?');
+        ctx.fillText(
+          rightDisplayVal,
+          rightX + cardW / 2,
+          cardY + cardH * 0.62
+        );
+
+        drawFingerPips(
+          ctx,
+          rightX + cardW / 2,
+          cardY + cardH - 18,
+          STATE.lastAiNum,
+          isMatchedOut ? '#fda4af' : '#38bdf8'
+        );
+        ctx.restore();
+
+        // 3. Center Callout & VS Emblem
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = `900 ${w < 460 ? 18 : 24}px Inter, sans-serif`;
+        ctx.fillText(STATE.anim.calloutText, w / 2, h * 0.52);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `600 ${w < 460 ? 11 : 13}px Inter, sans-serif`;
+        ctx.fillText(STATE.anim.calloutSub, w / 2, h * 0.52 + 22);
+
+        // 4. Update & Draw Celebration / Wicket Particles
+        for (let i = STATE.anim.particles.length - 1; i >= 0; i--) {
+          const p = STATE.anim.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.12; // gravity
+          p.alpha -= 0.022;
+          if (p.alpha <= 0) {
+            STATE.anim.particles.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+
+      function startAnimationLoop() {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+        }
+        function tick() {
+          drawArenaFrame();
+          rafId = requestAnimationFrame(tick);
+        }
+        rafId = requestAnimationFrame(tick);
+      }
+
+      // ==========================================
+      // 9. EVENT LISTENERS & KEYBOARD SHORTCUTS
+      // ==========================================
+      function bindEvents() {
+        el.btnCallOdd.addEventListener('click', () => setTossCall('ODD'));
+        el.btnCallEven.addEventListener('click', () => setTossCall('EVEN'));
+
+        el.btnChooseBat.addEventListener('click', () => handleUserTossDecision('BAT'));
+        el.btnChooseBowl.addEventListener('click', () => handleUserTossDecision('BOWL'));
+        el.btnStartAfterAiToss.addEventListener('click', () => {
+          SoundFX.click();
+          startFirstInnings();
+        });
+
+        el.btnStartSecondInnings.addEventListener('click', () => startSecondInnings());
+        el.btnPlayAgain.addEventListener('click', () => resetGame());
+        el.btnQuickRestart.addEventListener('click', () => resetGame());
+
+        // Sound Mute Toggle
+        el.btnMute.addEventListener('click', () => {
+          SoundFX.muted = !SoundFX.muted;
+          el.muteIcon.textContent = SoundFX.muted ? '🔇' : '🔊';
+          el.muteLabel.textContent = SoundFX.muted ? 'Muted' : 'Sound On';
+          if (!SoundFX.muted) SoundFX.click();
+        });
+
+        // Rules Modal
+        const openRules = () => {
+          SoundFX.click();
+          el.rulesModal.classList.remove('hidden');
+          el.rulesModal.classList.add('flex');
+        };
+        const closeRules = () => {
+          SoundFX.click();
+          el.rulesModal.classList.add('hidden');
+          el.rulesModal.classList.remove('flex');
+        };
+        // Multiplayer Modal & Mode Switching
+        function selectModalTab(mode) {
+          SoundFX.click();
+          STATE.selectedModalMode = mode;
+          const activeCls = 'py-2 px-3 rounded-lg text-xs font-extrabold transition bg-emerald-500 text-slate-950 shadow';
+          const inactiveCls = 'py-2 px-3 rounded-lg text-xs font-extrabold transition text-slate-300 hover:text-white';
+          el.tabModeAi.className = mode === 'AI' ? activeCls : inactiveCls;
+          el.tabModeLocal2P.className = mode === 'LOCAL_2P' ? activeCls : inactiveCls;
+          el.tabModeOnline2P.className = mode === 'ONLINE_2P' ? activeCls : inactiveCls;
+
+          el.mpPanelAi.classList.toggle('hidden', mode !== 'AI');
+          el.mpPanelLocal.classList.toggle('hidden', mode !== 'LOCAL_2P');
+          el.mpPanelOnline.classList.toggle('hidden', mode !== 'ONLINE_2P');
+        }
+
+        const openMpModal = () => {
+          SoundFX.click();
+          selectModalTab(STATE.mode === 'AI' ? 'LOCAL_2P' : STATE.mode);
+          el.mpModal.classList.remove('hidden');
+          el.mpModal.classList.add('flex');
+        };
+        const closeMpModal = () => {
+          SoundFX.click();
+          el.mpModal.classList.add('hidden');
+          el.mpModal.classList.remove('flex');
+        };
+
+        el.btnMultiplayer.addEventListener('click', openMpModal);
+        el.btnOpenMpSettings.addEventListener('click', openMpModal);
+        el.btnCloseMpModal.addEventListener('click', closeMpModal);
+        el.btnCancelMpModal.addEventListener('click', closeMpModal);
+        el.mpModal.addEventListener('click', (e) => {
+          if (e.target === el.mpModal) closeMpModal();
+        });
+
+        el.tabModeAi.addEventListener('click', () => selectModalTab('AI'));
+        el.tabModeLocal2P.addEventListener('click', () => selectModalTab('LOCAL_2P'));
+        el.tabModeOnline2P.addEventListener('click', () => selectModalTab('ONLINE_2P'));
+
+        el.btnCreateRoom.addEventListener('click', createMultiplayerRoom);
+        el.btnJoinRoom.addEventListener('click', joinMultiplayerRoom);
+        el.btnCopyRoomCode.addEventListener('click', () => {
+          if (!STATE.roomCode) return;
+          SoundFX.click();
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = STATE.roomCode;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            el.btnCopyRoomCode.textContent = 'Copied!';
+            setTimeout(() => { el.btnCopyRoomCode.textContent = 'Copy'; }, 1500);
+          } catch (e) {}
+        });
+
+        el.btnApplyMpMode.addEventListener('click', () => {
+          STATE.p1Name = (el.inputP1Name.value || 'YOU').trim() || 'YOU';
+          STATE.p2Name = (el.inputP2Name.value || 'FRIEND').trim() || 'FRIEND';
+          STATE.mode = STATE.selectedModalMode;
+          closeMpModal();
+          resetGame();
+        });
+
+        // Sidebar & Inline Setup Screen Navigation
+        function switchCenterScreen(screenName) {
+          SoundFX.click();
+          STATE.activeScreen = screenName;
+          if (screenName === 'SHOWCASE') {
+            STATE.showcaseCompact = false;
+          }
+          if (screenName === 'PITCH') {
+            startTurnTimer();
+            setTimeout(resizeCanvas, 20);
+          } else {
+            stopTurnTimer();
+          }
+          renderAll();
+        }
+
+        function highlightBotCard(botKey) {
+          SoundFX.click();
+          STATE.botDifficulty = botKey;
+          const map = {
+            ROOKIE: el.btnBotRookie,
+            TACTICIAN: el.btnBotTactician,
+            AGGRESSOR: el.btnBotAggressor,
+            WALL: el.btnBotWall
+          };
+          Object.keys(map).forEach((k) => {
+            const btn = map[k];
+            if (!btn) return;
+            btn.className = k === botKey
+              ? 'text-left p-3.5 rounded-xl bg-slate-900/95 border-2 border-cyan-400 shadow-lg shadow-cyan-500/15 transition space-y-1'
+              : 'text-left p-3.5 rounded-xl bg-slate-900/90 border-2 border-slate-800 hover:border-slate-600 transition space-y-1';
+          });
+          renderAll();
+        }
+
+        function selectInlineMpType(mpType) {
+          SoundFX.click();
+          STATE.inlineMpType = mpType;
+          el.btnInlineSelectLocal2P.className = mpType === 'LOCAL_2P'
+            ? 'p-4 rounded-xl text-left border-2 border-purple-400 bg-slate-900/95 space-y-1 transition shadow-lg shadow-purple-500/10'
+            : 'p-4 rounded-xl text-left border-2 border-slate-800 hover:border-purple-400/50 bg-slate-900/90 space-y-1 transition';
+          el.btnInlineSelectOnline2P.className = mpType === 'ONLINE_2P'
+            ? 'p-4 rounded-xl text-left border-2 border-cyan-400 bg-slate-900/95 space-y-1 transition shadow-lg shadow-cyan-500/10'
+            : 'p-4 rounded-xl text-left border-2 border-slate-800 hover:border-cyan-400/50 bg-slate-900/90 space-y-1 transition';
+          el.inlineRoomCodeSection.classList.toggle('hidden', mpType !== 'ONLINE_2P');
+        }
+
+        el.sideNavPitch.addEventListener('click', () => switchCenterScreen('PITCH'));
+        el.sideNavBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
+        el.sideNavMultiplayer.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
+        el.sideNavShowcase.addEventListener('click', () => switchCenterScreen('SHOWCASE'));
+        if (el.sideNavLeaderboard) {
+          el.sideNavLeaderboard.addEventListener('click', () => switchCenterScreen('LEADERBOARD'));
+        }
+        if (el.btnHeaderElo) {
+          el.btnHeaderElo.addEventListener('click', () => switchCenterScreen('LEADERBOARD'));
+        }
+        if (el.btnBackFromLeaderboard) {
+          el.btnBackFromLeaderboard.addEventListener('click', () => switchCenterScreen('PITCH'));
+        }
+
+        el.cardQuickBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
+        el.cardQuickMp.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
+        el.cardQuickCommentary.addEventListener('click', () => {
+          SoundFX.click();
+          const order = ['HYPE', 'TACTICAL', 'CLASSIC'];
+          const next = order[(order.indexOf(STATE.commentaryStyle) + 1) % order.length];
+          STATE.commentaryStyle = next;
+          el.botSetupCommentaryStyle.value = next;
+          STATE.liveBroadcastQuote = `"Broadcast style switched to ${next} MODE! Every ball now carries fresh commentary flavor!"`;
+          STATE.liveExcitementLabel = next + ' BROADCAST';
+          renderAll();
+        });
+
+        el.btnToggleShowcaseCompact.addEventListener('click', () => {
+          SoundFX.click();
+          STATE.activeScreen = 'PITCH';
+          renderAll();
+          setTimeout(resizeCanvas, 20);
+        });
+
+        el.btnBackFromBotSetup.addEventListener('click', () => switchCenterScreen('PITCH'));
+        el.btnBackFromMpSetup.addEventListener('click', () => switchCenterScreen('PITCH'));
+
+        el.btnBotRookie.addEventListener('click', () => highlightBotCard('ROOKIE'));
+        el.btnBotTactician.addEventListener('click', () => highlightBotCard('TACTICIAN'));
+        el.btnBotAggressor.addEventListener('click', () => highlightBotCard('AGGRESSOR'));
+        el.btnBotWall.addEventListener('click', () => highlightBotCard('WALL'));
+
+        el.btnLaunchBotMatch.addEventListener('click', () => {
+          STATE.mode = 'AI';
+          STATE.p1Name = (el.botSetupPlayerName.value || 'YOU').trim() || 'YOU';
+          STATE.commentaryStyle = el.botSetupCommentaryStyle.value || 'HYPE';
+          STATE.activeScreen = 'PITCH';
+          resetGame();
+          setTimeout(resizeCanvas, 20);
+        });
+
+        el.btnInlineSelectLocal2P.addEventListener('click', () => selectInlineMpType('LOCAL_2P'));
+        el.btnInlineSelectOnline2P.addEventListener('click', () => selectInlineMpType('ONLINE_2P'));
+
+        el.btnInlineCreateRoom.addEventListener('click', () => {
+          createMultiplayerRoom();
+          el.inlineHostCodeDisplay.classList.remove('hidden');
+          el.inlineHostCodeValue.textContent = STATE.roomCode;
+          el.inlineNetStatusBadge.textContent = 'Waiting for Friend...';
+        });
+
+        el.btnInlineJoinRoom.addEventListener('click', () => {
+          el.inputJoinRoomCode.value = el.inlineInputJoinCode.value;
+          el.inputP2Name.value = el.inlineP2Name.value || 'FRIEND';
+          joinMultiplayerRoom();
+          el.inlineNetStatusBadge.textContent = 'Connected to ' + (STATE.roomCode || 'Room') + '!';
+        });
+
+        el.btnLaunchMpMatch.addEventListener('click', () => {
+          STATE.p1Name = (el.inlineP1Name.value || 'YOU').trim() || 'YOU';
+          STATE.p2Name = (el.inlineP2Name.value || 'FRIEND').trim() || 'FRIEND';
+          el.inputP1Name.value = STATE.p1Name;
+          el.inputP2Name.value = STATE.p2Name;
+          STATE.mode = STATE.inlineMpType || 'LOCAL_2P';
+          STATE.activeScreen = 'PITCH';
+          resetGame();
+          setTimeout(resizeCanvas, 20);
+        });
+
+        el.btnRules.addEventListener('click', openRules);
+        el.btnCloseRules.addEventListener('click', closeRules);
+        el.btnGotItRules.addEventListener('click', closeRules);
+        el.rulesModal.addEventListener('click', (e) => {
+          if (e.target === el.rulesModal) closeRules();
+        });
+
+        // Keyboard Support (1-9 => 1-9, 0 => 10, O/E for Odd/Even, Enter/Space for advancing breaks)
+        window.addEventListener('keydown', (e) => {
+          if (!el.rulesModal.classList.contains('hidden')) {
+            if (e.key === 'Escape' || e.key === 'Enter') closeRules();
+            return;
+          }
+          if (!el.mpModal.classList.contains('hidden')) {
+            if (e.key === 'Escape') closeMpModal();
+            return;
+          }
+          if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+            return;
+          }
+
+          // In LOCAL_2P mode, support simultaneous Player 2 keys (Q W E R T Y U I O P or Numpad)
+          if (STATE.mode === 'LOCAL_2P' && (STATE.phase === 'TOSS' || STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2')) {
+            const p2KeyMap = { q: 1, w: 2, e: 3, r: 4, t: 5, y: 6, u: 7, i: 8, o: 9, p: 10 };
+            const lower = e.key.toLowerCase();
+            if (p2KeyMap[lower]) {
+              submitPlayerInput(p2KeyMap[lower], 'P2');
+              return;
+            }
+            if (e.location === 3 && e.key >= '0' && e.key <= '9') {
+              const npNum = e.key === '0' ? 10 : parseInt(e.key, 10);
+              submitPlayerInput(npNum, 'P2');
+              return;
+            }
+          }
+
+          let num = null;
+          if (e.key >= '1' && e.key <= '9') {
+            num = parseInt(e.key, 10);
+          } else if (e.key === '0') {
+            num = 10;
+          }
+
+          if (num !== null) {
+            if (STATE.phase === 'TOSS') {
+              handleTossNumberPick(num);
+            } else if (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') {
+              handleGameplayTurn(num);
+            }
+            return;
+          }
+
+          if (STATE.phase === 'TOSS') {
+            if (e.key.toLowerCase() === 'o') setTossCall('ODD');
+            if (e.key.toLowerCase() === 'e') setTossCall('EVEN');
+          } else if (STATE.phase === 'INNINGS_BREAK' && e.key === 'Enter') {
+            startSecondInnings();
+          } else if (STATE.phase === 'GAME_OVER' && e.key === 'Enter') {
+            resetGame();
+          }
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+      }
+
+      // Initialize on window.onload per Core Rule 5
+      window.onload = function () {
+        buildNumberButtons();
+        bindEvents();
+        renderAll();
+        resizeCanvas();
+        startAnimationLoop();
+      };
+    })();
+  </script>
+</body>
+</html>
