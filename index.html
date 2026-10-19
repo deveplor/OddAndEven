@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OddAndEven.in — Official Hand Cricket Arena</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #000000;
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .font-brand {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    }
+    /* Subtle architectural grid on pure black background */
+    .bg-black-grid {
+      background-color: #000000;
+      background-image:
+        radial-gradient(circle at 18% 15%, rgba(129, 182, 76, 0.12) 0%, transparent 42%),
+        radial-gradient(circle at 85% 82%, rgba(56, 189, 248, 0.09) 0%, transparent 45%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+    }
+    .obsidian-card {
+      background: linear-gradient(180deg, rgba(15, 15, 19, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow:
+        0 28px 70px rgba(0, 0, 0, 0.92),
+        0 0 0 1px rgba(129, 182, 76, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+    }
+    .obsidian-subcard {
+      background: rgba(10, 10, 14, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .obsidian-input {
+      background: #050507;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      color: #ffffff;
+      transition: all 0.18s ease;
+    }
+    .obsidian-input:focus {
+      outline: none;
+      border-color: #81b64c;
+      box-shadow: 0 0 0 3px rgba(129, 182, 76, 0.18);
+      background: #08090c;
+    }
+    .arena-cta-btn {
+      background: linear-gradient(135deg, #81b64c 0%, #639a30 100%);
+      color: #ffffff;
+      border-bottom: 3px solid #42691e;
+      box-shadow: 0 10px 28px -6px rgba(129, 182, 76, 0.45);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      transition: all 0.15s ease;
+    }
+    .arena-cta-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #91c859 0%, #71ab3b 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 34px -6px rgba(129, 182, 76, 0.6);
+    }
+    .arena-cta-btn:active:not(:disabled) {
+      transform: translateY(1px);
+      border-bottom-width: 1px;
+    }
+  </style>
+</head>
+<body class="bg-black-grid min-h-screen flex flex-col justify-between text-slate-100 selection:bg-[#81b64c] selection:text-black">
+
+  <!-- Minimal Pure-Black Brand Header -->
+  <header class="w-full bg-black/80 backdrop-blur-md border-b border-white/[0.07] px-4 sm:px-8 py-3.5 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#81b64c] to-[#4e7a25] flex items-center justify-center shadow-lg shadow-[#81b64c]/20 text-white font-black text-lg border border-white/15">
+          🏏
+        </div>
+        <div>
+          <div class="font-brand text-lg sm:text-xl font-extrabold tracking-tight leading-none flex items-baseline">
+            <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-white bg-clip-text text-transparent">Odd</span><span class="text-amber-400 italic font-black px-0.5">And</span><span class="bg-gradient-to-r from-cyan-300 to-sky-400 bg-clip-text text-transparent">Even</span><span class="text-xs font-mono-num font-black text-[#a3d96c] ml-0.5">.in</span>
+          </div>
+          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Official Hand Cricket Arena</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <span id="worldSyncChip" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono-num font-bold bg-zinc-950 text-emerald-300 border border-emerald-500/30 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="worldSyncText">Global Network Live</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Aesthetic Black Split Portal -->
+  <main class="flex-1 flex items-center justify-center px-4 sm:px-8 py-10">
+    <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+
+      <!-- Left Column: Arena Identity & Feature Highlights -->
+      <div class="lg:col-span-6 space-y-6 text-left">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-950 border border-white/10 text-[11px] font-extrabold uppercase tracking-widest text-[#a3d96c]">
+          <span>⚡</span>
+          <span>Season 1 • Competitive Hand Cricket</span>
+        </div>
+
+        <div class="space-y-3">
+          <h1 class="font-brand text-3xl sm:text-5xl font-black tracking-tight text-white leading-[1.12]">
+            Step Into the <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Global Pitch.</span>
+          </h1>
+          <p class="text-sm sm:text-base text-zinc-400 leading-relaxed max-w-lg">
+            Sign in with your player identity to compete in real-time <strong class="text-zinc-200">P1 vs P2 Multiplayer Rooms</strong>, challenge adaptive <strong class="text-zinc-200">250–2800 Elo AI Bots</strong>, and climb the worldwide leaderboard.
+          </p>
+        </div>
+
+        <!-- Aesthetic Feature Pills -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div class="obsidian-subcard rounded-2xl p-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-white flex items-center gap-1.5">
+                <span class="text-emerald-400">🌍</span>
+                <span>Worldwide Elo</span>
+              </span>
+              <span class="text-[10px] font-mono-num font-bold text-amber-300">1500 START</span>
+            </div>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Live global, weekly (Mon–Sun), and career runs standings synced to your username.
+            </p>
+          </div>
+
+          <div class="obsidian-subcard rounded-2xl p-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-white flex items-center gap-1.5">
+                <span class="text-cyan-400">⏱️</span>
+                <span>15s Synced Rooms</span>
+              </span>
+              <span class="text-[10px] font-mono-num font-bold text-cyan-300">P1 vs P2</span>
+            </div>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+              Instant room codes with automatic 2-player lock and synchronized 15s shot clocks.
+            </p>
+          </div>
+        </div>
+
+        <!-- Subtle Security Strip -->
+        <div class="flex flex-wrap items-center gap-4 pt-1 text-xs text-zinc-400">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[11px] text-emerald-300">✓</span>
+            <span>Encrypted Country + 5-Digit PIN</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-[11px] text-cyan-300">✓</span>
+            <span>Instant Cross-Device Room Sync</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Pure Black Obsidian Auth Vault Card -->
+      <div class="lg:col-span-6 w-full max-w-md mx-auto lg:ml-auto space-y-4">
+
+        <!-- Active Session Card (Only visible when user is already signed in) -->
+        <div id="activeSessionCard" class="hidden obsidian-card rounded-3xl p-5 border border-[#81b64c]/60 space-y-3.5">
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#a3d96c]"></span>
+              <span>Session Connected</span>
+            </span>
+            <span id="activeSessionElo" class="font-mono-num text-xs font-extrabold text-amber-300">1500 ELO</span>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="text-[11px] text-zinc-400">Signed in as</div>
+              <div id="activeSessionUsername" class="text-base font-black text-white mt-0.5">🇮🇳 PLAYER</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btnContinueSession" type="button" class="px-4 py-2 rounded-xl text-xs font-extrabold arena-cta-btn">
+                Continue →
+              </button>
+              <button id="btnLogoutSessionHere" type="button" class="px-3 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-rose-300 border border-rose-500/30 transition">
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Login / Sign Up Vault -->
+        <section class="obsidian-card rounded-3xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
+          <!-- Top subtle accent line -->
+          <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#81b64c] to-transparent opacity-80"></div>
+
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 id="authCardHeading" class="text-xl sm:text-2xl font-black text-white font-brand tracking-tight">
+                Player Portal
+              </h2>
+              <p id="authCardSubheading" class="text-xs text-zinc-400 mt-0.5">
+                Enter your credentials to access the arena
+              </p>
+            </div>
+            <span class="w-10 h-10 rounded-2xl bg-zinc-950 border border-white/10 flex items-center justify-center text-lg shadow-inner">
+              🔐
+            </span>
+          </div>
+
+          <!-- Segmented Mode Switcher: Login vs Sign Up -->
+          <div class="grid grid-cols-2 gap-1.5 p-1.5 rounded-2xl bg-[#050507] border border-white/[0.08]">
+            <button id="tabAuthLogin" type="button" class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition bg-[#81b64c] text-white shadow-md">
+              Login
+            </button>
+            <button id="tabAuthSignup" type="button" class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition text-zinc-400 hover:text-white">
+              Sign Up
+            </button>
+          </div>
+
+          <!-- Status / Error Feedback Banner -->
+          <div id="authStatusBanner" class="hidden p-3.5 rounded-2xl text-xs font-bold border"></div>
+
+          <!-- Form Inputs -->
+          <div class="space-y-4">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="inputAuthUsername" class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">
+                  Player Username
+                </label>
+                <span class="text-[10px] font-mono-num text-zinc-400">3–16 Chars</span>
+              </div>
+              <input
+                id="inputAuthUsername"
+                type="text"
+                maxlength="16"
+                autocomplete="username"
+                placeholder="e.g. VIRAT_18"
+                class="obsidian-input w-full px-4 py-3 rounded-xl text-sm font-extrabold uppercase tracking-wide placeholder:text-zinc-600 placeholder:normal-case placeholder:font-medium"
+              />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="inputAuthPin5" class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">
+                  Country Code &amp; 5-Digit PIN
+                </label>
+                <button id="btnTogglePinVisibility" type="button" class="text-[10px] font-mono-num font-bold text-zinc-400 hover:text-zinc-200 transition">
+                  Show PIN
+                </button>
+              </div>
+
+              <div class="grid grid-cols-12 gap-2.5">
+                <select
+                  id="selectAuthCountry"
+                  aria-label="Country Dial Code"
+                  class="obsidian-input col-span-5 px-3 py-3 rounded-xl text-xs font-extrabold cursor-pointer"
+                >
+                  <option value="+91" data-country="India" data-flag="🇮🇳" selected>🇮🇳 +91 (IN)</option>
+                  <option value="+1" data-country="USA" data-flag="🇺🇸">🇺🇸 +1 (US)</option>
+                  <option value="+44" data-country="UK" data-flag="🇬🇧">🇬🇧 +44 (UK)</option>
+                  <option value="+61" data-country="Australia" data-flag="🇦🇺">🇦🇺 +61 (AU)</option>
+                  <option value="+971" data-country="UAE" data-flag="🇦🇪">🇦🇪 +971 (AE)</option>
+                  <option value="+64" data-country="NZ" data-flag="🇳🇿">🇳🇿 +64 (NZ)</option>
+                  <option value="+27" data-country="SA" data-flag="🇿🇦">🇿🇦 +27 (ZA)</option>
+                  <option value="+94" data-country="SL" data-flag="🇱🇰">🇱🇰 +94 (LK)</option>
+                  <option value="+880" data-country="BAN" data-flag="🇧🇩">🇧🇩 +880 (BD)</option>
+                  <option value="+977" data-country="NEP" data-flag="🇳🇵">🇳🇵 +977 (NP)</option>
+                </select>
+
+                <input
+                  id="inputAuthPin5"
+                  type="password"
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="•••••"
+                  class="obsidian-input col-span-7 px-4 py-3 rounded-xl font-mono-num text-sm font-black tracking-[0.3em] placeholder:tracking-widest placeholder:text-zinc-600"
+                />
+              </div>
+
+              <div class="flex items-center justify-between mt-2 px-0.5">
+                <span id="keyPreviewBadge" class="text-[11px] font-mono-num text-zinc-400">
+                  Vault Key: <strong class="text-amber-300/90">+91-•••••</strong>
+                </span>
+                <span class="text-[10px] font-mono-num text-emerald-400/90 flex items-center gap-1">
+                  <span>🔒</span>
+                  <span>OAE1 Encrypted</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="pt-1">
+              <button
+                id="btnSubmitAuth"
+                type="button"
+                class="w-full py-3.5 px-6 rounded-xl font-black text-sm sm:text-base arena-cta-btn flex items-center justify-center gap-2"
+              >
+                <span id="btnSubmitAuthText">SIGN IN TO ARENA</span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Pure Black Official Footer with Version 1 -->
+  <footer class="w-full bg-black/90 border-t border-white/[0.07] px-4 sm:px-8 py-4 mt-auto">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+      <div class="flex items-center gap-2">
+        <span class="font-brand font-extrabold text-zinc-200">OddAndEven.in</span>
+        <span>— Official Hand Cricket Arena</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="px-3 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-zinc-950 text-[#a3d96c] border border-[#81b64c]/40">
+          Version 1
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const RELEASE_CLEAN_SLATE_KEY = 'oddandeven_release_v1_clean_slate';
+      const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
+      const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
+      const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+      const SIGNED_OUT_FLAG_KEY = 'oddandeven_signed_out_v1';
+      const SCORECARD_HISTORY_KEY = 'hc_arena_match_scorecards_v1';
+      const GLOBAL_LB_CHANNEL = 'oddandeven_global_leaderboard_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+      const FAKE_SEED_NAMES = [
+        'AARAV_99',
+        'KABIR_STRIKER',
+        'PRIYA_XI',
+        'DEV_CAPTAIN',
+        'PLAYER_1',
+        'GUEST',
+        'YOU',
+        'FRIEND',
+        'WAITING...'
+      ];
+      const GLOBAL_HUB_IDS = [
+        'oddandeven-world-hub-v1-1',
+        'oddandeven-world-hub-v1-2',
+        'oddandeven-world-hub-v1-3',
+        'oddandeven-world-hub-v1-4'
+      ];
+
+      // One-time Version 1 clean slate wipe so all old test leaderboard data & login/signup accounts are cleared for publishing
+      try {
+        if (localStorage.getItem(RELEASE_CLEAN_SLATE_KEY) !== 'v1_clean') {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.removeItem(WORLDWIDE_PLAYERS_KEY);
+          localStorage.removeItem('hc_arena_elo_v2');
+          localStorage.removeItem('hc_arena_stats_v1');
+          localStorage.removeItem(SCORECARD_HISTORY_KEY);
+          localStorage.removeItem('oddandeven_just_logged_in');
+          localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
+          sessionStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.setItem(RELEASE_CLEAN_SLATE_KEY, 'v1_clean');
+        }
+      } catch (e) {}
+
+      let authMode = 'LOGIN';
+      let globalHubPeer = null;
+      const globalHubConns = [];
+
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function encryptPayload(plainObj) {
+        const json = JSON.stringify(plainObj);
+        const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+        const bytes = [];
+        for (let i = 0; i < json.length; i++) {
+          const code = json.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff);
+          bytes.push(String.fromCharCode(code));
+        }
+        const b64 = btoa(unescape(encodeURIComponent(bytes.join(''))));
+        const sig = fnv1aHash(json + '::' + SECRET_SALT);
+        return `OAE1.${sig}.${b64}`;
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) {
+          return null;
+        }
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const b64 = parts[2];
+          const raw = decodeURIComponent(escape(atob(b64)));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            const c = raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff);
+            chars.push(String.fromCharCode(c));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function derivePasswordVerifier(username, countryDial, pin5) {
+        const cleanUser = (username || '').trim().toUpperCase();
+        const combinedKey = `${countryDial}-${pin5}`;
+        const round1 = fnv1aHash(`${cleanUser}::${combinedKey}::${SECRET_SALT}`);
+        const round2 = fnv1aHash(`${round1}::${combinedKey}::OddAndEven.in`);
+        return encryptPayload({
+          u: cleanUser,
+          dial: countryDial,
+          combinedHash: `${round1}${round2}`,
+          masked: `${countryDial}-${pin5[0]}***${pin5[4]}`
+        });
+      }
+
+      function verifyUserCredentials(userRecord, countryDial, pin5) {
+        if (!userRecord || !userRecord.encryptedAuth) return false;
+        const dec = decryptPayload(userRecord.encryptedAuth);
+        if (!dec) return false;
+        const cleanUser = (userRecord.username || '').trim().toUpperCase();
+        const combinedKey = `${countryDial}-${pin5}`;
+        const round1 = fnv1aHash(`${cleanUser}::${combinedKey}::${SECRET_SALT}`);
+        const round2 = fnv1aHash(`${round1}::${combinedKey}::OddAndEven.in`);
+        return dec.dial === countryDial && dec.combinedHash === `${round1}${round2}`;
+      }
+
+      function loadEncryptedUsersMap() {
+        try {
+          const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+          if (!raw) return {};
+          const dec = decryptPayload(raw);
+          if (dec && typeof dec === 'object') return dec;
+        } catch (e) {}
+        return {};
+      }
+
+      function saveEncryptedUsersMap(usersMap) {
+        try {
+          localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
+        } catch (e) {}
+      }
+
+      function loadWorldwidePlayersMap() {
+        try {
+          const raw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            FAKE_SEED_NAMES.forEach((fn) => delete parsed[fn]);
+            return parsed;
+          }
+        } catch (e) {}
+        return {};
+      }
+
+      function saveWorldwidePlayersMap(map) {
+        try {
+          localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(map));
+        } catch (e) {}
+      }
+
+      function mergeIncomingGlobalData(incomingPlayers, incomingUsers) {
+        let changed = false;
+        if (incomingUsers && typeof incomingUsers === 'object') {
+          const localUsers = loadEncryptedUsersMap();
+          Object.keys(incomingUsers).forEach((k) => {
+            const clean = (k || '').trim().toUpperCase();
+            if (!clean || FAKE_SEED_NAMES.includes(clean)) return;
+            if (incomingUsers[k] && !localUsers[clean]) {
+              localUsers[clean] = incomingUsers[k];
+              changed = true;
+            }
+          });
+          if (changed) saveEncryptedUsersMap(localUsers);
+        }
+
+        if (incomingPlayers && typeof incomingPlayers === 'object') {
+          const worldMap = loadWorldwidePlayersMap();
+          Object.keys(incomingPlayers).forEach((k) => {
+            const clean = (k || '').trim().toUpperCase();
+            if (!clean || FAKE_SEED_NAMES.includes(clean)) return;
+            const inc = incomingPlayers[k];
+            if (!inc || typeof inc !== 'object') return;
+            if (!worldMap[clean] || (inc.updatedAt || 0) > (worldMap[clean].updatedAt || 0)) {
+              worldMap[clean] = Object.assign({}, inc, { name: clean, isRealRegisteredUser: true });
+              changed = true;
+            }
+          });
+          if (changed) saveWorldwidePlayersMap(worldMap);
+        }
+        return changed;
+      }
+
+      function broadcastWorldwideSync(requestReply = false) {
+        const packet = {
+          type: 'GLOBAL_LEADERBOARD_SYNC',
+          allPlayers: loadWorldwidePlayersMap(),
+          encryptedUsers: loadEncryptedUsersMap(),
+          requestReply: Boolean(requestReply),
+          timestamp: Date.now()
+        };
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
+            gbc.postMessage(packet);
+          } catch (e) {}
+        }
+        globalHubConns.forEach((c) => {
+          if (c && c.open) {
+            try { c.send(packet); } catch (e) {}
+          }
+        });
+      }
+
+      function initWorldwideLeaderboardHub() {
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
+            gbc.onmessage = (ev) => {
+              if (ev && ev.data && ev.data.type === 'GLOBAL_LEADERBOARD_SYNC') {
+                if (mergeIncomingGlobalData(ev.data.allPlayers, ev.data.encryptedUsers)) {
+                  updateUIState();
+                }
+                if (ev.data.requestReply) {
+                  broadcastWorldwideSync(false);
+                }
+              }
+            };
+          } catch (e) {}
+        }
+
+        if (typeof Peer === 'undefined') return;
+
+        function attachConn(conn) {
+          if (!conn) return;
+          if (!globalHubConns.includes(conn)) globalHubConns.push(conn);
+          const sendHello = () => {
+            try {
+              conn.send({
+                type: 'GLOBAL_LEADERBOARD_SYNC',
+                allPlayers: loadWorldwidePlayersMap(),
+                encryptedUsers: loadEncryptedUsersMap(),
+                requestReply: true,
+                timestamp: Date.now()
+              });
+            } catch (e) {}
+          };
+          if (conn.open) sendHello();
+          else conn.on('open', sendHello);
+
+          conn.on('data', (data) => {
+            if (!data || data.type !== 'GLOBAL_LEADERBOARD_SYNC') return;
+            const changed = mergeIncomingGlobalData(data.allPlayers, data.encryptedUsers);
+            if (data.requestReply) {
+              try {
+                conn.send({
+                  type: 'GLOBAL_LEADERBOARD_SYNC',
+                  allPlayers: loadWorldwidePlayersMap(),
+                  encryptedUsers: loadEncryptedUsersMap(),
+                  requestReply: false,
+                  timestamp: Date.now()
+                });
+              } catch (e) {}
+            }
+            if (changed) updateUIState();
+          });
+        }
+
+        function connectOtherHubs(peerObj, myId) {
+          GLOBAL_HUB_IDS.forEach((hubId) => {
+            if (hubId === myId) return;
+            try {
+              const c = peerObj.connect(hubId);
+              attachConn(c);
+            } catch (e) {}
+          });
+        }
+
+        function claimHubSlot(idx) {
+          if (idx >= GLOBAL_HUB_IDS.length) {
+            try {
+              const client = new Peer();
+              globalHubPeer = client;
+              client.on('open', (id) => connectOtherHubs(client, id));
+              client.on('connection', (c) => attachConn(c));
+            } catch (e) {}
+            return;
+          }
+          const slotId = GLOBAL_HUB_IDS[idx];
+          try {
+            const p = new Peer(slotId);
+            let opened = false;
+            p.on('open', (id) => {
+              opened = true;
+              globalHubPeer = p;
+              connectOtherHubs(p, id);
+            });
+            p.on('connection', (c) => attachConn(c));
+            p.on('error', () => {
+              if (!opened) {
+                try { p.destroy(); } catch (e) {}
+                claimHubSlot(idx + 1);
+              }
+            });
+          } catch (e) {
+            claimHubSlot(idx + 1);
+          }
+        }
+
+        claimHubSlot(0);
+      }
+
+      function loadActiveSession() {
+        try {
+          if (localStorage.getItem(SIGNED_OUT_FLAG_KEY) === '1') return null;
+          const raw = sessionStorage.getItem(SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY);
+          if (!raw) return null;
+          return decryptPayload(raw);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      const el = {
+        worldSyncText: document.getElementById('worldSyncText'),
+        activeSessionCard: document.getElementById('activeSessionCard'),
+        activeSessionElo: document.getElementById('activeSessionElo'),
+        activeSessionUsername: document.getElementById('activeSessionUsername'),
+        btnContinueSession: document.getElementById('btnContinueSession'),
+        btnLogoutSessionHere: document.getElementById('btnLogoutSessionHere'),
+        authCardHeading: document.getElementById('authCardHeading'),
+        authCardSubheading: document.getElementById('authCardSubheading'),
+        tabAuthLogin: document.getElementById('tabAuthLogin'),
+        tabAuthSignup: document.getElementById('tabAuthSignup'),
+        authStatusBanner: document.getElementById('authStatusBanner'),
+        inputAuthUsername: document.getElementById('inputAuthUsername'),
+        selectAuthCountry: document.getElementById('selectAuthCountry'),
+        inputAuthPin5: document.getElementById('inputAuthPin5'),
+        btnTogglePinVisibility: document.getElementById('btnTogglePinVisibility'),
+        keyPreviewBadge: document.getElementById('keyPreviewBadge'),
+        btnSubmitAuth: document.getElementById('btnSubmitAuth'),
+        btnSubmitAuthText: document.getElementById('btnSubmitAuthText')
+      };
+
+      function showBanner(msg, isSuccess) {
+        el.authStatusBanner.classList.remove('hidden');
+        el.authStatusBanner.className = isSuccess
+          ? 'p-3.5 rounded-2xl text-xs font-bold border bg-emerald-500/10 border-emerald-500/40 text-emerald-200'
+          : 'p-3.5 rounded-2xl text-xs font-bold border bg-rose-500/10 border-rose-500/40 text-rose-200';
+        el.authStatusBanner.textContent = msg;
+      }
+
+      function setMode(mode) {
+        authMode = mode;
+        const activeCls = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition bg-[#81b64c] text-white shadow-md';
+        const idleCls = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition text-zinc-400 hover:text-white';
+        el.tabAuthLogin.className = mode === 'LOGIN' ? activeCls : idleCls;
+        el.tabAuthSignup.className = mode === 'SIGNUP' ? activeCls : idleCls;
+        if (el.authCardHeading) {
+          el.authCardHeading.textContent = mode === 'LOGIN' ? 'Welcome Back' : 'Create Player Account';
+        }
+        if (el.authCardSubheading) {
+          el.authCardSubheading.textContent = mode === 'LOGIN'
+            ? 'Sign in with your Username & 5-Digit PIN'
+            : 'Register your Username & Country Code on the Global Pitch';
+        }
+        el.btnSubmitAuthText.textContent = mode === 'LOGIN' ? 'SIGN IN TO ARENA' : 'CREATE ACCOUNT & PLAY';
+        el.authStatusBanner.classList.add('hidden');
+      }
+
+      function updateUIState() {
+        const worldMap = loadWorldwidePlayersMap();
+        const worldCount = Object.keys(worldMap).length;
+        if (el.worldSyncText) {
+          el.worldSyncText.textContent = worldCount > 0
+            ? `Global Live • ${worldCount} Player${worldCount === 1 ? '' : 's'}`
+            : 'Global Network Live';
+        }
+
+        const dial = el.selectAuthCountry.value || '+91';
+        const pinVal = (el.inputAuthPin5.value || '').replace(/\D/g, '').slice(0, 5);
+        el.inputAuthPin5.value = pinVal;
+        el.keyPreviewBadge.innerHTML = `Vault Key: <strong class="text-amber-300/90">${dial}-${pinVal.padEnd(5, '•')}</strong>`;
+
+        const sess = loadActiveSession();
+        if (sess && sess.username) {
+          el.activeSessionCard.classList.remove('hidden');
+          const rec = worldMap[sess.username];
+          const elo = rec && typeof rec.elo === 'number' ? rec.elo : 1500;
+          el.activeSessionElo.textContent = `${elo} ELO`;
+          el.activeSessionUsername.textContent = `${sess.countryFlag || '🇮🇳'} ${sess.username} (${sess.countryCode || '+91'})`;
+        } else {
+          el.activeSessionCard.classList.add('hidden');
+        }
+      }
+
+      function isSandboxedPreviewIframe() {
+        try {
+          const proto = window.location.protocol;
+          if (proto === 'about:' || proto === 'blob:' || proto === 'data:') return true;
+          if (window.self !== window.top && window.frameElement !== null) return true;
+        } catch (e) {
+          return true;
+        }
+        return false;
+      }
+
+      function navigateToHandCricketArena(querySuffix) {
+        const target = querySuffix ? `hand_cricket.html${querySuffix}` : 'hand_cricket.html';
+        if (isSandboxedPreviewIframe()) {
+          updateUIState();
+          showBanner(`✓ Authenticated & synced! On your live site (GitHub / Vercel), this redirects directly to ${target}.`, true);
+          return;
+        }
+        window.location.href = target;
+      }
+
+      function handleAuthSubmit() {
+        const uname = (el.inputAuthUsername.value || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+        const pin5 = (el.inputAuthPin5.value || '').trim();
+        const opt = el.selectAuthCountry.options[el.selectAuthCountry.selectedIndex];
+        const dial = opt ? opt.value : '+91';
+        const cName = opt ? (opt.getAttribute('data-country') || 'India') : 'India';
+        const cFlag = opt ? (opt.getAttribute('data-flag') || '🇮🇳') : '🇮🇳';
+
+        if (uname.length < 3) {
+          showBanner('Username must be at least 3 alphanumeric characters.', false);
+          return;
+        }
+        if (FAKE_SEED_NAMES.includes(uname) || uname === 'WAITING') {
+          showBanner('Please choose a unique personal username.', false);
+          return;
+        }
+        if (!/^\d{5}$/.test(pin5)) {
+          showBanner(`Please enter a valid 5-digit numeric PIN connected with ${dial}.`, false);
+          return;
+        }
+
+        const usersMap = loadEncryptedUsersMap();
+        if (authMode === 'SIGNUP') {
+          if (usersMap[uname] && !verifyUserCredentials(usersMap[uname], dial, pin5)) {
+            showBanner(`Username ${uname} is already registered. Switch to Login or enter its matching 5-digit PIN.`, false);
+            return;
+          }
+          usersMap[uname] = {
+            username: uname,
+            countryCode: dial,
+            countryName: cName,
+            countryFlag: cFlag,
+            encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
+            createdAt: new Date().toISOString()
+          };
+          saveEncryptedUsersMap(usersMap);
+        } else {
+          if (!usersMap[uname]) {
+            showBanner(`Account ${uname} not found. Switch to "Sign Up" to register it first.`, false);
+            return;
+          }
+          if (!verifyUserCredentials(usersMap[uname], dial, pin5)) {
+            showBanner(`Incorrect Country Code (${dial}) or 5-Digit PIN for ${uname}.`, false);
+            return;
+          }
+        }
+
+        const activeProf = usersMap[uname];
+        const sessObj = {
+          username: activeProf.username,
+          countryCode: activeProf.countryCode,
+          countryName: activeProf.countryName,
+          countryFlag: activeProf.countryFlag,
+          loggedInAt: new Date().toISOString()
+        };
+
+        try {
+          const encSess = encryptPayload(sessObj);
+          sessionStorage.setItem(SESSION_STORAGE_KEY, encSess);
+          localStorage.setItem(SESSION_STORAGE_KEY, encSess);
+          localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
+          localStorage.setItem('oddandeven_just_logged_in', '1');
+        } catch (e) {}
+
+        // Register in Worldwide Leaderboard Map
+        const worldMap = loadWorldwidePlayersMap();
+        if (!worldMap[uname]) {
+          worldMap[uname] = {
+            name: uname,
+            countryCode: activeProf.countryCode,
+            countryFlag: activeProf.countryFlag,
+            countryName: activeProf.countryName,
+            isRealRegisteredUser: true,
+            elo: 1500,
+            peak: 1500,
+            wins: 0,
+            losses: 0,
+            matches: 0,
+            totalRuns: 0,
+            totalBalls: 0,
+            highScore: 0,
+            wicketsTaken: 0,
+            wicketsLost: 0,
+            ballsBowled: 0,
+            weeklyEloGain: 0,
+            weeklyWins: 0,
+            weeklyLosses: 0,
+            weeklyMatches: 0,
+            weeklyRuns: 0,
+            weeklyWickets: 0,
+            updatedAt: Date.now()
+          };
+          saveWorldwidePlayersMap(worldMap);
+        }
+
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const authBc = new BroadcastChannel('oddandeven_auth_sync');
+            authBc.postMessage({ type: 'AUTH_LOGIN_SUCCESS', session: sessObj });
+          } catch (e) {}
+        }
+        broadcastWorldwideSync(true);
+
+        updateUIState();
+        showBanner(`✓ Connected as ${activeProf.countryFlag} ${uname}! Launching Arena...`, true);
+        setTimeout(() => navigateToHandCricketArena('?from=login'), 250);
+      }
+
+      window.onload = function () {
+        initWorldwideLeaderboardHub();
+
+        const params = new URLSearchParams(window.location.search);
+        const signedOutParam = params.get('signedout') === '1';
+
+        const usersMap = loadEncryptedUsersMap();
+        if (Object.keys(usersMap).length === 0) {
+          setMode('SIGNUP');
+        } else {
+          setMode('LOGIN');
+        }
+
+        if (signedOutParam) {
+          showBanner('You have signed out safely. Sign in below to return to the pitch.', true);
+        } else {
+          // If user has NOT signed out (active session exists), auto-redirect when used as main.html entry window on live host
+          const activeSess = loadActiveSession();
+          if (activeSess && activeSess.username && params.get('stay') !== '1' && !isSandboxedPreviewIframe()) {
+            updateUIState();
+            setTimeout(() => navigateToHandCricketArena('?from=login'), 300);
+          }
+        }
+
+        el.tabAuthLogin.addEventListener('click', () => setMode('LOGIN'));
+        el.tabAuthSignup.addEventListener('click', () => setMode('SIGNUP'));
+        el.inputAuthPin5.addEventListener('input', updateUIState);
+        el.selectAuthCountry.addEventListener('change', updateUIState);
+        el.btnSubmitAuth.addEventListener('click', handleAuthSubmit);
+
+        if (el.btnTogglePinVisibility) {
+          el.btnTogglePinVisibility.addEventListener('click', () => {
+            const isHidden = el.inputAuthPin5.type === 'password';
+            el.inputAuthPin5.type = isHidden ? 'text' : 'password';
+            el.btnTogglePinVisibility.textContent = isHidden ? 'Hide PIN' : 'Show PIN';
+          });
+        }
+
+        el.btnContinueSession.addEventListener('click', () => navigateToHandCricketArena('?from=login'));
+        el.btnLogoutSessionHere.addEventListener('click', () => {
+          try {
+            sessionStorage.removeItem(SESSION_STORAGE_KEY);
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+          } catch (e) {}
+          updateUIState();
+          showBanner('Signed out of active session.', true);
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') handleAuthSubmit();
+        });
+
+        updateUIState();
+      };
+    })();
+  </script>
+</body>
+</html>
