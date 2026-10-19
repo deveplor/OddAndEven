@@ -1,0 +1,2736 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>OddAndEven.in — Mobile Arena</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #211f1c;
+      background-image: radial-gradient(circle at 50% 0%, #2c2925 0%, #1e1d1a 60%, #141311 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.4;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .font-brand {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    }
+    .glass-card {
+      background: #2b2824;
+      border: 1px solid #423e39;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .glass-card-active {
+      background: #332f2a;
+      border: 2px solid #81b64c;
+      box-shadow: 0 4px 18px rgba(129, 182, 76, 0.25);
+    }
+    .chess-green-btn {
+      background: #81b64c;
+      color: #ffffff;
+      border-bottom: 3.5px solid #57852e;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      transition: all 0.1s ease;
+    }
+    .chess-green-btn:active:not(:disabled) {
+      transform: translateY(2px);
+      border-bottom-width: 1px;
+    }
+    .num-btn {
+      background: #36322d;
+      border: 1px solid #4a453e;
+      border-bottom: 3.5px solid #1f1d1a;
+      color: #ffffff;
+      transition: all 0.08s ease;
+    }
+    .num-btn:active:not(:disabled) {
+      background: #81b64c;
+      border-color: #95c95e;
+      border-bottom-color: #537d2b;
+      transform: translateY(2px);
+      border-bottom-width: 1px;
+    }
+    .num-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .drawer-backdrop {
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(4px);
+    }
+    .drawer-transition {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .drawer-open {
+      transform: translateX(0%) !important;
+    }
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #47433d;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#211f1c] text-slate-100 p-0 m-0 overflow-x-hidden">
+
+  <!-- COMPACT MOBILE HEADER (Hamburger + Brand + Match Status + Controls) -->
+  <header class="w-full bg-[#181715] border-b border-[#36332e] px-3 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-md">
+    <div class="flex items-center gap-2">
+      <!-- Hamburger Menu Button to open Left Navigation Sidebar -->
+      <button id="btnOpenSidebar" type="button" aria-label="Open Navigation Menu" class="w-9 h-9 rounded-xl bg-[#262420] border border-[#3d3a34] flex items-center justify-center text-slate-200 active:scale-95 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+
+      <!-- Brand Logo -->
+      <div class="flex items-baseline gap-1">
+        <span class="font-brand font-black text-base text-white tracking-tight flex items-baseline">
+          <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span>
+        </span>
+        <span class="text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">M</span>
+      </div>
+    </div>
+
+    <!-- Active Mode & Header Quick Toggles -->
+    <div class="flex items-center gap-1.5">
+      <span id="phaseBadge" class="px-2 py-0.5 text-[10px] font-mono-num font-extrabold uppercase rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+        Toss Phase
+      </span>
+
+      <button id="btnMute" type="button" class="w-8 h-8 rounded-lg bg-[#272521] border border-[#3d3a34] flex items-center justify-center text-sm" aria-label="Toggle Sound">
+        <span id="muteIcon">🔊</span>
+      </button>
+
+      <button id="btnQuickRestart" type="button" class="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-rose-500/15 text-rose-300 border border-rose-500/30 active:scale-95 transition">
+        ↺ Reset
+      </button>
+    </div>
+  </header>
+
+  <!-- SLIDE-OVER BACKDROP FOR LEFT SIDEBAR -->
+  <div id="drawerBackdrop" class="fixed inset-0 drawer-backdrop z-50 hidden transition-opacity"></div>
+
+  <!-- LEFT SIDEBAR DRAWER (Play Bot, Multiplayer, Leaderboard, Friends, Events, Account) -->
+  <aside id="mobileDrawer" class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#161513] border-r border-[#36332e] z-50 transform -translate-x-full drawer-transition flex flex-col justify-between shadow-2xl">
+    <div class="p-4 space-y-4 overflow-y-auto flex-1">
+      <!-- Drawer Header with Close Button -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#2d2a25]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-[#81b64c] flex items-center justify-center text-white font-black text-sm">
+            🏏
+          </div>
+          <div>
+            <div class="font-brand text-sm font-extrabold text-white">OddAndEven.in</div>
+            <div class="text-[9px] font-bold text-[#81b64c] uppercase tracking-wider">Navigation Rail</div>
+          </div>
+        </div>
+        <button id="btnCloseSidebar" type="button" class="w-8 h-8 rounded-lg bg-[#24221f] text-slate-400 hover:text-white flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+
+      <!-- Navigation Mode Buttons -->
+      <div class="space-y-1.5">
+        <button id="sideNavPitch" type="button" class="w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40">
+          <span class="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-sm">🏏</span>
+          <div>
+            <div>Active Pitch</div>
+            <div class="text-[9px] text-emerald-400 font-normal">Scorecard, Toss &amp; Keypad</div>
+          </div>
+        </button>
+
+        <button id="sideNavBot" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+          <span class="w-7 h-7 rounded-lg bg-cyan-500/15 flex items-center justify-center text-sm">🤖</span>
+          <div class="min-w-0">
+            <div class="font-extrabold text-white">Play Bot (250–2800 Elo)</div>
+            <div class="text-[9px] text-amber-300 font-normal" id="sideNavBotSubtitle">Rohan • 1100 Elo (Casual)</div>
+          </div>
+        </button>
+
+        <button id="sideNavMultiplayer" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+          <span class="w-7 h-7 rounded-lg bg-purple-500/15 flex items-center justify-center text-sm">👥</span>
+          <div class="min-w-0">
+            <div class="font-extrabold text-white">Play Multiplayer (1v1)</div>
+            <div class="text-[9px] text-purple-300 font-normal">Ranked (+8 / -8 Elo Rooms)</div>
+          </div>
+        </button>
+
+        <button id="sideNavLeaderboard" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+          <span class="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center text-sm">🏆</span>
+          <div class="min-w-0">
+            <div class="font-extrabold text-white">Leaderboard</div>
+            <div class="text-[9px] text-amber-300 font-mono-num font-normal" id="sideNavEloSub">1500 ELO</div>
+          </div>
+        </button>
+
+        <button id="sideNavFriends" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
+          <span class="w-7 h-7 rounded-lg bg-blue-500/15 flex items-center justify-center text-sm">🤝</span>
+          <div class="min-w-0 flex-1 flex items-center justify-between">
+            <div>
+              <div class="font-extrabold text-white">Friends &amp; Rivals</div>
+              <div class="text-[9px] text-blue-300 font-normal">Find &amp; Add Players</div>
+            </div>
+            <span id="sideNavFriendsCountBadge" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30">0</span>
+          </div>
+        </button>
+
+        <button id="sideNavEvents" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+          <span class="w-7 h-7 rounded-lg bg-pink-500/20 flex items-center justify-center text-sm">🎟️</span>
+          <div class="min-w-0">
+            <div class="font-extrabold text-white">Events &amp; Cups</div>
+            <div class="text-[9px] text-pink-300 font-normal">Championship Leagues</div>
+          </div>
+        </button>
+
+        <button id="sideNavShowcase" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+          <span class="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-sm">✨</span>
+          <div class="min-w-0">
+            <div class="font-extrabold text-white">Game Hub</div>
+            <div class="text-[9px] text-slate-400 font-normal">Mode Overview &amp; Features</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Quick Action Utilities -->
+      <div class="pt-2 border-t border-[#2d2a25] space-y-1.5">
+        <button id="btnRules" type="button" class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-[#1f1d1a] text-slate-300 border border-[#36332e] flex items-center justify-between">
+          <span>📖 Official Rules</span>
+          <span>→</span>
+        </button>
+        <button id="btnSwitchToDesktop" type="button" class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-[#1f1d1a] text-slate-400 border border-[#36332e] flex items-center justify-between">
+          <span>🖥️ Open Desktop Layout</span>
+          <span>↗</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Drawer Footer: Authenticated Account Identity -->
+    <div class="p-3.5 bg-[#100f0e] border-t border-[#2d2a25] space-y-2">
+      <div class="flex items-center justify-between text-xs">
+        <div class="min-w-0">
+          <div class="text-[9px] font-bold uppercase text-slate-400">Authenticated Player</div>
+          <div id="sidebarUserIdentity" class="font-black text-emerald-300 truncate">🇮🇳 PLAYER (+91)</div>
+        </div>
+        <span id="sidebarEloDisplay" class="font-mono-num font-black text-amber-300 text-xs">1500 ELO</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1.5 text-center text-[10px]">
+        <div class="bg-[#1b1a17] p-1 rounded-lg border border-[#302e2b]">
+          <span class="text-slate-400 block text-[9px]">Runs</span>
+          <span id="sidebarCareerRuns" class="font-mono-num font-bold text-white">0</span>
+        </div>
+        <div class="bg-[#1b1a17] p-1 rounded-lg border border-[#302e2b]">
+          <span class="text-slate-400 block text-[9px]">Wickets</span>
+          <span id="sidebarCareerWickets" class="font-mono-num font-bold text-cyan-300">0</span>
+        </div>
+      </div>
+
+      <!-- Active Opponent & Commentary Info in Drawer -->
+      <div class="p-2 rounded-xl bg-[#171614] border border-[#2f2c28] space-y-1">
+        <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Current Challenger</div>
+        <div id="sidebarOpponentBadge" class="text-xs font-black text-cyan-300 flex items-center gap-1.5">
+          <span>⚡</span>
+          <span>Rohan (1100 Elo)</span>
+        </div>
+        <div id="sidebarCommentaryStyleBadge" class="text-[10px] text-amber-300/90 font-medium">
+          🎙️ Hype Broadcast
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 pt-1">
+        <button id="btnOpenAuthModal" type="button" class="flex-1 py-1.5 rounded-lg text-[10px] font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+          Account
+        </button>
+        <button id="btnHeaderSignOut" type="button" class="py-1.5 px-3 rounded-lg text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/35">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN WORKSPACE: Uncluttered Mobile Core (Scorecard, Target, Canvas, 15s Clock & Keypad) -->
+  <main class="flex-1 flex flex-col justify-between p-3 max-w-md mx-auto w-full">
+
+    <!-- AUXILIARY INLINE VIEWS (Shown when selected in Sidebar Drawer) -->
+
+    <!-- INLINE VIEW 1: GAME HUB SHOWCASE -->
+    <section id="centerShowcasePanel" class="hidden glass-card rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
+        <h3 class="font-extrabold text-sm text-white">Game Hub</h3>
+        <button id="btnToggleShowcaseCompact" type="button" class="text-xs text-emerald-400 font-bold">← Back to Pitch</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="cardQuickBot" type="button" class="p-3 rounded-xl bg-[#1e1c19] border border-[#3d3a35] text-left">
+          <div class="text-xl">🤖</div>
+          <div class="text-xs font-black text-white mt-1">Play Bot</div>
+          <div class="text-[9px] text-amber-300">Casual (No Rating Change)</div>
+        </button>
+        <button id="cardQuickMp" type="button" class="p-3 rounded-xl bg-[#1e1c19] border border-[#3d3a35] text-left">
+          <div class="text-xl">👥</div>
+          <div class="text-xs font-black text-white mt-1">Play Multiplayer</div>
+          <div class="text-[9px] text-purple-300">Ranked (+8 / -8 Elo)</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- INLINE VIEW 2: BOT SELECTION (250–2800 ELO) -->
+    <section id="screenBotSetup" class="hidden glass-card rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
+        <div>
+          <h3 class="font-extrabold text-sm text-white flex items-center gap-1.5">
+            <span>🤖</span>
+            <span>Bot Challengers (250–2800 Elo)</span>
+          </h3>
+          <p class="text-[10px] text-amber-300">⚠️ Practice Match: Rating changes are frozen (+0 Elo)</p>
+        </div>
+        <button id="btnBackFromBotSetup" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
+      </div>
+
+      <!-- 4 Elo Tiers matching bots.html -->
+      <div class="space-y-2">
+        <!-- 1. BASIC BOT (250–700 Elo) -->
+        <button id="btnBotRookie" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              BASIC TIER • 250–700 ELO
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">450</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🌱</span>
+            <div>
+              <div class="text-xs font-bold text-white">Sunny "Friendly" Bot</div>
+              <div class="text-[10px] text-emerald-300/90">Very Simple • Lets You Score Big</div>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-tight">Plays simple, predictable hands so you can smash boundaries and build high scores!</p>
+        </button>
+
+        <!-- 2. INTERMEDIATE BOT (700–1400 Elo) -->
+        <button id="btnBotTactician" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border-2 border-cyan-400 shadow-md transition space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+              INTERMEDIATE • 700–1400 ELO
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">1100</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl">⚡</span>
+            <div>
+              <div class="text-xs font-bold text-white">Rohan "Challenger" Bot</div>
+              <div class="text-[10px] text-cyan-300/90">Balanced • Solid Attack &amp; Defense</div>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-tight">Mixes middle &amp; high shots while watching for your repeated numbers.</p>
+        </button>
+
+        <!-- 3. ADVANCED BOT (1400–2200 Elo) -->
+        <button id="btnBotAggressor" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              ADVANCED • 1400–2200 ELO
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">1850</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🧠</span>
+            <div>
+              <div class="text-xs font-bold text-white">Vikram "Tactician" AI</div>
+              <div class="text-[10px] text-amber-300/90">Very Difficult • Markov Reader</div>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-tight">1st-Order Markov pattern reader that spots your number transition habits.</p>
+        </button>
+
+        <!-- 4. MASTER BOT (2200–2800 Elo) -->
+        <button id="btnBotWall" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
+              MASTER TIER • 2200–2800 ELO
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">2650</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl">👑</span>
+            <div>
+              <div class="text-xs font-bold text-white">Apex "Grandmaster" Oracle</div>
+              <div class="text-[10px] text-rose-300/90">Toughest Boss • N-Gram &amp; EV Optimizer</div>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-tight">Multi-order N-Gram reader &amp; Expected-Value optimizer against the target!</p>
+        </button>
+      </div>
+
+      <!-- Commentary Broadcast Style selection from bots.html -->
+      <div class="p-2.5 rounded-xl bg-[#161513] border border-[#35322d] space-y-1.5">
+        <label for="botSetupCommentaryStyle" class="block text-[10px] font-bold uppercase tracking-wider text-amber-300">
+          Commentary Broadcast Flavor
+        </label>
+        <select id="botSetupCommentaryStyle" class="w-full px-2.5 py-1.5 rounded-lg bg-[#22201d] border border-[#3d3a34] text-white text-xs font-bold focus:outline-none focus:border-amber-400">
+          <option value="HYPE" selected>🔥 Stadium Hype Broadcast (Energetic)</option>
+          <option value="TACTICAL">🧠 Pro Analyst &amp; Mind-Games (Tactical)</option>
+          <option value="CLASSIC">📻 Classic Crisp Cricket Feed</option>
+        </select>
+      </div>
+
+      <button id="btnLaunchBotMatch" type="button" class="w-full py-3 rounded-xl font-black text-xs chess-green-btn">
+        START BOT MATCH ON PITCH →
+      </button>
+    </section>
+
+    <!-- INLINE VIEW 3: MULTIPLAYER ROOM LOBBY -->
+    <section id="screenMpSetup" class="hidden glass-card rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
+        <div>
+          <h3 class="font-extrabold text-sm text-white">👥 Multiplayer Rooms</h3>
+          <p class="text-[10px] text-slate-400">1v1 Room Code • Ranked (+8 / -8 Elo)</p>
+        </div>
+        <button id="btnBackFromMpSetup" type="button" class="text-xs text-emerald-400 font-bold">← Pitch</button>
+      </div>
+
+      <div id="inlineLobbyMatchupCard" class="p-3 rounded-xl bg-[#181715] border border-[#383530] space-y-2 text-center">
+        <span id="inlineNetStatusBadge" class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+          Create or Join a Room
+        </span>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+            <div class="text-[9px] uppercase font-bold text-emerald-400">Host (P1)</div>
+            <div id="inlineLobbyP1Display" class="font-black text-white truncate">YOU</div>
+          </div>
+          <div id="inlineLobbyP2Card" class="p-2 rounded-lg bg-slate-900 border border-slate-700">
+            <div class="text-[9px] uppercase font-bold text-cyan-400">Guest (P2)</div>
+            <div id="inlineLobbyP2Display" class="font-black text-slate-400 truncate">Waiting...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <button id="btnInlineCreateRoom" type="button" class="w-full py-2.5 rounded-xl font-extrabold text-xs bg-emerald-600 text-white">
+          ⚡ Generate Room Code (Host)
+        </button>
+        <div id="inlineHostCodeDisplay" class="hidden text-center space-y-1">
+          <span class="text-[10px] text-slate-400">Share Code:</span>
+          <div class="flex items-center justify-center gap-2">
+            <span id="inlineHostCodeValue" class="font-mono-num text-lg font-black text-amber-300 bg-slate-950 px-3 py-1 rounded-lg">------</span>
+            <button id="btnInlineCopyCode" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 text-xs font-bold text-slate-200">Copy</button>
+          </div>
+        </div>
+        <div class="flex gap-1.5 pt-1">
+          <input id="inlineInputJoinCode" type="text" maxlength="10" placeholder="Enter Room Code" class="w-full px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num text-xs uppercase" />
+          <button id="btnInlineJoinRoom" type="button" class="px-4 py-2 rounded-xl font-bold text-xs bg-cyan-600 text-white shrink-0">Join</button>
+        </div>
+      </div>
+
+      <button id="btnLaunchMpMatch" type="button" disabled class="w-full py-3 rounded-xl font-black text-xs bg-indigo-600 disabled:opacity-40 text-white">
+        START MULTIPLAYER MATCH →
+      </button>
+    </section>
+
+    <!-- INLINE VIEW 4: LEADERBOARD -->
+    <section id="screenLeaderboard" class="hidden glass-card rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
+        <div>
+          <h3 class="font-extrabold text-sm text-white flex items-center gap-1.5">
+            <span>🏆</span>
+            <span>Arena Leaderboard</span>
+          </h3>
+          <p id="lbModeSubNote" class="text-[10px] text-amber-300">Worldwide Standings • Real Players Only</p>
+        </div>
+        <button id="btnBackFromLeaderboard" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
+      </div>
+
+      <!-- 3-Way Category Switches: Global | Weekly (Mon-Sun) | Total Runs -->
+      <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#181715] text-[11px] font-bold border border-[#383530]">
+        <button id="btnLbSwitchGlobal" type="button" class="py-1.5 rounded-lg bg-[#81b64c] text-white transition">🌍 Global</button>
+        <button id="btnLbSwitchWeekly" type="button" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">📅 Weekly</button>
+        <button id="btnLbSwitchRuns" type="button" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">🏏 Runs</button>
+      </div>
+
+      <!-- Weekly Active Window Banner -->
+      <div id="lbWeeklyWindowBanner" class="p-2 rounded-xl bg-[#181715] border border-[#383530] flex items-center justify-between text-[10px]">
+        <span class="px-1.5 py-0.5 rounded bg-[#81b64c]/20 text-[#a3d96c] font-mono-num font-bold uppercase">MON – SUN</span>
+        <span id="lbWeeklyRangeText" class="font-semibold text-slate-300 truncate">Current Week Cycle</span>
+      </div>
+
+      <!-- User Quick Rating & Career Performance Strip -->
+      <div class="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+        <div class="bg-[#181715] p-2 rounded-xl border border-[#302e2b]">
+          <span id="lbCard1Title" class="text-slate-400 block text-[9px] uppercase font-bold">Rating</span>
+          <span id="lbUserEloBig" class="font-mono-num font-black text-amber-300 text-xs">1500</span>
+        </div>
+        <div class="bg-[#181715] p-2 rounded-xl border border-[#302e2b]">
+          <span id="lbCard2Title" class="text-slate-400 block text-[9px] uppercase font-bold">Peak</span>
+          <span id="lbPeakEloBig" class="font-mono-num font-black text-emerald-300 text-xs">1500</span>
+        </div>
+        <div class="bg-[#181715] p-2 rounded-xl border border-[#302e2b]">
+          <span id="lbCard3Title" class="text-slate-400 block text-[9px] uppercase font-bold">Runs</span>
+          <span id="lbNetDeltaBig" class="font-mono-num font-black text-cyan-300 text-xs">0</span>
+        </div>
+        <div class="bg-[#181715] p-2 rounded-xl border border-[#302e2b]">
+          <span id="lbCard4Title" class="text-slate-400 block text-[9px] uppercase font-bold">W–L</span>
+          <span id="lbWinLossBig" class="font-mono-num font-black text-purple-300 text-xs">0–0</span>
+        </div>
+      </div>
+
+      <!-- Column Labels -->
+      <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">
+        <span id="lbTableLeftHeader">Player Standings</span>
+        <span id="lbTableRightHeader">Score / Elo</span>
+      </div>
+
+      <!-- Real Players Standings Scroll Area -->
+      <div id="leaderboardStandingsList" class="space-y-1.5 max-h-64 overflow-y-auto text-xs pr-0.5"></div>
+    </section>
+
+    <!-- INLINE VIEW 4B: FRIENDS & PLAYER SEARCH -->
+    <section id="screenFriends" class="hidden glass-card rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
+        <div>
+          <h3 class="font-extrabold text-sm text-white flex items-center gap-1.5">
+            <span>🤝</span>
+            <span>Friends &amp; Challengers</span>
+          </h3>
+          <p class="text-[10px] text-blue-300">Search registered usernames and build your rival roster</p>
+        </div>
+        <button id="btnBackFromFriends" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="space-y-1">
+        <label for="inputSearchFriendUsername" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          Search Registered Player Username
+        </label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
+          <input 
+            id="inputSearchFriendUsername" 
+            type="text" 
+            placeholder="Type player tag (e.g. VIRAT_18)..." 
+            maxlength="16"
+            class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-xs font-mono-num font-extrabold uppercase text-white placeholder:normal-case placeholder:font-normal placeholder:text-slate-500 focus:outline-none focus:border-blue-400 transition"
+          />
+        </div>
+      </div>
+
+      <!-- Search Results Area -->
+      <div id="friendSearchResultsArea" class="hidden space-y-1.5 p-2 rounded-xl bg-[#151412] border border-[#33302b]">
+        <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
+          <span>Search Results</span>
+          <span id="friendSearchResultsCount" class="text-blue-300 font-mono-num">0 found</span>
+        </div>
+        <div id="friendSearchResultsList" class="space-y-1.5 max-h-44 overflow-y-auto pr-0.5"></div>
+      </div>
+
+      <!-- My Friends List Heading & Counter -->
+      <div class="pt-1 border-t border-[#36332e] flex items-center justify-between">
+        <span class="text-xs font-extrabold text-white flex items-center gap-1.5">
+          <span>⭐</span>
+          <span>My Friends Roster</span>
+        </span>
+        <span id="myFriendsCountPill" class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+          0 Friends
+        </span>
+      </div>
+
+      <!-- Friends List Container -->
+      <div id="myFriendsListContainer" class="space-y-1.5 max-h-56 overflow-y-auto text-xs pr-0.5">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- INLINE VIEW 5: EVENTS -->
+    <section id="screenEvents" class="hidden glass-card rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
+        <h3 class="font-extrabold text-sm text-white">🎟️ Events &amp; Tournaments</h3>
+        <button id="btnBackFromEvents" type="button" class="text-xs text-emerald-400 font-bold">← Pitch</button>
+      </div>
+      <div class="p-3 rounded-xl bg-[#191816] border border-pink-500/30 text-xs space-y-1">
+        <div class="font-black text-pink-300">OddAndEven.in Country Clash</div>
+        <p class="text-slate-400 text-[11px]">Compete with players worldwide and accumulate runs under your username!</p>
+      </div>
+    </section>
+
+    <!-- PRIMARY ACTIVE PITCH (STICKY SCORECARD, TARGET, CANVAS, 15S CLOCK & RUNS KEYPAD) -->
+    <div id="activePitchWrapper" class="flex flex-col gap-2.5 flex-1 justify-between">
+
+      <!-- 1. FOCUSED CLASH SCORECARD MODULE -->
+      <section class="glass-card rounded-2xl p-3 space-y-2 shrink-0">
+        <!-- Status & Target Equation -->
+        <div class="flex items-center justify-between text-[11px] font-mono-num">
+          <span id="inningsLabel" class="px-2 py-0.5 rounded-md font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            TOSS PHASE
+          </span>
+          <div class="text-right">
+            <span class="text-slate-400 font-semibold uppercase text-[10px]">Target: </span>
+            <span id="targetValueDisplay" class="text-amber-300 font-black text-sm">—</span>
+          </div>
+        </div>
+
+        <!-- 2-Box Head-to-Head Comparison -->
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Player 1 Card -->
+          <div id="userScoreCard" class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
+            <div class="flex items-center justify-between text-[10px]">
+              <span id="p1CardTitle" class="font-extrabold text-emerald-300 truncate">YOU</span>
+              <span id="userRoleBadge" class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BAT</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+              <div id="userMainScore" class="text-3xl font-black font-mono-num text-white">0</div>
+              <div class="text-right">
+                <span class="text-[9px] text-slate-400 uppercase block">Last</span>
+                <span id="userLastPlayedBadge" class="font-mono-num font-black text-emerald-400 text-sm">-</span>
+              </div>
+            </div>
+            <div id="userSubMeta" class="text-[9px] font-mono-num text-slate-400 mt-0.5">Balls: 0</div>
+          </div>
+
+          <!-- Player 2 / Opponent Card -->
+          <div id="aiScoreCard" class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
+            <div class="flex items-center justify-between text-[10px]">
+              <span id="p2CardTitle" class="font-extrabold text-cyan-300 truncate">OPPONENT</span>
+              <span id="aiRoleBadge" class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BOWL</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+              <div id="aiMainScore" class="text-3xl font-black font-mono-num text-white">0</div>
+              <div class="text-right">
+                <span class="text-[9px] text-slate-400 uppercase block">Last</span>
+                <span id="aiLastPlayedBadge" class="font-mono-num font-black text-cyan-400 text-sm">-</span>
+              </div>
+            </div>
+            <div id="aiSubMeta" class="text-[9px] font-mono-num text-slate-400 mt-0.5">Balls: 0</div>
+          </div>
+        </div>
+
+        <!-- Live Outcome Banner -->
+        <div id="turnOutcomeBanner" class="p-1.5 rounded-xl bg-[#171613] border border-[#33302b] text-[11px] font-semibold text-slate-300 text-center truncate">
+          Select Odd or Even to start the Toss!
+        </div>
+      </section>
+
+      <!-- 2. HAND CLASH CANVAS (Scaled for Mobile) -->
+      <section class="glass-card rounded-2xl p-2 relative overflow-hidden shrink-0">
+        <div class="relative w-full h-36 rounded-xl overflow-hidden bg-slate-950 border border-slate-800/80">
+          <canvas id="arenaCanvas" class="w-full h-full block"></canvas>
+        </div>
+      </section>
+
+      <!-- 3. SYNCHRONIZED 15-SECOND TURN TIMER BAR -->
+      <div id="turnTimerBar" class="px-1 shrink-0 flex items-center justify-between gap-2 text-xs font-mono-num">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span>⏱️</span>
+          <span id="timerStatusTitle" class="font-bold text-slate-300 truncate">15s Turn Clock</span>
+        </div>
+        <span id="timerDigitalDisplay" class="px-2.5 py-0.5 rounded-lg font-black text-xs bg-[#12110f] text-[#81b64c] border border-[#3d3a34]">
+          00:15
+        </span>
+      </div>
+
+      <!-- 4. DYNAMIC INTERACTIVE GAME STAGE (TOSS OR GAMEPLAY) -->
+      <div class="my-auto py-1 flex flex-col gap-2.5">
+
+        <!-- VIEW 1: TOSS PHASE -->
+        <div id="viewToss" class="glass-card rounded-2xl p-3 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>🪙</span>
+              <span>Toss Decider</span>
+            </span>
+            <span id="tossCallIndicator" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
+              Selected Call: ODD
+            </span>
+          </div>
+
+          <!-- Odd / Even Toggle Buttons -->
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btnCallOdd" type="button" class="py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow">
+              ⚡ CALL ODD
+            </button>
+            <button id="btnCallEven" type="button" class="py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]">
+              ⚖️ CALL EVEN
+            </button>
+          </div>
+
+          <p class="text-[11px] text-center text-slate-400">
+            Pick your toss number (1–10) below:
+          </p>
+
+          <!-- 1-10 Toss Number Grid -->
+          <div id="tossNumberGrid" class="grid grid-cols-5 gap-1.5"></div>
+        </div>
+
+        <!-- VIEW 2: TOSS DECISION (Bat or Bowl Selection) -->
+        <div id="viewTossDecision" class="hidden glass-card rounded-2xl p-3.5 space-y-2.5 text-center">
+          <span id="tossWinnerTag" class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            YOU WON THE TOSS!
+          </span>
+          <div id="tossMathSummary" class="text-xs font-mono-num text-slate-300">
+            You: 5 + AI: 4 = 9 (ODD)
+          </div>
+          <p id="tossDecisionSubtext" class="text-xs text-slate-300">
+            Choose whether to Bat first or Bowl first:
+          </p>
+
+          <div id="userTossChoiceButtons" class="grid grid-cols-2 gap-2 pt-1">
+            <button id="btnChooseBat" type="button" class="py-3 rounded-xl font-extrabold text-xs chess-green-btn flex items-center justify-center gap-1.5">
+              <span>🏏</span>
+              <span>BAT FIRST</span>
+            </button>
+            <button id="btnChooseBowl" type="button" class="py-3 rounded-xl font-extrabold text-xs bg-cyan-600 text-white rounded-xl shadow border-b-4 border-cyan-800 flex items-center justify-center gap-1.5">
+              <span>⚾</span>
+              <span>BOWL FIRST</span>
+            </button>
+          </div>
+
+          <div id="aiTossChoiceContinue" class="hidden pt-1">
+            <button id="btnStartAfterAiToss" type="button" class="w-full py-3 rounded-xl font-black text-xs chess-green-btn">
+              START 1ST INNINGS →
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 3: ACTIVE GAMEPLAY INNINGS (Keys 1–10) -->
+        <div id="viewGameplay" class="space-y-1.5">
+          <div class="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span id="gameplayHeading">Pick Your Hand (1–10)</span>
+            <span id="gameplayRoleNotice" class="text-emerald-400">Batting</span>
+          </div>
+
+          <!-- Large 2-Row Thumb Grid (1-5 Top Row, 6-10 Bottom Row) -->
+          <div id="playNumberGrid" class="grid grid-cols-5 gap-1.5"></div>
+        </div>
+
+        <!-- VIEW 4: INNINGS BREAK -->
+        <div id="viewInningsBreak" class="hidden glass-card rounded-2xl p-4 space-y-2 text-center">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/35">
+            End of 1st Innings
+          </span>
+          <h3 id="breakHeadline" class="text-lg font-black text-white">Total: 42 Runs</h3>
+          <p id="breakTargetExplanation" class="text-xs text-amber-300 font-bold">
+            Target to chase in 2nd Innings: 43 Runs
+          </p>
+          <button id="btnStartSecondInnings" type="button" class="w-full py-3 mt-1 rounded-xl font-black text-xs chess-green-btn">
+            START 2ND INNINGS (CHASE) →
+          </button>
+        </div>
+
+        <!-- VIEW 5: GAME OVER & CASUAL BOT RATING NOTICE -->
+        <div id="viewGameOver" class="hidden glass-card rounded-2xl p-4 space-y-3 text-center">
+          <h2 id="gameOverTitle" class="text-2xl font-black text-white">🏆 MATCH OVER</h2>
+          <p id="gameOverMargin" class="text-xs text-slate-300"></p>
+
+          <!-- Rating Outcome Box: strictly displays that bot matches freeze Elo -->
+          <div id="gameOverRatingBox" class="p-2.5 rounded-xl bg-[#141311] border border-[#3d3a35] text-xs font-mono-num text-left">
+            <!-- Dynamic rating feedback -->
+          </div>
+
+          <button id="btnPlayAgain" type="button" class="w-full py-3.5 rounded-xl font-black text-sm chess-green-btn">
+            PLAY NEXT MATCH
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- RULES MODAL -->
+  <div id="rulesModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+    <div class="glass-card max-w-sm w-full rounded-2xl p-4 space-y-3 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a34]">
+        <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
+          <span>📖</span>
+          <span>Official Hand Cricket Rules</span>
+        </h3>
+        <button id="btnCloseRules" class="text-slate-400 font-bold p-1">✕</button>
+      </div>
+      <div class="space-y-2 text-xs text-slate-300 leading-relaxed">
+        <p><strong>1. Toss:</strong> Call Odd or Even and pick a number (1–10). If the sum matches your call, you choose to Bat or Bowl first.</p>
+        <p><strong>2. Scoring:</strong> Both players pick numbers (1–10). If numbers are different, the batter scores their runs. If numbers match exactly, the batter is <strong>OUT!</strong></p>
+        <p><strong>3. The Chase:</strong> In Innings 2, roles swap. If the chasing team reaches the target, they win!</p>
+        <p><strong>4. Ratings:</strong> Multiplayer matches earn or lose ±8 Elo. Matches against bots are <strong>Casual Practice (Ratings Frozen)</strong>!</p>
+      </div>
+      <button id="btnGotItRules" class="w-full py-2.5 rounded-xl font-bold text-xs chess-green-btn">Got It!</button>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATED ACCOUNT MODAL -->
+  <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-md p-4">
+    <div class="glass-card max-w-sm w-full rounded-2xl p-5 border border-[#81b64c]/60 space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a34]">
+        <h3 id="modalAuthTitle" class="font-extrabold text-sm text-white">🔐 Player Credentials</h3>
+        <button id="btnCloseAuthModal" class="text-slate-400 font-bold p-1">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#1d1c19] text-xs font-bold">
+        <button id="modalTabLogin" class="py-1.5 rounded-lg bg-[#81b64c] text-white">Login</button>
+        <button id="modalTabSignup" class="py-1.5 rounded-lg text-slate-400">Sign Up</button>
+      </div>
+
+      <div id="modalAuthAlert" class="hidden p-2 rounded-xl text-xs font-bold border"></div>
+
+      <div class="space-y-2 text-xs">
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Username</label>
+          <input id="modalInputUsername" type="text" maxlength="16" placeholder="e.g. VIRAT_18" class="w-full px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-extrabold uppercase" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Country &amp; 5-Digit PIN</label>
+          <div class="grid grid-cols-12 gap-1.5">
+            <select id="modalSelectCountry" class="col-span-5 px-2 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white text-[11px] font-bold">
+              <option value="+91" data-flag="🇮🇳" selected>🇮🇳 +91</option>
+              <option value="+1" data-flag="🇺🇸">🇺🇸 +1</option>
+              <option value="+44" data-flag="🇬🇧">🇬🇧 +44</option>
+              <option value="+61" data-flag="🇦🇺">🇦🇺 +61</option>
+              <option value="+971" data-flag="🇦🇪">🇦🇪 +971</option>
+            </select>
+            <input id="modalInputPin5" type="password" inputmode="numeric" maxlength="5" placeholder="•••••" class="col-span-7 px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num font-black tracking-widest" />
+          </div>
+        </div>
+      </div>
+
+      <button id="btnModalSubmitAuth" class="w-full py-2.5 rounded-xl font-black text-xs chess-green-btn">
+        Save &amp; Enter Arena →
+      </button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ==========================================
+      // 1. SYNTHESIZED SOUND ENGINE (Web Audio API)
+      // ==========================================
+      const SoundFX = {
+        ctx: null,
+        muted: false,
+        init() {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+        },
+        playTone(freq, type, duration, gainVal = 0.12, slideTo = null) {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            if (slideTo) {
+              osc.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
+            }
+            gain.gain.setValueAtTime(gainVal, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+          } catch (e) {}
+        },
+        click() {
+          this.playTone(520, 'sine', 0.07, 0.08, 660);
+        },
+        runScored(runs) {
+          if (runs >= 6) {
+            this.playTone(440, 'triangle', 0.12, 0.14, 660);
+            setTimeout(() => this.playTone(660, 'triangle', 0.18, 0.14, 880), 90);
+          } else {
+            this.playTone(380 + runs * 30, 'sine', 0.11, 0.1, 520 + runs * 35);
+          }
+        },
+        wicket() {
+          this.playTone(300, 'sawtooth', 0.18, 0.15, 140);
+          setTimeout(() => this.playTone(180, 'sawtooth', 0.28, 0.15, 85), 130);
+        },
+        victory() {
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((n, idx) => {
+            setTimeout(() => this.playTone(n, 'triangle', 0.18, 0.14), idx * 100);
+          });
+        },
+        defeat() {
+          const notes = [392.0, 349.23, 311.13, 261.63];
+          notes.forEach((n, idx) => {
+            setTimeout(() => this.playTone(n, 'sawtooth', 0.2, 0.11), idx * 110);
+          });
+        }
+      };
+
+      // ==========================================
+      // 2. ENCRYPTED AUTHENTICATION VAULT
+      // ==========================================
+      const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
+      const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
+      const SCORECARD_HISTORY_KEY = 'hc_arena_match_scorecards_v1';
+      const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+      const SIGNED_OUT_FLAG_KEY = 'oddandeven_signed_out_v1';
+      const GLOBAL_LB_CHANNEL = 'oddandeven_global_leaderboard_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+      const TURN_DURATION_SEC = 15;
+
+      const FAKE_SEED_NAMES = [
+        'AARAV_99',
+        'KABIR_STRIKER',
+        'PRIYA_XI',
+        'DEV_CAPTAIN',
+        'PLAYER_1',
+        'GUEST',
+        'YOU',
+        'FRIEND',
+        'WAITING...',
+        'LOGIN REQUIRED',
+        'UNAUTHENTICATED'
+      ];
+
+      const BOT_PROFILES = {
+        ROOKIE: {
+          name: 'Sunny (Basic Bot)',
+          shortName: 'Sunny',
+          elo: 450,
+          bracket: '250–700 ELO',
+          tier: 'Basic Tier',
+          icon: '🌱',
+          badge: 'SUNNY • 450 ELO'
+        },
+        TACTICIAN: {
+          name: 'Rohan (Interm. Bot)',
+          shortName: 'Rohan',
+          elo: 1100,
+          bracket: '700–1400 ELO',
+          tier: 'Intermediate Tier',
+          icon: '⚡',
+          badge: 'ROHAN • 1100 ELO'
+        },
+        AGGRESSOR: {
+          name: 'Vikram (Advanced AI)',
+          shortName: 'Vikram',
+          elo: 1850,
+          bracket: '1400–2200 ELO',
+          tier: 'Advanced Tier',
+          icon: '🧠',
+          badge: 'VIKRAM • 1850 ELO'
+        },
+        WALL: {
+          name: 'Apex Oracle (Master)',
+          shortName: 'Apex Oracle',
+          elo: 2650,
+          bracket: '2200–2800 ELO',
+          tier: 'Master Tier',
+          icon: '👑',
+          badge: 'ORACLE • 2650 ELO'
+        }
+      };
+
+      function getMondaySundayWeekInfo() {
+        const now = new Date();
+        const day = now.getDay();
+        const diffToMonday = day === 0 ? -6 : 1 - day;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + diffToMonday);
+        monday.setHours(0, 0, 0, 0);
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+
+        const opts = { month: 'short', day: 'numeric' };
+        const monStr = monday.toLocaleDateString('en-US', opts);
+        const sunStr = sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const weekKey = `${monday.getFullYear()}-${monday.getMonth() + 1}-${monday.getDate()}`;
+        return {
+          weekKey,
+          label: `${monStr} – ${sunStr}`
+        };
+      }
+
+      function loadWorldwidePlayersMap() {
+        try {
+          const raw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            FAKE_SEED_NAMES.forEach((fn) => delete parsed[fn]);
+            return parsed;
+          }
+        } catch (e) {}
+        return {};
+      }
+
+      function saveWorldwidePlayersMap(map) {
+        try {
+          localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(map));
+        } catch (e) {}
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
+            gbc.postMessage({ type: 'GLOBAL_LEADERBOARD_SYNC', allPlayers: map });
+          } catch (e) {}
+        }
+      }
+
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function encryptPayload(plainObj) {
+        const json = JSON.stringify(plainObj);
+        const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+        const bytes = [];
+        for (let i = 0; i < json.length; i++) {
+          const code = json.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff);
+          bytes.push(String.fromCharCode(code));
+        }
+        const b64 = btoa(unescape(encodeURIComponent(bytes.join(''))));
+        const sig = fnv1aHash(json + '::' + SECRET_SALT);
+        return `OAE1.${sig}.${b64}`;
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const raw = decodeURIComponent(escape(atob(parts[2])));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function derivePasswordVerifier(username, countryDial, pin5) {
+        const cleanUser = (username || '').trim().toUpperCase();
+        const combinedKey = `${countryDial}-${pin5}`;
+        const round1 = fnv1aHash(`${cleanUser}::${combinedKey}::${SECRET_SALT}`);
+        const round2 = fnv1aHash(`${round1}::${combinedKey}::OddAndEven.in`);
+        return encryptPayload({
+          u: cleanUser,
+          dial: countryDial,
+          combinedHash: `${round1}${round2}`,
+          masked: `${countryDial}-${pin5[0]}***${pin5[4]}`
+        });
+      }
+
+      function verifyUserCredentials(userRecord, countryDial, pin5) {
+        if (!userRecord || !userRecord.encryptedAuth) return false;
+        const dec = decryptPayload(userRecord.encryptedAuth);
+        if (!dec) return false;
+        const cleanUser = (userRecord.username || '').trim().toUpperCase();
+        const combinedKey = `${countryDial}-${pin5}`;
+        const round1 = fnv1aHash(`${cleanUser}::${combinedKey}::${SECRET_SALT}`);
+        const round2 = fnv1aHash(`${round1}::${combinedKey}::OddAndEven.in`);
+        return dec.dial === countryDial && dec.combinedHash === `${round1}${round2}`;
+      }
+
+      function loadEncryptedUsersMap() {
+        try {
+          const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+          if (!raw) return {};
+          const dec = decryptPayload(raw);
+          return (dec && typeof dec === 'object') ? dec : {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function saveEncryptedUsersMap(usersMap) {
+        try {
+          localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
+        } catch (e) {}
+      }
+
+      function loadActiveAuthSession() {
+        try {
+          if (localStorage.getItem(SIGNED_OUT_FLAG_KEY) === '1') return null;
+          const raw = sessionStorage.getItem(SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY);
+          return raw ? decryptPayload(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      // ==========================================
+      // 3. CORE STATE
+      // ==========================================
+      const STATE = {
+        mode: 'AI', // 'AI' | 'ONLINE_2P'
+        activeScreen: 'PITCH', // 'PITCH' | 'BOT_SETUP' | 'MP_SETUP' | 'LEADERBOARD' | 'FRIENDS' | 'EVENTS' | 'SHOWCASE'
+        eloRating: 1500,
+        peakElo: 1500,
+        myUsername: 'PLAYER',
+        myCountryCode: '+91',
+        myCountryFlag: '🇮🇳',
+        myCountryName: 'India',
+        p1Name: 'PLAYER',
+        p2Name: 'Sunny',
+        botDifficulty: 'TACTICIAN',
+        commentaryStyle: 'HYPE',
+        leaderboardTab: 'GLOBAL', // 'GLOBAL' | 'WEEKLY' | 'RUNS'
+        humanPlayers: {},
+
+        // Multiplayer / PeerJS
+        roomCode: null,
+        onlineRole: null, // 'HOST' | 'GUEST'
+        roomLocked: false,
+        p2Joined: false,
+        pendingP1Num: null,
+        pendingP2Num: null,
+        peer: null,
+        conn: null,
+
+        // Match progression
+        phase: 'TOSS', // 'TOSS' | 'TOSS_DECISION' | 'INNINGS_1' | 'INNINGS_BREAK' | 'INNINGS_2' | 'GAME_OVER'
+        tossCall: 'ODD',
+        tossUserNum: null,
+        tossAiNum: null,
+        tossWinner: null,
+        firstBatter: null,
+        currentBatter: null,
+        currentInnings: 0,
+
+        userScore: 0,
+        userBalls: 0,
+        aiScore: 0,
+        aiBalls: 0,
+        target: null,
+
+        lastUserNum: null,
+        lastAiNum: null,
+        lastOutcomeText: 'Select Odd or Even to start the Toss!',
+        winner: null,
+        winMarginText: '',
+
+        turnSecondsLeft: TURN_DURATION_SEC,
+        turnTimerId: null,
+        userNumHistory: [],
+
+        anim: {
+          particles: [],
+          flashAlpha: 0,
+          flashColor: '#81b64c',
+          calloutText: 'TOSS TIME',
+          calloutSub: 'Call Odd or Even'
+        }
+      };
+
+      // DOM Elements map
+      const dom = {
+        btnOpenSidebar: document.getElementById('btnOpenSidebar'),
+        btnCloseSidebar: document.getElementById('btnCloseSidebar'),
+        mobileDrawer: document.getElementById('mobileDrawer'),
+        drawerBackdrop: document.getElementById('drawerBackdrop'),
+
+        sideNavPitch: document.getElementById('sideNavPitch'),
+        sideNavBot: document.getElementById('sideNavBot'),
+        sideNavBotSubtitle: document.getElementById('sideNavBotSubtitle'),
+        sideNavMultiplayer: document.getElementById('sideNavMultiplayer'),
+        sideNavLeaderboard: document.getElementById('sideNavLeaderboard'),
+        sideNavFriends: document.getElementById('sideNavFriends'),
+        sideNavFriendsCountBadge: document.getElementById('sideNavFriendsCountBadge'),
+        screenFriends: document.getElementById('screenFriends'),
+        btnBackFromFriends: document.getElementById('btnBackFromFriends'),
+        inputSearchFriendUsername: document.getElementById('inputSearchFriendUsername'),
+        friendSearchResultsArea: document.getElementById('friendSearchResultsArea'),
+        friendSearchResultsCount: document.getElementById('friendSearchResultsCount'),
+        friendSearchResultsList: document.getElementById('friendSearchResultsList'),
+        myFriendsCountPill: document.getElementById('myFriendsCountPill'),
+        myFriendsListContainer: document.getElementById('myFriendsListContainer'),
+        sideNavEvents: document.getElementById('sideNavEvents'),
+        sideNavShowcase: document.getElementById('sideNavShowcase'),
+
+        sidebarUserIdentity: document.getElementById('sidebarUserIdentity'),
+        sidebarEloDisplay: document.getElementById('sidebarEloDisplay'),
+        sidebarCareerRuns: document.getElementById('sidebarCareerRuns'),
+        sidebarCareerWickets: document.getElementById('sidebarCareerWickets'),
+        sidebarOpponentBadge: document.getElementById('sidebarOpponentBadge'),
+        sidebarCommentaryStyleBadge: document.getElementById('sidebarCommentaryStyleBadge'),
+        sideNavEloSub: document.getElementById('sideNavEloSub'),
+
+        btnOpenAuthModal: document.getElementById('btnOpenAuthModal'),
+        btnHeaderSignOut: document.getElementById('btnHeaderSignOut'),
+        btnSwitchToDesktop: document.getElementById('btnSwitchToDesktop'),
+        btnMute: document.getElementById('btnMute'),
+        muteIcon: document.getElementById('muteIcon'),
+        btnQuickRestart: document.getElementById('btnQuickRestart'),
+        phaseBadge: document.getElementById('phaseBadge'),
+
+        activePitchWrapper: document.getElementById('activePitchWrapper'),
+        screenBotSetup: document.getElementById('screenBotSetup'),
+        screenMpSetup: document.getElementById('screenMpSetup'),
+        screenLeaderboard: document.getElementById('screenLeaderboard'),
+        screenEvents: document.getElementById('screenEvents'),
+        centerShowcasePanel: document.getElementById('centerShowcasePanel'),
+
+        inningsLabel: document.getElementById('inningsLabel'),
+        targetValueDisplay: document.getElementById('targetValueDisplay'),
+        p1CardTitle: document.getElementById('p1CardTitle'),
+        userRoleBadge: document.getElementById('userRoleBadge'),
+        userMainScore: document.getElementById('userMainScore'),
+        userLastPlayedBadge: document.getElementById('userLastPlayedBadge'),
+        userSubMeta: document.getElementById('userSubMeta'),
+
+        p2CardTitle: document.getElementById('p2CardTitle'),
+        aiRoleBadge: document.getElementById('aiRoleBadge'),
+        aiMainScore: document.getElementById('aiMainScore'),
+        aiLastPlayedBadge: document.getElementById('aiLastPlayedBadge'),
+        aiSubMeta: document.getElementById('aiSubMeta'),
+
+        turnOutcomeBanner: document.getElementById('turnOutcomeBanner'),
+        arenaCanvas: document.getElementById('arenaCanvas'),
+
+        turnTimerBar: document.getElementById('turnTimerBar'),
+        timerStatusTitle: document.getElementById('timerStatusTitle'),
+        timerDigitalDisplay: document.getElementById('timerDigitalDisplay'),
+
+        viewToss: document.getElementById('viewToss'),
+        tossCallIndicator: document.getElementById('tossCallIndicator'),
+        btnCallOdd: document.getElementById('btnCallOdd'),
+        btnCallEven: document.getElementById('btnCallEven'),
+        tossNumberGrid: document.getElementById('tossNumberGrid'),
+
+        viewTossDecision: document.getElementById('viewTossDecision'),
+        tossWinnerTag: document.getElementById('tossWinnerTag'),
+        tossMathSummary: document.getElementById('tossMathSummary'),
+        tossDecisionSubtext: document.getElementById('tossDecisionSubtext'),
+        userTossChoiceButtons: document.getElementById('userTossChoiceButtons'),
+        btnChooseBat: document.getElementById('btnChooseBat'),
+        btnChooseBowl: document.getElementById('btnChooseBowl'),
+        aiTossChoiceContinue: document.getElementById('aiTossChoiceContinue'),
+        btnStartAfterAiToss: document.getElementById('btnStartAfterAiToss'),
+
+        viewGameplay: document.getElementById('viewGameplay'),
+        gameplayHeading: document.getElementById('gameplayHeading'),
+        gameplayRoleNotice: document.getElementById('gameplayRoleNotice'),
+        playNumberGrid: document.getElementById('playNumberGrid'),
+
+        viewInningsBreak: document.getElementById('viewInningsBreak'),
+        breakHeadline: document.getElementById('breakHeadline'),
+        breakTargetExplanation: document.getElementById('breakTargetExplanation'),
+        btnStartSecondInnings: document.getElementById('btnStartSecondInnings'),
+
+        viewGameOver: document.getElementById('viewGameOver'),
+        gameOverTitle: document.getElementById('gameOverTitle'),
+        gameOverMargin: document.getElementById('gameOverMargin'),
+        gameOverRatingBox: document.getElementById('gameOverRatingBox'),
+        btnPlayAgain: document.getElementById('btnPlayAgain'),
+
+        rulesModal: document.getElementById('rulesModal'),
+        btnRules: document.getElementById('btnRules'),
+        btnCloseRules: document.getElementById('btnCloseRules'),
+        btnGotItRules: document.getElementById('btnGotItRules'),
+
+        authModal: document.getElementById('authModal'),
+        modalAuthTitle: document.getElementById('modalAuthTitle'),
+        btnCloseAuthModal: document.getElementById('btnCloseAuthModal'),
+        modalTabLogin: document.getElementById('modalTabLogin'),
+        modalTabSignup: document.getElementById('modalTabSignup'),
+        modalAuthAlert: document.getElementById('modalAuthAlert'),
+        modalInputUsername: document.getElementById('modalInputUsername'),
+        modalSelectCountry: document.getElementById('modalSelectCountry'),
+        modalInputPin5: document.getElementById('modalInputPin5'),
+        btnModalSubmitAuth: document.getElementById('btnModalSubmitAuth'),
+
+        btnBackFromBotSetup: document.getElementById('btnBackFromBotSetup'),
+        btnBackFromMpSetup: document.getElementById('btnBackFromMpSetup'),
+        btnBackFromLeaderboard: document.getElementById('btnBackFromLeaderboard'),
+        btnBackFromEvents: document.getElementById('btnBackFromEvents'),
+        btnToggleShowcaseCompact: document.getElementById('btnToggleShowcaseCompact'),
+
+        btnBotRookie: document.getElementById('btnBotRookie'),
+        btnBotTactician: document.getElementById('btnBotTactician'),
+        btnBotAggressor: document.getElementById('btnBotAggressor'),
+        btnBotWall: document.getElementById('btnBotWall'),
+        botSetupCommentaryStyle: document.getElementById('botSetupCommentaryStyle'),
+        btnLaunchBotMatch: document.getElementById('btnLaunchBotMatch'),
+
+        inlineNetStatusBadge: document.getElementById('inlineNetStatusBadge'),
+        inlineLobbyP1Display: document.getElementById('inlineLobbyP1Display'),
+        inlineLobbyP2Card: document.getElementById('inlineLobbyP2Card'),
+        inlineLobbyP2Display: document.getElementById('inlineLobbyP2Display'),
+        btnInlineCreateRoom: document.getElementById('btnInlineCreateRoom'),
+        inlineHostCodeDisplay: document.getElementById('inlineHostCodeDisplay'),
+        inlineHostCodeValue: document.getElementById('inlineHostCodeValue'),
+        btnInlineCopyCode: document.getElementById('btnInlineCopyCode'),
+        inlineInputJoinCode: document.getElementById('inlineInputJoinCode'),
+        btnInlineJoinRoom: document.getElementById('btnInlineJoinRoom'),
+        btnLaunchMpMatch: document.getElementById('btnLaunchMpMatch'),
+
+        cardQuickBot: document.getElementById('cardQuickBot'),
+        cardQuickMp: document.getElementById('cardQuickMp'),
+
+        btnLbSwitchGlobal: document.getElementById('btnLbSwitchGlobal'),
+        btnLbSwitchWeekly: document.getElementById('btnLbSwitchWeekly'),
+        btnLbSwitchRuns: document.getElementById('btnLbSwitchRuns'),
+        leaderboardStandingsList: document.getElementById('leaderboardStandingsList'),
+        lbModeSubNote: document.getElementById('lbModeSubNote'),
+        lbWeeklyWindowBanner: document.getElementById('lbWeeklyWindowBanner'),
+        lbWeeklyRangeText: document.getElementById('lbWeeklyRangeText'),
+        lbUserEloBig: document.getElementById('lbUserEloBig'),
+        lbPeakEloBig: document.getElementById('lbPeakEloBig'),
+        lbNetDeltaBig: document.getElementById('lbNetDeltaBig'),
+        lbWinLossBig: document.getElementById('lbWinLossBig'),
+        lbCard1Title: document.getElementById('lbCard1Title'),
+        lbCard2Title: document.getElementById('lbCard2Title'),
+        lbCard3Title: document.getElementById('lbCard3Title'),
+        lbCard4Title: document.getElementById('lbCard4Title'),
+        lbTableLeftHeader: document.getElementById('lbTableLeftHeader'),
+        lbTableRightHeader: document.getElementById('lbTableRightHeader')
+      };
+
+      function ensureHumanPlayerRecord(name, defaultElo = 1500, countryMeta = null) {
+        const clean = (name || 'PLAYER').trim().toUpperCase();
+        const wk = getMondaySundayWeekInfo().weekKey;
+        if (!STATE.humanPlayers[clean]) {
+          STATE.humanPlayers[clean] = {
+            name: clean,
+            countryCode: (countryMeta && countryMeta.countryCode) || STATE.myCountryCode || '+91',
+            countryFlag: (countryMeta && countryMeta.countryFlag) || STATE.myCountryFlag || '🇮🇳',
+            countryName: (countryMeta && countryMeta.countryName) || 'India',
+            isRealRegisteredUser: true,
+            elo: defaultElo,
+            peak: defaultElo,
+            wins: 0,
+            losses: 0,
+            matches: 0,
+            totalRuns: 0,
+            totalBalls: 0,
+            highScore: 0,
+            wicketsTaken: 0,
+            wicketsLost: 0,
+            ballsBowled: 0,
+            weekKey: wk,
+            weeklyEloGain: 0,
+            weeklyWins: 0,
+            weeklyLosses: 0,
+            weeklyMatches: 0,
+            weeklyRuns: 0,
+            weeklyWickets: 0,
+            updatedAt: Date.now()
+          };
+        } else {
+          const rec = STATE.humanPlayers[clean];
+          rec.isRealRegisteredUser = true;
+          if (countryMeta && countryMeta.countryCode) rec.countryCode = countryMeta.countryCode;
+          if (countryMeta && countryMeta.countryFlag) rec.countryFlag = countryMeta.countryFlag;
+          if (rec.weekKey !== wk) {
+            rec.weekKey = wk;
+            rec.weeklyEloGain = 0;
+            rec.weeklyWins = 0;
+            rec.weeklyLosses = 0;
+            rec.weeklyMatches = 0;
+            rec.weeklyRuns = 0;
+            rec.weeklyWickets = 0;
+          }
+        }
+        return STATE.humanPlayers[clean];
+      }
+
+      function syncLeaderboardRegistry() {
+        STATE.humanPlayers = loadWorldwidePlayersMap();
+
+        const registeredAccounts = loadEncryptedUsersMap();
+        Object.keys(registeredAccounts).forEach((uname) => {
+          const acc = registeredAccounts[uname];
+          ensureHumanPlayerRecord(uname, 1500, {
+            countryCode: acc.countryCode || '+91',
+            countryFlag: acc.countryFlag || '🇮🇳'
+          });
+        });
+
+        const activeRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
+          countryCode: STATE.myCountryCode,
+          countryFlag: STATE.myCountryFlag
+        });
+
+        STATE.eloRating = activeRec.elo || 1500;
+        STATE.peakElo = activeRec.peak || 1500;
+        saveWorldwidePlayersMap(STATE.humanPlayers);
+      }
+
+      function renderLeaderboard() {
+        if (!dom.leaderboardStandingsList) return;
+
+        syncLeaderboardRegistry();
+        const activeRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
+          countryCode: STATE.myCountryCode,
+          countryFlag: STATE.myCountryFlag
+        });
+
+        const weekInfo = getMondaySundayWeekInfo();
+        if (dom.lbWeeklyRangeText) {
+          dom.lbWeeklyRangeText.textContent = `Cycle: ${weekInfo.label}`;
+        }
+
+        const tab = STATE.leaderboardTab || 'GLOBAL';
+        const tabActiveCls = 'py-1.5 rounded-lg bg-[#81b64c] text-white transition font-extrabold';
+        const tabIdleCls = 'py-1.5 rounded-lg text-slate-400 hover:text-white transition font-bold';
+
+        if (dom.btnLbSwitchGlobal) dom.btnLbSwitchGlobal.className = tab === 'GLOBAL' ? tabActiveCls : tabIdleCls;
+        if (dom.btnLbSwitchWeekly) dom.btnLbSwitchWeekly.className = tab === 'WEEKLY' ? tabActiveCls : tabIdleCls;
+        if (dom.btnLbSwitchRuns) dom.btnLbSwitchRuns.className = tab === 'RUNS' ? tabActiveCls : tabIdleCls;
+
+        const allPlayers = Object.values(STATE.humanPlayers).filter(
+          (p) => p && typeof p.elo === 'number' && !FAKE_SEED_NAMES.includes(p.name)
+        );
+
+        if (tab === 'GLOBAL') {
+          if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Global Human Standings • Ranked by Elo Rating';
+          if (dom.lbTableLeftHeader) dom.lbTableLeftHeader.textContent = 'Player Account';
+          if (dom.lbTableRightHeader) dom.lbTableRightHeader.textContent = 'Elo Rating';
+
+          if (dom.lbCard1Title) dom.lbCard1Title.textContent = 'Rating';
+          if (dom.lbCard2Title) dom.lbCard2Title.textContent = 'Peak';
+          if (dom.lbCard3Title) dom.lbCard3Title.textContent = 'Career Runs';
+          if (dom.lbCard4Title) dom.lbCard4Title.textContent = 'W–L';
+
+          if (dom.lbUserEloBig) dom.lbUserEloBig.textContent = activeRec.elo;
+          if (dom.lbPeakEloBig) dom.lbPeakEloBig.textContent = activeRec.peak;
+          if (dom.lbNetDeltaBig) dom.lbNetDeltaBig.textContent = activeRec.totalRuns || 0;
+          if (dom.lbWinLossBig) dom.lbWinLossBig.textContent = `${activeRec.wins || 0}–${activeRec.losses || 0}`;
+
+          const sorted = [...allPlayers].sort((a, b) => b.elo - a.elo || (b.totalRuns || 0) - (a.totalRuns || 0));
+
+          if (sorted.length === 0) {
+            dom.leaderboardStandingsList.innerHTML = `
+              <div class="p-4 rounded-xl bg-[#1b1a17] border border-[#36332e] text-center text-xs text-slate-400">
+                No matches logged yet. Play to claim #1 rank!
+              </div>`;
+          } else {
+            dom.leaderboardStandingsList.innerHTML = sorted.map((p, idx) => {
+              const isMe = p.name === STATE.myUsername.toUpperCase();
+              return `
+                <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span class="w-6 h-6 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${idx === 0 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-400'}">#${idx + 1}</span>
+                    <span class="text-base">${p.countryFlag || '🇮🇳'}</span>
+                    <div class="min-w-0">
+                      <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs flex items-center gap-1">
+                        <span>${p.name}</span>
+                        ${isMe ? '<span class="text-[9px] font-black text-emerald-300">(You)</span>' : ''}
+                      </div>
+                      <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.wins || 0}W – ${p.losses || 0}L • ${p.totalRuns || 0} Runs</div>
+                    </div>
+                  </div>
+                  <span class="font-mono-num font-black text-xs px-2.5 py-1 rounded-lg ${isMe ? 'bg-[#81b64c] text-white' : 'bg-[#2b2823] text-amber-300 border border-[#423f38]'} shrink-0">
+                    ${p.elo} ELO
+                  </span>
+                </div>
+              `;
+            }).join('');
+          }
+        } else if (tab === 'WEEKLY') {
+          if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Weekly Leaderboard • Monday to Sunday Cycle';
+          if (dom.lbTableLeftHeader) dom.lbTableLeftHeader.textContent = 'Weekly Competitors';
+          if (dom.lbTableRightHeader) dom.lbTableRightHeader.textContent = 'Weekly Elo';
+
+          if (dom.lbCard1Title) dom.lbCard1Title.textContent = 'Week Elo';
+          if (dom.lbCard2Title) dom.lbCard2Title.textContent = 'Week Runs';
+          if (dom.lbCard3Title) dom.lbCard3Title.textContent = 'Week Wkts';
+          if (dom.lbCard4Title) dom.lbCard4Title.textContent = 'Week W–L';
+
+          const wkElo = activeRec.weeklyEloGain || 0;
+          if (dom.lbUserEloBig) dom.lbUserEloBig.textContent = wkElo >= 0 ? `+${wkElo}` : wkElo;
+          if (dom.lbPeakEloBig) dom.lbPeakEloBig.textContent = activeRec.weeklyRuns || 0;
+          if (dom.lbNetDeltaBig) dom.lbNetDeltaBig.textContent = activeRec.weeklyWickets || 0;
+          if (dom.lbWinLossBig) dom.lbWinLossBig.textContent = `${activeRec.weeklyWins || 0}–${activeRec.weeklyLosses || 0}`;
+
+          const sortedWeekly = [...allPlayers].sort((a, b) => (b.weeklyEloGain || 0) - (a.weeklyEloGain || 0) || (b.weeklyRuns || 0) - (a.weeklyRuns || 0));
+
+          dom.leaderboardStandingsList.innerHTML = sortedWeekly.map((p, idx) => {
+            const isMe = p.name === STATE.myUsername.toUpperCase();
+            const gain = p.weeklyEloGain || 0;
+            const sign = gain >= 0 ? `+${gain}` : `${gain}`;
+            return `
+              <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-6 h-6 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${idx === 0 ? 'text-amber-300' : 'text-slate-400'}">#${idx + 1}</span>
+                  <span class="text-base">${p.countryFlag || '🇮🇳'}</span>
+                  <div class="min-w-0">
+                    <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs">
+                      ${p.name} ${isMe ? '<span class="text-[9px] text-emerald-300 font-bold">(You)</span>' : ''}
+                    </div>
+                    <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.weeklyRuns || 0} Runs • ${p.weeklyWins || 0}W</div>
+                  </div>
+                </div>
+                <span class="font-mono-num font-black text-xs px-2.5 py-1 rounded-lg ${gain >= 0 ? 'bg-[#81b64c] text-white' : 'bg-rose-950 text-rose-300'} shrink-0">
+                  ${sign} ELO
+                </span>
+              </div>
+            `;
+          }).join('');
+        } else {
+          // Total Runs
+          if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Career Runs & Wickets Standings';
+          if (dom.lbTableLeftHeader) dom.lbTableLeftHeader.textContent = 'Player Runs';
+          if (dom.lbTableRightHeader) dom.lbTableRightHeader.textContent = 'Total Runs';
+
+          if (dom.lbCard1Title) dom.lbCard1Title.textContent = 'Total Runs';
+          if (dom.lbCard2Title) dom.lbCard2Title.textContent = 'High Score';
+          if (dom.lbCard3Title) dom.lbCard3Title.textContent = 'Wickets';
+          if (dom.lbCard4Title) dom.lbCard4Title.textContent = 'Balls';
+
+          if (dom.lbUserEloBig) dom.lbUserEloBig.textContent = activeRec.totalRuns || 0;
+          if (dom.lbPeakEloBig) dom.lbPeakEloBig.textContent = activeRec.highScore || 0;
+          if (dom.lbNetDeltaBig) dom.lbNetDeltaBig.textContent = activeRec.wicketsTaken || 0;
+          if (dom.lbWinLossBig) dom.lbWinLossBig.textContent = activeRec.totalBalls || 0;
+
+          const sortedRuns = [...allPlayers].sort((a, b) => (b.totalRuns || 0) - (a.totalRuns || 0) || b.elo - a.elo);
+
+          dom.leaderboardStandingsList.innerHTML = sortedRuns.map((p, idx) => {
+            const isMe = p.name === STATE.myUsername.toUpperCase();
+            return `
+              <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-6 h-6 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${idx === 0 ? 'text-amber-300' : 'text-slate-400'}">#${idx + 1}</span>
+                  <span class="text-base">${p.countryFlag || '🇮🇳'}</span>
+                  <div class="min-w-0">
+                    <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs">
+                      ${p.name} ${isMe ? '<span class="text-[9px] text-emerald-300 font-bold">(You)</span>' : ''}
+                    </div>
+                    <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.wicketsTaken || 0} Wickets • High: ${p.highScore || 0}</div>
+                  </div>
+                </div>
+                <span class="font-mono-num font-black text-xs px-2.5 py-1 rounded-lg ${isMe ? 'bg-[#81b64c] text-white' : 'bg-[#2b2823] text-emerald-400 border border-[#423f38]'} shrink-0">
+                  ${p.totalRuns || 0} RUNS
+                </span>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      function toggleDrawer(open) {
+        if (open) {
+          dom.mobileDrawer.classList.add('drawer-open');
+          dom.drawerBackdrop.classList.remove('hidden');
+        } else {
+          dom.mobileDrawer.classList.remove('drawer-open');
+          dom.drawerBackdrop.classList.add('hidden');
+        }
+      }
+
+      function switchScreen(screenName) {
+        SoundFX.click();
+        toggleDrawer(false);
+        STATE.activeScreen = screenName;
+        dom.activePitchWrapper.classList.toggle('hidden', screenName !== 'PITCH');
+        dom.screenBotSetup.classList.toggle('hidden', screenName !== 'BOT_SETUP');
+        dom.screenMpSetup.classList.toggle('hidden', screenName !== 'MP_SETUP');
+        dom.screenLeaderboard.classList.toggle('hidden', screenName !== 'LEADERBOARD');
+        if (dom.screenFriends) dom.screenFriends.classList.toggle('hidden', screenName !== 'FRIENDS');
+        dom.screenEvents.classList.toggle('hidden', screenName !== 'EVENTS');
+        dom.centerShowcasePanel.classList.toggle('hidden', screenName !== 'SHOWCASE');
+        if (screenName === 'PITCH') {
+          startTurnTimer();
+          setTimeout(resizeCanvas, 30);
+        } else {
+          stopTurnTimer();
+        }
+        if (screenName === 'LEADERBOARD') {
+          renderLeaderboard();
+        }
+        if (screenName === 'FRIENDS') {
+          renderFriendsRoster();
+        }
+        renderView();
+      }
+
+      function getFriendsStorageKey() {
+        const u = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
+        return `oddandeven_friends_${u}`;
+      }
+
+      function loadUserFriends() {
+        try {
+          const raw = localStorage.getItem(getFriendsStorageKey());
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveUserFriends(list) {
+        try {
+          localStorage.setItem(getFriendsStorageKey(), JSON.stringify(list));
+        } catch (e) {}
+        updateFriendsBadge();
+      }
+
+      function updateFriendsBadge() {
+        const friends = loadUserFriends();
+        if (dom.sideNavFriendsCountBadge) dom.sideNavFriendsCountBadge.textContent = friends.length;
+        if (dom.myFriendsCountPill) dom.myFriendsCountPill.textContent = `${friends.length} Friend${friends.length === 1 ? '' : 's'}`;
+      }
+
+      function addFriend(username) {
+        SoundFX.click();
+        const clean = (username || '').trim().toUpperCase();
+        if (!clean || clean === STATE.myUsername.toUpperCase()) return;
+        const friends = loadUserFriends();
+        if (!friends.includes(clean)) {
+          friends.push(clean);
+          saveUserFriends(friends);
+          renderFriendsRoster();
+          handleFriendsSearch();
+        }
+      }
+
+      function removeFriend(username) {
+        SoundFX.click();
+        const clean = (username || '').trim().toUpperCase();
+        let friends = loadUserFriends();
+        friends = friends.filter((f) => f !== clean);
+        saveUserFriends(friends);
+        renderFriendsRoster();
+        handleFriendsSearch();
+      }
+
+      function handleFriendsSearch() {
+        if (!dom.inputSearchFriendUsername || !dom.friendSearchResultsArea) return;
+        const query = (dom.inputSearchFriendUsername.value || '').trim().toUpperCase();
+        if (!query) {
+          dom.friendSearchResultsArea.classList.add('hidden');
+          dom.friendSearchResultsList.innerHTML = '';
+          return;
+        }
+
+        syncLeaderboardRegistry();
+        const encryptedUsers = loadEncryptedUsersMap();
+        const allKnown = {};
+
+        Object.keys(encryptedUsers).forEach((u) => {
+          const c = u.trim().toUpperCase();
+          if (!FAKE_SEED_NAMES.includes(c)) {
+            allKnown[c] = {
+              name: c,
+              countryFlag: encryptedUsers[u].countryFlag || '🇮🇳',
+              countryCode: encryptedUsers[u].countryCode || '+91'
+            };
+          }
+        });
+
+        Object.keys(STATE.humanPlayers).forEach((u) => {
+          const c = u.trim().toUpperCase();
+          if (!FAKE_SEED_NAMES.includes(c)) {
+            allKnown[c] = Object.assign({}, allKnown[c] || {}, STATE.humanPlayers[u], { name: c });
+          }
+        });
+
+        const myFriends = loadUserFriends();
+        const matched = Object.values(allKnown).filter((p) => p.name.includes(query));
+
+        dom.friendSearchResultsArea.classList.remove('hidden');
+        dom.friendSearchResultsCount.textContent = `${matched.length} found`;
+
+        if (matched.length === 0) {
+          dom.friendSearchResultsList.innerHTML = `
+            <div class="p-3 rounded-lg bg-[#191816] text-center text-[11px] text-slate-400">
+              No registered user matches "${query}".
+            </div>`;
+          return;
+        }
+
+        dom.friendSearchResultsList.innerHTML = matched.map((user) => {
+          const isSelf = user.name === STATE.myUsername.toUpperCase();
+          const isAlreadyFriend = myFriends.includes(user.name);
+          const elo = typeof user.elo === 'number' ? user.elo : 1500;
+
+          return `
+            <div class="p-2 rounded-xl bg-[#1a1916] border border-[#35322c] flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-base">${user.countryFlag || '🇮🇳'}</span>
+                <div class="min-w-0">
+                  <div class="font-extrabold text-white text-xs truncate flex items-center gap-1">
+                    <span>${user.name}</span>
+                    <span class="text-[9px] font-mono-num text-amber-300 font-bold px-1 rounded bg-slate-900 border border-slate-700">${user.countryCode || '+91'}</span>
+                    ${isSelf ? '<span class="text-[9px] text-emerald-300">(You)</span>' : ''}
+                  </div>
+                  <div class="text-[10px] text-slate-400 font-mono-num">${elo} Elo • ${user.totalRuns || 0} Runs</div>
+                </div>
+              </div>
+              <div class="shrink-0">
+                ${
+                  isSelf 
+                    ? '<span class="text-[10px] text-slate-500 font-bold px-2 py-1">Your Account</span>' 
+                    : isAlreadyFriend
+                    ? '<span class="text-[10px] font-bold text-emerald-400 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30">✓ Added</span>'
+                    : `<button type="button" data-add-username="${user.name}" class="btn-action-add-friend px-2.5 py-1 rounded-lg text-[10px] font-black chess-green-btn">
+                        ➕ Add
+                      </button>`
+                }
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        dom.friendSearchResultsList.querySelectorAll('.btn-action-add-friend').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const uname = btn.getAttribute('data-add-username');
+            addFriend(uname);
+          });
+        });
+      }
+
+      function renderFriendsRoster() {
+        if (!dom.myFriendsListContainer) return;
+        updateFriendsBadge();
+        syncLeaderboardRegistry();
+
+        const friends = loadUserFriends();
+        if (friends.length === 0) {
+          dom.myFriendsListContainer.innerHTML = `
+            <div class="p-4 rounded-xl bg-[#1b1a17] border border-[#36332e] text-center text-xs text-slate-400 space-y-1">
+              <div class="text-xl">🤝</div>
+              <div class="font-bold text-white">No Friends Added Yet</div>
+              <p class="text-[10px] text-slate-500">Search any registered username in the box above to add them to your roster!</p>
+            </div>`;
+          return;
+        }
+
+        const encryptedUsers = loadEncryptedUsersMap();
+
+        dom.myFriendsListContainer.innerHTML = friends.map((fname) => {
+          const rec = STATE.humanPlayers[fname] || encryptedUsers[fname] || {
+            name: fname,
+            countryFlag: '🇮🇳',
+            countryCode: '+91',
+            elo: 1500,
+            totalRuns: 0
+          };
+
+          const elo = typeof rec.elo === 'number' ? rec.elo : 1500;
+
+          return `
+            <div class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#36332e] flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="text-lg">${rec.countryFlag || '🇮🇳'}</span>
+                <div class="min-w-0">
+                  <div class="font-extrabold text-white text-xs truncate flex items-center gap-1.5">
+                    <span>${fname}</span>
+                    <span class="text-[9px] font-mono-num text-amber-300 font-bold px-1 rounded bg-slate-900 border border-slate-700">${rec.countryCode || '+91'}</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 font-mono-num truncate">
+                    ${elo} Elo • ${rec.wins || 0}W - ${rec.losses || 0}L • ${rec.totalRuns || 0} Runs
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" data-challenge-username="${fname}" class="btn-action-challenge-friend px-2 py-1 rounded-lg text-[10px] font-extrabold bg-purple-500/20 text-purple-300 border border-purple-500/35 hover:bg-purple-500/30 transition">
+                  ⚔️ Play
+                </button>
+                <button type="button" data-remove-username="${fname}" class="btn-action-remove-friend w-7 h-7 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center justify-center text-xs hover:bg-rose-500/25 transition" title="Remove from friends">
+                  ✕
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        dom.myFriendsListContainer.querySelectorAll('.btn-action-remove-friend').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const uname = btn.getAttribute('data-remove-username');
+            removeFriend(uname);
+          });
+        });
+
+        dom.myFriendsListContainer.querySelectorAll('.btn-action-challenge-friend').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-challenge-username');
+            STATE.p2Name = target;
+            if (dom.inlineLobbyP2Display) dom.inlineLobbyP2Display.textContent = target;
+            switchScreen('MP_SETUP');
+          });
+        });
+      }
+
+      function stopTurnTimer() {
+        if (STATE.turnTimerId) {
+          clearInterval(STATE.turnTimerId);
+          STATE.turnTimerId = null;
+        }
+      }
+
+      function startTurnTimer() {
+        stopTurnTimer();
+        STATE.turnSecondsLeft = TURN_DURATION_SEC;
+        renderTimerDisplay();
+
+        STATE.turnTimerId = setInterval(() => {
+          STATE.turnSecondsLeft--;
+          renderTimerDisplay();
+          if (STATE.turnSecondsLeft <= 0) {
+            stopTurnTimer();
+            handleTimeout();
+          }
+        }, 1000);
+      }
+
+      function renderTimerDisplay() {
+        const s = Math.max(0, STATE.turnSecondsLeft);
+        dom.timerDigitalDisplay.textContent = `00:${s < 10 ? '0' + s : s}`;
+        if (s <= 3) {
+          dom.timerDigitalDisplay.className = 'px-2.5 py-0.5 rounded-lg font-black text-xs bg-rose-950 text-rose-300 border border-rose-500 animate-pulse';
+        } else {
+          dom.timerDigitalDisplay.className = 'px-2.5 py-0.5 rounded-lg font-black text-xs bg-[#12110f] text-[#81b64c] border border-[#3d3a34]';
+        }
+      }
+
+      function handleTimeout() {
+        const randomHand = Math.floor(Math.random() * 10) + 1;
+        if (STATE.phase === 'TOSS') {
+          handleTossNumberPick(randomHand);
+        } else if (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') {
+          handleGameplayTurn(randomHand);
+        }
+      }
+
+      function buildNumberButtons() {
+        dom.tossNumberGrid.innerHTML = '';
+        dom.playNumberGrid.innerHTML = '';
+
+        for (let num = 1; num <= 10; num++) {
+          // Toss button
+          const tBtn = document.createElement('button');
+          tBtn.type = 'button';
+          tBtn.className = 'num-btn h-12 rounded-xl font-mono-num font-black text-base flex items-center justify-center';
+          tBtn.textContent = num;
+          tBtn.addEventListener('click', () => handleTossNumberPick(num));
+          dom.tossNumberGrid.appendChild(tBtn);
+
+          // Gameplay button
+          const pBtn = document.createElement('button');
+          pBtn.type = 'button';
+          pBtn.className = 'num-btn h-14 rounded-2xl font-mono-num font-black text-lg flex items-center justify-center';
+          pBtn.textContent = num;
+          pBtn.addEventListener('click', () => handleGameplayTurn(num));
+          dom.playNumberGrid.appendChild(pBtn);
+        }
+      }
+
+      function analyzeUserPatterns(hist) {
+        const scores = {};
+        for (let n = 1; n <= 10; n++) scores[n] = 1.0;
+        if (!hist || hist.length === 0) return scores;
+
+        // 1. Overall & Recent Frequency weight
+        hist.forEach((n, idx) => {
+          const recencyBoost = idx >= hist.length - 6 ? 2.4 : 1.0;
+          scores[n] = (scores[n] || 1) + recencyBoost;
+        });
+
+        // 2. 1st-Order Markov Transition
+        const last = hist[hist.length - 1];
+        for (let i = 0; i < hist.length - 1; i++) {
+          if (hist[i] === last) {
+            const nextVal = hist[i + 1];
+            scores[nextVal] += 3.8;
+          }
+        }
+
+        // 3. 2nd-Order N-Gram
+        if (hist.length >= 2) {
+          const prev2 = hist[hist.length - 2];
+          for (let i = 0; i < hist.length - 2; i++) {
+            if (hist[i] === prev2 && hist[i + 1] === last) {
+              const nextVal = hist[i + 2];
+              scores[nextVal] += 6.5;
+            }
+          }
+          const lastDelta = last - prev2;
+          const projected = last + lastDelta;
+          if (projected >= 1 && projected <= 10) {
+            scores[projected] += 2.2;
+          }
+        }
+
+        return scores;
+      }
+
+      function generateBotNumber(isBotBatting) {
+        const diff = STATE.botDifficulty || 'TACTICIAN';
+        const hist = STATE.userNumHistory;
+
+        // TIER 1: BASIC BOT (450 ELO, 250–700)
+        if (diff === 'ROOKIE') {
+          if (!isBotBatting) {
+            const recentUser = new Set(hist.slice(-4));
+            const safeForUser = [1, 2, 3, 4, 5].filter((n) => !recentUser.has(n));
+            if (safeForUser.length > 0 && Math.random() < 0.85) {
+              return safeForUser[Math.floor(Math.random() * safeForUser.length)];
+            }
+            return Math.floor(Math.random() * 4) + 1;
+          } else {
+            if (STATE.lastAiNum && Math.random() < 0.45) return STATE.lastAiNum;
+            return Math.floor(Math.random() * 4) + 1;
+          }
+        }
+
+        // TIER 2: INTERMEDIATE BOT (1100 ELO, 700–1400)
+        if (diff === 'TACTICIAN') {
+          const patternScores = analyzeUserPatterns(hist);
+          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
+          if (!isBotBatting) {
+            if (hist.length >= 2 && Math.random() < 0.32) {
+              const top3 = rankedUserNums.slice(0, 3);
+              return top3[Math.floor(Math.random() * top3.length)];
+            }
+            return Math.floor(Math.random() * 10) + 1;
+          } else {
+            const pool = [4, 5, 6, 7, 8, 9].filter((n) => n !== rankedUserNums[0]);
+            if (pool.length > 0 && Math.random() < 0.65) {
+              return pool[Math.floor(Math.random() * pool.length)];
+            }
+            return Math.floor(Math.random() * 10) + 1;
+          }
+        }
+
+        // TIER 3: ADVANCED BOT (1850 ELO, 1400–2200)
+        if (diff === 'AGGRESSOR') {
+          const patternScores = analyzeUserPatterns(hist);
+          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
+
+          if (!isBotBatting) {
+            if (hist.length >= 1 && Math.random() < 0.62) {
+              return Math.random() < 0.7 ? rankedUserNums[0] : rankedUserNums[1];
+            }
+            const highTraps = [6, 7, 8, 9, 10];
+            return highTraps[Math.floor(Math.random() * highTraps.length)];
+          } else {
+            const dangerSet = new Set(rankedUserNums.slice(0, 3));
+            const safePower = [10, 9, 8, 7, 6, 5].filter((n) => !dangerSet.has(n));
+            if (safePower.length > 0) {
+              return safePower[Math.floor(Math.random() * Math.min(3, safePower.length))];
+            }
+            return rankedUserNums[rankedUserNums.length - 1];
+          }
+        }
+
+        // TIER 4: MASTER BOT (2650 ELO, 2200–2800)
+        const patternScores = analyzeUserPatterns(hist);
+        const totalWeight = Object.values(patternScores).reduce((acc, v) => acc + v, 0);
+        const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
+
+        if (!isBotBatting) {
+          if (hist.length === 0) {
+            const openerTraps = [6, 10, 7, 4];
+            return openerTraps[Math.floor(Math.random() * openerTraps.length)];
+          }
+          if (Math.random() < 0.78) {
+            return Math.random() < 0.72 ? rankedUserNums[0] : rankedUserNums[1];
+          }
+          return rankedUserNums[2] || (Math.floor(Math.random() * 10) + 1);
+        } else {
+          const need = STATE.currentInnings === 2 && STATE.target ? Math.max(1, STATE.target - STATE.aiScore) : 999;
+          const bestNums = [];
+          for (let n = 1; n <= 10; n++) {
+            const probUserMatches = patternScores[n] / totalWeight;
+            const survivalProb = Math.max(0.05, 1 - probUserMatches * 2.2);
+            const effectiveRuns = n >= need ? need + 4 : n;
+            const ev = effectiveRuns * survivalProb;
+            bestNums.push({ n, ev });
+          }
+          bestNums.sort((a, b) => b.ev - a.ev);
+          return Math.random() < 0.75 ? bestNums[0].n : bestNums[1].n;
+        }
+      }
+
+      function buildEngagingCommentary(eventType, ctx) {
+        const style = STATE.commentaryStyle || 'HYPE';
+        const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+        if (eventType === 'WICKET') {
+          const hypeWickets = [
+            `HOWZAT?! Exact match on ${ctx.u}! ${ctx.bowler} read ${ctx.batter}'s mind!`,
+            `TIMBER! Both hands flashed ${ctx.u}! Huge breakthrough in the arena!`,
+            `CLEAN BOWLED ON ${ctx.u}! Stumps go flying under the lights!`
+          ];
+          const tacticalWickets = [
+            `Brilliant mind-game read by ${ctx.bowler}! Trapped ${ctx.batter} on ${ctx.u}.`,
+            `Markov prediction successful: ${ctx.bowler} anticipated ${ctx.batter}'s ${ctx.u}!`
+          ];
+          return style === 'TACTICAL' ? pick(tacticalWickets) : pick(hypeWickets);
+        }
+
+        if (eventType === 'RUNS') {
+          const r = ctx.runs;
+          if (r === 10) return `🚀 MAXIMUM 10! ${ctx.batter} launches a 10-finger thunderbolt!`;
+          if (r >= 6) return `🔥 BOOM! ${ctx.batter} smashes +${r} runs into the stands!`;
+          if (r >= 4) return `⚡ CRACKED! Pierced the boundary for +${r} runs!`;
+          return `Smart cricket: +${r} runs nudged into the gap (${ctx.batter}: ${ctx.total} runs).`;
+        }
+        return ctx.text || 'Action unfolds on the pitch!';
+      }
+
+      function handleTossNumberPick(userNum) {
+        SoundFX.click();
+        stopTurnTimer();
+        const oppNum = Math.floor(Math.random() * 10) + 1;
+        const sum = userNum + oppNum;
+        const sumParity = sum % 2 === 1 ? 'ODD' : 'EVEN';
+        const userWon = (STATE.tossCall === sumParity);
+
+        STATE.tossUserNum = userNum;
+        STATE.tossAiNum = oppNum;
+        STATE.lastUserNum = userNum;
+        STATE.lastAiNum = oppNum;
+        STATE.tossWinner = userWon ? 'USER' : 'AI';
+        STATE.phase = 'TOSS_DECISION';
+
+        const p2Name = STATE.mode === 'ONLINE_2P' ? STATE.p2Name : BOT_PROFILES[STATE.botDifficulty].shortName;
+        dom.tossMathSummary.textContent = `${STATE.myUsername}: ${userNum} + ${p2Name}: ${oppNum} = ${sum} (${sumParity})`;
+
+        if (userWon) {
+          SoundFX.runScored(6);
+          dom.tossWinnerTag.textContent = '🎉 YOU WON THE TOSS!';
+          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+          dom.tossDecisionSubtext.textContent = 'Choose whether to Bat or Bowl first:';
+          dom.userTossChoiceButtons.classList.remove('hidden');
+          dom.aiTossChoiceContinue.classList.add('hidden');
+          STATE.lastOutcomeText = `You won toss (${sum} ${sumParity})! Choose Bat or Bowl.`;
+        } else {
+          SoundFX.wicket();
+          const botChoseBat = Math.random() < 0.5;
+          STATE.firstBatter = botChoseBat ? 'AI' : 'USER';
+          dom.tossWinnerTag.textContent = `🤖 ${p2Name.toUpperCase()} WON THE TOSS`;
+          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+          dom.tossDecisionSubtext.textContent = `${p2Name} chose to ${botChoseBat ? 'BAT' : 'BOWL'} first!`;
+          dom.userTossChoiceButtons.classList.add('hidden');
+          dom.aiTossChoiceContinue.classList.remove('hidden');
+          STATE.lastOutcomeText = `${p2Name} won toss & chose to ${botChoseBat ? 'BAT' : 'BOWL'} first!`;
+        }
+
+        renderView();
+      }
+
+      function handleTossDecisionChoice(choice) {
+        SoundFX.click();
+        STATE.firstBatter = choice === 'BAT' ? 'USER' : 'AI';
+        startInnings(1);
+      }
+
+      function startInnings(inningsNum) {
+        STATE.currentInnings = inningsNum;
+        STATE.phase = inningsNum === 1 ? 'INNINGS_1' : 'INNINGS_2';
+        STATE.currentBatter = inningsNum === 1
+          ? STATE.firstBatter
+          : (STATE.firstBatter === 'USER' ? 'AI' : 'USER');
+
+        STATE.lastUserNum = null;
+        STATE.lastAiNum = null;
+
+        const isUserBat = STATE.currentBatter === 'USER';
+        STATE.lastOutcomeText = inningsNum === 1
+          ? `1st Innings: ${isUserBat ? STATE.myUsername : 'Opponent'} is Batting!`
+          : `2nd Innings: ${isUserBat ? STATE.myUsername : 'Opponent'} chasing ${STATE.target} runs!`;
+
+        renderView();
+        startTurnTimer();
+      }
+
+      function handleGameplayTurn(userNum) {
+        SoundFX.click();
+        stopTurnTimer();
+        STATE.userNumHistory.push(userNum);
+
+        const isUserBatting = STATE.currentBatter === 'USER';
+        const oppNum = generateBotNumber(!isUserBatting);
+
+        STATE.lastUserNum = userNum;
+        STATE.lastAiNum = oppNum;
+
+        const isOut = (userNum === oppNum);
+
+        if (isUserBatting) {
+          STATE.userBalls++;
+        } else {
+          STATE.aiBalls++;
+        }
+
+        if (isOut) {
+          SoundFX.wicket();
+          const wktNote = buildEngagingCommentary('WICKET', {
+            u: userNum,
+            batter: isUserBatting ? STATE.myUsername : (BOT_PROFILES[STATE.botDifficulty]?.shortName || 'Bot'),
+            bowler: isUserBatting ? (BOT_PROFILES[STATE.botDifficulty]?.shortName || 'Bot') : STATE.myUsername
+          });
+
+          if (STATE.currentInnings === 1) {
+            const firstScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+            STATE.target = firstScore + 1;
+            STATE.phase = 'INNINGS_BREAK';
+            dom.breakHeadline.textContent = `1st Innings Total: ${firstScore} Runs`;
+            dom.breakTargetExplanation.textContent = `Target to chase: ${STATE.target} Runs`;
+            STATE.lastOutcomeText = `WICKET! ${wktNote} (Target: ${STATE.target})`;
+          } else {
+            const winner = isUserBatting ? 'AI' : 'USER';
+            concludeMatch(winner, `Wicket on ${userNum}! Target defended.`);
+            return;
+          }
+        } else {
+          // Runs scored
+          const scoredRuns = isUserBatting ? userNum : oppNum;
+          if (isUserBatting) {
+            STATE.userScore += scoredRuns;
+            const uRec = ensureHumanPlayerRecord(STATE.myUsername);
+            uRec.totalRuns = (uRec.totalRuns || 0) + scoredRuns;
+            uRec.weeklyRuns = (uRec.weeklyRuns || 0) + scoredRuns;
+            if (STATE.userScore > (uRec.highScore || 0)) {
+              uRec.highScore = STATE.userScore;
+            }
+            saveWorldwidePlayersMap(STATE.humanPlayers);
+          } else {
+            STATE.aiScore += scoredRuns;
+          }
+
+          SoundFX.runScored(scoredRuns);
+          const currentBatScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+
+          if (STATE.currentInnings === 2 && currentBatScore >= STATE.target) {
+            const winner = isUserBatting ? 'USER' : 'AI';
+            concludeMatch(winner, `Target of ${STATE.target} chased down successfully!`);
+            return;
+          }
+
+          const runsNote = buildEngagingCommentary('RUNS', {
+            runs: scoredRuns,
+            batter: isUserBatting ? STATE.myUsername : (BOT_PROFILES[STATE.botDifficulty]?.shortName || 'Bot'),
+            total: currentBatScore
+          });
+          STATE.lastOutcomeText = runsNote;
+          startTurnTimer();
+        }
+
+        renderView();
+      }
+
+      function concludeMatch(winner, reason) {
+        stopTurnTimer();
+        STATE.phase = 'GAME_OVER';
+        STATE.winner = winner;
+
+        const isUserWin = (winner === 'USER');
+        dom.gameOverTitle.textContent = isUserWin ? '🏆 YOU WON!' : 'MATCH LOST';
+        dom.gameOverTitle.className = isUserWin ? 'text-2xl font-black text-emerald-400' : 'text-2xl font-black text-rose-500';
+        dom.gameOverMargin.textContent = reason;
+
+        const uRec = ensureHumanPlayerRecord(STATE.myUsername);
+        uRec.matches = (uRec.matches || 0) + 1;
+        uRec.weeklyMatches = (uRec.weeklyMatches || 0) + 1;
+        if (isUserWin) {
+          uRec.wins = (uRec.wins || 0) + 1;
+          uRec.weeklyWins = (uRec.weeklyWins || 0) + 1;
+        } else {
+          uRec.losses = (uRec.losses || 0) + 1;
+          uRec.weeklyLosses = (uRec.weeklyLosses || 0) + 1;
+        }
+
+        // BOT INTEGRITY RULE: If user plays against bot, do NOT increase/decrease rating!
+        if (STATE.mode === 'AI') {
+          const curBot = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
+          dom.gameOverRatingBox.innerHTML = `
+            <div class="text-amber-400 font-bold mb-1">🤖 Casual Match vs ${curBot.name}</div>
+            <div class="text-slate-300">Ratings are <strong class="text-white">frozen (+0 Elo)</strong> during Bot matches. Play Multiplayer Rooms to scale your official ranking!</div>
+          `;
+        } else {
+          // Multiplayer Ranked match (+8 / -8 Elo)
+          const delta = isUserWin ? 8 : -8;
+          STATE.eloRating = Math.max(100, STATE.eloRating + delta);
+          uRec.elo = STATE.eloRating;
+          if (STATE.eloRating > (uRec.peak || 1500)) uRec.peak = STATE.eloRating;
+          uRec.weeklyEloGain = (uRec.weeklyEloGain || 0) + delta;
+
+          dom.gameOverRatingBox.innerHTML = `
+            <div class="text-emerald-400 font-bold mb-1">Ranked Multiplayer Match</div>
+            <div class="text-slate-200">Rating updated by <strong>${delta > 0 ? '+' + delta : delta} Elo</strong> (New: ${STATE.eloRating} Elo)</div>
+          `;
+        }
+
+        saveWorldwidePlayersMap(STATE.humanPlayers);
+        renderView();
+      }
+
+      function resetMatch() {
+        SoundFX.click();
+        STATE.phase = 'TOSS';
+        STATE.userScore = 0;
+        STATE.userBalls = 0;
+        STATE.aiScore = 0;
+        STATE.aiBalls = 0;
+        STATE.target = null;
+        STATE.lastUserNum = null;
+        STATE.lastAiNum = null;
+        STATE.winner = null;
+        STATE.winMarginText = '';
+        STATE.userNumHistory = [];
+        STATE.lastOutcomeText = 'Select Odd or Even to start the Toss!';
+        renderView();
+        startTurnTimer();
+      }
+
+      function drawRoundedRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      function resizeCanvas() {
+        const canvas = dom.arenaCanvas;
+        if (!canvas) return;
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        drawCanvas();
+      }
+
+      function drawCanvas() {
+        const canvas = dom.arenaCanvas;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Stadium background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, '#090d16');
+        grad.addColorStop(1, '#0e231b');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Pitch turf oval
+        ctx.strokeStyle = 'rgba(129, 182, 76, 0.22)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(w / 2, h * 0.82, w * 0.44, h * 0.22, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Flash overlay on outcome
+        if (STATE.anim.flashAlpha > 0.01) {
+          ctx.fillStyle = STATE.anim.flashColor;
+          ctx.globalAlpha = STATE.anim.flashAlpha;
+          ctx.fillRect(0, 0, w, h);
+          ctx.globalAlpha = 1;
+          STATE.anim.flashAlpha *= 0.88;
+        }
+
+        // Draw Player and Opponent Hand Clash Pods
+        const cardW = Math.min(100, w * 0.28);
+        const cardH = Math.min(84, h * 0.62);
+        const leftX = w * 0.22 - cardW / 2;
+        const rightX = w * 0.78 - cardW / 2;
+        const cardY = h * 0.5 - cardH / 2;
+
+        const isMatchOut = STATE.lastUserNum !== null && STATE.lastUserNum === STATE.lastAiNum && (STATE.phase === 'INNINGS_BREAK' || STATE.phase === 'GAME_OVER');
+
+        // Player Card
+        ctx.fillStyle = isMatchOut ? 'rgba(244, 63, 94, 0.16)' : 'rgba(129, 182, 76, 0.14)';
+        ctx.strokeStyle = isMatchOut ? '#f43f5e' : '#81b64c';
+        ctx.lineWidth = 2;
+        drawRoundedRect(ctx, leftX, cardY, cardW, cardH, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '700 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(STATE.myUsername, leftX + cardW / 2, cardY + 16);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 28px "JetBrains Mono", monospace';
+        const p1Val = STATE.lastUserNum !== null ? String(STATE.lastUserNum) : '-';
+        ctx.fillText(p1Val, leftX + cardW / 2, cardY + cardH * 0.66);
+
+        // Opponent Card
+        ctx.fillStyle = isMatchOut ? 'rgba(244, 63, 94, 0.16)' : 'rgba(56, 189, 248, 0.14)';
+        ctx.strokeStyle = isMatchOut ? '#f43f5e' : '#38bdf8';
+        ctx.lineWidth = 2;
+        drawRoundedRect(ctx, rightX, cardY, cardW, cardH, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '700 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('OPPONENT', rightX + cardW / 2, cardY + 16);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 28px "JetBrains Mono", monospace';
+        const p2Val = STATE.lastAiNum !== null ? String(STATE.lastAiNum) : '-';
+        ctx.fillText(p2Val, rightX + cardW / 2, cardY + cardH * 0.66);
+
+        // Center VS Label
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '900 12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('VS', w / 2, h * 0.52);
+
+        // Update and draw particles
+        for (let i = STATE.anim.particles.length - 1; i >= 0; i--) {
+          const p = STATE.anim.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= 0.025;
+          if (p.alpha <= 0) {
+            STATE.anim.particles.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function highlightBotSelectionCard(key) {
+        STATE.botDifficulty = key;
+        const b = BOT_PROFILES[key];
+        const map = {
+          ROOKIE: dom.btnBotRookie,
+          TACTICIAN: dom.btnBotTactician,
+          AGGRESSOR: dom.btnBotAggressor,
+          WALL: dom.btnBotWall
+        };
+        Object.keys(map).forEach((k) => {
+          const btn = map[k];
+          if (!btn) return;
+          if (k === key) {
+            btn.className = 'w-full p-2.5 rounded-xl text-left bg-[#22201d] border-2 border-cyan-400 shadow-md transition space-y-1';
+          } else {
+            btn.className = 'w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1';
+          }
+        });
+        if (dom.sideNavBotSubtitle && b) {
+          dom.sideNavBotSubtitle.textContent = `${b.shortName} • ${b.elo} Elo (Casual)`;
+        }
+        if (dom.sidebarOpponentBadge && b) {
+          dom.sidebarOpponentBadge.innerHTML = `<span>${b.icon}</span><span>${b.shortName} (${b.elo} Elo)</span>`;
+        }
+      }
+
+      function renderView() {
+        const curBot = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
+        const oppName = STATE.mode === 'ONLINE_2P' ? STATE.p2Name : `${curBot.icon} ${curBot.shortName}`;
+        dom.p1CardTitle.textContent = `${STATE.myCountryFlag} ${STATE.myUsername}`;
+        dom.p2CardTitle.textContent = oppName;
+
+        dom.userMainScore.textContent = STATE.userScore;
+        dom.aiMainScore.textContent = STATE.aiScore;
+        dom.userSubMeta.textContent = `Balls: ${STATE.userBalls}`;
+        dom.aiSubMeta.textContent = `Balls: ${STATE.aiBalls}`;
+
+        dom.userLastPlayedBadge.textContent = STATE.lastUserNum !== null ? STATE.lastUserNum : '-';
+        dom.aiLastPlayedBadge.textContent = STATE.lastAiNum !== null ? STATE.lastAiNum : '-';
+
+        dom.targetValueDisplay.textContent = STATE.target !== null ? STATE.target : '—';
+        dom.turnOutcomeBanner.textContent = STATE.lastOutcomeText;
+
+        const uRec = STATE.humanPlayers[STATE.myUsername] || {};
+        dom.sidebarUserIdentity.textContent = `${STATE.myCountryFlag} ${STATE.myUsername} (${STATE.myCountryCode})`;
+        dom.sidebarEloDisplay.textContent = `${STATE.eloRating} ELO`;
+        dom.sideNavEloSub.textContent = `${STATE.eloRating} ELO`;
+        dom.sidebarCareerRuns.textContent = uRec.totalRuns || 0;
+        dom.sidebarCareerWickets.textContent = uRec.wicketsTaken || 0;
+
+        if (dom.sideNavBotSubtitle) {
+          dom.sideNavBotSubtitle.textContent = `${curBot.shortName} • ${curBot.elo} Elo (Casual)`;
+        }
+        if (dom.sidebarOpponentBadge) {
+          dom.sidebarOpponentBadge.innerHTML = STATE.mode === 'ONLINE_2P'
+            ? `<span>👥</span><span>${STATE.p2Name}</span>`
+            : `<span>${curBot.icon}</span><span>${curBot.shortName} (${curBot.elo} Elo)</span>`;
+        }
+        if (dom.sidebarCommentaryStyleBadge) {
+          const styleLabels = { HYPE: '🎙️ Hype Broadcast', TACTICAL: '🧠 Tactical Analyst', CLASSIC: '📻 Classic Feed' };
+          dom.sidebarCommentaryStyleBadge.textContent = styleLabels[STATE.commentaryStyle] || '🎙️ Hype Broadcast';
+        }
+
+        // Role Indicators
+        const isUserBat = STATE.currentBatter === 'USER';
+        dom.userRoleBadge.textContent = isUserBat ? 'BAT' : 'BOWL';
+        dom.userRoleBadge.className = isUserBat
+          ? 'px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'
+          : 'px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300';
+
+        dom.aiRoleBadge.textContent = !isUserBat ? 'BAT' : 'BOWL';
+        dom.aiRoleBadge.className = !isUserBat
+          ? 'px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/35'
+          : 'px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300';
+
+        dom.gameplayRoleNotice.textContent = isUserBat ? 'Batting' : 'Bowling';
+        dom.gameplayRoleNotice.className = isUserBat ? 'text-emerald-400 font-bold' : 'text-cyan-400 font-bold';
+
+        // Phase view toggles
+        dom.viewToss.classList.toggle('hidden', STATE.phase !== 'TOSS');
+        dom.viewTossDecision.classList.toggle('hidden', STATE.phase !== 'TOSS_DECISION');
+        dom.viewInningsBreak.classList.toggle('hidden', STATE.phase !== 'INNINGS_BREAK');
+        dom.viewGameOver.classList.toggle('hidden', STATE.phase !== 'GAME_OVER');
+
+        const inPlay = (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2');
+        dom.viewGameplay.classList.toggle('hidden', !inPlay);
+
+        dom.inningsLabel.textContent = STATE.phase === 'TOSS'
+          ? 'TOSS PHASE'
+          : (STATE.phase === 'INNINGS_1' ? '1ST INNINGS' : (STATE.phase === 'INNINGS_2' ? '2ND INNINGS' : 'GAME OVER'));
+        dom.phaseBadge.textContent = dom.inningsLabel.textContent;
+
+        drawCanvas();
+      }
+
+      function createMultiplayerRoom() {
+        SoundFX.click();
+        const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
+        STATE.roomCode = code;
+        STATE.onlineRole = 'HOST';
+        STATE.mode = 'ONLINE_2P';
+        STATE.roomLocked = false;
+        STATE.p2Joined = false;
+        STATE.p1Name = STATE.myUsername;
+
+        dom.inlineHostCodeDisplay.classList.remove('hidden');
+        dom.inlineHostCodeValue.textContent = code;
+        dom.inlineNetStatusBadge.textContent = `Room ${code} • Waiting for P2...`;
+        dom.inlineNetStatusBadge.className = 'text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30';
+        dom.inlineLobbyP1Display.textContent = STATE.myUsername;
+        dom.inlineLobbyP2Display.textContent = 'Waiting to join...';
+
+        if (typeof Peer !== 'undefined') {
+          try {
+            if (STATE.peer) STATE.peer.destroy();
+            STATE.peer = new Peer('oae-room-' + code);
+            STATE.peer.on('connection', (c) => {
+              STATE.conn = c;
+              c.on('open', () => {
+                c.send({ type: 'HOST_WELCOME', hostName: STATE.myUsername, code });
+              });
+              c.on('data', (data) => {
+                if (data && data.type === 'GUEST_JOINED') {
+                  STATE.p2Joined = true;
+                  STATE.p2Name = data.guestName || 'PLAYER_2';
+                  dom.inlineLobbyP2Display.textContent = STATE.p2Name;
+                  dom.inlineNetStatusBadge.textContent = 'P1 vs P2 Connected!';
+                  dom.btnLaunchMpMatch.disabled = false;
+                  dom.btnLaunchMpMatch.className = 'w-full py-3 rounded-xl font-black text-xs bg-indigo-600 text-white hover:bg-indigo-500';
+                }
+              });
+            });
+          } catch (e) {}
+        }
+      }
+
+      function joinMultiplayerRoom() {
+        SoundFX.click();
+        const code = (dom.inlineInputJoinCode.value || '').trim().toUpperCase();
+        if (!code) return;
+
+        STATE.roomCode = code;
+        STATE.onlineRole = 'GUEST';
+        STATE.mode = 'ONLINE_2P';
+        dom.inlineNetStatusBadge.textContent = `Connecting to ${code}...`;
+
+        if (typeof Peer !== 'undefined') {
+          try {
+            if (STATE.peer) STATE.peer.destroy();
+            STATE.peer = new Peer();
+            STATE.peer.on('open', () => {
+              const c = STATE.peer.connect('oae-room-' + code);
+              STATE.conn = c;
+              c.on('open', () => {
+                c.send({ type: 'GUEST_JOINED', guestName: STATE.myUsername });
+                dom.inlineNetStatusBadge.textContent = `Connected to Room ${code}!`;
+                dom.inlineLobbyP2Display.textContent = STATE.myUsername;
+                dom.btnLaunchMpMatch.disabled = false;
+              });
+              c.on('data', (data) => {
+                if (data && data.type === 'HOST_WELCOME') {
+                  STATE.p2Name = data.hostName || 'HOST';
+                  dom.inlineLobbyP1Display.textContent = STATE.p2Name;
+                }
+              });
+            });
+          } catch (e) {}
+        }
+      }
+
+      function initEvents() {
+        dom.btnOpenSidebar.addEventListener('click', () => toggleDrawer(true));
+        dom.btnCloseSidebar.addEventListener('click', () => toggleDrawer(false));
+        dom.drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
+
+        dom.sideNavPitch.addEventListener('click', () => switchScreen('PITCH'));
+        dom.sideNavBot.addEventListener('click', () => switchScreen('BOT_SETUP'));
+        dom.sideNavMultiplayer.addEventListener('click', () => switchScreen('MP_SETUP'));
+        dom.sideNavLeaderboard.addEventListener('click', () => switchScreen('LEADERBOARD'));
+        if (dom.sideNavFriends) dom.sideNavFriends.addEventListener('click', () => switchScreen('FRIENDS'));
+        if (dom.btnBackFromFriends) dom.btnBackFromFriends.addEventListener('click', () => switchScreen('PITCH'));
+        if (dom.inputSearchFriendUsername) {
+          dom.inputSearchFriendUsername.addEventListener('input', handleFriendsSearch);
+        }
+        dom.sideNavEvents.addEventListener('click', () => switchScreen('EVENTS'));
+        dom.sideNavShowcase.addEventListener('click', () => switchScreen('SHOWCASE'));
+
+        dom.btnBackFromBotSetup.addEventListener('click', () => switchScreen('PITCH'));
+        dom.btnBackFromMpSetup.addEventListener('click', () => switchScreen('PITCH'));
+        dom.btnBackFromLeaderboard.addEventListener('click', () => switchScreen('PITCH'));
+        dom.btnBackFromEvents.addEventListener('click', () => switchScreen('PITCH'));
+        dom.btnToggleShowcaseCompact.addEventListener('click', () => switchScreen('PITCH'));
+
+        dom.cardQuickBot.addEventListener('click', () => switchScreen('BOT_SETUP'));
+        dom.cardQuickMp.addEventListener('click', () => switchScreen('MP_SETUP'));
+
+        // Match Progression Action Listeners
+        if (dom.btnChooseBat) dom.btnChooseBat.addEventListener('click', () => handleTossDecisionChoice('BAT'));
+        if (dom.btnChooseBowl) dom.btnChooseBowl.addEventListener('click', () => handleTossDecisionChoice('BOWL'));
+        if (dom.btnStartAfterAiToss) dom.btnStartAfterAiToss.addEventListener('click', () => startInnings(1));
+        if (dom.btnStartSecondInnings) dom.btnStartSecondInnings.addEventListener('click', () => startInnings(2));
+        if (dom.btnPlayAgain) dom.btnPlayAgain.addEventListener('click', resetMatch);
+        if (dom.btnQuickRestart) dom.btnQuickRestart.addEventListener('click', resetMatch);
+
+        // Leaderboard Tab Switch Event Listeners
+        if (dom.btnLbSwitchGlobal) {
+          dom.btnLbSwitchGlobal.addEventListener('click', () => {
+            SoundFX.click();
+            STATE.leaderboardTab = 'GLOBAL';
+            renderLeaderboard();
+          });
+        }
+        if (dom.btnLbSwitchWeekly) {
+          dom.btnLbSwitchWeekly.addEventListener('click', () => {
+            SoundFX.click();
+            STATE.leaderboardTab = 'WEEKLY';
+            renderLeaderboard();
+          });
+        }
+        if (dom.btnLbSwitchRuns) {
+          dom.btnLbSwitchRuns.addEventListener('click', () => {
+            SoundFX.click();
+            STATE.leaderboardTab = 'RUNS';
+            renderLeaderboard();
+          });
+        }
+
+        // Toss Choice Listeners
+        dom.btnCallOdd.addEventListener('click', () => {
+          SoundFX.click();
+          STATE.tossCall = 'ODD';
+          dom.btnCallOdd.className = 'py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow';
+          dom.btnCallEven.className = 'py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]';
+          dom.tossCallIndicator.textContent = 'Selected Call: ODD';
+        });
+
+        dom.btnCallEven.addEventListener('click', () => {
+          SoundFX.click();
+          STATE.tossCall = 'EVEN';
+          dom.btnCallEven.className = 'py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow';
+          dom.btnCallOdd.className = 'py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]';
+          dom.tossCallIndicator.textContent = 'Selected Call: EVEN';
+        });
+
+        // Bot selection buttons with active highlighting
+        dom.btnBotRookie.addEventListener('click', () => { SoundFX.click(); highlightBotSelectionCard('ROOKIE'); });
+        dom.btnBotTactician.addEventListener('click', () => { SoundFX.click(); highlightBotSelectionCard('TACTICIAN'); });
+        dom.btnBotAggressor.addEventListener('click', () => { SoundFX.click(); highlightBotSelectionCard('AGGRESSOR'); });
+        dom.btnBotWall.addEventListener('click', () => { SoundFX.click(); highlightBotSelectionCard('WALL'); });
+
+        if (dom.botSetupCommentaryStyle) {
+          dom.botSetupCommentaryStyle.addEventListener('change', (e) => {
+            STATE.commentaryStyle = e.target.value;
+            renderView();
+          });
+        }
+
+        dom.btnLaunchBotMatch.addEventListener('click', () => {
+          STATE.mode = 'AI';
+          if (dom.botSetupCommentaryStyle) STATE.commentaryStyle = dom.botSetupCommentaryStyle.value;
+          switchScreen('PITCH');
+          resetMatch();
+        });
+
+        // Multiplayer Room Actions
+        if (dom.btnInlineCreateRoom) dom.btnInlineCreateRoom.addEventListener('click', createMultiplayerRoom);
+        if (dom.btnInlineJoinRoom) dom.btnInlineJoinRoom.addEventListener('click', joinMultiplayerRoom);
+        if (dom.btnInlineCopyCode) {
+          dom.btnInlineCopyCode.addEventListener('click', () => {
+            if (!STATE.roomCode) return;
+            try {
+              const ta = document.createElement('textarea');
+              ta.value = STATE.roomCode;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+              dom.btnInlineCopyCode.textContent = '✓';
+              setTimeout(() => { dom.btnInlineCopyCode.textContent = 'Copy'; }, 1500);
+            } catch (e) {}
+          });
+        }
+        if (dom.btnLaunchMpMatch) {
+          dom.btnLaunchMpMatch.addEventListener('click', () => {
+            switchScreen('PITCH');
+            resetMatch();
+          });
+        }
+
+        // Rules modal
+        dom.btnRules.addEventListener('click', () => { toggleDrawer(false); dom.rulesModal.classList.remove('hidden'); dom.rulesModal.classList.add('flex'); });
+        dom.btnCloseRules.addEventListener('click', () => { dom.rulesModal.classList.add('hidden'); });
+        dom.btnGotItRules.addEventListener('click', () => { dom.rulesModal.classList.add('hidden'); });
+
+        // Switch to desktop view
+        dom.btnSwitchToDesktop.addEventListener('click', () => {
+          sessionStorage.setItem('oddandeven_preferred_device_view', 'desktop');
+          window.location.href = 'hand_cricket.html';
+        });
+
+        // Sign out
+        dom.btnHeaderSignOut.addEventListener('click', () => {
+          sessionStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+          window.location.href = 'index.html?signedout=1';
+        });
+
+        // Auth modal
+        dom.btnOpenAuthModal.addEventListener('click', () => {
+          toggleDrawer(false);
+          dom.authModal.classList.remove('hidden');
+          dom.authModal.classList.add('flex');
+        });
+        dom.btnCloseAuthModal.addEventListener('click', () => {
+          dom.authModal.classList.add('hidden');
+        });
+
+        if (dom.btnModalSubmitAuth) {
+          dom.btnModalSubmitAuth.addEventListener('click', () => {
+            const uname = (dom.modalInputUsername.value || '').trim().toUpperCase();
+            const pin5 = (dom.modalInputPin5.value || '').trim();
+            const dial = dom.modalSelectCountry.value || '+91';
+
+            if (uname.length < 3 || !/^\d{5}$/.test(pin5)) {
+              dom.modalAuthAlert.classList.remove('hidden');
+              dom.modalAuthAlert.textContent = 'Please provide 3+ char username and 5-digit PIN.';
+              dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
+              return;
+            }
+
+            const usersMap = loadEncryptedUsersMap();
+            usersMap[uname] = {
+              username: uname,
+              countryCode: dial,
+              countryFlag: '🇮🇳',
+              countryName: 'India',
+              encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
+              createdAt: new Date().toISOString()
+            };
+            saveEncryptedUsersMap(usersMap);
+
+            const sess = { username: uname, countryCode: dial, countryFlag: '🇮🇳', loggedInAt: new Date().toISOString() };
+            const encSess = encryptPayload(sess);
+            sessionStorage.setItem(SESSION_STORAGE_KEY, encSess);
+            localStorage.setItem(SESSION_STORAGE_KEY, encSess);
+            localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
+
+            STATE.myUsername = uname;
+            STATE.myCountryCode = dial;
+            syncLeaderboardRegistry();
+            renderView();
+            dom.authModal.classList.add('hidden');
+          });
+        }
+
+        window.addEventListener('resize', () => {
+          resizeCanvas();
+        });
+
+        // BroadcastChannel for cross-tab leaderboard synchronisation
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
+            gbc.onmessage = (ev) => {
+              if (ev && ev.data && ev.data.type === 'GLOBAL_LEADERBOARD_SYNC') {
+                syncLeaderboardRegistry();
+                if (STATE.activeScreen === 'LEADERBOARD') {
+                  renderLeaderboard();
+                }
+              }
+            };
+          } catch (e) {}
+        }
+      }
+
+      // Window Onload initialization
+      window.onload = function () {
+        const sess = loadActiveAuthSession();
+        if (sess && sess.username) {
+          STATE.myUsername = sess.username;
+          STATE.myCountryFlag = sess.countryFlag || '🇮🇳';
+          STATE.myCountryCode = sess.countryCode || '+91';
+        }
+
+        syncLeaderboardRegistry();
+        updateFriendsBadge();
+        buildNumberButtons();
+        initEvents();
+        highlightBotSelectionCard(STATE.botDifficulty || 'TACTICIAN');
+        renderView();
+        renderLeaderboard();
+        resizeCanvas();
+        startTurnTimer();
+      };
+    })();
+  </script>
+</body>
+</html>
