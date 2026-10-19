@@ -162,7 +162,7 @@
           <span class="w-7 h-7 rounded-lg bg-cyan-500/15 flex items-center justify-center text-sm">🤖</span>
           <div class="min-w-0">
             <div class="font-extrabold text-white">Play Bot (250–2800 Elo)</div>
-            <div class="text-[9px] text-amber-300 font-normal" id="sideNavBotSubtitle">Rohan • 1100 Elo (Casual)</div>
+            <div class="text-[9px] text-amber-300 font-normal" id="sideNavBotSubtitle">Sunny • 450 Elo (Basic)</div>
           </div>
         </button>
 
@@ -248,8 +248,8 @@
       <div class="p-2 rounded-xl bg-[#171614] border border-[#2f2c28] space-y-1">
         <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Current Challenger</div>
         <div id="sidebarOpponentBadge" class="text-xs font-black text-cyan-300 flex items-center gap-1.5">
-          <span>⚡</span>
-          <span>Rohan (1100 Elo)</span>
+          <span>🌱</span>
+          <span>Sunny (450 Elo)</span>
         </div>
         <div id="sidebarCommentaryStyleBadge" class="text-[10px] text-amber-300/90 font-medium">
           🎙️ Hype Broadcast
@@ -797,11 +797,16 @@
           <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Country &amp; 5-Digit PIN</label>
           <div class="grid grid-cols-12 gap-1.5">
             <select id="modalSelectCountry" class="col-span-5 px-2 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white text-[11px] font-bold">
-              <option value="+91" data-flag="🇮🇳" selected>🇮🇳 +91</option>
-              <option value="+1" data-flag="🇺🇸">🇺🇸 +1</option>
-              <option value="+44" data-flag="🇬🇧">🇬🇧 +44</option>
-              <option value="+61" data-flag="🇦🇺">🇦🇺 +61</option>
-              <option value="+971" data-flag="🇦🇪">🇦🇪 +971</option>
+              <option value="+91" data-flag="🇮🇳" selected>🇮🇳 +91 (IN)</option>
+              <option value="+1" data-flag="🇺🇸">🇺🇸 +1 (US)</option>
+              <option value="+44" data-flag="🇬🇧">🇬🇧 +44 (UK)</option>
+              <option value="+61" data-flag="🇦🇺">🇦🇺 +61 (AU)</option>
+              <option value="+971" data-flag="🇦🇪">🇦🇪 +971 (AE)</option>
+              <option value="+64" data-flag="🇳🇿">🇳🇿 +64 (NZ)</option>
+              <option value="+27" data-flag="🇿🇦">🇿🇦 +27 (ZA)</option>
+              <option value="+94" data-flag="🇱🇰">🇱🇰 +94 (LK)</option>
+              <option value="+880" data-flag="🇧🇩">🇧🇩 +880 (BD)</option>
+              <option value="+977" data-flag="🇳🇵">🇳🇵 +977 (NP)</option>
             </select>
             <input id="modalInputPin5" type="password" inputmode="numeric" maxlength="5" placeholder="•••••" class="col-span-7 px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num font-black tracking-widest" />
           </div>
@@ -814,7 +819,20 @@
     </div>
   </div>
 
-  <script>
+  <!-- Central Cloud Synchronization Engine -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'oddandeven-arena-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : null;
+
+    let app = null;
+    let auth = null;
+    let db = null;
+    let currentUser = null;
+
     (function () {
       'use strict';
 
@@ -884,29 +902,41 @@
       };
 
       // ==========================================
-      // 2. ENCRYPTED AUTHENTICATION VAULT
+      // 2. ENCRYPTED AUTHENTICATION VAULT & CLOUD SYNC
       // ==========================================
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
       const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
-      const SCORECARD_HISTORY_KEY = 'hc_arena_match_scorecards_v1';
       const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+      const DESKTOP_ELO_STORAGE_KEY = 'hc_arena_elo_v2';
+      const LAST_USER_STORAGE_KEY = 'oddandeven_last_user_v1';
+      const PURGED_ACCOUNTS_KEY = 'oddandeven_purged_accounts_v1';
       const SIGNED_OUT_FLAG_KEY = 'oddandeven_signed_out_v1';
       const GLOBAL_LB_CHANNEL = 'oddandeven_global_leaderboard_v1';
       const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
       const TURN_DURATION_SEC = 15;
+
+      let cloudLeaderboard = {};
+      let cloudAccounts = {};
+      let cloudPurgedList = [];
+      let cloudFriendsMap = {};
+      let modalAuthMode = 'LOGIN';
 
       const FAKE_SEED_NAMES = [
         'AARAV_99',
         'KABIR_STRIKER',
         'PRIYA_XI',
         'DEV_CAPTAIN',
+        'PLAYER',
         'PLAYER_1',
+        'PLAYER_2',
         'GUEST',
         'YOU',
         'FRIEND',
         'WAITING...',
+        'WAITING',
         'LOGIN REQUIRED',
-        'UNAUTHENTICATED'
+        'UNAUTHENTICATED',
+        'HOST'
       ];
 
       const BOT_PROFILES = {
@@ -948,51 +978,9 @@
         }
       };
 
-      function getMondaySundayWeekInfo() {
-        const now = new Date();
-        const day = now.getDay();
-        const diffToMonday = day === 0 ? -6 : 1 - day;
-        const monday = new Date(now);
-        monday.setDate(now.getDate() + diffToMonday);
-        monday.setHours(0, 0, 0, 0);
-
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        sunday.setHours(23, 59, 59, 999);
-
-        const opts = { month: 'short', day: 'numeric' };
-        const monStr = monday.toLocaleDateString('en-US', opts);
-        const sunStr = sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const weekKey = `${monday.getFullYear()}-${monday.getMonth() + 1}-${monday.getDate()}`;
-        return {
-          weekKey,
-          label: `${monStr} – ${sunStr}`
-        };
-      }
-
-      function loadWorldwidePlayersMap() {
-        try {
-          const raw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
-          if (!raw) return {};
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === 'object') {
-            FAKE_SEED_NAMES.forEach((fn) => delete parsed[fn]);
-            return parsed;
-          }
-        } catch (e) {}
-        return {};
-      }
-
-      function saveWorldwidePlayersMap(map) {
-        try {
-          localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(map));
-        } catch (e) {}
-        if (typeof BroadcastChannel !== 'undefined') {
-          try {
-            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
-            gbc.postMessage({ type: 'GLOBAL_LEADERBOARD_SYNC', allPlayers: map });
-          } catch (e) {}
-        }
+      function isPlaceholderUsername(name) {
+        const clean = (name || '').trim().toUpperCase();
+        return !clean || FAKE_SEED_NAMES.includes(clean);
       }
 
       function fnv1aHash(str) {
@@ -1064,27 +1052,294 @@
       function loadEncryptedUsersMap() {
         try {
           const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-          if (!raw) return {};
-          const dec = decryptPayload(raw);
-          return (dec && typeof dec === 'object') ? dec : {};
+          const local = raw ? decryptPayload(raw) : {};
+          return Object.assign({}, cloudAccounts, local || {});
         } catch (e) {
-          return {};
+          return Object.assign({}, cloudAccounts);
         }
       }
 
-      function saveEncryptedUsersMap(usersMap) {
+      async function saveEncryptedUsersMap(usersMap) {
         try {
           localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
         } catch (e) {}
+
+        if (db && currentUser) {
+          try {
+            const keys = Object.keys(usersMap);
+            for (const k of keys) {
+              const clean = k.trim().toUpperCase();
+              if (!isPlaceholderUsername(clean)) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), usersMap[k]);
+              }
+            }
+          } catch (e) {}
+        }
       }
 
       function loadActiveAuthSession() {
         try {
           if (localStorage.getItem(SIGNED_OUT_FLAG_KEY) === '1') return null;
           const raw = sessionStorage.getItem(SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY);
-          return raw ? decryptPayload(raw) : null;
+          if (!raw) return null;
+          const dec = decryptPayload(raw);
+          if (dec && dec.username && !isPlaceholderUsername(dec.username)) {
+            try {
+              localStorage.setItem(LAST_USER_STORAGE_KEY, dec.username.trim().toUpperCase());
+            } catch (e) {}
+          }
+          return dec;
         } catch (e) {
           return null;
+        }
+      }
+
+      function loadPurgedAccountsList() {
+        try {
+          const raw = localStorage.getItem(PURGED_ACCOUNTS_KEY);
+          const local = raw ? JSON.parse(raw) : [];
+          return Array.from(new Set([...(Array.isArray(local) ? local : []), ...cloudPurgedList]));
+        } catch (e) {
+          return cloudPurgedList;
+        }
+      }
+
+      function markAccountPurged(username) {
+        const clean = (username || '').trim().toUpperCase();
+        if (!clean) return;
+        try {
+          const list = loadPurgedAccountsList();
+          if (!list.includes(clean)) {
+            list.push(clean);
+            localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(list));
+          }
+          if (localStorage.getItem(LAST_USER_STORAGE_KEY) === clean) {
+            localStorage.removeItem(LAST_USER_STORAGE_KEY);
+          }
+        } catch (e) {}
+      }
+
+      // Smart merge of two player records so a fresh 1500/0-match record NEVER overwrites a played rating!
+      function mergeSinglePlayerRecord(existing, incoming) {
+        if (!existing) return Object.assign({}, incoming);
+        if (!incoming) return Object.assign({}, existing);
+
+        const exPlayed = (existing.matches || 0) > 0 || (typeof existing.elo === 'number' && existing.elo !== 1500) || (existing.totalRuns || 0) > 0 || (existing.wicketsTaken || 0) > 0;
+        const incPlayed = (incoming.matches || 0) > 0 || (typeof incoming.elo === 'number' && incoming.elo !== 1500) || (incoming.totalRuns || 0) > 0 || (incoming.wicketsTaken || 0) > 0;
+
+        if (exPlayed && !incPlayed) {
+          return Object.assign({}, incoming, existing, {
+            elo: existing.elo,
+            peak: Math.max(existing.peak || 1500, incoming.peak || 1500),
+            wins: existing.wins || 0,
+            losses: existing.losses || 0,
+            matches: existing.matches || 0,
+            totalRuns: Math.max(existing.totalRuns || 0, incoming.totalRuns || 0),
+            wicketsTaken: Math.max(existing.wicketsTaken || 0, incoming.wicketsTaken || 0),
+            weeklyEloGain: existing.weeklyEloGain || 0
+          });
+        }
+        if (incPlayed && !exPlayed) {
+          return Object.assign({}, existing, incoming, {
+            elo: incoming.elo,
+            peak: Math.max(existing.peak || 1500, incoming.peak || 1500),
+            wins: incoming.wins || 0,
+            losses: incoming.losses || 0,
+            matches: incoming.matches || 0,
+            totalRuns: Math.max(existing.totalRuns || 0, incoming.totalRuns || 0),
+            wicketsTaken: Math.max(existing.wicketsTaken || 0, incoming.wicketsTaken || 0),
+            weeklyEloGain: incoming.weeklyEloGain || 0
+          });
+        }
+
+        const incMatches = incoming.matches || 0;
+        const exMatches = existing.matches || 0;
+        const incTime = incoming.updatedAt || 0;
+        const exTime = existing.updatedAt || 0;
+        const preferIncoming = incMatches > exMatches || (incMatches === exMatches && incTime >= exTime);
+        const primary = preferIncoming ? incoming : existing;
+        const secondary = preferIncoming ? existing : incoming;
+
+        return Object.assign({}, secondary, primary, {
+          elo: typeof primary.elo === 'number' ? primary.elo : (typeof secondary.elo === 'number' ? secondary.elo : 1500),
+          peak: Math.max(existing.peak || 1500, incoming.peak || 1500, primary.elo || 1500),
+          wins: Math.max(existing.wins || 0, incoming.wins || 0),
+          losses: Math.max(existing.losses || 0, incoming.losses || 0),
+          matches: Math.max(exMatches, incMatches),
+          totalRuns: Math.max(existing.totalRuns || 0, incoming.totalRuns || 0),
+          totalBalls: Math.max(existing.totalBalls || 0, incoming.totalBalls || 0),
+          highScore: Math.max(existing.highScore || 0, incoming.highScore || 0),
+          wicketsTaken: Math.max(existing.wicketsTaken || 0, incoming.wicketsTaken || 0),
+          wicketsLost: Math.max(existing.wicketsLost || 0, incoming.wicketsLost || 0),
+          ballsBowled: Math.max(existing.ballsBowled || 0, incoming.ballsBowled || 0),
+          weeklyRuns: Math.max(existing.weeklyRuns || 0, incoming.weeklyRuns || 0),
+          weeklyWickets: Math.max(existing.weeklyWickets || 0, incoming.weeklyWickets || 0),
+          weeklyWins: Math.max(existing.weeklyWins || 0, incoming.weeklyWins || 0),
+          weeklyLosses: Math.max(existing.weeklyLosses || 0, incoming.weeklyLosses || 0),
+          weeklyMatches: Math.max(existing.weeklyMatches || 0, incoming.weeklyMatches || 0),
+          updatedAt: Math.max(exTime, incTime)
+        });
+      }
+
+      function loadWorldwidePlayersMap() {
+        const merged = {};
+        const purged = loadPurgedAccountsList();
+
+        const mergeSourceMap = (srcMap) => {
+          if (!srcMap || typeof srcMap !== 'object') return;
+          Object.keys(srcMap).forEach((rawKey) => {
+            const clean = (rawKey || '').trim().toUpperCase();
+            if (!clean || isPlaceholderUsername(clean) || purged.includes(clean)) return;
+            const rec = srcMap[rawKey];
+            if (!rec || typeof rec !== 'object') return;
+            merged[clean] = mergeSinglePlayerRecord(merged[clean], Object.assign({}, rec, { name: clean, isRealRegisteredUser: true }));
+          });
+        };
+
+        try {
+          mergeSourceMap(cloudLeaderboard);
+        } catch (e) {}
+
+        try {
+          const rawWorld = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+          if (rawWorld) mergeSourceMap(JSON.parse(rawWorld));
+        } catch (e) {}
+
+        try {
+          const rawDesktop = localStorage.getItem(DESKTOP_ELO_STORAGE_KEY);
+          if (rawDesktop) {
+            const parsedDesktop = JSON.parse(rawDesktop);
+            if (parsedDesktop && parsedDesktop.humanPlayers) {
+              mergeSourceMap(parsedDesktop.humanPlayers);
+            }
+          }
+        } catch (e) {}
+
+        try {
+          mergeSourceMap(STATE && STATE.humanPlayers ? STATE.humanPlayers : {});
+        } catch (e) {}
+
+        return merged;
+      }
+
+      async function saveWorldwidePlayersMap(map) {
+        const purged = loadPurgedAccountsList();
+        const cleanMap = {};
+        Object.keys(map || {}).forEach((k) => {
+          const clean = (k || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean) || purged.includes(clean)) return;
+          cleanMap[clean] = map[k];
+        });
+
+        try {
+          localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(cleanMap));
+          const rawDesktop = localStorage.getItem(DESKTOP_ELO_STORAGE_KEY);
+          const desktopObj = rawDesktop ? JSON.parse(rawDesktop) : {};
+          const mergedForDesktop = Object.assign({}, desktopObj.humanPlayers || {});
+          Object.keys(cleanMap).forEach((u) => {
+            mergedForDesktop[u] = mergeSinglePlayerRecord(mergedForDesktop[u], cleanMap[u]);
+          });
+          const refRec = getActiveOrLastHumanRecord(cleanMap);
+          desktopObj.humanPlayers = mergedForDesktop;
+          if (refRec) {
+            desktopObj.eloRating = refRec.elo || 1500;
+            desktopObj.peakElo = refRec.peak || 1500;
+          }
+          localStorage.setItem(DESKTOP_ELO_STORAGE_KEY, JSON.stringify(desktopObj));
+        } catch (e) {}
+
+        if (db && currentUser) {
+          try {
+            const cleanUser = (STATE.myUsername || '').trim().toUpperCase();
+            if (cleanMap[cleanUser] && !isPlaceholderUsername(cleanUser)) {
+              await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', cleanUser), cleanMap[cleanUser]);
+            }
+          } catch (e) {}
+        }
+
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
+            gbc.postMessage({ type: 'GLOBAL_LEADERBOARD_SYNC', allPlayers: cleanMap });
+          } catch (e) {}
+        }
+      }
+
+      async function initCloudSync() {
+        if (!firebaseConfig) return;
+
+        try {
+          app = initializeApp(firebaseConfig);
+          auth = getAuth(app);
+          db = getFirestore(app);
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            const cred = await signInWithCustomToken(auth, __initial_auth_token);
+            currentUser = cred.user;
+          } else {
+            const cred = await signInAnonymously(auth);
+            currentUser = cred.user;
+          }
+
+          if (!currentUser) return;
+
+          const accountsCol = collection(db, 'artifacts', appId, 'public', 'data', 'accounts');
+          onSnapshot(accountsCol, (snapshot) => {
+            cloudAccounts = {};
+            snapshot.forEach((docSnap) => {
+              if (docSnap.exists()) {
+                cloudAccounts[docSnap.id] = docSnap.data();
+              }
+            });
+            syncLeaderboardRegistry();
+            renderLeaderboard();
+            renderView();
+          }, (err) => {
+            console.warn('Mobile accounts snapshot error', err);
+          });
+
+          const lbCol = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+          onSnapshot(lbCol, (snapshot) => {
+            cloudLeaderboard = {};
+            snapshot.forEach((docSnap) => {
+              if (docSnap.exists()) {
+                cloudLeaderboard[docSnap.id] = docSnap.data();
+              }
+            });
+            syncLeaderboardRegistry();
+            renderLeaderboard();
+            renderView();
+          }, (err) => {
+            console.warn('Mobile leaderboard snapshot error', err);
+          });
+
+          const purgedCol = collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts');
+          onSnapshot(purgedCol, (snapshot) => {
+            cloudPurgedList = [];
+            snapshot.forEach((docSnap) => {
+              if (docSnap.exists()) {
+                cloudPurgedList.push(docSnap.id.toUpperCase());
+              }
+            });
+
+            const myCurrent = STATE.myUsername.trim().toUpperCase();
+            if (cloudPurgedList.includes(myCurrent)) {
+              sessionStorage.removeItem(SESSION_STORAGE_KEY);
+              localStorage.removeItem(SESSION_STORAGE_KEY);
+              localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+              window.location.href = 'index.html?signedout=1';
+              return;
+            }
+
+            syncLeaderboardRegistry();
+            renderLeaderboard();
+            renderView();
+          }, (err) => {
+            console.warn('Mobile purged snapshot error', err);
+          });
+
+        } catch (e) {
+          console.warn('Mobile cloud sync notice:', e);
         }
       }
 
@@ -1096,32 +1351,45 @@
         activeScreen: 'PITCH', // 'PITCH' | 'BOT_SETUP' | 'MP_SETUP' | 'LEADERBOARD' | 'FRIENDS' | 'EVENTS' | 'SHOWCASE'
         eloRating: 1500,
         peakElo: 1500,
+        friendEloRating: 1500,
         myUsername: 'PLAYER',
         myCountryCode: '+91',
         myCountryFlag: '🇮🇳',
         myCountryName: 'India',
         p1Name: 'PLAYER',
+        p1CountryCode: '+91',
+        p1CountryFlag: '🇮🇳',
         p2Name: 'Sunny',
+        p2CountryCode: '+91',
+        p2CountryFlag: '🇮🇳',
         botDifficulty: 'TACTICIAN',
         commentaryStyle: 'HYPE',
         leaderboardTab: 'GLOBAL', // 'GLOBAL' | 'WEEKLY' | 'RUNS'
         humanPlayers: {},
 
-        // Multiplayer / PeerJS
         roomCode: null,
         onlineRole: null, // 'HOST' | 'GUEST'
+        onlineConnected: false,
         roomLocked: false,
         p2Joined: false,
         pendingP1Num: null,
         pendingP2Num: null,
+        p1LockedSec: null,
+        p2LockedSec: null,
+        p1TossCall: 'ODD',
+        p2TossCall: 'EVEN',
         peer: null,
+        legacyPeer: null,
         conn: null,
+        bc: null,
+        joinRetryTimerId: null,
+        seenNetMsgIds: new Set(),
 
-        // Match progression
         phase: 'TOSS', // 'TOSS' | 'TOSS_DECISION' | 'INNINGS_1' | 'INNINGS_BREAK' | 'INNINGS_2' | 'GAME_OVER'
         tossCall: 'ODD',
         tossUserNum: null,
         tossAiNum: null,
+        tossSum: null,
         tossWinner: null,
         firstBatter: null,
         currentBatter: null,
@@ -1129,17 +1397,21 @@
 
         userScore: 0,
         userBalls: 0,
+        userMatchWickets: 0,
         aiScore: 0,
         aiBalls: 0,
+        aiMatchWickets: 0,
         target: null,
 
         lastUserNum: null,
         lastAiNum: null,
         lastOutcomeText: 'Select Odd or Even to start the Toss!',
         winner: null,
+        isTossForfeit: false,
         winMarginText: '',
 
         turnSecondsLeft: TURN_DURATION_SEC,
+        turnDeadlineMs: 0,
         turnTimerId: null,
         userNumHistory: [],
 
@@ -1152,7 +1424,6 @@
         }
       };
 
-      // DOM Elements map
       const dom = {
         btnOpenSidebar: document.getElementById('btnOpenSidebar'),
         btnCloseSidebar: document.getElementById('btnCloseSidebar'),
@@ -1316,9 +1587,86 @@
         lbTableRightHeader: document.getElementById('lbTableRightHeader')
       };
 
-      function ensureHumanPlayerRecord(name, defaultElo = 1500, countryMeta = null) {
+      function getMondaySundayWeekInfo() {
+        const now = new Date();
+        const day = now.getDay();
+        const diffToMonday = day === 0 ? -6 : 1 - day;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + diffToMonday);
+        monday.setHours(0, 0, 0, 0);
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+
+        const opts = { month: 'short', day: 'numeric' };
+        const monStr = monday.toLocaleDateString('en-US', opts);
+        const sunStr = sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        return {
+          weekKey: `${monday.getFullYear()}-${monday.getMonth() + 1}-${monday.getDate()}`,
+          label: `${monStr} – ${sunStr}`
+        };
+      }
+
+      function getActiveOrLastHumanRecord(playersMap = STATE.humanPlayers) {
+        const map = playersMap || STATE.humanPlayers || {};
+        const myClean = (STATE.myUsername || '').trim().toUpperCase();
+        if (!isPlaceholderUsername(myClean) && map[myClean]) {
+          return map[myClean];
+        }
+        try {
+          const lastUser = (localStorage.getItem(LAST_USER_STORAGE_KEY) || '').trim().toUpperCase();
+          if (lastUser && !isPlaceholderUsername(lastUser) && map[lastUser]) {
+            return map[lastUser];
+          }
+        } catch (e) {}
+        const allReal = Object.values(map).filter((p) => p && typeof p.elo === 'number' && !isPlaceholderUsername(p.name));
+        if (allReal.length > 0) {
+          allReal.sort((a, b) => b.elo - a.elo || (b.totalRuns || 0) - (a.totalRuns || 0));
+          return allReal[0];
+        }
+        return null;
+      }
+
+      function ensureHumanPlayerRecord(name, defaultElo = 1500, countryMeta = null, forcePersist = false) {
         const clean = (name || 'PLAYER').trim().toUpperCase();
         const wk = getMondaySundayWeekInfo().weekKey;
+        if (isPlaceholderUsername(clean) && !forcePersist) {
+          const fallbackRef = getActiveOrLastHumanRecord(STATE.humanPlayers);
+          if (fallbackRef) {
+            return fallbackRef;
+          }
+          if (!STATE._guestTransientRec || STATE._guestTransientRec.name !== clean) {
+            STATE._guestTransientRec = {
+              name: clean,
+              countryCode: (countryMeta && countryMeta.countryCode) || STATE.myCountryCode || '+91',
+              countryFlag: (countryMeta && countryMeta.countryFlag) || STATE.myCountryFlag || '🇮🇳',
+              countryName: (countryMeta && countryMeta.countryName) || 'India',
+              isRealRegisteredUser: false,
+              elo: defaultElo,
+              peak: defaultElo,
+              wins: 0,
+              losses: 0,
+              matches: 0,
+              totalRuns: 0,
+              totalBalls: 0,
+              highScore: 0,
+              wicketsTaken: 0,
+              wicketsLost: 0,
+              ballsBowled: 0,
+              weekKey: wk,
+              weeklyEloGain: 0,
+              weeklyWins: 0,
+              weeklyLosses: 0,
+              weeklyMatches: 0,
+              weeklyRuns: 0,
+              weeklyWickets: 0,
+              updatedAt: 0
+            };
+          }
+          return STATE._guestTransientRec;
+        }
+
         if (!STATE.humanPlayers[clean]) {
           STATE.humanPlayers[clean] = {
             name: clean,
@@ -1344,7 +1692,7 @@
             weeklyMatches: 0,
             weeklyRuns: 0,
             weeklyWickets: 0,
-            updatedAt: Date.now()
+            updatedAt: 0
           };
         } else {
           const rec = STATE.humanPlayers[clean];
@@ -1365,24 +1713,40 @@
       }
 
       function syncLeaderboardRegistry() {
+        const purged = loadPurgedAccountsList();
         STATE.humanPlayers = loadWorldwidePlayersMap();
 
         const registeredAccounts = loadEncryptedUsersMap();
         Object.keys(registeredAccounts).forEach((uname) => {
+          const clean = uname.trim().toUpperCase();
+          if (isPlaceholderUsername(clean)) return;
+          if (purged.includes(clean)) {
+            delete registeredAccounts[clean];
+            saveEncryptedUsersMap(registeredAccounts);
+            return;
+          }
           const acc = registeredAccounts[uname];
-          ensureHumanPlayerRecord(uname, 1500, {
+          ensureHumanPlayerRecord(clean, 1500, {
             countryCode: acc.countryCode || '+91',
             countryFlag: acc.countryFlag || '🇮🇳'
           });
         });
+
+        if (!isPlaceholderUsername(STATE.myUsername) && purged.includes(STATE.myUsername.toUpperCase())) {
+          sessionStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+          window.location.href = 'index.html?signedout=1';
+          return;
+        }
 
         const activeRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
           countryCode: STATE.myCountryCode,
           countryFlag: STATE.myCountryFlag
         });
 
-        STATE.eloRating = activeRec.elo || 1500;
-        STATE.peakElo = activeRec.peak || 1500;
+        STATE.eloRating = typeof activeRec.elo === 'number' ? activeRec.elo : 1500;
+        STATE.peakElo = typeof activeRec.peak === 'number' ? activeRec.peak : STATE.eloRating;
         saveWorldwidePlayersMap(STATE.humanPlayers);
       }
 
@@ -1409,8 +1773,9 @@
         if (dom.btnLbSwitchRuns) dom.btnLbSwitchRuns.className = tab === 'RUNS' ? tabActiveCls : tabIdleCls;
 
         const allPlayers = Object.values(STATE.humanPlayers).filter(
-          (p) => p && typeof p.elo === 'number' && !FAKE_SEED_NAMES.includes(p.name)
+          (p) => p && typeof p.elo === 'number' && !isPlaceholderUsername(p.name)
         );
+        const highlightName = activeRec && activeRec.name ? activeRec.name.toUpperCase() : STATE.myUsername.toUpperCase();
 
         if (tab === 'GLOBAL') {
           if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Global Human Standings • Ranked by Elo Rating';
@@ -1436,7 +1801,7 @@
               </div>`;
           } else {
             dom.leaderboardStandingsList.innerHTML = sorted.map((p, idx) => {
-              const isMe = p.name === STATE.myUsername.toUpperCase();
+              const isMe = p.name === highlightName;
               return `
                 <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
                   <div class="flex items-center gap-2.5 min-w-0">
@@ -1476,7 +1841,7 @@
           const sortedWeekly = [...allPlayers].sort((a, b) => (b.weeklyEloGain || 0) - (a.weeklyEloGain || 0) || (b.weeklyRuns || 0) - (a.weeklyRuns || 0));
 
           dom.leaderboardStandingsList.innerHTML = sortedWeekly.map((p, idx) => {
-            const isMe = p.name === STATE.myUsername.toUpperCase();
+            const isMe = p.name === highlightName;
             const gain = p.weeklyEloGain || 0;
             const sign = gain >= 0 ? `+${gain}` : `${gain}`;
             return `
@@ -1498,7 +1863,6 @@
             `;
           }).join('');
         } else {
-          // Total Runs
           if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Career Runs & Wickets Standings';
           if (dom.lbTableLeftHeader) dom.lbTableLeftHeader.textContent = 'Player Runs';
           if (dom.lbTableRightHeader) dom.lbTableRightHeader.textContent = 'Total Runs';
@@ -1516,7 +1880,7 @@
           const sortedRuns = [...allPlayers].sort((a, b) => (b.totalRuns || 0) - (a.totalRuns || 0) || b.elo - a.elo);
 
           dom.leaderboardStandingsList.innerHTML = sortedRuns.map((p, idx) => {
-            const isMe = p.name === STATE.myUsername.toUpperCase();
+            const isMe = p.name === highlightName;
             return `
               <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
                 <div class="flex items-center gap-2.5 min-w-0">
@@ -1538,6 +1902,412 @@
         }
       }
 
+      // ==========================================
+      // 4. MULTIPLAYER SETUP & SYNCHRONIZATION (MATCHING HAND_CRICKET.HTML)
+      // ==========================================
+      function isMultiplayer() {
+        return STATE.mode === 'ONLINE_2P';
+      }
+
+      function isMultiplayerReadyToPlay() {
+        return !isMultiplayer() || (Boolean(STATE.p2Joined) && Boolean(STATE.roomLocked) && STATE.p2Name && !isPlaceholderUsername(STATE.p2Name));
+      }
+
+      function getP1Label() {
+        return (STATE.p1Name || STATE.myUsername || 'PLAYER_1').trim().toUpperCase();
+      }
+
+      function getP2Label() {
+        if (isMultiplayer()) return (STATE.p2Name || 'PLAYER_2').trim().toUpperCase();
+        const prof = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
+        return prof.shortName;
+      }
+
+      function sendNetMessage(payload) {
+        if (!payload || typeof payload !== 'object') return;
+        const msgWithId = Object.assign({}, payload, {
+          msgId: payload.msgId || `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+          senderRole: STATE.onlineRole || 'HOST'
+        });
+        STATE.seenNetMsgIds.add(msgWithId.msgId);
+
+        if (STATE.conn && STATE.conn.open) {
+          try { STATE.conn.send(msgWithId); } catch (e) {}
+        }
+        if (STATE.bc) {
+          try { STATE.bc.postMessage(msgWithId); } catch (e) {}
+        }
+        if (STATE.roomCode) {
+          try {
+            localStorage.setItem('oddandeven_room_bus_' + STATE.roomCode, JSON.stringify(msgWithId));
+          } catch (e) {}
+        }
+      }
+
+      function setupBroadcastFallback(code) {
+        if (STATE.bc) {
+          try { STATE.bc.close(); } catch (e) {}
+        }
+        if (typeof BroadcastChannel !== 'undefined') {
+          STATE.bc = new BroadcastChannel('hc_arena_room_' + code);
+          STATE.bc.onmessage = (ev) => {
+            if (ev && ev.data) handleNetMessage(ev.data);
+          };
+        }
+      }
+
+      function updateNetStatusUI(text, connected) {
+        if (!dom.inlineNetStatusBadge) return;
+        dom.inlineNetStatusBadge.textContent = text;
+        dom.inlineNetStatusBadge.className = connected
+          ? 'text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+          : 'text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30';
+      }
+
+      function handleNetMessage(msg) {
+        if (!msg || typeof msg !== 'object') return;
+        if (msg.msgId) {
+          if (STATE.seenNetMsgIds.has(msg.msgId)) return;
+          STATE.seenNetMsgIds.add(msg.msgId);
+        }
+
+        if (msg.allPlayers && typeof msg.allPlayers === 'object') {
+          Object.keys(msg.allPlayers).forEach((k) => {
+            const clean = (k || '').trim().toUpperCase();
+            if (!clean || isPlaceholderUsername(clean)) return;
+            STATE.humanPlayers[clean] = mergeSinglePlayerRecord(STATE.humanPlayers[clean], msg.allPlayers[k]);
+          });
+          saveWorldwidePlayersMap(STATE.humanPlayers);
+        }
+
+        if (msg.type === 'JOIN_HELLO' || msg.type === 'GUEST_JOINED') {
+          if (STATE.onlineRole !== 'HOST') return;
+          let incomingP2 = (msg.p2Name || msg.guestName || 'PLAYER_2').trim().toUpperCase();
+          if (incomingP2 === STATE.p1Name) {
+            incomingP2 = `${incomingP2}_2`;
+          }
+
+          if (STATE.roomLocked && STATE.p2Joined && STATE.p2Name !== incomingP2) {
+            sendNetMessage({
+              type: 'ROOM_LOCKED_REJECT',
+              targetUser: incomingP2,
+              p1Name: STATE.p1Name,
+              p2Name: STATE.p2Name
+            });
+            return;
+          }
+
+          STATE.onlineConnected = true;
+          STATE.p2Joined = true;
+          STATE.roomLocked = true;
+          STATE.p2Name = incomingP2;
+          STATE.p2CountryFlag = msg.p2CountryFlag || '🇮🇳';
+          STATE.p2CountryCode = msg.p2CountryCode || '+91';
+          STATE.friendEloRating = typeof msg.p2Elo === 'number' ? msg.p2Elo : 1500;
+
+          if (!isPlaceholderUsername(STATE.p2Name)) {
+            ensureHumanPlayerRecord(STATE.p2Name, STATE.friendEloRating, {
+              countryCode: STATE.p2CountryCode,
+              countryFlag: STATE.p2CountryFlag
+            }, true);
+            saveWorldwidePlayersMap(STATE.humanPlayers);
+          }
+
+          updateNetStatusUI(`🔒 Room Locked: ${STATE.p1Name} vs ${STATE.p2Name}`, true);
+          sendNetMessage({
+            type: 'HOST_WELCOME',
+            hostName: STATE.p1Name,
+            p1Name: STATE.p1Name,
+            p1CountryFlag: STATE.p1CountryFlag,
+            p1CountryCode: STATE.p1CountryCode,
+            p1Elo: STATE.eloRating,
+            p2Name: STATE.p2Name,
+            p2CountryFlag: STATE.p2CountryFlag,
+            p2CountryCode: STATE.p2CountryCode,
+            p2Elo: STATE.friendEloRating,
+            roomLocked: true,
+            allPlayers: STATE.humanPlayers
+          });
+          SoundFX.click();
+          renderView();
+        } else if (msg.type === 'ROOM_LOCKED_REJECT') {
+          if (STATE.onlineRole === 'GUEST' && (!msg.targetUser || msg.targetUser === STATE.myUsername || msg.targetUser === `${STATE.myUsername}_2`)) {
+            if (STATE.joinRetryTimerId) {
+              clearInterval(STATE.joinRetryTimerId);
+              STATE.joinRetryTimerId = null;
+            }
+            STATE.onlineConnected = false;
+            STATE.roomLocked = true;
+            STATE.p2Joined = false;
+            updateNetStatusUI(`🔒 Room Full & Locked (${msg.p1Name} vs ${msg.p2Name})`, false);
+            renderView();
+          }
+        } else if (msg.type === 'HOST_WELCOME') {
+          if (STATE.onlineRole !== 'GUEST') return;
+          if (STATE.joinRetryTimerId) {
+            clearInterval(STATE.joinRetryTimerId);
+            STATE.joinRetryTimerId = null;
+          }
+          STATE.onlineConnected = true;
+          STATE.p2Joined = true;
+          STATE.roomLocked = true;
+          STATE.p1Name = (msg.p1Name || msg.hostName || 'HOST').trim().toUpperCase();
+          STATE.p1CountryFlag = msg.p1CountryFlag || '🇮🇳';
+          STATE.p1CountryCode = msg.p1CountryCode || '+91';
+          STATE.p2Name = (msg.p2Name || STATE.myUsername).trim().toUpperCase();
+          STATE.p2CountryFlag = msg.p2CountryFlag || STATE.myCountryFlag || '🇮🇳';
+          STATE.p2CountryCode = msg.p2CountryCode || STATE.myCountryCode || '+91';
+          STATE.friendEloRating = typeof msg.p1Elo === 'number' ? msg.p1Elo : 1500;
+
+          if (!isPlaceholderUsername(STATE.p1Name)) {
+            ensureHumanPlayerRecord(STATE.p1Name, STATE.friendEloRating, {
+              countryCode: STATE.p1CountryCode,
+              countryFlag: STATE.p1CountryFlag
+            }, true);
+          }
+          if (!isPlaceholderUsername(STATE.p2Name)) {
+            ensureHumanPlayerRecord(STATE.p2Name, STATE.eloRating, {
+              countryCode: STATE.p2CountryCode,
+              countryFlag: STATE.p2CountryFlag
+            }, true);
+          }
+          saveWorldwidePlayersMap(STATE.humanPlayers);
+
+          updateNetStatusUI(`🔒 Room Locked: ${STATE.p1Name} vs ${STATE.p2Name}`, true);
+          SoundFX.click();
+          renderView();
+        } else if (msg.type === 'HOST_START_MATCH') {
+          STATE.mode = 'ONLINE_2P';
+          if (msg.p1Name) STATE.p1Name = msg.p1Name;
+          if (msg.p2Name) STATE.p2Name = msg.p2Name;
+          if (msg.p1CountryFlag) STATE.p1CountryFlag = msg.p1CountryFlag;
+          if (msg.p1CountryCode) STATE.p1CountryCode = msg.p1CountryCode;
+          if (msg.p2CountryFlag) STATE.p2CountryFlag = msg.p2CountryFlag;
+          if (msg.p2CountryCode) STATE.p2CountryCode = msg.p2CountryCode;
+          STATE.roomLocked = true;
+          STATE.p2Joined = true;
+          STATE.onlineConnected = true;
+          STATE.activeScreen = 'PITCH';
+          dom.activePitchWrapper.classList.remove('hidden');
+          dom.screenMpSetup.classList.add('hidden');
+          resetMatch(true);
+          setTimeout(resizeCanvas, 30);
+        } else if (msg.type === 'TIMER_SYNC') {
+          const curStep = STATE.pendingP1Num === null ? 'P1' : 'P2';
+          if (msg.phase && msg.phase !== STATE.phase) return;
+          if (msg.turnStep && msg.turnStep !== curStep) return;
+          if (typeof msg.remainingMs === 'number') {
+            STATE.turnDeadlineMs = Date.now() + msg.remainingMs;
+            STATE.turnSecondsLeft = Math.max(0, Math.min(TURN_DURATION_SEC, Math.ceil(msg.remainingMs / 1000)));
+          } else if (typeof msg.secondsLeft === 'number') {
+            STATE.turnSecondsLeft = msg.secondsLeft;
+            STATE.turnDeadlineMs = Date.now() + msg.secondsLeft * 1000;
+          }
+          if (typeof msg.p1LockedSec === 'number' || msg.p1LockedSec === null) {
+            STATE.p1LockedSec = msg.p1LockedSec;
+          }
+          if (typeof msg.p2LockedSec === 'number' || msg.p2LockedSec === null) {
+            STATE.p2LockedSec = msg.p2LockedSec;
+          }
+          renderTimerDisplay();
+        } else if (msg.type === 'TOSS_CALL') {
+          const chosen = msg.callType === 'EVEN' ? 'EVEN' : 'ODD';
+          const opposite = chosen === 'EVEN' ? 'ODD' : 'EVEN';
+          if (msg.caller === 'P1') {
+            STATE.p1TossCall = chosen;
+            STATE.p2TossCall = opposite;
+          } else {
+            STATE.p2TossCall = chosen;
+            STATE.p1TossCall = opposite;
+          }
+          STATE.tossCall = STATE.p1TossCall;
+          startTurnTimer(true);
+          renderView();
+        } else if (msg.type === 'TIMEOUT_FORFEIT') {
+          stopTurnTimer();
+          concludeMatch(msg.winner, msg.reason, true, Boolean(msg.isTossForfeit));
+          renderView();
+        } else if (msg.type === 'PICK_NUM') {
+          if (msg.player === 'P1') {
+            STATE.pendingP1Num = msg.num;
+            STATE.p1LockedSec = typeof msg.lockedSec === 'number' ? msg.lockedSec : STATE.turnSecondsLeft;
+            if (STATE.pendingP2Num === null) {
+              startTurnTimer(true);
+            }
+          } else if (msg.player === 'P2') {
+            STATE.pendingP2Num = msg.num;
+            STATE.p2LockedSec = typeof msg.lockedSec === 'number' ? msg.lockedSec : STATE.turnSecondsLeft;
+          }
+          checkAndResolveMultiplayerTurn();
+          renderView();
+        } else if (msg.type === 'TOSS_DECISION_CHOICE') {
+          STATE.firstBatter = msg.firstBatter;
+          startInnings(1, msg.decisionChoice);
+        } else if (msg.type === 'START_INN_2') {
+          startInnings(2, null, true);
+        } else if (msg.type === 'RESET_MATCH') {
+          STATE.activeScreen = 'PITCH';
+          dom.activePitchWrapper.classList.remove('hidden');
+          dom.screenMpSetup.classList.add('hidden');
+          resetMatch(true);
+          setTimeout(resizeCanvas, 30);
+        }
+      }
+
+      function createMultiplayerRoom() {
+        SoundFX.click();
+        const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
+        STATE.roomCode = code;
+        STATE.onlineRole = 'HOST';
+        STATE.mode = 'ONLINE_2P';
+        STATE.onlineConnected = false;
+        STATE.roomLocked = false;
+        STATE.p2Joined = false;
+        STATE.p1Name = STATE.myUsername;
+        STATE.p1CountryFlag = STATE.myCountryFlag;
+        STATE.p1CountryCode = STATE.myCountryCode;
+        STATE.p2Name = 'WAITING...';
+
+        dom.inlineHostCodeDisplay.classList.remove('hidden');
+        dom.inlineHostCodeValue.textContent = code;
+        updateNetStatusUI(`⏳ Room ${code} • Waiting for P2...`, false);
+        dom.inlineLobbyP1Display.textContent = STATE.p1Name;
+        dom.inlineLobbyP2Display.textContent = '⏳ Waiting to join...';
+        dom.btnLaunchMpMatch.disabled = true;
+
+        setupBroadcastFallback(code);
+
+        if (typeof Peer !== 'undefined') {
+          try {
+            if (STATE.peer) STATE.peer.destroy();
+            if (STATE.legacyPeer) STATE.legacyPeer.destroy();
+
+            const attachHostPeer = (peerInstance) => {
+              peerInstance.on('connection', (c) => {
+                if (STATE.roomLocked && STATE.p2Joined && STATE.conn && STATE.conn.open) {
+                  c.on('open', () => {
+                    try {
+                      c.send({
+                        type: 'ROOM_LOCKED_REJECT',
+                        p1Name: STATE.p1Name,
+                        p2Name: STATE.p2Name
+                      });
+                    } catch (e) {}
+                  });
+                  return;
+                }
+                STATE.conn = c;
+                c.on('data', (data) => handleNetMessage(data));
+                c.on('open', () => {
+                  STATE.onlineConnected = true;
+                });
+              });
+            };
+
+            STATE.peer = new Peer('handcricket-arena-' + code);
+            attachHostPeer(STATE.peer);
+
+            STATE.legacyPeer = new Peer('oae-room-' + code);
+            attachHostPeer(STATE.legacyPeer);
+          } catch (e) {}
+        }
+        renderView();
+      }
+
+      function joinMultiplayerRoom() {
+        SoundFX.click();
+        const code = (dom.inlineInputJoinCode.value || '').trim().toUpperCase();
+        if (!code) return;
+
+        STATE.roomCode = code;
+        STATE.onlineRole = 'GUEST';
+        STATE.mode = 'ONLINE_2P';
+        STATE.onlineConnected = false;
+        STATE.roomLocked = false;
+        STATE.p2Joined = false;
+        STATE.p2Name = STATE.myUsername;
+        STATE.p2CountryFlag = STATE.myCountryFlag;
+        STATE.p2CountryCode = STATE.myCountryCode;
+
+        updateNetStatusUI(`Connecting to Room ${code} as ${STATE.myUsername}...`, false);
+        setupBroadcastFallback(code);
+
+        const joinPayload = {
+          type: 'JOIN_HELLO',
+          p2Name: STATE.myUsername,
+          guestName: STATE.myUsername,
+          p2CountryFlag: STATE.myCountryFlag,
+          p2CountryCode: STATE.myCountryCode,
+          p2Elo: STATE.eloRating,
+          allPlayers: STATE.humanPlayers
+        };
+        sendNetMessage(joinPayload);
+
+        if (STATE.joinRetryTimerId) {
+          clearInterval(STATE.joinRetryTimerId);
+          STATE.joinRetryTimerId = null;
+        }
+        let joinAttempts = 0;
+        STATE.joinRetryTimerId = setInterval(() => {
+          joinAttempts += 1;
+          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 6 || STATE.onlineRole !== 'GUEST') {
+            clearInterval(STATE.joinRetryTimerId);
+            STATE.joinRetryTimerId = null;
+            return;
+          }
+          sendNetMessage(Object.assign({}, joinPayload, {
+            msgId: `${Date.now()}_retry_${joinAttempts}`
+          }));
+        }, 1200);
+
+        if (typeof Peer !== 'undefined') {
+          try {
+            if (STATE.peer) STATE.peer.destroy();
+            STATE.peer = new Peer();
+            STATE.peer.on('open', () => {
+              const connectToHostId = (hostPeerId) => {
+                try {
+                  const c = STATE.peer.connect(hostPeerId);
+                  c.on('open', () => {
+                    STATE.conn = c;
+                    sendNetMessage(Object.assign({}, joinPayload, {
+                      msgId: `${Date.now()}_peer_open`
+                    }));
+                  });
+                  c.on('data', (data) => handleNetMessage(data));
+                } catch (e) {}
+              };
+              connectToHostId('handcricket-arena-' + code);
+              connectToHostId('oae-room-' + code);
+            });
+          } catch (e) {}
+        }
+        renderView();
+      }
+
+      function hostTriggerMultiplayerMatchStart() {
+        if (!isMultiplayerReadyToPlay() || STATE.onlineRole !== 'HOST') {
+          updateNetStatusUI(`⏳ Waiting for Player 2 to join Room ${STATE.roomCode || ''}...`, false);
+          renderView();
+          return;
+        }
+        SoundFX.click();
+        STATE.mode = 'ONLINE_2P';
+        sendNetMessage({
+          type: 'HOST_START_MATCH',
+          p1Name: STATE.p1Name,
+          p2Name: STATE.p2Name,
+          p1CountryFlag: STATE.p1CountryFlag,
+          p1CountryCode: STATE.p1CountryCode,
+          p2CountryFlag: STATE.p2CountryFlag,
+          p2CountryCode: STATE.p2CountryCode,
+          p1TossCall: 'ODD',
+          p2TossCall: 'EVEN'
+        });
+        switchScreen('PITCH');
+        resetMatch(true);
+      }
+
       function toggleDrawer(open) {
         if (open) {
           dom.mobileDrawer.classList.add('drawer-open');
@@ -1551,24 +2321,30 @@
       function switchScreen(screenName) {
         SoundFX.click();
         toggleDrawer(false);
-        STATE.activeScreen = screenName;
-        dom.activePitchWrapper.classList.toggle('hidden', screenName !== 'PITCH');
-        dom.screenBotSetup.classList.toggle('hidden', screenName !== 'BOT_SETUP');
-        dom.screenMpSetup.classList.toggle('hidden', screenName !== 'MP_SETUP');
-        dom.screenLeaderboard.classList.toggle('hidden', screenName !== 'LEADERBOARD');
-        if (dom.screenFriends) dom.screenFriends.classList.toggle('hidden', screenName !== 'FRIENDS');
-        dom.screenEvents.classList.toggle('hidden', screenName !== 'EVENTS');
-        dom.centerShowcasePanel.classList.toggle('hidden', screenName !== 'SHOWCASE');
-        if (screenName === 'PITCH') {
-          startTurnTimer();
+        if (screenName === 'PITCH' && isMultiplayer() && !isMultiplayerReadyToPlay()) {
+          stopTurnTimer();
+          STATE.activeScreen = 'MP_SETUP';
+          updateNetStatusUI(`⚠️ Waiting for Player 2 to join Room ${STATE.roomCode || 'Lobby'} before starting!`, false);
+        } else {
+          STATE.activeScreen = screenName;
+        }
+        dom.activePitchWrapper.classList.toggle('hidden', STATE.activeScreen !== 'PITCH');
+        dom.screenBotSetup.classList.toggle('hidden', STATE.activeScreen !== 'BOT_SETUP');
+        dom.screenMpSetup.classList.toggle('hidden', STATE.activeScreen !== 'MP_SETUP');
+        dom.screenLeaderboard.classList.toggle('hidden', STATE.activeScreen !== 'LEADERBOARD');
+        if (dom.screenFriends) dom.screenFriends.classList.toggle('hidden', STATE.activeScreen !== 'FRIENDS');
+        dom.screenEvents.classList.toggle('hidden', STATE.activeScreen !== 'EVENTS');
+        dom.centerShowcasePanel.classList.toggle('hidden', STATE.activeScreen !== 'SHOWCASE');
+        if (STATE.activeScreen === 'PITCH') {
+          startTurnTimer(true);
           setTimeout(resizeCanvas, 30);
         } else {
           stopTurnTimer();
         }
-        if (screenName === 'LEADERBOARD') {
+        if (STATE.activeScreen === 'LEADERBOARD') {
           renderLeaderboard();
         }
-        if (screenName === 'FRIENDS') {
+        if (STATE.activeScreen === 'FRIENDS') {
           renderFriendsRoster();
         }
         renderView();
@@ -1580,20 +2356,36 @@
       }
 
       function loadUserFriends() {
+        const u = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
         try {
           const raw = localStorage.getItem(getFriendsStorageKey());
-          if (!raw) return [];
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
+          let localList = [];
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) localList = parsed;
+          }
+          const cloudList = cloudFriendsMap[u] || [];
+          return Array.from(new Set([...localList, ...cloudList]));
         } catch (e) {
-          return [];
+          return cloudFriendsMap[u] || [];
         }
       }
 
-      function saveUserFriends(list) {
+      async function saveUserFriends(list, syncCloud = true) {
+        const u = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
         try {
           localStorage.setItem(getFriendsStorageKey(), JSON.stringify(list));
         } catch (e) {}
+
+        if (syncCloud && db && currentUser && u && !isPlaceholderUsername(u)) {
+          try {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', u), {
+              username: u,
+              friends: list,
+              updatedAt: Date.now()
+            });
+          } catch (e) {}
+        }
         updateFriendsBadge();
       }
 
@@ -1610,7 +2402,7 @@
         const friends = loadUserFriends();
         if (!friends.includes(clean)) {
           friends.push(clean);
-          saveUserFriends(friends);
+          saveUserFriends(friends, true);
           renderFriendsRoster();
           handleFriendsSearch();
         }
@@ -1621,7 +2413,7 @@
         const clean = (username || '').trim().toUpperCase();
         let friends = loadUserFriends();
         friends = friends.filter((f) => f !== clean);
-        saveUserFriends(friends);
+        saveUserFriends(friends, true);
         renderFriendsRoster();
         handleFriendsSearch();
       }
@@ -1641,7 +2433,7 @@
 
         Object.keys(encryptedUsers).forEach((u) => {
           const c = u.trim().toUpperCase();
-          if (!FAKE_SEED_NAMES.includes(c)) {
+          if (!isPlaceholderUsername(c)) {
             allKnown[c] = {
               name: c,
               countryFlag: encryptedUsers[u].countryFlag || '🇮🇳',
@@ -1652,7 +2444,7 @@
 
         Object.keys(STATE.humanPlayers).forEach((u) => {
           const c = u.trim().toUpperCase();
-          if (!FAKE_SEED_NAMES.includes(c)) {
+          if (!isPlaceholderUsername(c)) {
             allKnown[c] = Object.assign({}, allKnown[c] || {}, STATE.humanPlayers[u], { name: c });
           }
         });
@@ -1778,13 +2570,16 @@
         dom.myFriendsListContainer.querySelectorAll('.btn-action-challenge-friend').forEach((btn) => {
           btn.addEventListener('click', () => {
             const target = btn.getAttribute('data-challenge-username');
-            STATE.p2Name = target;
-            if (dom.inlineLobbyP2Display) dom.inlineLobbyP2Display.textContent = target;
+            createMultiplayerRoom();
             switchScreen('MP_SETUP');
+            updateNetStatusUI(`📨 Room ${STATE.roomCode} Ready • Share Code with ${target}!`, false);
           });
         });
       }
 
+      // ==========================================
+      // 5. SYNCHRONIZED 15-SECOND SHOT CLOCK & SEQUENTIAL P1 -> P2 LOCK
+      // ==========================================
       function stopTurnTimer() {
         if (STATE.turnTimerId) {
           clearInterval(STATE.turnTimerId);
@@ -1792,22 +2587,38 @@
         }
       }
 
-      function startTurnTimer() {
-        stopTurnTimer();
-        STATE.turnSecondsLeft = TURN_DURATION_SEC;
-        renderTimerDisplay();
+      function isTimerActiveState() {
+        if (isMultiplayer() && !isMultiplayerReadyToPlay()) {
+          return false;
+        }
+        return (
+          STATE.activeScreen === 'PITCH' &&
+          (STATE.phase === 'TOSS' || STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2')
+        );
+      }
 
-        STATE.turnTimerId = setInterval(() => {
-          STATE.turnSecondsLeft--;
-          renderTimerDisplay();
-          if (STATE.turnSecondsLeft <= 0) {
-            stopTurnTimer();
-            handleTimeout();
-          }
-        }, 1000);
+      function setNumberPadLockedState(isLocked) {
+        const allBtns = [
+          ...dom.tossNumberGrid.querySelectorAll('button'),
+          ...dom.playNumberGrid.querySelectorAll('button')
+        ];
+        allBtns.forEach((btn) => {
+          btn.disabled = Boolean(isLocked);
+        });
       }
 
       function renderTimerDisplay() {
+        if (!dom.timerDigitalDisplay) return;
+        if (isMultiplayer() && !isMultiplayerReadyToPlay()) {
+          dom.timerDigitalDisplay.textContent = 'WAIT';
+          dom.timerDigitalDisplay.className = 'px-2.5 py-0.5 rounded-lg font-black text-xs bg-amber-950 text-amber-300 border border-amber-500/40';
+          if (dom.timerStatusTitle) {
+            dom.timerStatusTitle.textContent = `Waiting for P2 to join Room ${STATE.roomCode || ''}...`;
+          }
+          setNumberPadLockedState(true);
+          return;
+        }
+
         const s = Math.max(0, STATE.turnSecondsLeft);
         dom.timerDigitalDisplay.textContent = `00:${s < 10 ? '0' + s : s}`;
         if (s <= 3) {
@@ -1815,15 +2626,124 @@
         } else {
           dom.timerDigitalDisplay.className = 'px-2.5 py-0.5 rounded-lg font-black text-xs bg-[#12110f] text-[#81b64c] border border-[#3d3a34]';
         }
+
+        if (isMultiplayer()) {
+          const p1 = getP1Label();
+          const p2 = getP2Label();
+          const p1TurnActive = STATE.pendingP1Num === null;
+          if (dom.timerStatusTitle) {
+            dom.timerStatusTitle.textContent = p1TurnActive
+              ? `🟢 ${p1} (P1) 15s Clock • 🔒 ${p2} Locked`
+              : `🔒 ${p1} Locked • 🟢 ${p2} (P2) 15s Clock`;
+          }
+          const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
+          const myTurnUnlocked = (mySlot === 'P1' && p1TurnActive) || (mySlot === 'P2' && !p1TurnActive);
+          setNumberPadLockedState(!myTurnUnlocked);
+        } else {
+          if (dom.timerStatusTitle) {
+            dom.timerStatusTitle.textContent = '15s Turn Clock';
+          }
+          setNumberPadLockedState(false);
+        }
+      }
+
+      function startTurnTimer(fromNetworkSync = false) {
+        stopTurnTimer();
+        STATE.turnSecondsLeft = TURN_DURATION_SEC;
+        STATE.turnDeadlineMs = Date.now() + TURN_DURATION_SEC * 1000;
+        renderTimerDisplay();
+        if (!isTimerActiveState()) return;
+
+        const curTurnStep = STATE.pendingP1Num === null ? 'P1' : 'P2';
+        if (isMultiplayer() && STATE.onlineRole === 'HOST') {
+          sendNetMessage({
+            type: 'TIMER_SYNC',
+            remainingMs: TURN_DURATION_SEC * 1000,
+            secondsLeft: TURN_DURATION_SEC,
+            turnStep: curTurnStep,
+            p1LockedSec: STATE.p1LockedSec,
+            p2LockedSec: STATE.p2LockedSec,
+            phase: STATE.phase
+          });
+        }
+
+        let lastWholeSec = TURN_DURATION_SEC;
+        STATE.turnTimerId = setInterval(() => {
+          if (!isTimerActiveState()) {
+            stopTurnTimer();
+            return;
+          }
+          const remMs = Math.max(0, STATE.turnDeadlineMs - Date.now());
+          const nextSec = Math.max(0, Math.min(TURN_DURATION_SEC, Math.ceil(remMs / 1000)));
+          if (nextSec !== lastWholeSec) {
+            lastWholeSec = nextSec;
+            STATE.turnSecondsLeft = nextSec;
+            renderTimerDisplay();
+
+            if (isMultiplayer() && STATE.onlineRole === 'HOST') {
+              sendNetMessage({
+                type: 'TIMER_SYNC',
+                remainingMs: remMs,
+                secondsLeft: STATE.turnSecondsLeft,
+                turnStep: STATE.pendingP1Num === null ? 'P1' : 'P2',
+                p1LockedSec: STATE.p1LockedSec,
+                p2LockedSec: STATE.p2LockedSec,
+                phase: STATE.phase
+              });
+            }
+          }
+
+          if (remMs <= 0) {
+            if (!isMultiplayer() || STATE.onlineRole === 'HOST') {
+              stopTurnTimer();
+              handleTimeout();
+            } else if (Date.now() - STATE.turnDeadlineMs > 1200) {
+              stopTurnTimer();
+              handleTimeout();
+            }
+          }
+        }, 200);
       }
 
       function handleTimeout() {
-        const randomHand = Math.floor(Math.random() * 10) + 1;
-        if (STATE.phase === 'TOSS') {
-          handleTossNumberPick(randomHand);
-        } else if (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') {
-          handleGameplayTurn(randomHand);
+        if (isMultiplayer() && !isMultiplayerReadyToPlay()) {
+          stopTurnTimer();
+          return;
         }
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+
+        let winnerSide = 'AI';
+        let timedOutPlayer = p1;
+        let waitingWinnerName = p2;
+
+        if (isMultiplayer()) {
+          if (STATE.pendingP1Num !== null && STATE.pendingP2Num === null) {
+            winnerSide = 'USER';
+            timedOutPlayer = p2;
+            waitingWinnerName = p1;
+          } else {
+            winnerSide = 'AI';
+            timedOutPlayer = p1;
+            waitingWinnerName = p2;
+          }
+        }
+
+        const isTossTimeout = STATE.phase === 'TOSS';
+        const reason = isTossTimeout
+          ? `🏳️ Match Forfeited! ${timedOutPlayer} did not pick a toss number before the 15s countdown ran out (${waitingWinnerName} wins by Toss Forfeit).`
+          : `⏱️ Time Out Loss! ${timedOutPlayer} ran out of time during the match — ${timedOutPlayer} loses and ${waitingWinnerName} wins the match!`;
+
+        if (isMultiplayer()) {
+          sendNetMessage({
+            type: 'TIMEOUT_FORFEIT',
+            winner: winnerSide,
+            reason,
+            isTossForfeit: isTossTimeout
+          });
+        }
+        concludeMatch(winnerSide, reason, true, isTossTimeout);
+        renderView();
       }
 
       function buildNumberButtons() {
@@ -1831,7 +2751,6 @@
         dom.playNumberGrid.innerHTML = '';
 
         for (let num = 1; num <= 10; num++) {
-          // Toss button
           const tBtn = document.createElement('button');
           tBtn.type = 'button';
           tBtn.className = 'num-btn h-12 rounded-xl font-mono-num font-black text-base flex items-center justify-center';
@@ -1839,7 +2758,6 @@
           tBtn.addEventListener('click', () => handleTossNumberPick(num));
           dom.tossNumberGrid.appendChild(tBtn);
 
-          // Gameplay button
           const pBtn = document.createElement('button');
           pBtn.type = 'button';
           pBtn.className = 'num-btn h-14 rounded-2xl font-mono-num font-black text-lg flex items-center justify-center';
@@ -1854,13 +2772,11 @@
         for (let n = 1; n <= 10; n++) scores[n] = 1.0;
         if (!hist || hist.length === 0) return scores;
 
-        // 1. Overall & Recent Frequency weight
         hist.forEach((n, idx) => {
           const recencyBoost = idx >= hist.length - 6 ? 2.4 : 1.0;
           scores[n] = (scores[n] || 1) + recencyBoost;
         });
 
-        // 2. 1st-Order Markov Transition
         const last = hist[hist.length - 1];
         for (let i = 0; i < hist.length - 1; i++) {
           if (hist[i] === last) {
@@ -1869,7 +2785,6 @@
           }
         }
 
-        // 3. 2nd-Order N-Gram
         if (hist.length >= 2) {
           const prev2 = hist[hist.length - 2];
           for (let i = 0; i < hist.length - 2; i++) {
@@ -1892,7 +2807,6 @@
         const diff = STATE.botDifficulty || 'TACTICIAN';
         const hist = STATE.userNumHistory;
 
-        // TIER 1: BASIC BOT (450 ELO, 250–700)
         if (diff === 'ROOKIE') {
           if (!isBotBatting) {
             const recentUser = new Set(hist.slice(-4));
@@ -1907,7 +2821,6 @@
           }
         }
 
-        // TIER 2: INTERMEDIATE BOT (1100 ELO, 700–1400)
         if (diff === 'TACTICIAN') {
           const patternScores = analyzeUserPatterns(hist);
           const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
@@ -1926,7 +2839,6 @@
           }
         }
 
-        // TIER 3: ADVANCED BOT (1850 ELO, 1400–2200)
         if (diff === 'AGGRESSOR') {
           const patternScores = analyzeUserPatterns(hist);
           const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
@@ -1947,7 +2859,6 @@
           }
         }
 
-        // TIER 4: MASTER BOT (2650 ELO, 2200–2800)
         const patternScores = analyzeUserPatterns(hist);
         const totalWeight = Object.values(patternScores).reduce((acc, v) => acc + v, 0);
         const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
@@ -1976,52 +2887,119 @@
         }
       }
 
-      function buildEngagingCommentary(eventType, ctx) {
-        const style = STATE.commentaryStyle || 'HYPE';
-        const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      function checkAndResolveMultiplayerTurn() {
+        if (STATE.pendingP1Num !== null && STATE.pendingP2Num !== null) {
+          const p1Num = STATE.pendingP1Num;
+          const p2Num = STATE.pendingP2Num;
+          STATE.pendingP1Num = null;
+          STATE.pendingP2Num = null;
+          STATE.p1LockedSec = null;
+          STATE.p2LockedSec = null;
+          stopTurnTimer();
+          if (STATE.phase === 'TOSS') {
+            resolveTossNumbers(p1Num, p2Num);
+          } else if (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') {
+            resolveGameplayNumbers(p1Num, p2Num);
+          }
+        }
+      }
 
-        if (eventType === 'WICKET') {
-          const hypeWickets = [
-            `HOWZAT?! Exact match on ${ctx.u}! ${ctx.bowler} read ${ctx.batter}'s mind!`,
-            `TIMBER! Both hands flashed ${ctx.u}! Huge breakthrough in the arena!`,
-            `CLEAN BOWLED ON ${ctx.u}! Stumps go flying under the lights!`
-          ];
-          const tacticalWickets = [
-            `Brilliant mind-game read by ${ctx.bowler}! Trapped ${ctx.batter} on ${ctx.u}.`,
-            `Markov prediction successful: ${ctx.bowler} anticipated ${ctx.batter}'s ${ctx.u}!`
-          ];
-          return style === 'TACTICAL' ? pick(tacticalWickets) : pick(hypeWickets);
+      function submitMultiplayerInput(num) {
+        if (!isMultiplayerReadyToPlay()) {
+          stopTurnTimer();
+          STATE.lastOutcomeText = `⏳ Waiting for Player 2 to join Room ${STATE.roomCode || ''} — Match cannot start yet!`;
+          renderView();
+          return;
+        }
+        if (STATE.phase !== 'TOSS' && STATE.phase !== 'INNINGS_1' && STATE.phase !== 'INNINGS_2') return;
+
+        const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
+        if (mySlot === 'P1' && STATE.pendingP1Num !== null) return;
+        if (mySlot === 'P2' && STATE.pendingP1Num === null) {
+          STATE.lastOutcomeText = `🔒 ${getP2Label()} (P2) is locked until ${getP1Label()} (P1) picks a number!`;
+          renderView();
+          return;
+        }
+        if (mySlot === 'P2' && STATE.pendingP2Num !== null) return;
+
+        SoundFX.click();
+        const lockedSec = STATE.turnSecondsLeft;
+        if (mySlot === 'P1') {
+          STATE.pendingP1Num = num;
+          STATE.p1LockedSec = lockedSec;
+        } else {
+          STATE.pendingP2Num = num;
+          STATE.p2LockedSec = lockedSec;
         }
 
-        if (eventType === 'RUNS') {
-          const r = ctx.runs;
-          if (r === 10) return `🚀 MAXIMUM 10! ${ctx.batter} launches a 10-finger thunderbolt!`;
-          if (r >= 6) return `🔥 BOOM! ${ctx.batter} smashes +${r} runs into the stands!`;
-          if (r >= 4) return `⚡ CRACKED! Pierced the boundary for +${r} runs!`;
-          return `Smart cricket: +${r} runs nudged into the gap (${ctx.batter}: ${ctx.total} runs).`;
+        sendNetMessage({ type: 'PICK_NUM', player: mySlot, num, lockedSec });
+
+        if (STATE.pendingP1Num !== null && STATE.pendingP2Num === null) {
+          startTurnTimer();
         }
-        return ctx.text || 'Action unfolds on the pitch!';
+        checkAndResolveMultiplayerTurn();
+        renderView();
       }
 
       function handleTossNumberPick(userNum) {
+        if (STATE.phase !== 'TOSS') return;
+        if (isMultiplayer()) {
+          submitMultiplayerInput(userNum);
+          return;
+        }
         SoundFX.click();
         stopTurnTimer();
         const oppNum = Math.floor(Math.random() * 10) + 1;
+        resolveTossNumbers(userNum, oppNum);
+      }
+
+      function resolveTossNumbers(userNum, oppNum) {
+        if (STATE.phase !== 'TOSS') return;
+        stopTurnTimer();
         const sum = userNum + oppNum;
         const sumParity = sum % 2 === 1 ? 'ODD' : 'EVEN';
-        const userWon = (STATE.tossCall === sumParity);
+        const p1Call = isMultiplayer() ? (STATE.p1TossCall || STATE.tossCall) : STATE.tossCall;
+        const p2Call = p1Call === 'EVEN' ? 'ODD' : 'EVEN';
+        STATE.p1TossCall = p1Call;
+        STATE.p2TossCall = p2Call;
+
+        const p1Won = (p1Call === sumParity);
 
         STATE.tossUserNum = userNum;
         STATE.tossAiNum = oppNum;
+        STATE.tossSum = sum;
         STATE.lastUserNum = userNum;
         STATE.lastAiNum = oppNum;
-        STATE.tossWinner = userWon ? 'USER' : 'AI';
+        STATE.tossWinner = p1Won ? 'USER' : 'AI';
         STATE.phase = 'TOSS_DECISION';
 
-        const p2Name = STATE.mode === 'ONLINE_2P' ? STATE.p2Name : BOT_PROFILES[STATE.botDifficulty].shortName;
-        dom.tossMathSummary.textContent = `${STATE.myUsername}: ${userNum} + ${p2Name}: ${oppNum} = ${sum} (${sumParity})`;
+        const p1Name = getP1Label();
+        const p2Name = getP2Label();
+        dom.tossMathSummary.textContent = `${p1Name}: ${userNum} + ${p2Name}: ${oppNum} = ${sum} (${sumParity})`;
 
-        if (userWon) {
+        if (isMultiplayer()) {
+          const winnerTitle = p1Won ? `${p1Name} (P1)` : `${p2Name} (P2)`;
+          const loserTitle = p1Won ? `${p2Name} (P2)` : `${p1Name} (P1)`;
+          const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
+          const winnerSlot = p1Won ? 'P1' : 'P2';
+          const didIWinToss = mySlot === winnerSlot;
+
+          SoundFX.runScored(6);
+          dom.tossWinnerTag.textContent = `🎉 ${winnerTitle} WON THE TOSS!`;
+          dom.tossWinnerTag.className = p1Won
+            ? 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+            : 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+          dom.aiTossChoiceContinue.classList.add('hidden');
+
+          if (didIWinToss) {
+            dom.tossDecisionSubtext.textContent = `${winnerTitle}, choose Bat or Bowl (${loserTitle} gets the opposite role):`;
+            dom.userTossChoiceButtons.classList.remove('hidden');
+          } else {
+            dom.tossDecisionSubtext.textContent = `⏳ Waiting for ${winnerTitle} to choose Bat or Bowl...`;
+            dom.userTossChoiceButtons.classList.add('hidden');
+          }
+          STATE.lastOutcomeText = `${winnerTitle} won toss (${sum} ${sumParity})!`;
+        } else if (p1Won) {
           SoundFX.runScored(6);
           dom.tossWinnerTag.textContent = '🎉 YOU WON THE TOSS!';
           dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
@@ -2045,12 +3023,34 @@
       }
 
       function handleTossDecisionChoice(choice) {
+        if (STATE.phase !== 'TOSS_DECISION') return;
+        if (isMultiplayer()) {
+          const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
+          const winnerSlot = STATE.tossWinner === 'USER' ? 'P1' : 'P2';
+          if (mySlot !== winnerSlot) return;
+        }
+
         SoundFX.click();
-        STATE.firstBatter = choice === 'BAT' ? 'USER' : 'AI';
-        startInnings(1);
+        if (isMultiplayer() && STATE.tossWinner === 'AI') {
+          STATE.firstBatter = choice === 'BAT' ? 'AI' : 'USER';
+        } else {
+          STATE.firstBatter = choice === 'BAT' ? 'USER' : 'AI';
+        }
+
+        if (isMultiplayer()) {
+          sendNetMessage({
+            type: 'TOSS_DECISION_CHOICE',
+            firstBatter: STATE.firstBatter,
+            decisionChoice: choice
+          });
+        }
+        startInnings(1, choice);
       }
 
-      function startInnings(inningsNum) {
+      function startInnings(inningsNum, decisionChoice = null, fromNetwork = false) {
+        if (inningsNum === 2 && isMultiplayer() && !fromNetwork) {
+          sendNetMessage({ type: 'START_INN_2' });
+        }
         STATE.currentInnings = inningsNum;
         STATE.phase = inningsNum === 1 ? 'INNINGS_1' : 'INNINGS_2';
         STATE.currentBatter = inningsNum === 1
@@ -2060,41 +3060,76 @@
         STATE.lastUserNum = null;
         STATE.lastAiNum = null;
 
+        const p1 = getP1Label();
+        const p2 = getP2Label();
         const isUserBat = STATE.currentBatter === 'USER';
+        const batterName = isUserBat ? p1 : p2;
         STATE.lastOutcomeText = inningsNum === 1
-          ? `1st Innings: ${isUserBat ? STATE.myUsername : 'Opponent'} is Batting!`
-          : `2nd Innings: ${isUserBat ? STATE.myUsername : 'Opponent'} chasing ${STATE.target} runs!`;
+          ? `1st Innings: ${batterName} is Batting!`
+          : `2nd Innings: ${batterName} chasing ${STATE.target} runs!`;
 
         renderView();
-        startTurnTimer();
+        startTurnTimer(true);
       }
 
       function handleGameplayTurn(userNum) {
+        if (STATE.phase !== 'INNINGS_1' && STATE.phase !== 'INNINGS_2') return;
+        if (isMultiplayer()) {
+          submitMultiplayerInput(userNum);
+          return;
+        }
         SoundFX.click();
         stopTurnTimer();
         STATE.userNumHistory.push(userNum);
 
         const isUserBatting = STATE.currentBatter === 'USER';
         const oppNum = generateBotNumber(!isUserBatting);
+        resolveGameplayNumbers(userNum, oppNum);
+      }
 
+      function resolveGameplayNumbers(userNum, oppNum) {
+        if (STATE.phase !== 'INNINGS_1' && STATE.phase !== 'INNINGS_2') return;
+        stopTurnTimer();
+
+        const isUserBatting = STATE.currentBatter === 'USER';
         STATE.lastUserNum = userNum;
         STATE.lastAiNum = oppNum;
 
         const isOut = (userNum === oppNum);
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+        const mpMatch = isMultiplayer();
+        const p1Rec = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, STATE.eloRating) : null;
+        const p2Rec = mpMatch && !isPlaceholderUsername(p2) ? ensureHumanPlayerRecord(p2, STATE.friendEloRating) : null;
 
         if (isUserBatting) {
           STATE.userBalls++;
+          if (p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
+          if (p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
         } else {
           STATE.aiBalls++;
+          if (p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
+          if (p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
         }
 
         if (isOut) {
           SoundFX.wicket();
-          const wktNote = buildEngagingCommentary('WICKET', {
-            u: userNum,
-            batter: isUserBatting ? STATE.myUsername : (BOT_PROFILES[STATE.botDifficulty]?.shortName || 'Bot'),
-            bowler: isUserBatting ? (BOT_PROFILES[STATE.botDifficulty]?.shortName || 'Bot') : STATE.myUsername
-          });
+          if (isUserBatting) {
+            if (p1Rec) p1Rec.wicketsLost = (p1Rec.wicketsLost || 0) + 1;
+            if (p2Rec) {
+              p2Rec.wicketsTaken = (p2Rec.wicketsTaken || 0) + 1;
+              p2Rec.weeklyWickets = (p2Rec.weeklyWickets || 0) + 1;
+              STATE.aiMatchWickets += 1;
+            }
+          } else {
+            if (p1Rec) {
+              p1Rec.wicketsTaken = (p1Rec.wicketsTaken || 0) + 1;
+              p1Rec.weeklyWickets = (p1Rec.weeklyWickets || 0) + 1;
+              STATE.userMatchWickets += 1;
+            }
+            if (p2Rec) p2Rec.wicketsLost = (p2Rec.wicketsLost || 0) + 1;
+          }
+          saveWorldwidePlayersMap(STATE.humanPlayers);
 
           if (STATE.currentInnings === 1) {
             const firstScore = isUserBatting ? STATE.userScore : STATE.aiScore;
@@ -2102,27 +3137,36 @@
             STATE.phase = 'INNINGS_BREAK';
             dom.breakHeadline.textContent = `1st Innings Total: ${firstScore} Runs`;
             dom.breakTargetExplanation.textContent = `Target to chase: ${STATE.target} Runs`;
-            STATE.lastOutcomeText = `WICKET! ${wktNote} (Target: ${STATE.target})`;
+            STATE.lastOutcomeText = `WICKET! Matched on ${userNum} (Target: ${STATE.target})`;
           } else {
             const winner = isUserBatting ? 'AI' : 'USER';
             concludeMatch(winner, `Wicket on ${userNum}! Target defended.`);
             return;
           }
         } else {
-          // Runs scored
           const scoredRuns = isUserBatting ? userNum : oppNum;
           if (isUserBatting) {
             STATE.userScore += scoredRuns;
-            const uRec = ensureHumanPlayerRecord(STATE.myUsername);
-            uRec.totalRuns = (uRec.totalRuns || 0) + scoredRuns;
-            uRec.weeklyRuns = (uRec.weeklyRuns || 0) + scoredRuns;
-            if (STATE.userScore > (uRec.highScore || 0)) {
-              uRec.highScore = STATE.userScore;
+            if (p1Rec) {
+              p1Rec.totalRuns = (p1Rec.totalRuns || 0) + scoredRuns;
+              p1Rec.weeklyRuns = (p1Rec.weeklyRuns || 0) + scoredRuns;
+              if (STATE.userScore > (p1Rec.highScore || 0)) {
+                p1Rec.highScore = STATE.userScore;
+              }
+              p1Rec.updatedAt = Date.now();
             }
-            saveWorldwidePlayersMap(STATE.humanPlayers);
           } else {
             STATE.aiScore += scoredRuns;
+            if (p2Rec) {
+              p2Rec.totalRuns = (p2Rec.totalRuns || 0) + scoredRuns;
+              p2Rec.weeklyRuns = (p2Rec.weeklyRuns || 0) + scoredRuns;
+              if (STATE.aiScore > (p2Rec.highScore || 0)) {
+                p2Rec.highScore = STATE.aiScore;
+              }
+              p2Rec.updatedAt = Date.now();
+            }
           }
+          saveWorldwidePlayersMap(STATE.humanPlayers);
 
           SoundFX.runScored(scoredRuns);
           const currentBatScore = isUserBatting ? STATE.userScore : STATE.aiScore;
@@ -2133,80 +3177,153 @@
             return;
           }
 
-          const runsNote = buildEngagingCommentary('RUNS', {
-            runs: scoredRuns,
-            batter: isUserBatting ? STATE.myUsername : (BOT_PROFILES[STATE.botDifficulty]?.shortName || 'Bot'),
-            total: currentBatScore
-          });
-          STATE.lastOutcomeText = runsNote;
-          startTurnTimer();
+          STATE.lastOutcomeText = `Scored +${scoredRuns} runs! (${p1}: ${userNum}, ${p2}: ${oppNum})`;
+          startTurnTimer(true);
         }
 
         renderView();
       }
 
-      function concludeMatch(winner, reason) {
+      function concludeMatch(winner, reason, isTimeoutForfeit = false, isTossForfeit = false) {
         stopTurnTimer();
         STATE.phase = 'GAME_OVER';
         STATE.winner = winner;
+        STATE.isTossForfeit = Boolean(isTossForfeit);
 
-        const isUserWin = (winner === 'USER');
-        dom.gameOverTitle.textContent = isUserWin ? '🏆 YOU WON!' : 'MATCH LOST';
-        dom.gameOverTitle.className = isUserWin ? 'text-2xl font-black text-emerald-400' : 'text-2xl font-black text-rose-500';
+        const p1 = getP1Label();
+        const p2 = getP2Label();
+        const mpMatch = isMultiplayer();
+        const amIGuest = mpMatch && STATE.onlineRole === 'GUEST';
+        const didIWin = amIGuest ? (winner === 'AI') : (winner === 'USER');
+
+        if (STATE.isTossForfeit) {
+          dom.gameOverTitle.textContent = '🏳️ MATCH FORFEITED';
+          dom.gameOverTitle.className = 'text-2xl font-black text-amber-400';
+        } else {
+          dom.gameOverTitle.textContent = didIWin ? '🏆 YOU WON!' : 'MATCH LOST';
+          dom.gameOverTitle.className = didIWin ? 'text-2xl font-black text-emerald-400' : 'text-2xl font-black text-rose-500';
+        }
         dom.gameOverMargin.textContent = reason;
 
-        const uRec = ensureHumanPlayerRecord(STATE.myUsername);
-        uRec.matches = (uRec.matches || 0) + 1;
-        uRec.weeklyMatches = (uRec.weeklyMatches || 0) + 1;
-        if (isUserWin) {
-          uRec.wins = (uRec.wins || 0) + 1;
-          uRec.weeklyWins = (uRec.weeklyWins || 0) + 1;
-        } else {
-          uRec.losses = (uRec.losses || 0) + 1;
-          uRec.weeklyLosses = (uRec.weeklyLosses || 0) + 1;
-        }
-
-        // BOT INTEGRITY RULE: If user plays against bot, do NOT increase/decrease rating!
-        if (STATE.mode === 'AI') {
+        if (!mpMatch) {
+          // Bot Match: Rating is strictly frozen (+0 Elo)
+          const uRec = !isPlaceholderUsername(STATE.myUsername) ? ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) : null;
+          if (uRec) {
+            uRec.updatedAt = Date.now();
+          }
           const curBot = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
           dom.gameOverRatingBox.innerHTML = `
             <div class="text-amber-400 font-bold mb-1">🤖 Casual Match vs ${curBot.name}</div>
             <div class="text-slate-300">Ratings are <strong class="text-white">frozen (+0 Elo)</strong> during Bot matches. Play Multiplayer Rooms to scale your official ranking!</div>
           `;
         } else {
-          // Multiplayer Ranked match (+8 / -8 Elo)
-          const delta = isUserWin ? 8 : -8;
-          STATE.eloRating = Math.max(100, STATE.eloRating + delta);
-          uRec.elo = STATE.eloRating;
-          if (STATE.eloRating > (uRec.peak || 1500)) uRec.peak = STATE.eloRating;
-          uRec.weeklyEloGain = (uRec.weeklyEloGain || 0) + delta;
+          const p1Rec = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, amIGuest ? STATE.friendEloRating : STATE.eloRating, {
+            countryCode: STATE.p1CountryCode,
+            countryFlag: STATE.p1CountryFlag
+          }, true) : null;
+          const p2Rec = !isPlaceholderUsername(p2) ? ensureHumanPlayerRecord(p2, amIGuest ? STATE.eloRating : STATE.friendEloRating, {
+            countryCode: STATE.p2CountryCode,
+            countryFlag: STATE.p2CountryFlag
+          }, true) : null;
 
-          dom.gameOverRatingBox.innerHTML = `
-            <div class="text-emerald-400 font-bold mb-1">Ranked Multiplayer Match</div>
-            <div class="text-slate-200">Rating updated by <strong>${delta > 0 ? '+' + delta : delta} Elo</strong> (New: ${STATE.eloRating} Elo)</div>
-          `;
+          if (STATE.isTossForfeit) {
+            dom.gameOverRatingBox.innerHTML = `
+              <div class="text-amber-400 font-bold mb-1">🏳️ Multiplayer Toss Forfeit</div>
+              <div class="text-slate-200">Toss countdown expired before match start. Rating unchanged (<strong>${STATE.eloRating} Elo</strong>).</div>
+            `;
+          } else {
+            const p1Delta = winner === 'USER' ? 8 : -8;
+            const p2Delta = winner === 'USER' ? -8 : 8;
+
+            if (p1Rec) {
+              p1Rec.elo = Math.max(100, (p1Rec.elo || 1500) + p1Delta);
+              if (p1Rec.elo > (p1Rec.peak || 1500)) p1Rec.peak = p1Rec.elo;
+              p1Rec.matches = (p1Rec.matches || 0) + 1;
+              p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
+              p1Rec.weeklyEloGain = (p1Rec.weeklyEloGain || 0) + p1Delta;
+              if (winner === 'USER') {
+                p1Rec.wins = (p1Rec.wins || 0) + 1;
+                p1Rec.weeklyWins = (p1Rec.weeklyWins || 0) + 1;
+              } else {
+                p1Rec.losses = (p1Rec.losses || 0) + 1;
+                p1Rec.weeklyLosses = (p1Rec.weeklyLosses || 0) + 1;
+              }
+              p1Rec.updatedAt = Date.now();
+            }
+
+            if (p2Rec) {
+              p2Rec.elo = Math.max(100, (p2Rec.elo || 1500) + p2Delta);
+              if (p2Rec.elo > (p2Rec.peak || 1500)) p2Rec.peak = p2Rec.elo;
+              p2Rec.matches = (p2Rec.matches || 0) + 1;
+              p2Rec.weeklyMatches = (p2Rec.weeklyMatches || 0) + 1;
+              p2Rec.weeklyEloGain = (p2Rec.weeklyEloGain || 0) + p2Delta;
+              if (winner === 'AI') {
+                p2Rec.wins = (p2Rec.wins || 0) + 1;
+                p2Rec.weeklyWins = (p2Rec.weeklyWins || 0) + 1;
+              } else {
+                p2Rec.losses = (p2Rec.losses || 0) + 1;
+                p2Rec.weeklyLosses = (p2Rec.weeklyLosses || 0) + 1;
+              }
+              p2Rec.updatedAt = Date.now();
+            }
+
+            const myDelta = amIGuest ? p2Delta : p1Delta;
+            const myUpdatedRec = amIGuest ? p2Rec : p1Rec;
+            if (myUpdatedRec) {
+              STATE.eloRating = myUpdatedRec.elo;
+              STATE.peakElo = myUpdatedRec.peak;
+            } else {
+              STATE.eloRating = Math.max(100, STATE.eloRating + myDelta);
+            }
+
+            dom.gameOverRatingBox.innerHTML = `
+              <div class="text-emerald-400 font-bold mb-1">Ranked Multiplayer Match (${p1} vs ${p2})</div>
+              <div class="text-slate-200">Rating updated by <strong>${myDelta > 0 ? '+' + myDelta : myDelta} Elo</strong> (New: <strong>${STATE.eloRating} Elo</strong>)</div>
+            `;
+          }
         }
 
         saveWorldwidePlayersMap(STATE.humanPlayers);
         renderView();
+        renderLeaderboard();
       }
 
-      function resetMatch() {
+      function resetMatch(fromNetwork = false) {
         SoundFX.click();
+        if (isMultiplayer() && !fromNetwork) {
+          sendNetMessage({ type: 'RESET_MATCH' });
+        }
+        STATE.pendingP1Num = null;
+        STATE.pendingP2Num = null;
+        STATE.p1LockedSec = null;
+        STATE.p2LockedSec = null;
+        STATE.p1TossCall = STATE.tossCall || 'ODD';
+        STATE.p2TossCall = STATE.p1TossCall === 'EVEN' ? 'ODD' : 'EVEN';
         STATE.phase = 'TOSS';
         STATE.userScore = 0;
         STATE.userBalls = 0;
+        STATE.userMatchWickets = 0;
         STATE.aiScore = 0;
         STATE.aiBalls = 0;
+        STATE.aiMatchWickets = 0;
         STATE.target = null;
         STATE.lastUserNum = null;
         STATE.lastAiNum = null;
         STATE.winner = null;
+        STATE.isTossForfeit = false;
         STATE.winMarginText = '';
         STATE.userNumHistory = [];
+
+        if (isMultiplayer() && !isMultiplayerReadyToPlay()) {
+          stopTurnTimer();
+          STATE.lastOutcomeText = `⏳ Waiting for Player 2 to join Room ${STATE.roomCode || ''} before the match can start!`;
+          renderView();
+          return;
+        }
+
         STATE.lastOutcomeText = 'Select Odd or Even to start the Toss!';
         renderView();
-        startTurnTimer();
+        startTurnTimer(true);
       }
 
       function drawRoundedRect(ctx, x, y, w, h, r) {
@@ -2241,21 +3358,18 @@
 
         ctx.clearRect(0, 0, w, h);
 
-        // Stadium background gradient
         const grad = ctx.createLinearGradient(0, 0, 0, h);
         grad.addColorStop(0, '#090d16');
         grad.addColorStop(1, '#0e231b');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
 
-        // Pitch turf oval
         ctx.strokeStyle = 'rgba(129, 182, 76, 0.22)';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.ellipse(w / 2, h * 0.82, w * 0.44, h * 0.22, 0, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Flash overlay on outcome
         if (STATE.anim.flashAlpha > 0.01) {
           ctx.fillStyle = STATE.anim.flashColor;
           ctx.globalAlpha = STATE.anim.flashAlpha;
@@ -2264,7 +3378,6 @@
           STATE.anim.flashAlpha *= 0.88;
         }
 
-        // Draw Player and Opponent Hand Clash Pods
         const cardW = Math.min(100, w * 0.28);
         const cardH = Math.min(84, h * 0.62);
         const leftX = w * 0.22 - cardW / 2;
@@ -2273,7 +3386,6 @@
 
         const isMatchOut = STATE.lastUserNum !== null && STATE.lastUserNum === STATE.lastAiNum && (STATE.phase === 'INNINGS_BREAK' || STATE.phase === 'GAME_OVER');
 
-        // Player Card
         ctx.fillStyle = isMatchOut ? 'rgba(244, 63, 94, 0.16)' : 'rgba(129, 182, 76, 0.14)';
         ctx.strokeStyle = isMatchOut ? '#f43f5e' : '#81b64c';
         ctx.lineWidth = 2;
@@ -2284,14 +3396,13 @@
         ctx.fillStyle = '#94a3b8';
         ctx.font = '700 9px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(STATE.myUsername, leftX + cardW / 2, cardY + 16);
+        ctx.fillText(getP1Label(), leftX + cardW / 2, cardY + 16);
 
         ctx.fillStyle = '#ffffff';
         ctx.font = '900 28px "JetBrains Mono", monospace';
-        const p1Val = STATE.lastUserNum !== null ? String(STATE.lastUserNum) : '-';
+        const p1Val = STATE.pendingP1Num !== null ? '🔒' : (STATE.lastUserNum !== null ? String(STATE.lastUserNum) : '-');
         ctx.fillText(p1Val, leftX + cardW / 2, cardY + cardH * 0.66);
 
-        // Opponent Card
         ctx.fillStyle = isMatchOut ? 'rgba(244, 63, 94, 0.16)' : 'rgba(56, 189, 248, 0.14)';
         ctx.strokeStyle = isMatchOut ? '#f43f5e' : '#38bdf8';
         ctx.lineWidth = 2;
@@ -2302,20 +3413,18 @@
         ctx.fillStyle = '#94a3b8';
         ctx.font = '700 9px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('OPPONENT', rightX + cardW / 2, cardY + 16);
+        ctx.fillText(isMultiplayer() ? getP2Label() : 'OPPONENT', rightX + cardW / 2, cardY + 16);
 
         ctx.fillStyle = '#ffffff';
         ctx.font = '900 28px "JetBrains Mono", monospace';
-        const p2Val = STATE.lastAiNum !== null ? String(STATE.lastAiNum) : '-';
+        const p2Val = STATE.pendingP2Num !== null ? '🔒' : (STATE.lastAiNum !== null ? String(STATE.lastAiNum) : '-');
         ctx.fillText(p2Val, rightX + cardW / 2, cardY + cardH * 0.66);
 
-        // Center VS Label
         ctx.fillStyle = '#f8fafc';
         ctx.font = '900 12px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('VS', w / 2, h * 0.52);
 
-        // Update and draw particles
         for (let i = STATE.anim.particles.length - 1; i >= 0; i--) {
           const p = STATE.anim.particles[i];
           p.x += p.vx;
@@ -2363,25 +3472,84 @@
 
       function renderView() {
         const curBot = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
-        const oppName = STATE.mode === 'ONLINE_2P' ? STATE.p2Name : `${curBot.icon} ${curBot.shortName}`;
-        dom.p1CardTitle.textContent = `${STATE.myCountryFlag} ${STATE.myUsername}`;
-        dom.p2CardTitle.textContent = oppName;
+        const mpActive = isMultiplayer();
+        const p1Name = getP1Label();
+        const p2Name = getP2Label();
+
+        dom.p1CardTitle.textContent = mpActive ? `${STATE.p1CountryFlag || '🇮🇳'} ${p1Name} (P1)` : `${STATE.myCountryFlag} ${STATE.myUsername}`;
+        dom.p2CardTitle.textContent = mpActive ? `${STATE.p2CountryFlag || '🇮🇳'} ${p2Name} (P2)` : `${curBot.icon} ${curBot.shortName}`;
+
+        if (dom.inlineLobbyP1Display) {
+          dom.inlineLobbyP1Display.textContent = mpActive ? p1Name : STATE.myUsername;
+        }
+        if (STATE.roomLocked && STATE.p2Joined) {
+          if (dom.inlineLobbyP2Display) {
+            dom.inlineLobbyP2Display.textContent = p2Name;
+            dom.inlineLobbyP2Display.className = 'font-black text-cyan-300 truncate';
+          }
+          if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.disabled = true;
+          if (dom.btnInlineJoinRoom) {
+            dom.btnInlineJoinRoom.disabled = true;
+            dom.btnInlineJoinRoom.textContent = '🔒 Locked';
+          }
+          if (STATE.onlineRole === 'HOST') {
+            dom.btnLaunchMpMatch.disabled = false;
+            dom.btnLaunchMpMatch.textContent = `START MULTIPLAYER MATCH (${p1Name} vs ${p2Name}) →`;
+            dom.btnLaunchMpMatch.className = 'w-full py-3 rounded-xl font-black text-xs bg-indigo-600 hover:bg-indigo-500 text-white';
+          } else {
+            dom.btnLaunchMpMatch.disabled = true;
+            dom.btnLaunchMpMatch.textContent = `⏳ WAITING FOR HOST (${p1Name}) TO START...`;
+            dom.btnLaunchMpMatch.className = 'w-full py-3 rounded-xl font-black text-xs bg-indigo-600 disabled:opacity-40 text-white';
+          }
+        } else {
+          if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.disabled = false;
+          if (dom.btnInlineJoinRoom) {
+            dom.btnInlineJoinRoom.disabled = false;
+            dom.btnInlineJoinRoom.textContent = 'Join';
+          }
+          if (dom.inlineLobbyP2Display) {
+            dom.inlineLobbyP2Display.textContent = 'Waiting...';
+            dom.inlineLobbyP2Display.className = 'font-black text-slate-400 truncate';
+          }
+          dom.btnLaunchMpMatch.disabled = true;
+          dom.btnLaunchMpMatch.textContent = STATE.roomCode
+            ? `⏳ WAITING FOR P2 TO JOIN ROOM ${STATE.roomCode}...`
+            : 'START MULTIPLAYER MATCH →';
+        }
+
+        if (STATE.phase === 'TOSS') {
+          if (mpActive) {
+            const p1Call = STATE.p1TossCall || 'ODD';
+            const p2Call = p1Call === 'EVEN' ? 'ODD' : 'EVEN';
+            const amIGuest = STATE.onlineRole === 'GUEST';
+            dom.tossCallIndicator.textContent = `${p1Name}: ${p1Call} • ${p2Name}: ${p2Call}`;
+            dom.btnCallOdd.disabled = amIGuest || STATE.pendingP1Num !== null;
+            dom.btnCallEven.disabled = amIGuest || STATE.pendingP1Num !== null;
+          } else {
+            dom.btnCallOdd.disabled = false;
+            dom.btnCallEven.disabled = false;
+            dom.tossCallIndicator.textContent = `Selected Call: ${STATE.tossCall}`;
+          }
+        }
 
         dom.userMainScore.textContent = STATE.userScore;
         dom.aiMainScore.textContent = STATE.aiScore;
         dom.userSubMeta.textContent = `Balls: ${STATE.userBalls}`;
         dom.aiSubMeta.textContent = `Balls: ${STATE.aiBalls}`;
 
-        dom.userLastPlayedBadge.textContent = STATE.lastUserNum !== null ? STATE.lastUserNum : '-';
-        dom.aiLastPlayedBadge.textContent = STATE.lastAiNum !== null ? STATE.lastAiNum : '-';
+        dom.userLastPlayedBadge.textContent = STATE.pendingP1Num !== null ? '🔒' : (STATE.lastUserNum !== null ? STATE.lastUserNum : '-');
+        dom.aiLastPlayedBadge.textContent = STATE.pendingP2Num !== null ? '🔒' : (STATE.lastAiNum !== null ? STATE.lastAiNum : '-');
 
         dom.targetValueDisplay.textContent = STATE.target !== null ? STATE.target : '—';
         dom.turnOutcomeBanner.textContent = STATE.lastOutcomeText;
 
-        const uRec = STATE.humanPlayers[STATE.myUsername] || {};
+        const uRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+        const displayElo = typeof uRec.elo === 'number' ? uRec.elo : STATE.eloRating;
+        STATE.eloRating = displayElo;
+
         dom.sidebarUserIdentity.textContent = `${STATE.myCountryFlag} ${STATE.myUsername} (${STATE.myCountryCode})`;
-        dom.sidebarEloDisplay.textContent = `${STATE.eloRating} ELO`;
-        dom.sideNavEloSub.textContent = `${STATE.eloRating} ELO`;
+        dom.sidebarEloDisplay.textContent = `${displayElo} ELO`;
+        dom.sideNavEloSub.textContent = `${displayElo} ELO`;
         dom.sidebarCareerRuns.textContent = uRec.totalRuns || 0;
         dom.sidebarCareerWickets.textContent = uRec.wicketsTaken || 0;
 
@@ -2389,8 +3557,8 @@
           dom.sideNavBotSubtitle.textContent = `${curBot.shortName} • ${curBot.elo} Elo (Casual)`;
         }
         if (dom.sidebarOpponentBadge) {
-          dom.sidebarOpponentBadge.innerHTML = STATE.mode === 'ONLINE_2P'
-            ? `<span>👥</span><span>${STATE.p2Name}</span>`
+          dom.sidebarOpponentBadge.innerHTML = mpActive
+            ? `<span>👥</span><span>${p1Name} vs ${p2Name}</span>`
             : `<span>${curBot.icon}</span><span>${curBot.shortName} (${curBot.elo} Elo)</span>`;
         }
         if (dom.sidebarCommentaryStyleBadge) {
@@ -2398,7 +3566,6 @@
           dom.sidebarCommentaryStyleBadge.textContent = styleLabels[STATE.commentaryStyle] || '🎙️ Hype Broadcast';
         }
 
-        // Role Indicators
         const isUserBat = STATE.currentBatter === 'USER';
         dom.userRoleBadge.textContent = isUserBat ? 'BAT' : 'BOWL';
         dom.userRoleBadge.className = isUserBat
@@ -2410,10 +3577,16 @@
           ? 'px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/35'
           : 'px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300';
 
-        dom.gameplayRoleNotice.textContent = isUserBat ? 'Batting' : 'Bowling';
-        dom.gameplayRoleNotice.className = isUserBat ? 'text-emerald-400 font-bold' : 'text-cyan-400 font-bold';
+        if (mpActive) {
+          const amIGuest = STATE.onlineRole === 'GUEST';
+          const amIBatting = (amIGuest && !isUserBat) || (!amIGuest && isUserBat);
+          dom.gameplayRoleNotice.textContent = amIBatting ? 'Batting (You)' : 'Bowling (You)';
+          dom.gameplayRoleNotice.className = amIBatting ? 'text-emerald-400 font-bold' : 'text-cyan-400 font-bold';
+        } else {
+          dom.gameplayRoleNotice.textContent = isUserBat ? 'Batting' : 'Bowling';
+          dom.gameplayRoleNotice.className = isUserBat ? 'text-emerald-400 font-bold' : 'text-cyan-400 font-bold';
+        }
 
-        // Phase view toggles
         dom.viewToss.classList.toggle('hidden', STATE.phase !== 'TOSS');
         dom.viewTossDecision.classList.toggle('hidden', STATE.phase !== 'TOSS_DECISION');
         dom.viewInningsBreak.classList.toggle('hidden', STATE.phase !== 'INNINGS_BREAK');
@@ -2427,82 +3600,35 @@
           : (STATE.phase === 'INNINGS_1' ? '1ST INNINGS' : (STATE.phase === 'INNINGS_2' ? '2ND INNINGS' : 'GAME OVER'));
         dom.phaseBadge.textContent = dom.inningsLabel.textContent;
 
+        renderTimerDisplay();
         drawCanvas();
       }
 
-      function createMultiplayerRoom() {
-        SoundFX.click();
-        const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
-        STATE.roomCode = code;
-        STATE.onlineRole = 'HOST';
-        STATE.mode = 'ONLINE_2P';
-        STATE.roomLocked = false;
-        STATE.p2Joined = false;
-        STATE.p1Name = STATE.myUsername;
-
-        dom.inlineHostCodeDisplay.classList.remove('hidden');
-        dom.inlineHostCodeValue.textContent = code;
-        dom.inlineNetStatusBadge.textContent = `Room ${code} • Waiting for P2...`;
-        dom.inlineNetStatusBadge.className = 'text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30';
-        dom.inlineLobbyP1Display.textContent = STATE.myUsername;
-        dom.inlineLobbyP2Display.textContent = 'Waiting to join...';
-
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) STATE.peer.destroy();
-            STATE.peer = new Peer('oae-room-' + code);
-            STATE.peer.on('connection', (c) => {
-              STATE.conn = c;
-              c.on('open', () => {
-                c.send({ type: 'HOST_WELCOME', hostName: STATE.myUsername, code });
-              });
-              c.on('data', (data) => {
-                if (data && data.type === 'GUEST_JOINED') {
-                  STATE.p2Joined = true;
-                  STATE.p2Name = data.guestName || 'PLAYER_2';
-                  dom.inlineLobbyP2Display.textContent = STATE.p2Name;
-                  dom.inlineNetStatusBadge.textContent = 'P1 vs P2 Connected!';
-                  dom.btnLaunchMpMatch.disabled = false;
-                  dom.btnLaunchMpMatch.className = 'w-full py-3 rounded-xl font-black text-xs bg-indigo-600 text-white hover:bg-indigo-500';
-                }
-              });
-            });
-          } catch (e) {}
+      function setTossCall(callType) {
+        if (STATE.phase !== 'TOSS') return;
+        if (isMultiplayer()) {
+          if (!isMultiplayerReadyToPlay()) return;
+          const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
+          if (mySlot === 'P2' || STATE.pendingP1Num !== null) return;
         }
-      }
-
-      function joinMultiplayerRoom() {
         SoundFX.click();
-        const code = (dom.inlineInputJoinCode.value || '').trim().toUpperCase();
-        if (!code) return;
+        STATE.tossCall = callType;
+        STATE.p1TossCall = callType;
+        STATE.p2TossCall = callType === 'EVEN' ? 'ODD' : 'EVEN';
 
-        STATE.roomCode = code;
-        STATE.onlineRole = 'GUEST';
-        STATE.mode = 'ONLINE_2P';
-        dom.inlineNetStatusBadge.textContent = `Connecting to ${code}...`;
-
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) STATE.peer.destroy();
-            STATE.peer = new Peer();
-            STATE.peer.on('open', () => {
-              const c = STATE.peer.connect('oae-room-' + code);
-              STATE.conn = c;
-              c.on('open', () => {
-                c.send({ type: 'GUEST_JOINED', guestName: STATE.myUsername });
-                dom.inlineNetStatusBadge.textContent = `Connected to Room ${code}!`;
-                dom.inlineLobbyP2Display.textContent = STATE.myUsername;
-                dom.btnLaunchMpMatch.disabled = false;
-              });
-              c.on('data', (data) => {
-                if (data && data.type === 'HOST_WELCOME') {
-                  STATE.p2Name = data.hostName || 'HOST';
-                  dom.inlineLobbyP1Display.textContent = STATE.p2Name;
-                }
-              });
-            });
-          } catch (e) {}
+        if (callType === 'ODD') {
+          dom.btnCallOdd.className = 'py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow';
+          dom.btnCallEven.className = 'py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]';
+        } else {
+          dom.btnCallEven.className = 'py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow';
+          dom.btnCallOdd.className = 'py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]';
         }
+
+        if (isMultiplayer()) {
+          sendNetMessage({ type: 'TOSS_CALL', caller: 'P1', callType });
+        }
+        startTurnTimer();
+        renderView();
       }
 
       function initEvents() {
@@ -2531,15 +3657,13 @@
         dom.cardQuickBot.addEventListener('click', () => switchScreen('BOT_SETUP'));
         dom.cardQuickMp.addEventListener('click', () => switchScreen('MP_SETUP'));
 
-        // Match Progression Action Listeners
         if (dom.btnChooseBat) dom.btnChooseBat.addEventListener('click', () => handleTossDecisionChoice('BAT'));
         if (dom.btnChooseBowl) dom.btnChooseBowl.addEventListener('click', () => handleTossDecisionChoice('BOWL'));
         if (dom.btnStartAfterAiToss) dom.btnStartAfterAiToss.addEventListener('click', () => startInnings(1));
         if (dom.btnStartSecondInnings) dom.btnStartSecondInnings.addEventListener('click', () => startInnings(2));
-        if (dom.btnPlayAgain) dom.btnPlayAgain.addEventListener('click', resetMatch);
-        if (dom.btnQuickRestart) dom.btnQuickRestart.addEventListener('click', resetMatch);
+        if (dom.btnPlayAgain) dom.btnPlayAgain.addEventListener('click', () => resetMatch(false));
+        if (dom.btnQuickRestart) dom.btnQuickRestart.addEventListener('click', () => resetMatch(false));
 
-        // Leaderboard Tab Switch Event Listeners
         if (dom.btnLbSwitchGlobal) {
           dom.btnLbSwitchGlobal.addEventListener('click', () => {
             SoundFX.click();
@@ -2562,24 +3686,9 @@
           });
         }
 
-        // Toss Choice Listeners
-        dom.btnCallOdd.addEventListener('click', () => {
-          SoundFX.click();
-          STATE.tossCall = 'ODD';
-          dom.btnCallOdd.className = 'py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow';
-          dom.btnCallEven.className = 'py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]';
-          dom.tossCallIndicator.textContent = 'Selected Call: ODD';
-        });
+        dom.btnCallOdd.addEventListener('click', () => setTossCall('ODD'));
+        dom.btnCallEven.addEventListener('click', () => setTossCall('EVEN'));
 
-        dom.btnCallEven.addEventListener('click', () => {
-          SoundFX.click();
-          STATE.tossCall = 'EVEN';
-          dom.btnCallEven.className = 'py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow';
-          dom.btnCallOdd.className = 'py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]';
-          dom.tossCallIndicator.textContent = 'Selected Call: EVEN';
-        });
-
-        // Bot selection buttons with active highlighting
         dom.btnBotRookie.addEventListener('click', () => { SoundFX.click(); highlightBotSelectionCard('ROOKIE'); });
         dom.btnBotTactician.addEventListener('click', () => { SoundFX.click(); highlightBotSelectionCard('TACTICIAN'); });
         dom.btnBotAggressor.addEventListener('click', () => { SoundFX.click(); highlightBotSelectionCard('AGGRESSOR'); });
@@ -2594,12 +3703,12 @@
 
         dom.btnLaunchBotMatch.addEventListener('click', () => {
           STATE.mode = 'AI';
+          STATE.p1Name = STATE.myUsername;
           if (dom.botSetupCommentaryStyle) STATE.commentaryStyle = dom.botSetupCommentaryStyle.value;
           switchScreen('PITCH');
-          resetMatch();
+          resetMatch(true);
         });
 
-        // Multiplayer Room Actions
         if (dom.btnInlineCreateRoom) dom.btnInlineCreateRoom.addEventListener('click', createMultiplayerRoom);
         if (dom.btnInlineJoinRoom) dom.btnInlineJoinRoom.addEventListener('click', joinMultiplayerRoom);
         if (dom.btnInlineCopyCode) {
@@ -2619,75 +3728,218 @@
         }
         if (dom.btnLaunchMpMatch) {
           dom.btnLaunchMpMatch.addEventListener('click', () => {
-            switchScreen('PITCH');
-            resetMatch();
+            hostTriggerMultiplayerMatchStart();
           });
         }
 
-        // Rules modal
+        if (dom.btnMute) {
+          dom.btnMute.addEventListener('click', () => {
+            SoundFX.muted = !SoundFX.muted;
+            if (dom.muteIcon) dom.muteIcon.textContent = SoundFX.muted ? '🔇' : '🔊';
+            if (!SoundFX.muted) SoundFX.click();
+          });
+        }
+
         dom.btnRules.addEventListener('click', () => { toggleDrawer(false); dom.rulesModal.classList.remove('hidden'); dom.rulesModal.classList.add('flex'); });
         dom.btnCloseRules.addEventListener('click', () => { dom.rulesModal.classList.add('hidden'); });
         dom.btnGotItRules.addEventListener('click', () => { dom.rulesModal.classList.add('hidden'); });
 
-        // Switch to desktop view
         dom.btnSwitchToDesktop.addEventListener('click', () => {
           sessionStorage.setItem('oddandeven_preferred_device_view', 'desktop');
           window.location.href = 'hand_cricket.html';
         });
 
-        // Sign out
-        dom.btnHeaderSignOut.addEventListener('click', () => {
+        // Sign out preserves all leaderboard ratings & remembers last user so rating stays accurate after signout
+        dom.btnHeaderSignOut.addEventListener('click', async () => {
+          if (!isPlaceholderUsername(STATE.myUsername)) {
+            try {
+              localStorage.setItem(LAST_USER_STORAGE_KEY, STATE.myUsername.trim().toUpperCase());
+            } catch (e) {}
+          }
+          await saveWorldwidePlayersMap(STATE.humanPlayers);
           sessionStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
-          window.location.href = 'index.html?signedout=1';
+          toggleDrawer(false);
+          syncLeaderboardRegistry();
+          renderLeaderboard();
+          renderView();
+          try {
+            const proto = window.location.protocol;
+            const host = (window.location.hostname || '').toLowerCase();
+            const isPreview = proto === 'about:' || proto === 'blob:' || proto === 'data:' || host.includes('usercontent.goog') || host.includes('googleusercontent.com');
+            if (!isPreview) {
+              window.location.href = 'index.html?signedout=1';
+            } else {
+              switchScreen('LEADERBOARD');
+            }
+          } catch (e) {
+            switchScreen('LEADERBOARD');
+          }
         });
 
-        // Auth modal
         dom.btnOpenAuthModal.addEventListener('click', () => {
           toggleDrawer(false);
           dom.authModal.classList.remove('hidden');
           dom.authModal.classList.add('flex');
+          if (dom.modalInputUsername) dom.modalInputUsername.value = !isPlaceholderUsername(STATE.myUsername) ? STATE.myUsername : '';
         });
         dom.btnCloseAuthModal.addEventListener('click', () => {
           dom.authModal.classList.add('hidden');
         });
 
-        if (dom.btnModalSubmitAuth) {
-          dom.btnModalSubmitAuth.addEventListener('click', () => {
-            const uname = (dom.modalInputUsername.value || '').trim().toUpperCase();
-            const pin5 = (dom.modalInputPin5.value || '').trim();
-            const dial = dom.modalSelectCountry.value || '+91';
+        if (dom.modalTabLogin) {
+          dom.modalTabLogin.addEventListener('click', () => {
+            modalAuthMode = 'LOGIN';
+            dom.modalTabLogin.className = 'py-1.5 rounded-lg bg-[#81b64c] text-white';
+            dom.modalTabSignup.className = 'py-1.5 rounded-lg text-slate-400';
+            if (dom.btnModalSubmitAuth) dom.btnModalSubmitAuth.textContent = 'Sign In to Arena →';
+            dom.modalAuthAlert.classList.add('hidden');
+          });
+        }
 
-            if (uname.length < 3 || !/^\d{5}$/.test(pin5)) {
+        if (dom.modalTabSignup) {
+          dom.modalTabSignup.addEventListener('click', () => {
+            modalAuthMode = 'SIGNUP';
+            dom.modalTabSignup.className = 'py-1.5 rounded-lg bg-[#81b64c] text-white';
+            dom.modalTabLogin.className = 'py-1.5 rounded-lg text-slate-400';
+            if (dom.btnModalSubmitAuth) dom.btnModalSubmitAuth.textContent = 'Create Account & Enter →';
+            dom.modalAuthAlert.classList.add('hidden');
+          });
+        }
+
+        if (dom.btnModalSubmitAuth) {
+          dom.btnModalSubmitAuth.addEventListener('click', async () => {
+            const uname = (dom.modalInputUsername.value || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+            const pin5 = (dom.modalInputPin5.value || '').trim();
+            const opt = dom.modalSelectCountry.options[dom.modalSelectCountry.selectedIndex];
+            const dial = dom.modalSelectCountry.value || '+91';
+            const flag = opt ? (opt.getAttribute('data-flag') || '🇮🇳') : '🇮🇳';
+
+            if (uname.length < 3) {
               dom.modalAuthAlert.classList.remove('hidden');
-              dom.modalAuthAlert.textContent = 'Please provide 3+ char username and 5-digit PIN.';
+              dom.modalAuthAlert.textContent = 'Username must be at least 3 characters.';
+              dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
+              return;
+            }
+
+            if (isPlaceholderUsername(uname)) {
+              dom.modalAuthAlert.classList.remove('hidden');
+              dom.modalAuthAlert.textContent = 'Please choose a personal, unique username.';
+              dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
+              return;
+            }
+
+            if (!/^\d{5}$/.test(pin5)) {
+              dom.modalAuthAlert.classList.remove('hidden');
+              dom.modalAuthAlert.textContent = `Enter a valid 5-digit PIN password for ${dial}.`;
               dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
               return;
             }
 
             const usersMap = loadEncryptedUsersMap();
+
+            if (modalAuthMode === 'LOGIN') {
+              if (!usersMap[uname]) {
+                dom.modalAuthAlert.classList.remove('hidden');
+                dom.modalAuthAlert.textContent = `Account "${uname}" not found. Switch to Sign Up to create it.`;
+                dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
+                return;
+              }
+              if (!verifyUserCredentials(usersMap[uname], dial, pin5)) {
+                dom.modalAuthAlert.classList.remove('hidden');
+                dom.modalAuthAlert.textContent = `Incorrect Country Code (${dial}) or 5-digit PIN for ${uname}.`;
+                dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
+                return;
+              }
+            } else {
+              if (usersMap[uname] && !verifyUserCredentials(usersMap[uname], dial, pin5)) {
+                dom.modalAuthAlert.classList.remove('hidden');
+                dom.modalAuthAlert.textContent = `Username "${uname}" already registered. Switch to Login or check PIN.`;
+                dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
+                return;
+              }
+            }
+
             usersMap[uname] = {
               username: uname,
               countryCode: dial,
-              countryFlag: '🇮🇳',
+              countryFlag: flag,
               countryName: 'India',
               encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
-              createdAt: new Date().toISOString()
+              createdAt: usersMap[uname]?.createdAt || new Date().toISOString()
             };
-            saveEncryptedUsersMap(usersMap);
+            await saveEncryptedUsersMap(usersMap);
 
-            const sess = { username: uname, countryCode: dial, countryFlag: '🇮🇳', loggedInAt: new Date().toISOString() };
+            const sess = {
+              username: uname,
+              countryCode: dial,
+              countryFlag: flag,
+              loggedInAt: new Date().toISOString()
+            };
             const encSess = encryptPayload(sess);
-            sessionStorage.setItem(SESSION_STORAGE_KEY, encSess);
-            localStorage.setItem(SESSION_STORAGE_KEY, encSess);
-            localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
+            try {
+              sessionStorage.setItem(SESSION_STORAGE_KEY, encSess);
+              localStorage.setItem(SESSION_STORAGE_KEY, encSess);
+              localStorage.setItem(LAST_USER_STORAGE_KEY, uname);
+              localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
+            } catch (e) {}
 
             STATE.myUsername = uname;
             STATE.myCountryCode = dial;
+            STATE.myCountryFlag = flag;
+            if (STATE.onlineRole !== 'GUEST') {
+              STATE.p1Name = uname;
+              STATE.p1CountryCode = dial;
+              STATE.p1CountryFlag = flag;
+            } else {
+              STATE.p2Name = uname;
+              STATE.p2CountryCode = dial;
+              STATE.p2CountryFlag = flag;
+            }
+
+            const worldMap = loadWorldwidePlayersMap();
+            const existingRec = worldMap[uname] || STATE.humanPlayers[uname];
+            if (!existingRec) {
+              worldMap[uname] = {
+                name: uname,
+                countryCode: dial,
+                countryFlag: flag,
+                countryName: 'India',
+                isRealRegisteredUser: true,
+                elo: 1500,
+                peak: 1500,
+                wins: 0,
+                losses: 0,
+                matches: 0,
+                totalRuns: 0,
+                totalBalls: 0,
+                highScore: 0,
+                wicketsTaken: 0,
+                weeklyEloGain: 0,
+                weeklyRuns: 0,
+                weeklyWickets: 0,
+                updatedAt: 0
+              };
+            } else {
+              existingRec.countryCode = dial;
+              existingRec.countryFlag = flag;
+              worldMap[uname] = existingRec;
+            }
+            STATE.humanPlayers = worldMap;
+            await saveWorldwidePlayersMap(worldMap);
+
+            const currentFriends = loadUserFriends();
+            await saveUserFriends(currentFriends, true);
+
             syncLeaderboardRegistry();
+            renderFriendsRoster();
+            updateFriendsBadge();
             renderView();
+            renderLeaderboard();
+
             dom.authModal.classList.add('hidden');
+            dom.authModal.classList.remove('flex');
           });
         }
 
@@ -2695,31 +3947,73 @@
           resizeCanvas();
         });
 
-        // BroadcastChannel for cross-tab leaderboard synchronisation
+        window.addEventListener('storage', (ev) => {
+          if (!ev || !ev.key) return;
+          if (ev.key === WORLDWIDE_PLAYERS_KEY || ev.key === DESKTOP_ELO_STORAGE_KEY || ev.key === AUTH_STORAGE_KEY) {
+            syncLeaderboardRegistry();
+            renderLeaderboard();
+            renderView();
+          } else if (STATE.roomCode && ev.key === 'oddandeven_room_bus_' + STATE.roomCode && ev.newValue) {
+            try {
+              const msg = JSON.parse(ev.newValue);
+              handleNetMessage(msg);
+            } catch (e) {}
+          }
+        });
+
         if (typeof BroadcastChannel !== 'undefined') {
           try {
             const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
             gbc.onmessage = (ev) => {
-              if (ev && ev.data && ev.data.type === 'GLOBAL_LEADERBOARD_SYNC') {
-                syncLeaderboardRegistry();
-                if (STATE.activeScreen === 'LEADERBOARD') {
-                  renderLeaderboard();
+              if (!ev || !ev.data) return;
+              if (ev.data.type === 'GLOBAL_ACCOUNT_REMOVED' && ev.data.username) {
+                markAccountPurged(ev.data.username);
+                delete STATE.humanPlayers[ev.data.username.toUpperCase()];
+                if (STATE.myUsername.toUpperCase() === ev.data.username.toUpperCase()) {
+                  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+                  localStorage.removeItem(SESSION_STORAGE_KEY);
+                  localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+                  window.location.href = 'index.html?signedout=1';
+                  return;
                 }
+                syncLeaderboardRegistry();
+                renderLeaderboard();
+                renderView();
+              } else if (ev.data.type === 'GLOBAL_LEADERBOARD_SYNC') {
+                if (ev.data.allPlayers) {
+                  Object.keys(ev.data.allPlayers).forEach((k) => {
+                    const clean = (k || '').trim().toUpperCase();
+                    if (!clean || isPlaceholderUsername(clean)) return;
+                    STATE.humanPlayers[clean] = mergeSinglePlayerRecord(STATE.humanPlayers[clean], ev.data.allPlayers[k]);
+                  });
+                }
+                syncLeaderboardRegistry();
+                renderLeaderboard();
+                renderView();
               }
             };
           } catch (e) {}
         }
       }
 
-      // Window Onload initialization
       window.onload = function () {
         const sess = loadActiveAuthSession();
         if (sess && sess.username) {
-          STATE.myUsername = sess.username;
+          STATE.myUsername = sess.username.trim().toUpperCase();
           STATE.myCountryFlag = sess.countryFlag || '🇮🇳';
           STATE.myCountryCode = sess.countryCode || '+91';
+          STATE.p1Name = STATE.myUsername;
+          STATE.p1CountryFlag = STATE.myCountryFlag;
+          STATE.p1CountryCode = STATE.myCountryCode;
+        } else {
+          const lastUser = (localStorage.getItem(LAST_USER_STORAGE_KEY) || '').trim().toUpperCase();
+          if (lastUser && !isPlaceholderUsername(lastUser)) {
+            STATE.myUsername = lastUser;
+            STATE.p1Name = lastUser;
+          }
         }
 
+        initCloudSync();
         syncLeaderboardRegistry();
         updateFriendsBadge();
         buildNumberButtons();
