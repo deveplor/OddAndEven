@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>OddAndEven.in — Official Hand Cricket Arena</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -28,7 +28,6 @@
     .font-brand {
       font-family: 'Space Grotesk', 'Inter', sans-serif;
     }
-    /* Subtle architectural grid on pure black background */
     .bg-black-grid {
       background-color: #000000;
       background-image:
@@ -84,7 +83,6 @@
 </head>
 <body class="bg-black-grid min-h-screen flex flex-col justify-between text-slate-100 selection:bg-[#81b64c] selection:text-black">
 
-  <!-- Minimal Pure-Black Brand Header -->
   <header class="w-full bg-black/80 backdrop-blur-md border-b border-white/[0.07] px-4 sm:px-8 py-3.5 sticky top-0 z-30">
     <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -99,7 +97,12 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <div id="deviceBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono-num font-bold bg-zinc-900/90 text-zinc-300 border border-white/10">
+          <span id="deviceIcon">🖥️</span>
+          <span id="deviceText">Desktop</span>
+        </div>
+
         <span id="worldSyncChip" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono-num font-bold bg-zinc-950 text-emerald-300 border border-emerald-500/30 shadow-inner">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span id="worldSyncText">Global Network Live</span>
@@ -108,11 +111,10 @@
     </div>
   </header>
 
-  <!-- Main Aesthetic Black Split Portal -->
-  <main class="flex-1 flex items-center justify-center px-4 sm:px-8 py-10">
+  <main class="flex-1 flex items-center justify-center px-4 sm:px-8 py-8 sm:py-10">
     <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
 
-      <!-- Left Column: Arena Identity & Feature Highlights -->
+      <!-- Left Column: Arena Overview -->
       <div class="lg:col-span-6 space-y-6 text-left">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-950 border border-white/10 text-[11px] font-extrabold uppercase tracking-widest text-[#a3d96c]">
           <span>⚡</span>
@@ -128,7 +130,6 @@
           </p>
         </div>
 
-        <!-- Aesthetic Feature Pills -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <div class="obsidian-subcard rounded-2xl p-4 space-y-1">
             <div class="flex items-center justify-between">
@@ -157,7 +158,6 @@
           </div>
         </div>
 
-        <!-- Subtle Security Strip -->
         <div class="flex flex-wrap items-center gap-4 pt-1 text-xs text-zinc-400">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[11px] text-emerald-300">✓</span>
@@ -170,10 +170,9 @@
         </div>
       </div>
 
-      <!-- Right Column: Pure Black Obsidian Auth Vault Card -->
       <div class="lg:col-span-6 w-full max-w-md mx-auto lg:ml-auto space-y-4">
 
-        <!-- Active Session Card (Only visible when user is already signed in) -->
+        <!-- Active Session Card -->
         <div id="activeSessionCard" class="hidden obsidian-card rounded-3xl p-5 border border-[#81b64c]/60 space-y-3.5">
           <div class="flex items-center justify-between">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
@@ -198,9 +197,8 @@
           </div>
         </div>
 
-        <!-- Primary Login / Sign Up Vault -->
+        <!-- Primary Form Card -->
         <section class="obsidian-card rounded-3xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
-          <!-- Top subtle accent line -->
           <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#81b64c] to-transparent opacity-80"></div>
 
           <div class="flex items-center justify-between gap-2">
@@ -217,7 +215,7 @@
             </span>
           </div>
 
-          <!-- Segmented Mode Switcher: Login vs Sign Up -->
+          <!-- Two-tab Switcher: Login vs Sign Up -->
           <div class="grid grid-cols-2 gap-1.5 p-1.5 rounded-2xl bg-[#050507] border border-white/[0.08]">
             <button id="tabAuthLogin" type="button" class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition bg-[#81b64c] text-white shadow-md">
               Login
@@ -227,10 +225,9 @@
             </button>
           </div>
 
-          <!-- Status / Error Feedback Banner -->
+          <!-- Status Banner -->
           <div id="authStatusBanner" class="hidden p-3.5 rounded-2xl text-xs font-bold border"></div>
 
-          <!-- Form Inputs -->
           <div class="space-y-4">
             <div>
               <div class="flex items-center justify-between mb-1.5">
@@ -252,7 +249,7 @@
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <label for="inputAuthPin5" class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                  Country Code &amp; 5-Digit PIN
+                  Country Code &amp; 5-Digit Password (PIN)
                 </label>
                 <button id="btnTogglePinVisibility" type="button" class="text-[10px] font-mono-num font-bold text-zinc-400 hover:text-zinc-200 transition">
                   Show PIN
@@ -308,6 +305,14 @@
                 <span>→</span>
               </button>
             </div>
+
+            <!-- Viewport Redirection Switcher -->
+            <div class="pt-2 flex items-center justify-between text-[11px] text-zinc-500 border-t border-white/[0.06]">
+              <span id="routingInfoText">Auto-redirecting by screen size</span>
+              <button id="btnSwitchDeviceMode" type="button" class="text-zinc-400 hover:text-emerald-400 underline font-mono-num transition">
+                Switch View
+              </button>
+            </div>
           </div>
         </section>
       </div>
@@ -315,7 +320,6 @@
     </div>
   </main>
 
-  <!-- Pure Black Official Footer with Version 1 -->
   <footer class="w-full bg-black/90 border-t border-white/[0.07] px-4 sm:px-8 py-4 mt-auto">
     <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
       <div class="flex items-center gap-2">
@@ -342,6 +346,8 @@
       const SCORECARD_HISTORY_KEY = 'hc_arena_match_scorecards_v1';
       const GLOBAL_LB_CHANNEL = 'oddandeven_global_leaderboard_v1';
       const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+      const PREFERRED_DEVICE_OVERRIDE_KEY = 'oddandeven_preferred_device_view';
+
       const FAKE_SEED_NAMES = [
         'AARAV_99',
         'KABIR_STRIKER',
@@ -360,7 +366,34 @@
         'oddandeven-world-hub-v1-4'
       ];
 
-      // One-time Version 1 clean slate wipe so all old test leaderboard data & login/signup accounts are cleared for publishing
+      // Administrator Master Credentials (direct verification on login without separate buttons)
+      const ADMIN_CONFIG = {
+        username: 'ADMIN',
+        countryCode: '+91',
+        pin: '99999',
+        masterKey: 'ODDADMIN2026'
+      };
+
+      let authMode = 'LOGIN'; // 'LOGIN' | 'SIGNUP'
+      let globalHubPeer = null;
+      const globalHubConns = [];
+
+      function isMobileDevice() {
+        const manualOverride = sessionStorage.getItem(PREFERRED_DEVICE_OVERRIDE_KEY);
+        if (manualOverride === 'mobile') return true;
+        if (manualOverride === 'desktop') return false;
+
+        const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isNarrowScreen = window.innerWidth <= 768;
+        return isMobileUA || isNarrowScreen;
+      }
+
+      function getArenaTargetUrl(querySuffix = '') {
+        const isMob = isMobileDevice();
+        const baseTarget = isMob ? 'mobile.html' : 'hand_cricket.html';
+        return querySuffix ? `${baseTarget}${querySuffix}` : baseTarget;
+      }
+
       try {
         if (localStorage.getItem(RELEASE_CLEAN_SLATE_KEY) !== 'v1_clean') {
           localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -375,10 +408,6 @@
           localStorage.setItem(RELEASE_CLEAN_SLATE_KEY, 'v1_clean');
         }
       } catch (e) {}
-
-      let authMode = 'LOGIN';
-      let globalHubPeer = null;
-      const globalHubConns = [];
 
       function fnv1aHash(str) {
         let h = 0x811c9dc5;
@@ -649,6 +678,11 @@
 
       const el = {
         worldSyncText: document.getElementById('worldSyncText'),
+        deviceBadge: document.getElementById('deviceBadge'),
+        deviceIcon: document.getElementById('deviceIcon'),
+        deviceText: document.getElementById('deviceText'),
+        routingInfoText: document.getElementById('routingInfoText'),
+        btnSwitchDeviceMode: document.getElementById('btnSwitchDeviceMode'),
         activeSessionCard: document.getElementById('activeSessionCard'),
         activeSessionElo: document.getElementById('activeSessionElo'),
         activeSessionUsername: document.getElementById('activeSessionUsername'),
@@ -667,6 +701,20 @@
         btnSubmitAuth: document.getElementById('btnSubmitAuth'),
         btnSubmitAuthText: document.getElementById('btnSubmitAuthText')
       };
+
+      function updateDeviceIndicator() {
+        const mobile = isMobileDevice();
+        if (el.deviceIcon && el.deviceText) {
+          el.deviceIcon.textContent = mobile ? '📱' : '🖥️';
+          el.deviceText.textContent = mobile ? 'Mobile Arena' : 'Desktop Arena';
+        }
+        if (el.routingInfoText) {
+          el.routingInfoText.textContent = mobile ? 'Routing to Mobile Arena (mobile.html)' : 'Routing to Desktop Arena (hand_cricket.html)';
+        }
+        if (el.btnSwitchDeviceMode) {
+          el.btnSwitchDeviceMode.textContent = mobile ? 'Switch to Desktop View' : 'Switch to Mobile View';
+        }
+      }
 
       function showBanner(msg, isSuccess) {
         el.authStatusBanner.classList.remove('hidden');
@@ -687,7 +735,7 @@
         }
         if (el.authCardSubheading) {
           el.authCardSubheading.textContent = mode === 'LOGIN'
-            ? 'Sign in with your Username & 5-Digit PIN'
+            ? 'Sign in with your Username & 5-Digit Password (PIN)'
             : 'Register your Username & Country Code on the Global Pitch';
         }
         el.btnSubmitAuthText.textContent = mode === 'LOGIN' ? 'SIGN IN TO ARENA' : 'CREATE ACCOUNT & PLAY';
@@ -695,6 +743,8 @@
       }
 
       function updateUIState() {
+        updateDeviceIndicator();
+
         const worldMap = loadWorldwidePlayersMap();
         const worldCount = Object.keys(worldMap).length;
         if (el.worldSyncText) {
@@ -732,13 +782,21 @@
       }
 
       function navigateToHandCricketArena(querySuffix) {
-        const target = querySuffix ? `hand_cricket.html${querySuffix}` : 'hand_cricket.html';
+        const target = getArenaTargetUrl(querySuffix);
         if (isSandboxedPreviewIframe()) {
           updateUIState();
-          showBanner(`✓ Authenticated & synced! On your live site (GitHub / Vercel), this redirects directly to ${target}.`, true);
+          showBanner(`✓ Authenticated & synced! On your live site, this directs to ${target}.`, true);
           return;
         }
         window.location.href = target;
+      }
+
+      function navigateToAdminConsole() {
+        if (isSandboxedPreviewIframe()) {
+          showBanner('✓ Admin Authenticated! Redirecting to admin.html...', true);
+          return;
+        }
+        window.location.href = 'admin.html';
       }
 
       function handleAuthSubmit() {
@@ -749,6 +807,17 @@
         const cName = opt ? (opt.getAttribute('data-country') || 'India') : 'India';
         const cFlag = opt ? (opt.getAttribute('data-flag') || '🇮🇳') : '🇮🇳';
 
+        // 1. ADMIN CREDENTIALS RECOGNITION (Direct verification without separate buttons)
+        const isAdminMatch = (uname === ADMIN_CONFIG.username && pin5 === ADMIN_CONFIG.pin && dial === ADMIN_CONFIG.countryCode) ||
+                             (uname === ADMIN_CONFIG.username && (pin5 === ADMIN_CONFIG.pin || pin5 === ADMIN_CONFIG.masterKey));
+        if (isAdminMatch) {
+          sessionStorage.setItem('oddandeven_admin_auth', '1');
+          showBanner('✓ Administrator Verified! Launching Control Panel...', true);
+          setTimeout(() => navigateToAdminConsole(), 350);
+          return;
+        }
+
+        // 2. REGULAR PLAYER LOGIN / SIGNUP
         if (uname.length < 3) {
           showBanner('Username must be at least 3 alphanumeric characters.', false);
           return;
@@ -758,7 +827,7 @@
           return;
         }
         if (!/^\d{5}$/.test(pin5)) {
-          showBanner(`Please enter a valid 5-digit numeric PIN connected with ${dial}.`, false);
+          showBanner(`Please enter a valid 5-digit numeric password (PIN) connected with ${dial}.`, false);
           return;
         }
 
@@ -783,7 +852,7 @@
             return;
           }
           if (!verifyUserCredentials(usersMap[uname], dial, pin5)) {
-            showBanner(`Incorrect Country Code (${dial}) or 5-Digit PIN for ${uname}.`, false);
+            showBanner(`Incorrect Country Code (${dial}) or 5-Digit Password for ${uname}.`, false);
             return;
           }
         }
@@ -805,7 +874,6 @@
           localStorage.setItem('oddandeven_just_logged_in', '1');
         } catch (e) {}
 
-        // Register in Worldwide Leaderboard Map
         const worldMap = loadWorldwidePlayersMap();
         if (!worldMap[uname]) {
           worldMap[uname] = {
@@ -855,6 +923,10 @@
         const params = new URLSearchParams(window.location.search);
         const signedOutParam = params.get('signedout') === '1';
 
+        if (params.get('view') === 'mobile' || params.get('view') === 'desktop') {
+          sessionStorage.setItem(PREFERRED_DEVICE_OVERRIDE_KEY, params.get('view'));
+        }
+
         const usersMap = loadEncryptedUsersMap();
         if (Object.keys(usersMap).length === 0) {
           setMode('SIGNUP');
@@ -865,7 +937,6 @@
         if (signedOutParam) {
           showBanner('You have signed out safely. Sign in below to return to the pitch.', true);
         } else {
-          // If user has NOT signed out (active session exists), auto-redirect when used as main.html entry window on live host
           const activeSess = loadActiveSession();
           if (activeSess && activeSess.username && params.get('stay') !== '1' && !isSandboxedPreviewIframe()) {
             updateUIState();
@@ -875,9 +946,19 @@
 
         el.tabAuthLogin.addEventListener('click', () => setMode('LOGIN'));
         el.tabAuthSignup.addEventListener('click', () => setMode('SIGNUP'));
+
         el.inputAuthPin5.addEventListener('input', updateUIState);
         el.selectAuthCountry.addEventListener('change', updateUIState);
         el.btnSubmitAuth.addEventListener('click', handleAuthSubmit);
+
+        if (el.btnSwitchDeviceMode) {
+          el.btnSwitchDeviceMode.addEventListener('click', () => {
+            const currentMobile = isMobileDevice();
+            sessionStorage.setItem(PREFERRED_DEVICE_OVERRIDE_KEY, currentMobile ? 'desktop' : 'mobile');
+            updateUIState();
+            showBanner(`Switched target view to ${currentMobile ? 'Desktop (hand_cricket.html)' : 'Mobile (mobile.html)'}.`, true);
+          });
+        }
 
         if (el.btnTogglePinVisibility) {
           el.btnTogglePinVisibility.addEventListener('click', () => {
@@ -897,6 +978,8 @@
           updateUIState();
           showBanner('Signed out of active session.', true);
         });
+
+        window.addEventListener('resize', updateUIState);
 
         window.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') handleAuthSubmit();
