@@ -125,7 +125,7 @@
       </div>
 
       <!-- Navigation Buttons (Compact horizontal strip on mobile, full rail on desktop) -->
-      <div class="grid grid-cols-6 lg:flex lg:flex-col gap-1 sm:gap-1.5">
+      <div class="grid grid-cols-7 lg:flex lg:flex-col gap-1 sm:gap-1.5">
         <!-- Sidebar 1: Play Bot (Unrated Practice vs 250-2800 Bots) -->
         <button id="sideNavBot" type="button" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
           <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-xs sm:text-base">🤖</span>
@@ -178,6 +178,18 @@
           <div class="min-w-0">
             <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white truncate">Events</div>
             <div class="hidden lg:block text-[10px] text-pink-300/90 truncate" id="sideNavEventsSub">Season 1 Cups</div>
+          </div>
+        </button>
+
+        <!-- Sidebar 7: Updates (Connected to updates.html — v1.0, v1.5 & v1.8 Release Notes) -->
+        <button id="sideNavUpdates" type="button" onclick="if(!window.__hcUpdatesBound){window.location.href='updates.html';}" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800 relative">
+          <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/40 flex items-center justify-center text-xs sm:text-base">🚀</span>
+          <div class="min-w-0">
+            <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white truncate flex items-center gap-1">
+              <span>Updates</span>
+              <span class="hidden xl:inline-block px-1 py-0.2 rounded text-[8px] font-mono-num font-black bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/40">v1.8</span>
+            </div>
+            <div class="hidden lg:block text-[10px] text-[#a3d96c] font-mono-num truncate" id="sideNavUpdatesSub">v1.8 Release Notes</div>
           </div>
         </button>
       </div>
@@ -276,6 +288,63 @@
           <span>Invite Friends</span>
           <span class="font-black">→</span>
         </button>
+      </div>
+    </div>
+
+    <!-- DISMISSIBLE AESTHETIC "NEW UPDATE • VERSION 1.8" BANNER WITH CROSS (✕) ICON (Redirects to updates.html) -->
+    <div
+      id="newUpdateBanner"
+      role="region"
+      aria-label="New Update Version 1.8 Announcement"
+      class="w-full relative overflow-hidden bg-gradient-to-r from-[#13251b] via-[#182936] to-[#231934] hover:from-[#172e21] hover:via-[#1c3140] hover:to-[#2a1e3f] border-b border-[#a3d96c]/45 px-3 sm:px-6 py-2.5 transition-all shadow-lg group"
+    >
+      <!-- Ambient Aesthetic Glow Accents -->
+      <div class="absolute -left-8 -top-10 w-40 h-24 bg-[#81b64c]/25 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute left-1/2 -bottom-10 w-48 h-24 bg-cyan-400/20 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute right-12 -top-8 w-36 h-24 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="max-w-[1520px] mx-auto flex items-center justify-between gap-2.5 relative z-10">
+        <a
+          id="btnBannerNewUpdate"
+          href="updates.html"
+          class="flex-1 flex items-center gap-2.5 sm:gap-3 min-w-0 text-left cursor-pointer"
+        >
+          <span class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#81b64c]/35 to-cyan-500/25 border border-[#a3d96c]/60 flex items-center justify-center text-sm sm:text-base shadow-md shrink-0 group-hover:scale-105 transition-transform">
+            🚀
+          </span>
+          <div class="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 min-w-0">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono-num font-black uppercase tracking-widest bg-[#81b64c] text-slate-950 shadow-sm shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
+              <span>NEW UPDATE • VERSION 1.8</span>
+            </span>
+            <span class="font-brand text-xs sm:text-sm font-black text-white tracking-tight group-hover:text-[#a3d96c] transition truncate">
+              What's New in v1.8: Achievements, Season 1 Events, Cloud-Based Sync, Bug Fixes &amp; Much More!
+            </span>
+            <span class="hidden xl:inline text-xs text-cyan-200/90 font-medium truncate">
+              — Click to view full v1.0, v1.5 &amp; v1.8 release notes →
+            </span>
+          </div>
+        </a>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <a
+            href="updates.html"
+            class="hidden sm:inline-flex px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-[#a3d96c] via-emerald-400 to-cyan-400 hover:from-[#b5e682] hover:to-cyan-300 text-slate-950 shadow-md shadow-[#81b64c]/20 transition items-center gap-1.5 group-hover:translate-x-0.5"
+          >
+            <span>Explore v1.8</span>
+            <span class="font-black">→</span>
+          </a>
+          <button
+            id="btnDismissUpdateBanner"
+            type="button"
+            aria-label="Dismiss New Update Version 1.8 banner"
+            title="Dismiss banner"
+            onclick="event.stopPropagation();event.preventDefault();var b=document.getElementById('newUpdateBanner');if(b)b.classList.add('hidden');"
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900/90 hover:bg-rose-500/25 text-slate-300 hover:text-rose-200 border border-white/15 hover:border-rose-400/50 flex items-center justify-center text-xs sm:text-sm font-bold transition"
+          >
+            ✕
+          </button>
+        </div>
       </div>
     </div>
 
@@ -642,13 +711,13 @@
           </div>
         </div>
 
-        <!-- Standings Table (Humans Only) -->
+        <!-- Standings Table (Humans Only — Scrollable Top 10 + Pinned User Rank) -->
         <div class="space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
-            <span id="lbTableLeftHeader">Global Human Standings (Ranked by Elo)</span>
+            <span id="lbTableLeftHeader">Top 10 Global Human Standings + Your Rank</span>
             <span id="lbTableRightHeader">Elo Rating</span>
           </div>
-          <div id="leaderboardStandingsList" class="space-y-2"></div>
+          <div id="leaderboardStandingsList" class="space-y-2 max-h-80 sm:max-h-96 overflow-y-auto pr-1.5 scroll-smooth"></div>
         </div>
 
         <!-- Recent Elo & Match History Log -->
@@ -1038,6 +1107,130 @@
 
         <!-- Dynamic 10-Achievement Cards Grid -->
         <div id="achievementsGridList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+      </section>
+
+            <!-- INLINE SCREEN 4C: UPDATES & CHANGELOG HUB (Connected to updates.html — v1.0, v1.5 & v1.8) -->
+      <section id="screenUpdates" class="hidden glass-card rounded-2xl p-5 border border-[#81b64c]/50 space-y-5 animate-pop">
+        <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-[#45423e] pb-3.5">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-[#81b64c]/20 border border-[#81b64c]/50 flex items-center justify-center text-2xl shadow-inner">
+              🚀
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-black text-white font-brand">OddAndEven.in — Official Updates &amp; Changelog</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-[#81b64c] text-slate-950">Current: Version 1.8</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">Complete release timeline from <strong class="text-white">Version 1.0</strong> launch to <strong class="text-purple-300">Version 1.5</strong> and <strong class="text-[#a3d96c]">Version 1.8</strong>. Connected with <code class="text-[#a3d96c] font-mono-num">updates.html</code>.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a id="btnOpenUpdatesPortal" href="updates.html" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 transition shadow flex items-center gap-1.5">
+              <span>🚀</span>
+              <span>Open updates.html ↗</span>
+            </a>
+            <button id="btnBackFromUpdates" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+              ← Back to Pitch
+            </button>
+          </div>
+        </div>
+
+        <!-- VERSION 1.8 (LATEST RELEASE) -->
+        <article class="rounded-2xl bg-gradient-to-br from-[#192818] via-[#1c2026] to-[#191816] border-2 border-[#81b64c] p-4 sm:p-5 space-y-3.5 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-black bg-[#81b64c] text-slate-950">VERSION 1.8</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-emerald-500/20 text-[#a3d96c] border border-[#81b64c]/40">LATEST RELEASE • LIVE NOW</span>
+            </div>
+            <a href="updates.html#v1-8" class="text-xs font-mono-num font-bold text-[#a3d96c] hover:underline">updates.html#v1-8 ↗</a>
+          </div>
+          <div>
+            <h3 class="font-brand text-base sm:text-lg font-black text-white">Achievements, Season 1 Events, Fix Bugs, Cloud-Based Sync &amp; Much More</h3>
+            <p class="text-xs text-slate-300 mt-0.5">Our biggest arena upgrade bringing full trophy progression, tournament brackets, real-time cloud synchronization, and Top-10 + Personal Rank leaderboards.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
+              <span class="text-lg">🎖️</span>
+              <div>
+                <div class="font-extrabold text-yellow-300">Achievements &amp; Trophy Cabinet</div>
+                <p class="text-[11px] text-slate-300 mt-0.5">10 unlockable career milestones &amp; XP progression across Batting, Bowling, Ranked Elo &amp; Season 1 Cups.</p>
+              </div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
+              <span class="text-lg">🎟️</span>
+              <div>
+                <div class="font-extrabold text-pink-300">Season 1 Events &amp; Tournaments</div>
+                <p class="text-[11px] text-slate-300 mt-0.5">Live IST countdowns and 1-click contender registration for Duo Cup (2v2) and Solo Championship.</p>
+              </div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
+              <span class="text-lg">☁️</span>
+              <div>
+                <div class="font-extrabold text-cyan-300">Cloud-Based Sync</div>
+                <p class="text-[11px] text-slate-300 mt-0.5">Real-time Firebase Firestore &amp; PeerJS cloud sync for accounts, ratings, rooms, and instant friend challenges.</p>
+              </div>
+            </div>
+            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
+              <span class="text-lg">🛠️</span>
+              <div>
+                <div class="font-extrabold text-emerald-300">Fix Bugs, Top-10 Rank View &amp; Much More</div>
+                <p class="text-[11px] text-slate-300 mt-0.5">Scrollable Top 10 Leaderboard + pinned personal rank row, self-healing stats, and 15s clock sync fixes.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- VERSION 1.5 -->
+        <article class="rounded-2xl bg-[#1d1c19] border border-purple-500/40 p-4 sm:p-5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-black bg-purple-500/25 text-purple-200 border border-purple-400/40">VERSION 1.5</span>
+              <span class="text-[11px] font-mono-num text-purple-300 font-bold">MULTIPLAYER &amp; SOCIAL EXPANSION</span>
+            </div>
+            <a href="updates.html#v1-5" class="text-xs font-mono-num font-bold text-purple-300 hover:underline">updates.html#v1-5 ↗</a>
+          </div>
+          <h3 class="font-brand text-sm sm:text-base font-black text-white">Invite Friends, Fix Bugs, Multiplayer Games &amp; Much More</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
+              <span>🤝</span>
+              <span><strong class="text-emerald-300">Invite Friends:</strong> Search usernames, build your friends list &amp; send 1v1 match invites.</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
+              <span>👥</span>
+              <span><strong class="text-purple-300">Multiplayer Games:</strong> Live 1v1 Ranked Rooms (±8 Elo) with automatic 2-player room lock.</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
+              <span>🔧</span>
+              <span><strong class="text-amber-300">Fix Bugs:</strong> Fixed toss parity lock, role swap transition, and duplicate room messages.</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
+              <span>✨</span>
+              <span><strong class="text-cyan-300">And Much More:</strong> Match scorecard history, Weekly (Mon–Sun) &amp; Runs leaderboards.</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- VERSION 1.0 (2 CORE POINTS: WEBSITE LAUNCH & CORE FEATURES) -->
+        <article class="rounded-2xl bg-[#1d1c19] border border-cyan-500/35 p-4 sm:p-5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">VERSION 1.0</span>
+              <span class="text-[11px] font-mono-num text-cyan-300 font-bold">FOUNDATION RELEASE</span>
+            </div>
+            <a href="updates.html#v1-0" class="text-xs font-mono-num font-bold text-cyan-300 hover:underline">updates.html#v1-0 ↗</a>
+          </div>
+          <h3 class="font-brand text-sm sm:text-base font-black text-white">Official Website Launch &amp; Core Hand Cricket Features</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+              <div class="font-extrabold text-cyan-300">1. Official Website Launch</div>
+              <p class="text-[11px] text-slate-300 leading-relaxed">Launched OddAndEven.in with custom stadium canvas animations, synthesized Web Audio sound effects, and encrypted Country Code + 5-Digit PIN accounts.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+              <div class="font-extrabold text-[#a3d96c]">2. Core Arena Features</div>
+              <p class="text-[11px] text-slate-300 leading-relaxed">Full Odd/Even Toss &amp; 2-Innings chase rules (1–10 keypad), 15-second shot clock, 4 Elo-tiered AI bots (Sunny 450 to Apex Oracle 2650), and 3 live commentary styles.</p>
+            </div>
+          </div>
+        </article>
       </section>
 
       <!-- GLOBAL INCOMING FRIEND CHALLENGE BANNER (Visible on any screen when a friend invites you to play) -->
@@ -1655,7 +1848,7 @@
       </aside>
     </main>
 
-    <!-- Official Footer with Version 1.5 -->
+    <!-- Official Footer with Version 1.8 -->
     <footer class="w-full bg-[#191816] border-t border-[#383531] px-4 sm:px-6 py-3 mt-auto">
       <div class="max-w-[1520px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
         <div class="flex items-center gap-2">
@@ -1663,9 +1856,10 @@
           <span>— Official Hand Cricket Arena</span>
         </div>
         <div class="flex items-center gap-3">
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
-            Version 1.5
-          </span>
+          <a href="updates.html" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 transition flex items-center gap-1" title="View Version 1.8 Release Notes">
+            <span>🚀</span>
+            <span>Version 1.8</span>
+          </a>
         </div>
       </div>
     </footer>
@@ -2121,7 +2315,7 @@
 
       reconcileAllNewPlayersIntoLeaderboard();
       window.addEventListener('DOMContentLoaded', function () {
-        ['sideNavLeaderboard', 'btnHeaderElo', 'btnSyncGlobalLb', 'sideNavFriends', 'sideNavAchievements', 'sideNavEvents', 'topInviteFriendsBanner', 'btnTopInviteFriendsCta'].forEach(function (id) {
+        ['sideNavLeaderboard', 'btnHeaderElo', 'btnSyncGlobalLb', 'sideNavFriends', 'sideNavAchievements', 'sideNavEvents', 'sideNavUpdates', 'topInviteFriendsBanner', 'btnTopInviteFriendsCta'].forEach(function (id) {
           const elem = document.getElementById(id);
           if (elem) {
             elem.addEventListener('click', reconcileAllNewPlayersIntoLeaderboard, true);
