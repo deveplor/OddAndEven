@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OddAndEven.in — Events &amp; Tournaments</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0c12;
+      --card: #16151c;
+      --line: rgba(255,255,255,.09);
+      --lime: #a3d96c;
+      --amber: #f5b83d;
+      --cyan: #5ad1e6;
+      --stub: 250px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: #f4f4f5; min-height: 100vh; overflow-x: hidden; line-height: 1.55; }
+    .font-brand { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+    .font-mono-num { font-family: 'JetBrains Mono', monospace; }
+    :focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; border-radius: 8px; }
+
+    /* mown-outfield stripes behind the hero */
+    .outfield {
+      background:
+        linear-gradient(180deg, transparent 55%, var(--bg) 100%),
+        repeating-linear-gradient(90deg, rgba(129,182,76,.07) 0 64px, transparent 64px 128px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* ticket */
+    .ticket { position: relative; display: grid; background: var(--card); border: 1px solid var(--line); border-radius: 22px; scroll-margin-top: 90px; }
+    .ticket-main { padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+    .stub { position: relative; background: var(--c); color: #0d0c12; padding: 24px 22px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; border-radius: 0 21px 21px 0; border-left: 2px dashed rgba(13,12,18,.35); }
+    .stub::before, .stub::after { content: ''; position: absolute; left: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
+    .stub::before { top: -12px; }
+    .stub::after { bottom: -12px; }
+    @media (min-width: 768px) { .ticket { grid-template-columns: 1fr var(--stub); } }
+    @media (max-width: 767px) {
+      .stub { border-radius: 0 0 21px 21px; border-left: 0; border-top: 2px dashed rgba(13,12,18,.35); }
+      .stub::before { left: -12px; top: -12px; }
+      .stub::after { left: auto; right: -12px; top: -12px; bottom: auto; }
+    }
+    .cd { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .cd div { background: rgba(13,12,18,.9); color: var(--c); border-radius: 10px; padding: 8px 0 6px; text-align: center; }
+    .cd b { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .cd span { font-size: 9px; letter-spacing: .08em; color: #a1a1aa; }
+    .cta { background: #0d0c12; color: #fff; font-weight: 800; font-size: .85rem; padding: 12px 16px; border-radius: 12px; width: 100%; transition: transform .12s ease, background .12s ease; }
+    .cta:hover:not(:disabled) { transform: translateY(-1px); background: #1d1b25; }
+    .cta:active:not(:disabled) { transform: translateY(1px); }
+    .cta:disabled { opacity: .55; cursor: not-allowed; }
+    .cta[data-joined="1"] { background: transparent; color: #0d0c12; box-shadow: inset 0 0 0 2px #0d0c12; }
+    .chip { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; background: rgba(255,255,255,.02); }
+    .chip small { display: block; font-size: 11px; color: #a1a1aa; }
+    .chip strong { font-size: .9rem; font-weight: 700; }
+    #toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 24px); opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 60; max-width: min(92vw, 440px); }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body class="flex flex-col">
+
+  <header class="w-full bg-[#0d0c12]/90 border-b border-white/10 px-4 sm:px-8 py-3.5 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <a href="hand_cricket.html" class="flex items-center gap-3" aria-label="OddAndEven.in Arena">
+        <span class="w-10 h-10 rounded-xl bg-[#16151c] border border-white/10 flex items-center justify-center text-lg">🏏</span>
+        <span class="font-brand font-bold text-lg tracking-tight leading-none">
+          <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span><span class="font-mono-num text-xs text-[#a3d96c]">.in</span>
+          <span class="block text-[11px] font-sans font-medium text-zinc-400 mt-1">Events &amp; Tournaments</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-2 flex-wrap justify-end" aria-label="Site">
+        <span id="navPlayerBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-[#16151c] text-emerald-300 border border-white/10"></span>
+        <a href="hand_cricket.html" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 transition shadow">🏏 Play Arena</a>
+        <a href="mobile.html" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#81b64c]/15 hover:bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/35 transition">Mobile Arena</a>
+        <a href="index.html" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/10 transition">Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="outfield">
+    <div class="max-w-5xl mx-auto px-4 sm:px-8 pt-12 pb-14 grid lg:grid-cols-[1.2fr_1fr] gap-10 items-end">
+      <div class="space-y-4">
+        <p class="font-mono-num text-xs font-bold text-[#a3d96c]">Season 1 · Hand Cricket</p>
+        <h1 class="font-brand text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">The fixtures are up.</h1>
+        <p class="text-sm sm:text-base text-zinc-400 max-w-lg">
+          Official leagues with real brackets and real rankings. Pick your format, lock your spot, and play your way onto the Hall of Fame.
+        </p>
+      </div>
+
+      <aside class="rounded-2xl border border-white/10 bg-[#16151c]/80 backdrop-blur p-5" aria-label="Season calendar">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-brand font-semibold text-sm text-zinc-300">Season calendar</h2>
+          <a href="hand_cricket.html?screen=events" class="text-[11px] font-mono-num font-bold text-[#a3d96c] hover:underline">← Back to Arena Events Tab</a>
+        </div>
+        <ol id="calendar" class="divide-y divide-white/10"></ol>
+      </aside>
+    </div>
+  </section>
+
+  <!-- EVENTS -->
+  <main class="max-w-5xl mx-auto w-full flex-1 px-4 sm:px-8 py-10 space-y-8">
+
+    <article id="duo" class="ticket" style="--c: var(--amber)" data-event="duo">
+      <div class="ticket-main">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-mono-num text-xs font-bold" style="color:var(--c)">Duo Cup · 2v2 league</span>
+          <span class="js-state px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border"></span>
+        </div>
+        <div class="space-y-2">
+          <h2 class="font-brand text-2xl sm:text-3xl font-bold tracking-tight">First Ever Duo Event for Odd &amp; Even</h2>
+          <p class="text-sm text-zinc-400 max-w-xl">
+            Partner up with your trusted rival for the ultimate 2v2 Hand Cricket championship. Coordinate your batting rotations, lock in defensive strategies, and claim the inaugural Duo Cup trophy.
+          </p>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-3 mt-auto">
+          <div class="chip"><small>Format</small><strong>2v2 Hand Cricket</strong></div>
+          <div class="chip"><small>Team</small><strong>You + one partner</strong></div>
+          <div class="chip"><small>Prize</small><strong style="color:var(--c)">5,000 Elo pool + badge</strong></div>
+        </div>
+      </div>
+      <div class="stub">
+        <div>
+          <div class="font-mono-num text-xs font-bold opacity-70"><span class="js-wd"></span> · <span class="js-time"></span></div>
+          <div class="font-brand text-5xl font-bold leading-none mt-1"><span class="js-day"></span> <span class="js-mon text-3xl"></span></div>
+        </div>
+        <div class="cd" role="timer" aria-label="Time until kickoff"><div><b class="js-d">--</b><span>DAYS</span></div><div><b class="js-h">--</b><span>HRS</span></div><div><b class="js-m">--</b><span>MIN</span></div><div><b class="js-s">--</b><span>SEC</span></div></div>
+        <button type="button" class="cta js-join">Register duo team</button>
+      </div>
+    </article>
+
+    <article id="solo" class="ticket" style="--c: var(--cyan)" data-event="solo">
+      <div class="ticket-main">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-mono-num text-xs font-bold" style="color:var(--c)">Solo Championship · Grandmaster bracket</span>
+          <span class="js-state px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border"></span>
+        </div>
+        <div class="space-y-2">
+          <h2 class="font-brand text-2xl sm:text-3xl font-bold tracking-tight">Who Will Become the First Champion of the Single Player Tournament?</h2>
+          <p class="text-sm text-zinc-400 max-w-xl">
+            Face the world's finest solo strikers and outwit the 2650 Elo Apex Oracle in the knockout brackets. Only one competitor raises the golden shield and takes the #1 solo crown.
+          </p>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-3 mt-auto">
+          <div class="chip"><small>Format</small><strong>Solo knockout bracket</strong></div>
+          <div class="chip"><small>Final boss</small><strong>Apex Oracle · 2650 Elo</strong></div>
+          <div class="chip"><small>Prize</small><strong style="color:var(--c)">#1 crown + Hall of Fame</strong></div>
+        </div>
+      </div>
+      <div class="stub">
+        <div>
+          <div class="font-mono-num text-xs font-bold opacity-70"><span class="js-wd"></span> · <span class="js-time"></span></div>
+          <div class="font-brand text-5xl font-bold leading-none mt-1"><span class="js-day"></span> <span class="js-mon text-3xl"></span></div>
+        </div>
+        <div class="cd" role="timer" aria-label="Time until kickoff"><div><b class="js-d">--</b><span>DAYS</span></div><div><b class="js-h">--</b><span>HRS</span></div><div><b class="js-m">--</b><span>MIN</span></div><div><b class="js-s">--</b><span>SEC</span></div></div>
+        <button type="button" class="cta js-join">Enter solo bracket</button>
+      </div>
+    </article>
+
+  </main>
+
+  <div id="toast" class="rounded-2xl bg-[#1d1b25] border border-white/15 px-4 py-3 text-sm shadow-2xl" role="status" aria-live="polite"></div>
+
+  <footer class="w-full border-t border-white/10 px-4 sm:px-8 py-4 mt-auto">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
+      <span><span class="font-brand font-bold text-zinc-300">OddAndEven.in</span> — Events Hub</span>
+      <span class="font-mono-num text-[11px] text-[#a3d96c]">All times in IST</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ---- EDIT HERE: one place to change dates (ISO 8601, IST = +05:30) ----
+      const EVENTS = [
+        { id: 'duo',  name: 'Duo Cup · 2v2',        color: 'var(--amber)', start: '2026-11-07T19:00:00+05:30', closes: '2026-11-05T23:59:00+05:30', joined: "You're in! Share your room code with your partner before kickoff." },
+        { id: 'solo', name: 'Solo Championship',    color: 'var(--cyan)',  start: '2026-11-14T19:00:00+05:30', closes: '2026-11-12T23:59:00+05:30', joined: 'Bracket spot saved. Warm up in the Bot Arena.' }
+      ];
+
+      const SESSION_KEY = 'oddandeven_active_session_v1';
+      const SIGNED_OUT_KEY = 'oddandeven_signed_out_v1';
+      const REG_KEY = 'oddandeven_event_regs_v1';
+      const REG_MAP_KEY = 'oddandeven_event_regs_map_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+      const TZ = 'Asia/Kolkata';
+      const $ = (sel, root) => (root || document).querySelector(sel);
+
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const raw = decodeURIComponent(escape(atob(parts[2])));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function getActivePlayer() {
+        try {
+          if (localStorage.getItem(SIGNED_OUT_KEY) === '1') return null;
+          const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+          if (!raw) return null;
+          const dec = decryptPayload(raw);
+          if (dec && dec.username) return dec;
+          return { username: 'PLAYER', countryFlag: '🇮🇳' };
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function signedIn() {
+        return Boolean(getActivePlayer());
+      }
+
+      function loadRegs() {
+        try {
+          const player = getActivePlayer();
+          if (player && player.username) {
+            const mapRaw = localStorage.getItem(REG_MAP_KEY);
+            const map = mapRaw ? JSON.parse(mapRaw) : {};
+            if (Array.isArray(map[player.username])) return map[player.username];
+          }
+          return JSON.parse(localStorage.getItem(REG_KEY)) || [];
+        } catch (e) { return []; }
+      }
+
+      function saveRegs(list) {
+        try {
+          localStorage.setItem(REG_KEY, JSON.stringify(list));
+          const player = getActivePlayer();
+          if (player && player.username) {
+            const mapRaw = localStorage.getItem(REG_MAP_KEY);
+            const map = (mapRaw && JSON.parse(mapRaw)) || {};
+            map[player.username] = list;
+            localStorage.setItem(REG_MAP_KEY, JSON.stringify(map));
+          }
+        } catch (e) {}
+      }
+
+      let toastTimer;
+      function toast(html) {
+        const t = $('#toast');
+        t.innerHTML = html;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+      }
+
+      const fmt = (d, opts) => new Intl.DateTimeFormat('en-IN', Object.assign({ timeZone: TZ }, opts)).format(d);
+      const pad = (n) => String(n).padStart(2, '0');
+
+      // static fields + calendar
+      const cal = $('#calendar');
+      EVENTS.forEach((ev) => {
+        const start = new Date(ev.start);
+        const card = $('[data-event="' + ev.id + '"]');
+        $('.js-wd', card).textContent = fmt(start, { weekday: 'short' });
+        $('.js-day', card).textContent = fmt(start, { day: 'numeric' });
+        $('.js-mon', card).textContent = fmt(start, { month: 'short' });
+        $('.js-time', card).textContent = fmt(start, { hour: 'numeric', minute: '2-digit', hour12: true });
+
+        const li = document.createElement('li');
+        li.innerHTML =
+          '<a href="#' + ev.id + '" class="flex items-center gap-4 py-3 group">' +
+            '<span class="font-mono-num text-xs font-bold w-14 shrink-0" style="color:' + ev.color + '">' + fmt(start, { day: 'numeric', month: 'short' }) + '</span>' +
+            '<span class="flex-1 text-sm font-semibold group-hover:underline">' + ev.name + '</span>' +
+            '<span class="js-rel font-mono-num text-[11px] text-zinc-500"></span>' +
+          '</a>';
+        li.dataset.cal = ev.id;
+        cal.appendChild(li);
+      });
+
+      function render() {
+        const now = Date.now();
+        const regs = loadRegs();
+        const player = getActivePlayer();
+        const badge = $('#navPlayerBadge');
+        if (badge) {
+          if (player && player.username) {
+            badge.textContent = (player.countryFlag || '🇮🇳') + ' ' + player.username + ' · ' + regs.length + '/2 Registered';
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+
+        EVENTS.forEach((ev) => {
+          const card = $('[data-event="' + ev.id + '"]');
+          const start = new Date(ev.start).getTime();
+          const closes = new Date(ev.closes).getTime();
+          const left = Math.max(0, start - now);
+          const s = Math.floor(left / 1000);
+          $('.js-d', card).textContent = pad(Math.floor(s / 86400));
+          $('.js-h', card).textContent = pad(Math.floor((s % 86400) / 3600));
+          $('.js-m', card).textContent = pad(Math.floor((s % 3600) / 60));
+          $('.js-s', card).textContent = pad(s % 60);
+
+          const state = $('.js-state', card);
+          const btn = $('.js-join', card);
+          const joined = regs.includes(ev.id);
+          let label, cls;
+          if (now >= start) { label = 'Started'; cls = 'bg-rose-500/15 text-rose-300 border-rose-500/30'; }
+          else if (now >= closes) { label = 'Registration closed'; cls = 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30'; }
+          else { label = 'Registration open'; cls = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'; }
+          state.textContent = label;
+          state.className = 'js-state px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border ' + cls;
+
+          const open = now < closes;
+          btn.disabled = !open && !joined;
+          btn.dataset.joined = joined ? '1' : '0';
+          if (joined) btn.textContent = open ? "You're registered ✓ (tap to withdraw)" : "You're registered ✓";
+          else btn.textContent = open ? (ev.id === 'duo' ? 'Register duo team' : 'Enter solo bracket') : label;
+
+          const rel = $('[data-cal="' + ev.id + '"] .js-rel');
+          const days = Math.ceil(left / 86400000);
+          rel.textContent = now >= start ? 'started' : (days <= 1 ? 'today/tomorrow' : 'in ' + days + ' days');
+        });
+      }
+
+      document.querySelectorAll('.js-join').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.closest('[data-event]').dataset.event;
+          const ev = EVENTS.find((e) => e.id === id);
+          if (!signedIn()) {
+            toast('Sign in to register. <a class="underline font-bold text-[#a3d96c]" href="index.html?stay=1">Go to Portal →</a>');
+            return;
+          }
+          let regs = loadRegs();
+          if (regs.includes(id)) {
+            if (Date.now() >= new Date(ev.closes).getTime()) return;
+            regs = regs.filter((x) => x !== id);
+            toast('Registration withdrawn.');
+          } else {
+            regs.push(id);
+            toast(ev.joined);
+          }
+          saveRegs(regs);
+          render();
+        });
+      });
+
+      window.addEventListener('storage', (ev) => {
+        if (ev && (ev.key === REG_KEY || ev.key === REG_MAP_KEY || ev.key === SESSION_KEY)) {
+          render();
+        }
+      });
+
+      render();
+      setInterval(render, 1000);
+    })();
+  </script>
+</body>
+</html>
