@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OddAndEven.in — Official Updates &amp; Changelog (v1.8)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0c12;
+      --card: #16151c;
+      --line: rgba(255, 255, 255, 0.09);
+      --lime: #a3d96c;
+      --green: #81b64c;
+      --amber: #f5b83d;
+      --cyan: #5ad1e6;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 15% 0%, rgba(129, 182, 76, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(90, 209, 230, 0.1) 0%, transparent 45%),
+        linear-gradient(180deg, #121118 0%, #0d0c12 100%);
+      color: #f4f4f5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.55;
+    }
+    .font-brand {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .hero-stripes {
+      background:
+        linear-gradient(180deg, transparent 50%, var(--bg) 100%),
+        repeating-linear-gradient(90deg, rgba(129, 182, 76, 0.05) 0 64px, transparent 64px 128px);
+      border-bottom: 1px solid var(--line);
+    }
+    .version-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .version-card:hover {
+      transform: translateY(-2px);
+    }
+    .version-card-latest {
+      background: linear-gradient(165deg, rgba(28, 36, 24, 0.85) 0%, rgba(22, 21, 28, 0.96) 55%, rgba(19, 27, 36, 0.9) 100%);
+      border: 2px solid rgba(163, 217, 108, 0.45);
+      box-shadow: 0 18px 42px rgba(129, 182, 76, 0.14);
+    }
+    .feature-pill {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .chess-green-btn {
+      background: #81b64c;
+      color: #0d0c12;
+      font-weight: 800;
+      transition: all 0.12s ease;
+    }
+    .chess-green-btn:hover {
+      background: #95c95e;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Sticky Top Navigation Bar -->
+  <header class="w-full bg-[#0d0c12]/90 border-b border-white/10 px-4 sm:px-8 py-3.5 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <a href="hand_cricket.html" class="flex items-center gap-3" aria-label="Back to OddAndEven.in Arena">
+        <span class="w-10 h-10 rounded-xl bg-[#81b64c] flex items-center justify-center text-lg shadow-md">🏏</span>
+        <span class="font-brand font-bold text-lg tracking-tight leading-none">
+          <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span><span class="font-mono-num text-xs text-[#a3d96c]">.in</span>
+          <span class="block text-[11px] font-sans font-medium text-zinc-400 mt-1">Official Updates &amp; Release Notes</span>
+        </span>
+      </a>
+
+      <nav class="flex items-center gap-2 flex-wrap justify-end" aria-label="Site Navigation">
+        <span id="navPlayerBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-[#16151c] text-emerald-300 border border-white/10"></span>
+        <span class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+          v1.8 LIVE
+        </span>
+        <a href="hand_cricket.html" class="px-3.5 py-2 rounded-xl text-xs font-extrabold chess-green-btn shadow">
+          🏏 Back to Arena
+        </a>
+        <a href="events.html" class="px-3 py-2 rounded-xl text-xs font-bold bg-[#16151c] hover:bg-zinc-800 text-pink-300 border border-pink-500/30 transition">
+          🎟️ Events
+        </a>
+        <a href="mobile.html" class="px-3 py-2 rounded-xl text-xs font-bold bg-[#16151c] hover:bg-zinc-800 text-zinc-200 border border-white/10 transition">
+          📱 Mobile
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-stripes">
+    <div class="max-w-5xl mx-auto px-4 sm:px-8 pt-10 pb-12 grid lg:grid-cols-[1.35fr_1fr] gap-8 items-end">
+      <div class="space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+          <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-pulse"></span>
+          <span>CURRENT BUILD • VERSION 1.8</span>
+        </div>
+        <h1 class="font-brand text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.08] text-white">
+          What's New in the <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Hand Cricket Arena</span>
+        </h1>
+        <p class="text-sm sm:text-base text-zinc-400 max-w-xl leading-relaxed">
+          Track every major milestone from our Version 1.0 launch to Version 1.5 social multiplayer and today's massive <strong class="text-white">Version 1.8</strong> release featuring Achievements, Season 1 Events, and Cloud Sync.
+        </p>
+      </div>
+
+      <!-- Quick Version Jump Box -->
+      <aside class="rounded-2xl border border-white/10 bg-[#16151c]/90 backdrop-blur p-5 space-y-3" aria-label="Release History">
+        <div class="flex items-center justify-between">
+          <h2 class="font-brand font-bold text-xs uppercase tracking-wider text-zinc-300">Release Timeline</h2>
+          <span class="font-mono-num text-[11px] text-[#a3d96c] font-bold">3 Releases</span>
+        </div>
+        <ol class="divide-y divide-white/10 text-xs">
+          <li class="py-2.5 flex items-center justify-between gap-2">
+            <a href="#v1-8" class="font-extrabold text-white hover:text-[#a3d96c] flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-[#81b64c] text-slate-950 font-mono-num text-[10px] font-black">v1.8</span>
+              <span>Achievements, Events &amp; Cloud Sync</span>
+            </a>
+            <span class="font-mono-num text-[10px] text-emerald-300 font-bold">LATEST</span>
+          </li>
+          <li class="py-2.5 flex items-center justify-between gap-2">
+            <a href="#v1-5" class="font-semibold text-zinc-200 hover:text-amber-300 flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 font-mono-num text-[10px] font-bold">v1.5</span>
+              <span>Invite Friends &amp; Multiplayer Rooms</span>
+            </a>
+            <span class="font-mono-num text-[10px] text-zinc-400">Previous</span>
+          </li>
+          <li class="py-2.5 flex items-center justify-between gap-2">
+            <a href="#v1-0" class="font-semibold text-zinc-300 hover:text-cyan-300 flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 font-mono-num text-[10px] font-bold">v1.0</span>
+              <span>Official Website Launch &amp; Core Features</span>
+            </a>
+            <span class="font-mono-num text-[10px] text-zinc-500">Launch</span>
+          </li>
+        </ol>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Main Changelog Timeline -->
+  <main class="max-w-5xl mx-auto w-full flex-1 px-4 sm:px-8 py-10 space-y-8">
+
+    <!-- ==========================================
+         VERSION 1.8 — CURRENT RELEASE
+         ========================================== -->
+    <article id="v1-8" class="version-card version-card-latest p-6 sm:p-8 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="px-3 py-1 rounded-xl font-mono-num text-xs sm:text-sm font-black bg-[#81b64c] text-slate-950 shadow">
+            VERSION 1.8
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-emerald-500/20 text-[#a3d96c] border border-[#81b64c]/40">
+            ✨ CURRENT VERSION
+          </span>
+          <span class="text-xs font-mono-num text-zinc-400">Season 1 Major Update</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="hand_cricket.html?screen=achievements" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-400/40 transition">
+            🎖️ Open Achievements
+          </a>
+          <a href="events.html" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-400/40 transition">
+            🎟️ Open Events
+          </a>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <h2 class="font-brand text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Achievements Cabinet, Official Events, Cloud-Based Sync &amp; Top-10 Scrollable Leaderboard
+        </h2>
+        <p class="text-sm text-zinc-300 leading-relaxed">
+          Version 1.8 connects the entire OddAndEven.in ecosystem across desktop and mobile with live cloud synchronization, career progression badges, official tournament brackets, and a streamlined Top-10 + Personal Rank leaderboard.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="feature-pill space-y-1.5 border-l-4 border-l-yellow-400">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-extrabold text-white flex items-center gap-2">
+              <span>🎖️</span>
+              <span>Achievements &amp; Trophy Cabinet</span>
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300">1,000 XP</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">
+            Unlock 10 career milestones across Batting, Bowling, Ranked Elo &amp; Tournaments (from <em>Debut Cap</em> and <em>Half-Century Hero</em> to <em>Grandmaster Bowler</em> and <em>1524+ Elo Contender</em>) with live XP bars and rank titles.
+          </p>
+        </div>
+
+        <div class="feature-pill space-y-1.5 border-l-4 border-l-pink-400">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-extrabold text-white flex items-center gap-2">
+              <span>🎟️</span>
+              <span>Official Events &amp; Cups (`events.html`)</span>
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-pink-500/20 text-pink-300">LIVE IST</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">
+            Connected live with <a href="events.html" class="text-[#a3d96c] underline font-semibold">events.html</a> for the Season 1 <strong>Duo Cup · 2v2</strong> (Nov 7, 7:00 PM IST) and <strong>Solo Championship</strong> (Nov 14, 7:00 PM IST) with two-way contender registration.
+          </p>
+        </div>
+
+        <div class="feature-pill space-y-1.5 border-l-4 border-l-cyan-400">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-extrabold text-white flex items-center gap-2">
+              <span>☁️</span>
+              <span>Cloud-Based Sync Engine</span>
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">REAL-TIME</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">
+            Powered by Firebase Firestore &amp; PeerJS mesh so your encrypted player account, Global/Weekly Elo ratings, career runs, friend challenges, and live 1v1 room states stay synced across devices.
+          </p>
+        </div>
+
+        <div class="feature-pill space-y-1.5 border-l-4 border-l-[#81b64c]">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-extrabold text-white flex items-center gap-2">
+              <span>🛠️</span>
+              <span>Fix Bugs, Top-10 Leaderboard &amp; Much More</span>
+            </span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-[#81b64c]/20 text-[#a3d96c]">POLISHED</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">
+            Added a scrollable Top-10 leaderboard list with your personal rank pinned right below (e.g. <code class="text-amber-300 font-mono-num">#15 USERNAME</code>), resolved cross-tab rating reconciliation bugs, and refined mobile &amp; desktop navigation.
+          </p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ==========================================
+         VERSION 1.5 — SOCIAL & MULTIPLAYER UPDATE
+         ========================================== -->
+    <article id="v1-5" class="version-card p-6 sm:p-8 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="px-3 py-1 rounded-xl font-mono-num text-xs sm:text-sm font-black bg-amber-400 text-slate-950">
+            VERSION 1.5
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-bold bg-amber-500/15 text-amber-300 border border-amber-400/30">
+            MULTIPLAYER &amp; FRIENDS EXPANSION
+          </span>
+        </div>
+        <a href="hand_cricket.html" class="text-xs font-mono-num font-bold text-amber-300 hover:underline">
+          Launch Multiplayer →
+        </a>
+      </div>
+
+      <div class="space-y-1.5">
+        <h2 class="font-brand text-xl sm:text-2xl font-bold text-white">
+          Invite Friends, Ranked 1v1 Multiplayer Rooms, Bug Fixes &amp; Much More
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          Version 1.5 transformed the arena into a competitive social platform where players can search usernames, build a friends list, and battle in real time.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div class="feature-pill space-y-1">
+          <div class="text-xs font-extrabold text-emerald-300 flex items-center gap-1.5">
+            <span>🤝</span>
+            <span>Invite Friends &amp; Directory</span>
+          </div>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            Search any registered player by username, add them to your Friends Roster, and send instant 1v1 match challenges with a single tap.
+          </p>
+        </div>
+
+        <div class="feature-pill space-y-1">
+          <div class="text-xs font-extrabold text-purple-300 flex items-center gap-1.5">
+            <span>👥</span>
+            <span>Multiplayer Games (P1 vs P2)</span>
+          </div>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            Host or join live Room Codes that automatically lock at 2/2 players with sequential 15-second shot clocks and Ranked ±8 Elo stakes.
+          </p>
+        </div>
+
+        <div class="feature-pill space-y-1">
+          <div class="text-xs font-extrabold text-amber-300 flex items-center gap-1.5">
+            <span>🔧</span>
+            <span>Fix Bugs &amp; Much More</span>
+          </div>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            Fixed toss Odd/Even call synchronization, prevented duplicate guest connections, added Monday–Sunday Weekly Leaderboards, and improved mobile responsiveness.
+          </p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ==========================================
+         VERSION 1.0 — OFFICIAL WEBSITE LAUNCH
+         ========================================== -->
+    <article id="v1-0" class="version-card p-6 sm:p-8 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="px-3 py-1 rounded-xl font-mono-num text-xs sm:text-sm font-black bg-cyan-400 text-slate-950">
+            VERSION 1.0
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
+            FOUNDATION RELEASE
+          </span>
+        </div>
+        <span class="text-xs font-mono-num text-zinc-400">Inaugural Launch</span>
+      </div>
+
+      <div class="space-y-1.5">
+        <h2 class="font-brand text-xl sm:text-2xl font-bold text-white">
+          Official Website Launch &amp; Core Hand Cricket Arena Features
+        </h2>
+        <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          The foundation of OddAndEven.in — bringing classic 1–10 Hand Cricket to the web with a fast, tactile stadium interface.
+        </p>
+      </div>
+
+      <!-- Two Core Points for Version 1 as requested -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="feature-pill space-y-1.5 border-l-4 border-l-cyan-400">
+          <div class="text-sm font-extrabold text-white flex items-center gap-2">
+            <span>🚀</span>
+            <span>1. Official Website Launch (`OddAndEven.in`)</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">
+            Launched the official OddAndEven.in Hand Cricket web portal featuring encrypted Country Code + 5-Digit PIN player accounts, interactive HTML5 stadium canvas hand-clash animations, and synthesized Web Audio sound effects.
+          </p>
+        </div>
+
+        <div class="feature-pill space-y-1.5 border-l-4 border-l-emerald-400">
+          <div class="text-sm font-extrabold text-white flex items-center gap-2">
+            <span>🏏</span>
+            <span>2. Core Arena Features &amp; Adaptive AI Bots</span>
+          </div>
+          <p class="text-xs text-zinc-300 leading-relaxed">
+            Introduced complete Toss + 2-Innings target chase rules, a 15-second turn shot clock, 4 Elo-tiered AI bots (Sunny 450 Elo, Rohan 1100 Elo, Vikram 1850 Elo &amp; Apex Oracle 2650 Elo), and live Hype, Tactical &amp; Classic commentary feeds.
+          </p>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-white/10 bg-[#0a090e] px-4 sm:px-8 py-4 mt-auto">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+      <div class="flex items-center gap-2">
+        <span class="font-brand font-extrabold text-zinc-200">OddAndEven.in</span>
+        <span>— Official Hand Cricket Arena</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="hand_cricket.html" class="text-[#a3d96c] font-bold hover:underline">Play Arena</a>
+        <span>•</span>
+        <a href="events.html" class="text-zinc-300 hover:underline">Events</a>
+        <span>•</span>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+          Version 1.8
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      const SESSION_KEY = 'oddandeven_active_session_v1';
+      const SIGNED_OUT_KEY = 'oddandeven_signed_out_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const raw = decodeURIComponent(escape(atob(parts[2])));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      try {
+        if (localStorage.getItem(SIGNED_OUT_KEY) !== '1') {
+          const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+          const dec = raw ? decryptPayload(raw) : null;
+          const badge = document.getElementById('navPlayerBadge');
+          if (badge && dec && dec.username) {
+            badge.textContent = (dec.countryFlag || '🇮🇳') + ' ' + dec.username + ' (' + (dec.countryCode || '+91') + ')';
+            badge.classList.remove('hidden');
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>
