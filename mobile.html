@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -9,16 +8,13 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
-
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: #211f1c;
@@ -28,27 +24,22 @@
       overflow-x: hidden;
       line-height: 1.4;
     }
-
     .font-mono-num {
       font-family: 'JetBrains Mono', monospace;
     }
-
     .font-brand {
       font-family: 'Space Grotesk', 'Inter', sans-serif;
     }
-
     .glass-card {
       background: #2b2824;
       border: 1px solid #423e39;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
-
     .glass-card-active {
       background: #332f2a;
       border: 2px solid #81b64c;
       box-shadow: 0 4px 18px rgba(129, 182, 76, 0.25);
     }
-
     .chess-green-btn {
       background: #81b64c;
       color: #ffffff;
@@ -56,12 +47,10 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
       transition: all 0.1s ease;
     }
-
     .chess-green-btn:active:not(:disabled) {
       transform: translateY(2px);
       border-bottom-width: 1px;
     }
-
     .num-btn {
       background: #36322d;
       border: 1px solid #4a453e;
@@ -69,7 +58,6 @@
       color: #ffffff;
       transition: all 0.08s ease;
     }
-
     .num-btn:active:not(:disabled) {
       background: #81b64c;
       border-color: #95c95e;
@@ -77,46 +65,67 @@
       transform: translateY(2px);
       border-bottom-width: 1px;
     }
-
     .num-btn:disabled {
       opacity: 0.35;
       cursor: not-allowed;
     }
-
     .drawer-backdrop {
       background: rgba(0, 0, 0, 0.78);
       backdrop-filter: blur(4px);
     }
-
     .drawer-transition {
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
     .drawer-open {
       transform: translateX(0%) !important;
     }
-
+    @keyframes slideDown {
+      0% { transform: translateY(-100%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-down {
+      animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
     ::-webkit-scrollbar {
       width: 4px;
       height: 4px;
     }
-
     ::-webkit-scrollbar-thumb {
       background: #47433d;
       border-radius: 999px;
     }
   </style>
 </head>
-
 <body class="min-h-screen flex flex-col bg-[#211f1c] text-slate-100 p-0 m-0 overflow-x-hidden">
 
+  <!-- LIVE FRIEND INVITATION POPUP BANNER (Appears instantly on P2 screen when challenged) -->
+  <div id="friendInviteBanner" class="fixed top-3 inset-x-3 z-50 hidden animate-slide-down">
+    <div class="glass-card rounded-2xl p-3.5 border-2 border-purple-500 shadow-2xl bg-[#1c1824] flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-400/40 flex items-center justify-center text-lg shrink-0">
+          ⚔️
+        </div>
+        <div class="min-w-0">
+          <div id="inviteBannerTitle" class="text-xs font-black text-white truncate">MATCH INVITATION</div>
+          <div id="inviteBannerSub" class="text-[11px] text-purple-200 truncate">Friend is inviting you to play 1v1!</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="btnAcceptFriendInvite" type="button" class="px-3 py-1.5 rounded-xl font-black text-xs bg-purple-600 hover:bg-purple-500 text-white shadow">
+          Accept &amp; Join →
+        </button>
+        <button id="btnDismissFriendInvite" type="button" class="w-7 h-7 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- COMPACT MOBILE HEADER (Hamburger + Brand + Match Status + Controls) -->
-  <header
-    class="w-full bg-[#181715] border-b border-[#36332e] px-3 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-md">
+  <header class="w-full bg-[#181715] border-b border-[#36332e] px-3 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-md">
     <div class="flex items-center gap-2">
       <!-- Hamburger Menu Button to open Left Navigation Sidebar -->
-      <button id="btnOpenSidebar" type="button" aria-label="Open Navigation Menu"
-        class="w-9 h-9 rounded-xl bg-[#262420] border border-[#3d3a34] flex items-center justify-center text-slate-200 active:scale-95 transition">
+      <button id="btnOpenSidebar" type="button" aria-label="Open Navigation Menu" class="w-9 h-9 rounded-xl bg-[#262420] border border-[#3d3a34] flex items-center justify-center text-slate-200 active:scale-95 transition">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
@@ -125,29 +134,23 @@
       <!-- Brand Logo -->
       <div class="flex items-baseline gap-1">
         <span class="font-brand font-black text-base text-white tracking-tight flex items-baseline">
-          <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span
-            class="text-cyan-400">Even</span>
+          <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span>
         </span>
-        <span
-          class="text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">M</span>
+        <span class="text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">M</span>
       </div>
     </div>
 
     <!-- Active Mode & Header Quick Toggles -->
     <div class="flex items-center gap-1.5">
-      <span id="phaseBadge"
-        class="px-2 py-0.5 text-[10px] font-mono-num font-extrabold uppercase rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+      <span id="phaseBadge" class="px-2 py-0.5 text-[10px] font-mono-num font-extrabold uppercase rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
         Toss Phase
       </span>
 
-      <button id="btnMute" type="button"
-        class="w-8 h-8 rounded-lg bg-[#272521] border border-[#3d3a34] flex items-center justify-center text-sm"
-        aria-label="Toggle Sound">
+      <button id="btnMute" type="button" class="w-8 h-8 rounded-lg bg-[#272521] border border-[#3d3a34] flex items-center justify-center text-sm" aria-label="Toggle Sound">
         <span id="muteIcon">🔊</span>
       </button>
 
-      <button id="btnQuickRestart" type="button"
-        class="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-rose-500/15 text-rose-300 border border-rose-500/30 active:scale-95 transition">
+      <button id="btnQuickRestart" type="button" class="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-rose-500/15 text-rose-300 border border-rose-500/30 active:scale-95 transition">
         ↺ Reset
       </button>
     </div>
@@ -157,8 +160,7 @@
   <div id="drawerBackdrop" class="fixed inset-0 drawer-backdrop z-50 hidden transition-opacity"></div>
 
   <!-- LEFT SIDEBAR DRAWER (Play Bot, Multiplayer, Leaderboard, Friends, Events, Account) -->
-  <aside id="mobileDrawer"
-    class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#161513] border-r border-[#36332e] z-50 transform -translate-x-full drawer-transition flex flex-col justify-between shadow-2xl">
+  <aside id="mobileDrawer" class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#161513] border-r border-[#36332e] z-50 transform -translate-x-full drawer-transition flex flex-col justify-between shadow-2xl">
     <div class="p-4 space-y-4 overflow-y-auto flex-1">
       <!-- Drawer Header with Close Button -->
       <div class="flex items-center justify-between pb-3 border-b border-[#2d2a25]">
@@ -171,16 +173,14 @@
             <div class="text-[9px] font-bold text-[#81b64c] uppercase tracking-wider">Navigation Rail</div>
           </div>
         </div>
-        <button id="btnCloseSidebar" type="button"
-          class="w-8 h-8 rounded-lg bg-[#24221f] text-slate-400 hover:text-white flex items-center justify-center">
+        <button id="btnCloseSidebar" type="button" class="w-8 h-8 rounded-lg bg-[#24221f] text-slate-400 hover:text-white flex items-center justify-center">
           ✕
         </button>
       </div>
 
       <!-- Navigation Mode Buttons -->
       <div class="space-y-1.5">
-        <button id="sideNavPitch" type="button"
-          class="w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40">
+        <button id="sideNavPitch" type="button" class="w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40">
           <span class="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-sm">🏏</span>
           <div>
             <div>Active Pitch</div>
@@ -188,8 +188,7 @@
           </div>
         </button>
 
-        <button id="sideNavBot" type="button"
-          class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+        <button id="sideNavBot" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
           <span class="w-7 h-7 rounded-lg bg-cyan-500/15 flex items-center justify-center text-sm">🤖</span>
           <div class="min-w-0">
             <div class="font-extrabold text-white">Play Bot (250–2800 Elo)</div>
@@ -197,8 +196,7 @@
           </div>
         </button>
 
-        <button id="sideNavMultiplayer" type="button"
-          class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+        <button id="sideNavMultiplayer" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
           <span class="w-7 h-7 rounded-lg bg-purple-500/15 flex items-center justify-center text-sm">👥</span>
           <div class="min-w-0">
             <div class="font-extrabold text-white">Play Multiplayer (1v1)</div>
@@ -206,8 +204,7 @@
           </div>
         </button>
 
-        <button id="sideNavLeaderboard" type="button"
-          class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+        <button id="sideNavLeaderboard" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
           <span class="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center text-sm">🏆</span>
           <div class="min-w-0">
             <div class="font-extrabold text-white">Leaderboard</div>
@@ -215,21 +212,18 @@
           </div>
         </button>
 
-        <button id="sideNavFriends" type="button"
-          class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
+        <button id="sideNavFriends" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
           <span class="w-7 h-7 rounded-lg bg-blue-500/15 flex items-center justify-center text-sm">🤝</span>
           <div class="min-w-0 flex-1 flex items-center justify-between">
             <div>
               <div class="font-extrabold text-white">Friends &amp; Rivals</div>
               <div class="text-[9px] text-blue-300 font-normal">Find &amp; Add Players</div>
             </div>
-            <span id="sideNavFriendsCountBadge"
-              class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30">0</span>
+            <span id="sideNavFriendsCountBadge" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30">0</span>
           </div>
         </button>
 
-        <button id="sideNavEvents" type="button"
-          class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+        <button id="sideNavEvents" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
           <span class="w-7 h-7 rounded-lg bg-pink-500/20 flex items-center justify-center text-sm">🎟️</span>
           <div class="min-w-0">
             <div class="font-extrabold text-white">Events &amp; Cups</div>
@@ -237,8 +231,7 @@
           </div>
         </button>
 
-        <button id="sideNavShowcase" type="button"
-          class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
+        <button id="sideNavShowcase" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
           <span class="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-sm">✨</span>
           <div class="min-w-0">
             <div class="font-extrabold text-white">Game Hub</div>
@@ -249,13 +242,11 @@
 
       <!-- Quick Action Utilities -->
       <div class="pt-2 border-t border-[#2d2a25] space-y-1.5">
-        <button id="btnRules" type="button"
-          class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-[#1f1d1a] text-slate-300 border border-[#36332e] flex items-center justify-between">
+        <button id="btnRules" type="button" class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-[#1f1d1a] text-slate-300 border border-[#36332e] flex items-center justify-between">
           <span>📖 Official Rules</span>
           <span>→</span>
         </button>
-        <button id="btnSwitchToDesktop" type="button"
-          class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-[#1f1d1a] text-slate-400 border border-[#36332e] flex items-center justify-between">
+        <button id="btnSwitchToDesktop" type="button" class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-[#1f1d1a] text-slate-400 border border-[#36332e] flex items-center justify-between">
           <span>🖥️ Open Desktop Layout</span>
           <span>↗</span>
         </button>
@@ -296,12 +287,10 @@
       </div>
 
       <div class="flex items-center gap-1.5 pt-1">
-        <button id="btnOpenAuthModal" type="button"
-          class="flex-1 py-1.5 rounded-lg text-[10px] font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+        <button id="btnOpenAuthModal" type="button" class="flex-1 py-1.5 rounded-lg text-[10px] font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
           Account
         </button>
-        <button id="btnHeaderSignOut" type="button"
-          class="py-1.5 px-3 rounded-lg text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/35">
+        <button id="btnHeaderSignOut" type="button" class="py-1.5 px-3 rounded-lg text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/35">
           Sign Out
         </button>
       </div>
@@ -317,8 +306,7 @@
     <section id="centerShowcasePanel" class="hidden glass-card rounded-2xl p-4 space-y-3">
       <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
         <h3 class="font-extrabold text-sm text-white">Game Hub</h3>
-        <button id="btnToggleShowcaseCompact" type="button" class="text-xs text-emerald-400 font-bold">← Back to
-          Pitch</button>
+        <button id="btnToggleShowcaseCompact" type="button" class="text-xs text-emerald-400 font-bold">← Back to Pitch</button>
       </div>
       <div class="grid grid-cols-2 gap-2">
         <button id="cardQuickBot" type="button" class="p-3 rounded-xl bg-[#1e1c19] border border-[#3d3a35] text-left">
@@ -344,23 +332,18 @@
           </h3>
           <p class="text-[10px] text-amber-300">⚠️ Practice Match: Rating changes are frozen (+0 Elo)</p>
         </div>
-        <button id="btnBackFromBotSetup" type="button"
-          class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">←
-          Pitch</button>
+        <button id="btnBackFromBotSetup" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
       </div>
 
       <!-- 4 Elo Tiers matching bots.html -->
       <div class="space-y-2">
         <!-- 1. BASIC BOT (250–700 Elo) -->
-        <button id="btnBotRookie" type="button"
-          class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
+        <button id="btnBotRookie" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
           <div class="flex items-center justify-between">
-            <span
-              class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               BASIC TIER • 250–700 ELO
             </span>
-            <span
-              class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">450</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">450</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">🌱</span>
@@ -369,20 +352,16 @@
               <div class="text-[10px] text-emerald-300/90">Very Simple • Lets You Score Big</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">Plays simple, predictable hands so you can smash
-            boundaries and build high scores!</p>
+          <p class="text-[10px] text-slate-400 leading-tight">Plays simple, predictable hands so you can smash boundaries and build high scores!</p>
         </button>
 
         <!-- 2. INTERMEDIATE BOT (700–1400 Elo) -->
-        <button id="btnBotTactician" type="button"
-          class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border-2 border-cyan-400 shadow-md transition space-y-1">
+        <button id="btnBotTactician" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border-2 border-cyan-400 shadow-md transition space-y-1">
           <div class="flex items-center justify-between">
-            <span
-              class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
               INTERMEDIATE • 700–1400 ELO
             </span>
-            <span
-              class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">1100</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">1100</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">⚡</span>
@@ -391,20 +370,16 @@
               <div class="text-[10px] text-cyan-300/90">Balanced • Solid Attack &amp; Defense</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">Mixes middle &amp; high shots while watching for your
-            repeated numbers.</p>
+          <p class="text-[10px] text-slate-400 leading-tight">Mixes middle &amp; high shots while watching for your repeated numbers.</p>
         </button>
 
         <!-- 3. ADVANCED BOT (1400–2200 Elo) -->
-        <button id="btnBotAggressor" type="button"
-          class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
+        <button id="btnBotAggressor" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
           <div class="flex items-center justify-between">
-            <span
-              class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
               ADVANCED • 1400–2200 ELO
             </span>
-            <span
-              class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">1850</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">1850</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">🧠</span>
@@ -413,20 +388,16 @@
               <div class="text-[10px] text-amber-300/90">Very Difficult • Markov Reader</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">1st-Order Markov pattern reader that spots your number
-            transition habits.</p>
+          <p class="text-[10px] text-slate-400 leading-tight">1st-Order Markov pattern reader that spots your number transition habits.</p>
         </button>
 
         <!-- 4. MASTER BOT (2200–2800 Elo) -->
-        <button id="btnBotWall" type="button"
-          class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
+        <button id="btnBotWall" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
           <div class="flex items-center justify-between">
-            <span
-              class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
               MASTER TIER • 2200–2800 ELO
             </span>
-            <span
-              class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">2650</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">2650</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">👑</span>
@@ -435,19 +406,16 @@
               <div class="text-[10px] text-rose-300/90">Toughest Boss • N-Gram &amp; EV Optimizer</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">Multi-order N-Gram reader &amp; Expected-Value optimizer
-            against the target!</p>
+          <p class="text-[10px] text-slate-400 leading-tight">Multi-order N-Gram reader &amp; Expected-Value optimizer against the target!</p>
         </button>
       </div>
 
       <!-- Commentary Broadcast Style selection from bots.html -->
       <div class="p-2.5 rounded-xl bg-[#161513] border border-[#35322d] space-y-1.5">
-        <label for="botSetupCommentaryStyle"
-          class="block text-[10px] font-bold uppercase tracking-wider text-amber-300">
+        <label for="botSetupCommentaryStyle" class="block text-[10px] font-bold uppercase tracking-wider text-amber-300">
           Commentary Broadcast Flavor
         </label>
-        <select id="botSetupCommentaryStyle"
-          class="w-full px-2.5 py-1.5 rounded-lg bg-[#22201d] border border-[#3d3a34] text-white text-xs font-bold focus:outline-none focus:border-amber-400">
+        <select id="botSetupCommentaryStyle" class="w-full px-2.5 py-1.5 rounded-lg bg-[#22201d] border border-[#3d3a34] text-white text-xs font-bold focus:outline-none focus:border-amber-400">
           <option value="HYPE" selected>🔥 Stadium Hype Broadcast (Energetic)</option>
           <option value="TACTICAL">🧠 Pro Analyst &amp; Mind-Games (Tactical)</option>
           <option value="CLASSIC">📻 Classic Crisp Cricket Feed</option>
@@ -469,10 +437,8 @@
         <button id="btnBackFromMpSetup" type="button" class="text-xs text-emerald-400 font-bold">← Pitch</button>
       </div>
 
-      <div id="inlineLobbyMatchupCard"
-        class="p-3 rounded-xl bg-[#181715] border border-[#383530] space-y-2 text-center">
-        <span id="inlineNetStatusBadge"
-          class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+      <div id="inlineLobbyMatchupCard" class="p-3 rounded-xl bg-[#181715] border border-[#383530] space-y-2 text-center">
+        <span id="inlineNetStatusBadge" class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
           Create or Join a Room
         </span>
         <div class="grid grid-cols-2 gap-2 text-xs">
@@ -488,29 +454,23 @@
       </div>
 
       <div class="space-y-2">
-        <button id="btnInlineCreateRoom" type="button"
-          class="w-full py-2.5 rounded-xl font-extrabold text-xs bg-emerald-600 text-white">
+        <button id="btnInlineCreateRoom" type="button" class="w-full py-2.5 rounded-xl font-extrabold text-xs bg-emerald-600 text-white">
           ⚡ Generate Room Code (Host)
         </button>
         <div id="inlineHostCodeDisplay" class="hidden text-center space-y-1">
           <span class="text-[10px] text-slate-400">Share Code:</span>
           <div class="flex items-center justify-center gap-2">
-            <span id="inlineHostCodeValue"
-              class="font-mono-num text-lg font-black text-amber-300 bg-slate-950 px-3 py-1 rounded-lg">------</span>
-            <button id="btnInlineCopyCode" type="button"
-              class="px-2.5 py-1 rounded-lg bg-slate-800 text-xs font-bold text-slate-200">Copy</button>
+            <span id="inlineHostCodeValue" class="font-mono-num text-lg font-black text-amber-300 bg-slate-950 px-3 py-1 rounded-lg">------</span>
+            <button id="btnInlineCopyCode" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 text-xs font-bold text-slate-200">Copy</button>
           </div>
         </div>
         <div class="flex gap-1.5 pt-1">
-          <input id="inlineInputJoinCode" type="text" maxlength="10" placeholder="Enter Room Code"
-            class="w-full px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num text-xs uppercase" />
-          <button id="btnInlineJoinRoom" type="button"
-            class="px-4 py-2 rounded-xl font-bold text-xs bg-cyan-600 text-white shrink-0">Join</button>
+          <input id="inlineInputJoinCode" type="text" maxlength="10" placeholder="Enter Room Code" class="w-full px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num text-xs uppercase" />
+          <button id="btnInlineJoinRoom" type="button" class="px-4 py-2 rounded-xl font-bold text-xs bg-cyan-600 text-white shrink-0">Join</button>
         </div>
       </div>
 
-      <button id="btnLaunchMpMatch" type="button" disabled
-        class="w-full py-3 rounded-xl font-black text-xs bg-indigo-600 disabled:opacity-40 text-white">
+      <button id="btnLaunchMpMatch" type="button" disabled class="w-full py-3 rounded-xl font-black text-xs bg-indigo-600 disabled:opacity-40 text-white">
         START MULTIPLAYER MATCH →
       </button>
     </section>
@@ -525,26 +485,19 @@
           </h3>
           <p id="lbModeSubNote" class="text-[10px] text-amber-300">Worldwide Standings • Real Players Only</p>
         </div>
-        <button id="btnBackFromLeaderboard" type="button"
-          class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">←
-          Pitch</button>
+        <button id="btnBackFromLeaderboard" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
       </div>
 
       <!-- 3-Way Category Switches: Global | Weekly (Mon-Sun) | Total Runs -->
       <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#181715] text-[11px] font-bold border border-[#383530]">
-        <button id="btnLbSwitchGlobal" type="button" class="py-1.5 rounded-lg bg-[#81b64c] text-white transition">🌍
-          Global</button>
-        <button id="btnLbSwitchWeekly" type="button"
-          class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">📅 Weekly</button>
-        <button id="btnLbSwitchRuns" type="button"
-          class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">🏏 Runs</button>
+        <button id="btnLbSwitchGlobal" type="button" class="py-1.5 rounded-lg bg-[#81b64c] text-white transition">🌍 Global</button>
+        <button id="btnLbSwitchWeekly" type="button" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">📅 Weekly</button>
+        <button id="btnLbSwitchRuns" type="button" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">🏏 Runs</button>
       </div>
 
       <!-- Weekly Active Window Banner -->
-      <div id="lbWeeklyWindowBanner"
-        class="p-2 rounded-xl bg-[#181715] border border-[#383530] flex items-center justify-between text-[10px]">
-        <span class="px-1.5 py-0.5 rounded bg-[#81b64c]/20 text-[#a3d96c] font-mono-num font-bold uppercase">MON –
-          SUN</span>
+      <div id="lbWeeklyWindowBanner" class="p-2 rounded-xl bg-[#181715] border border-[#383530] flex items-center justify-between text-[10px]">
+        <span class="px-1.5 py-0.5 rounded bg-[#81b64c]/20 text-[#a3d96c] font-mono-num font-bold uppercase">MON – SUN</span>
         <span id="lbWeeklyRangeText" class="font-semibold text-slate-300 truncate">Current Week Cycle</span>
       </div>
 
@@ -569,8 +522,7 @@
       </div>
 
       <!-- Column Labels -->
-      <div
-        class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">
+      <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">
         <span id="lbTableLeftHeader">Player Standings</span>
         <span id="lbTableRightHeader">Score / Elo</span>
       </div>
@@ -587,31 +539,31 @@
             <span>🤝</span>
             <span>Friends &amp; Challengers</span>
           </h3>
-          <p class="text-[10px] text-blue-300">Search registered usernames and build your rival roster</p>
+          <p class="text-[10px] text-blue-300">Search registered usernames and invite friends directly</p>
         </div>
-        <button id="btnBackFromFriends" type="button"
-          class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">←
-          Pitch</button>
+        <button id="btnBackFromFriends" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
       </div>
 
       <!-- Search Bar -->
       <div class="space-y-1">
-        <label for="inputSearchFriendUsername"
-          class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        <label for="inputSearchFriendUsername" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
           Search Registered Player Username
         </label>
         <div class="relative">
           <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
-          <input id="inputSearchFriendUsername" type="text" placeholder="Type player tag (e.g. VIRAT_18)..."
+          <input 
+            id="inputSearchFriendUsername" 
+            type="text" 
+            placeholder="Type player tag (e.g. VIRAT_18)..." 
             maxlength="16"
-            class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-xs font-mono-num font-extrabold uppercase text-white placeholder:normal-case placeholder:font-normal placeholder:text-slate-500 focus:outline-none focus:border-blue-400 transition" />
+            class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-xs font-mono-num font-extrabold uppercase text-white placeholder:normal-case placeholder:font-normal placeholder:text-slate-500 focus:outline-none focus:border-blue-400 transition"
+          />
         </div>
       </div>
 
       <!-- Search Results Area -->
       <div id="friendSearchResultsArea" class="hidden space-y-1.5 p-2 rounded-xl bg-[#151412] border border-[#33302b]">
-        <div
-          class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
+        <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
           <span>Search Results</span>
           <span id="friendSearchResultsCount" class="text-blue-300 font-mono-num">0 found</span>
         </div>
@@ -624,8 +576,7 @@
           <span>⭐</span>
           <span>My Friends Roster</span>
         </span>
-        <span id="myFriendsCountPill"
-          class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+        <span id="myFriendsCountPill" class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
           0 Friends
         </span>
       </div>
@@ -644,8 +595,7 @@
       </div>
       <div class="p-3 rounded-xl bg-[#191816] border border-pink-500/30 text-xs space-y-1">
         <div class="font-black text-pink-300">OddAndEven.in Country Clash</div>
-        <p class="text-slate-400 text-[11px]">Compete with players worldwide and accumulate runs under your username!
-        </p>
+        <p class="text-slate-400 text-[11px]">Compete with players worldwide and accumulate runs under your username!</p>
       </div>
     </section>
 
@@ -656,8 +606,7 @@
       <section class="glass-card rounded-2xl p-3 space-y-2 shrink-0">
         <!-- Status & Target Equation -->
         <div class="flex items-center justify-between text-[11px] font-mono-num">
-          <span id="inningsLabel"
-            class="px-2 py-0.5 rounded-md font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+          <span id="inningsLabel" class="px-2 py-0.5 rounded-md font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
             TOSS PHASE
           </span>
           <div class="text-right">
@@ -669,12 +618,10 @@
         <!-- 2-Box Head-to-Head Comparison -->
         <div class="grid grid-cols-2 gap-2">
           <!-- Player 1 Card -->
-          <div id="userScoreCard"
-            class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
+          <div id="userScoreCard" class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
             <div class="flex items-center justify-between text-[10px]">
               <span id="p1CardTitle" class="font-extrabold text-emerald-300 truncate">YOU</span>
-              <span id="userRoleBadge"
-                class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BAT</span>
+              <span id="userRoleBadge" class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BAT</span>
             </div>
             <div class="flex items-baseline justify-between mt-1">
               <div id="userMainScore" class="text-3xl font-black font-mono-num text-white">0</div>
@@ -687,12 +634,10 @@
           </div>
 
           <!-- Player 2 / Opponent Card -->
-          <div id="aiScoreCard"
-            class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
+          <div id="aiScoreCard" class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
             <div class="flex items-center justify-between text-[10px]">
               <span id="p2CardTitle" class="font-extrabold text-cyan-300 truncate">OPPONENT</span>
-              <span id="aiRoleBadge"
-                class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BOWL</span>
+              <span id="aiRoleBadge" class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BOWL</span>
             </div>
             <div class="flex items-baseline justify-between mt-1">
               <div id="aiMainScore" class="text-3xl font-black font-mono-num text-white">0</div>
@@ -706,8 +651,7 @@
         </div>
 
         <!-- Live Outcome Banner -->
-        <div id="turnOutcomeBanner"
-          class="p-1.5 rounded-xl bg-[#171613] border border-[#33302b] text-[11px] font-semibold text-slate-300 text-center truncate">
+        <div id="turnOutcomeBanner" class="p-1.5 rounded-xl bg-[#171613] border border-[#33302b] text-[11px] font-semibold text-slate-300 text-center truncate">
           Select Odd or Even to start the Toss!
         </div>
       </section>
@@ -725,8 +669,7 @@
           <span>⏱️</span>
           <span id="timerStatusTitle" class="font-bold text-slate-300 truncate">15s Turn Clock</span>
         </div>
-        <span id="timerDigitalDisplay"
-          class="px-2.5 py-0.5 rounded-lg font-black text-xs bg-[#12110f] text-[#81b64c] border border-[#3d3a34]">
+        <span id="timerDigitalDisplay" class="px-2.5 py-0.5 rounded-lg font-black text-xs bg-[#12110f] text-[#81b64c] border border-[#3d3a34]">
           00:15
         </span>
       </div>
@@ -741,20 +684,17 @@
               <span>🪙</span>
               <span>Toss Decider</span>
             </span>
-            <span id="tossCallIndicator"
-              class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
+            <span id="tossCallIndicator" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
               Selected Call: ODD
             </span>
           </div>
 
           <!-- Odd / Even Toggle Buttons -->
           <div class="grid grid-cols-2 gap-2">
-            <button id="btnCallOdd" type="button"
-              class="py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow">
+            <button id="btnCallOdd" type="button" class="py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow">
               ⚡ CALL ODD
             </button>
-            <button id="btnCallEven" type="button"
-              class="py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]">
+            <button id="btnCallEven" type="button" class="py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]">
               ⚖️ CALL EVEN
             </button>
           </div>
@@ -769,8 +709,7 @@
 
         <!-- VIEW 2: TOSS DECISION (Bat or Bowl Selection) -->
         <div id="viewTossDecision" class="hidden glass-card rounded-2xl p-3.5 space-y-2.5 text-center">
-          <span id="tossWinnerTag"
-            class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+          <span id="tossWinnerTag" class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
             YOU WON THE TOSS!
           </span>
           <div id="tossMathSummary" class="text-xs font-mono-num text-slate-300">
@@ -781,21 +720,18 @@
           </p>
 
           <div id="userTossChoiceButtons" class="grid grid-cols-2 gap-2 pt-1">
-            <button id="btnChooseBat" type="button"
-              class="py-3 rounded-xl font-extrabold text-xs chess-green-btn flex items-center justify-center gap-1.5">
+            <button id="btnChooseBat" type="button" class="py-3 rounded-xl font-extrabold text-xs chess-green-btn flex items-center justify-center gap-1.5">
               <span>🏏</span>
               <span>BAT FIRST</span>
             </button>
-            <button id="btnChooseBowl" type="button"
-              class="py-3 rounded-xl font-extrabold text-xs bg-cyan-600 text-white rounded-xl shadow border-b-4 border-cyan-800 flex items-center justify-center gap-1.5">
+            <button id="btnChooseBowl" type="button" class="py-3 rounded-xl font-extrabold text-xs bg-cyan-600 text-white rounded-xl shadow border-b-4 border-cyan-800 flex items-center justify-center gap-1.5">
               <span>⚾</span>
               <span>BOWL FIRST</span>
             </button>
           </div>
 
           <div id="aiTossChoiceContinue" class="hidden pt-1">
-            <button id="btnStartAfterAiToss" type="button"
-              class="w-full py-3 rounded-xl font-black text-xs chess-green-btn">
+            <button id="btnStartAfterAiToss" type="button" class="w-full py-3 rounded-xl font-black text-xs chess-green-btn">
               START 1ST INNINGS →
             </button>
           </div>
@@ -803,8 +739,7 @@
 
         <!-- VIEW 3: ACTIVE GAMEPLAY INNINGS (Keys 1–10) -->
         <div id="viewGameplay" class="space-y-1.5">
-          <div
-            class="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div class="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             <span id="gameplayHeading">Pick Your Hand (1–10)</span>
             <span id="gameplayRoleNotice" class="text-emerald-400">Batting</span>
           </div>
@@ -815,16 +750,14 @@
 
         <!-- VIEW 4: INNINGS BREAK -->
         <div id="viewInningsBreak" class="hidden glass-card rounded-2xl p-4 space-y-2 text-center">
-          <span
-            class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/35">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/35">
             End of 1st Innings
           </span>
           <h3 id="breakHeadline" class="text-lg font-black text-white">Total: 42 Runs</h3>
           <p id="breakTargetExplanation" class="text-xs text-amber-300 font-bold">
             Target to chase in 2nd Innings: 43 Runs
           </p>
-          <button id="btnStartSecondInnings" type="button"
-            class="w-full py-3 mt-1 rounded-xl font-black text-xs chess-green-btn">
+          <button id="btnStartSecondInnings" type="button" class="w-full py-3 mt-1 rounded-xl font-black text-xs chess-green-btn">
             START 2ND INNINGS (CHASE) →
           </button>
         </div>
@@ -835,8 +768,7 @@
           <p id="gameOverMargin" class="text-xs text-slate-300"></p>
 
           <!-- Rating Outcome Box: strictly displays that bot matches freeze Elo -->
-          <div id="gameOverRatingBox"
-            class="p-2.5 rounded-xl bg-[#141311] border border-[#3d3a35] text-xs font-mono-num text-left">
+          <div id="gameOverRatingBox" class="p-2.5 rounded-xl bg-[#141311] border border-[#3d3a35] text-xs font-mono-num text-left">
             <!-- Dynamic rating feedback -->
           </div>
 
@@ -862,14 +794,10 @@
         <button id="btnCloseRules" class="text-slate-400 font-bold p-1">✕</button>
       </div>
       <div class="space-y-2 text-xs text-slate-300 leading-relaxed">
-        <p><strong>1. Toss:</strong> Call Odd or Even and pick a number (1–10). If the sum matches your call, you choose
-          to Bat or Bowl first.</p>
-        <p><strong>2. Scoring:</strong> Both players pick numbers (1–10). If numbers are different, the batter scores
-          their runs. If numbers match exactly, the batter is <strong>OUT!</strong></p>
-        <p><strong>3. The Chase:</strong> In Innings 2, roles swap. If the chasing team reaches the target, they win!
-        </p>
-        <p><strong>4. Ratings:</strong> Multiplayer matches earn or lose ±8 Elo. Matches against bots are <strong>Casual
-            Practice (Ratings Frozen)</strong>!</p>
+        <p><strong>1. Toss:</strong> Call Odd or Even and pick a number (1–10). If the sum matches your call, you choose to Bat or Bowl first.</p>
+        <p><strong>2. Scoring:</strong> Both players pick numbers (1–10). If numbers are different, the batter scores their runs. If numbers match exactly, the batter is <strong>OUT!</strong></p>
+        <p><strong>3. The Chase:</strong> In Innings 2, roles swap. If the chasing team reaches the target, they win!</p>
+        <p><strong>4. Ratings:</strong> Multiplayer matches earn or lose ±8 Elo. Matches against bots are <strong>Casual Practice (Ratings Frozen)</strong>!</p>
       </div>
       <button id="btnGotItRules" class="w-full py-2.5 rounded-xl font-bold text-xs chess-green-btn">Got It!</button>
     </div>
@@ -893,14 +821,12 @@
       <div class="space-y-2 text-xs">
         <div>
           <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Username</label>
-          <input id="modalInputUsername" type="text" maxlength="16" placeholder="e.g. VIRAT_18"
-            class="w-full px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-extrabold uppercase" />
+          <input id="modalInputUsername" type="text" maxlength="16" placeholder="e.g. VIRAT_18" class="w-full px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-extrabold uppercase" />
         </div>
         <div>
           <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Country &amp; 5-Digit PIN</label>
           <div class="grid grid-cols-12 gap-1.5">
-            <select id="modalSelectCountry"
-              class="col-span-5 px-2 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white text-[11px] font-bold">
+            <select id="modalSelectCountry" class="col-span-5 px-2 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white text-[11px] font-bold">
               <option value="+91" data-flag="🇮🇳" selected>🇮🇳 +91 (IN)</option>
               <option value="+1" data-flag="🇺🇸">🇺🇸 +1 (US)</option>
               <option value="+44" data-flag="🇬🇧">🇬🇧 +44 (UK)</option>
@@ -912,8 +838,7 @@
               <option value="+880" data-flag="🇧🇩">🇧🇩 +880 (BD)</option>
               <option value="+977" data-flag="🇳🇵">🇳🇵 +977 (NP)</option>
             </select>
-            <input id="modalInputPin5" type="password" inputmode="numeric" maxlength="5" placeholder="•••••"
-              class="col-span-7 px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num font-black tracking-widest" />
+            <input id="modalInputPin5" type="password" inputmode="numeric" maxlength="5" placeholder="•••••" class="col-span-7 px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num font-black tracking-widest" />
           </div>
         </div>
       </div>
@@ -961,7 +886,7 @@
             if (AudioCtx) this.ctx = new AudioCtx();
           }
           if (this.ctx && this.ctx.state === 'suspended') {
-            this.ctx.resume().catch(() => { });
+            this.ctx.resume().catch(() => {});
           }
         },
         playTone(freq, type, duration, gainVal = 0.12, slideTo = null) {
@@ -983,7 +908,7 @@
             gain.connect(this.ctx.destination);
             osc.start(now);
             osc.stop(now + duration);
-          } catch (e) { }
+          } catch (e) {}
         },
         click() {
           this.playTone(520, 'sine', 0.07, 0.08, 660);
@@ -1175,7 +1100,7 @@
       async function saveEncryptedUsersMap(usersMap) {
         try {
           localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
-        } catch (e) { }
+        } catch (e) {}
 
         if (db && currentUser) {
           try {
@@ -1186,7 +1111,7 @@
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), usersMap[k]);
               }
             }
-          } catch (e) { }
+          } catch (e) {}
         }
       }
 
@@ -1199,7 +1124,7 @@
           if (dec && dec.username && !isPlaceholderUsername(dec.username)) {
             try {
               localStorage.setItem(LAST_USER_STORAGE_KEY, dec.username.trim().toUpperCase());
-            } catch (e) { }
+            } catch (e) {}
           }
           return dec;
         } catch (e) {
@@ -1215,21 +1140,6 @@
         } catch (e) {
           return cloudPurgedList;
         }
-      }
-
-      function markAccountPurged(username) {
-        const clean = (username || '').trim().toUpperCase();
-        if (!clean) return;
-        try {
-          const list = loadPurgedAccountsList();
-          if (!list.includes(clean)) {
-            list.push(clean);
-            localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(list));
-          }
-          if (localStorage.getItem(LAST_USER_STORAGE_KEY) === clean) {
-            localStorage.removeItem(LAST_USER_STORAGE_KEY);
-          }
-        } catch (e) { }
       }
 
       function mergeSinglePlayerRecord(existing, incoming) {
@@ -1310,12 +1220,12 @@
 
         try {
           mergeSourceMap(cloudLeaderboard);
-        } catch (e) { }
+        } catch (e) {}
 
         try {
           const rawWorld = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
           if (rawWorld) mergeSourceMap(JSON.parse(rawWorld));
-        } catch (e) { }
+        } catch (e) {}
 
         try {
           const rawDesktop = localStorage.getItem(DESKTOP_ELO_STORAGE_KEY);
@@ -1325,11 +1235,11 @@
               mergeSourceMap(parsedDesktop.humanPlayers);
             }
           }
-        } catch (e) { }
+        } catch (e) {}
 
         try {
           mergeSourceMap(STATE && STATE.humanPlayers ? STATE.humanPlayers : {});
-        } catch (e) { }
+        } catch (e) {}
 
         return merged;
       }
@@ -1358,7 +1268,7 @@
             desktopObj.peakElo = refRec.peak || 1500;
           }
           localStorage.setItem(DESKTOP_ELO_STORAGE_KEY, JSON.stringify(desktopObj));
-        } catch (e) { }
+        } catch (e) {}
 
         if (db && currentUser) {
           try {
@@ -1366,15 +1276,114 @@
             if (cleanMap[cleanUser] && !isPlaceholderUsername(cleanUser)) {
               await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', cleanUser), cleanMap[cleanUser]);
             }
-          } catch (e) { }
+          } catch (e) {}
         }
 
         if (typeof BroadcastChannel !== 'undefined') {
           try {
             const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
             gbc.postMessage({ type: 'GLOBAL_LEADERBOARD_SYNC', allPlayers: cleanMap });
-          } catch (e) { }
+          } catch (e) {}
         }
+      }
+
+      // ==========================================
+      // REAL-TIME FRIEND INVITATION ENGINE
+      // ==========================================
+      let activeInviteRoomCode = null;
+
+      async function sendFriendInvite(targetUsername) {
+        SoundFX.click();
+        const cleanTarget = (targetUsername || '').trim().toUpperCase();
+        const myName = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
+        if (!cleanTarget || isPlaceholderUsername(cleanTarget) || cleanTarget === myName) return;
+
+        // Generate Room Code for the match
+        const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
+        STATE.roomCode = code;
+        STATE.onlineRole = 'HOST';
+        STATE.mode = 'ONLINE_2P';
+        STATE.onlineConnected = false;
+        STATE.roomLocked = false;
+        STATE.p2Joined = false;
+        STATE.p1Name = myName;
+        STATE.p1CountryFlag = STATE.myCountryFlag;
+        STATE.p1CountryCode = STATE.myCountryCode;
+        STATE.p2Name = 'WAITING...';
+
+        setupBroadcastFallback(code);
+
+        // Start hosting via PeerJS
+        if (typeof Peer !== 'undefined') {
+          try {
+            if (STATE.peer) STATE.peer.destroy();
+            STATE.peer = new Peer('handcricket-arena-' + code);
+            STATE.peer.on('connection', (c) => {
+              STATE.conn = c;
+              c.on('data', (data) => handleNetMessage(data));
+              c.on('open', () => { STATE.onlineConnected = true; });
+            });
+          } catch (e) {}
+        }
+
+        // Write invite to Firestore so P2 gets it instantly
+        if (db && currentUser) {
+          try {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanTarget), {
+              fromUser: myName,
+              fromFlag: STATE.myCountryFlag,
+              roomCode: code,
+              timestamp: Date.now()
+            });
+          } catch (e) {}
+        }
+
+        switchScreen('MP_SETUP');
+        updateNetStatusUI(`📨 Invited ${cleanTarget} • Waiting to join Room ${code}...`, false);
+      }
+
+      function initInviteListener() {
+        if (!db || isPlaceholderUsername(STATE.myUsername)) return;
+        const myName = STATE.myUsername.trim().toUpperCase();
+        
+        onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', myName), (docSnap) => {
+          if (!docSnap.exists()) return;
+          const data = docSnap.data();
+          if (!data || !data.roomCode || !data.fromUser) return;
+
+          // If invite is fresh (within last 30 seconds)
+          if (Date.now() - data.timestamp < 30000) {
+            activeInviteRoomCode = data.roomCode;
+            const banner = document.getElementById('friendInviteBanner');
+            const title = document.getElementById('inviteBannerTitle');
+            const sub = document.getElementById('inviteBannerSub');
+            if (banner && title && sub) {
+              title.textContent = `⚔️ ${data.fromUser} Challenged You!`;
+              sub.textContent = `${data.fromUser} is inviting you to play a live match right now.`;
+              banner.classList.remove('hidden');
+              SoundFX.click();
+            }
+          }
+        }, (err) => {});
+      }
+
+      async function acceptFriendInvite() {
+        if (!activeInviteRoomCode) return;
+        SoundFX.click();
+        const banner = document.getElementById('friendInviteBanner');
+        if (banner) banner.classList.add('hidden');
+
+        dom.inlineInputJoinCode.value = activeInviteRoomCode;
+        switchScreen('MP_SETUP');
+        joinMultiplayerRoom();
+
+        // Clear invite from cloud
+        if (db && currentUser && !isPlaceholderUsername(STATE.myUsername)) {
+          try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', STATE.myUsername.trim().toUpperCase()));
+          } catch (e) {}
+        }
+        activeInviteRoomCode = null;
       }
 
       async function initCloudSync() {
@@ -1394,6 +1403,8 @@
           }
 
           if (!currentUser) return;
+
+          initInviteListener();
 
           const accountsCol = collection(db, 'artifacts', appId, 'public', 'data', 'accounts');
           onSnapshot(accountsCol, (snapshot) => {
@@ -1731,7 +1742,7 @@
           if (lastUser && !isPlaceholderUsername(lastUser) && map[lastUser]) {
             return map[lastUser];
           }
-        } catch (e) { }
+        } catch (e) {}
         const allReal = Object.values(map).filter((p) => p && typeof p.elo === 'number' && !isPlaceholderUsername(p.name));
         if (allReal.length > 0) {
           allReal.sort((a, b) => b.elo - a.elo || (b.totalRuns || 0) - (a.totalRuns || 0));
@@ -2015,7 +2026,7 @@
       }
 
       // ==========================================
-      // 4. MULTIPLAYER SETUP & SYNCHRONIZATION (MATCHING HAND_CRICKET.HTML)
+      // 4. MULTIPLAYER SETUP & SYNCHRONIZATION
       // ==========================================
       function isMultiplayer() {
         return STATE.mode === 'ONLINE_2P';
@@ -2044,21 +2055,21 @@
         STATE.seenNetMsgIds.add(msgWithId.msgId);
 
         if (STATE.conn && STATE.conn.open) {
-          try { STATE.conn.send(msgWithId); } catch (e) { }
+          try { STATE.conn.send(msgWithId); } catch (e) {}
         }
         if (STATE.bc) {
-          try { STATE.bc.postMessage(msgWithId); } catch (e) { }
+          try { STATE.bc.postMessage(msgWithId); } catch (e) {}
         }
         if (STATE.roomCode) {
           try {
             localStorage.setItem('oddandeven_room_bus_' + STATE.roomCode, JSON.stringify(msgWithId));
-          } catch (e) { }
+          } catch (e) {}
         }
       }
 
       function setupBroadcastFallback(code) {
         if (STATE.bc) {
-          try { STATE.bc.close(); } catch (e) { }
+          try { STATE.bc.close(); } catch (e) {}
         }
         if (typeof BroadcastChannel !== 'undefined') {
           STATE.bc = new BroadcastChannel('hc_arena_room_' + code);
@@ -2296,7 +2307,7 @@
                         p1Name: STATE.p1Name,
                         p2Name: STATE.p2Name
                       });
-                    } catch (e) { }
+                    } catch (e) {}
                   });
                   return;
                 }
@@ -2313,14 +2324,14 @@
 
             STATE.legacyPeer = new Peer('oae-room-' + code);
             attachHostPeer(STATE.legacyPeer);
-          } catch (e) { }
+          } catch (e) {}
         }
         renderView();
       }
 
-      function joinMultiplayerRoom() {
+      function joinMultiplayerRoom(customCode = null) {
         SoundFX.click();
-        const code = (dom.inlineInputJoinCode.value || '').trim().toUpperCase();
+        const code = (customCode || dom.inlineInputJoinCode.value || '').trim().toUpperCase();
         if (!code) return;
 
         STATE.roomCode = code;
@@ -2332,6 +2343,8 @@
         STATE.p2Name = STATE.myUsername;
         STATE.p2CountryFlag = STATE.myCountryFlag;
         STATE.p2CountryCode = STATE.myCountryCode;
+
+        if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.value = code;
 
         updateNetStatusUI(`Connecting to Room ${code} as ${STATE.myUsername}...`, false);
         setupBroadcastFallback(code);
@@ -2379,12 +2392,12 @@
                     }));
                   });
                   c.on('data', (data) => handleNetMessage(data));
-                } catch (e) { }
+                } catch (e) {}
               };
               connectToHostId('handcricket-arena-' + code);
               connectToHostId('oae-room-' + code);
             });
-          } catch (e) { }
+          } catch (e) {}
         }
         renderView();
       }
@@ -2479,7 +2492,7 @@
         const u = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
         try {
           localStorage.setItem(getFriendsStorageKey(), JSON.stringify(list));
-        } catch (e) { }
+        } catch (e) {}
 
         if (syncCloud && db && currentUser && u && !isPlaceholderUsername(u)) {
           try {
@@ -2488,7 +2501,7 @@
               friends: list,
               updatedAt: Date.now()
             });
-          } catch (e) { }
+          } catch (e) {}
         }
         updateFriendsBadge();
       }
@@ -2586,14 +2599,15 @@
                 </div>
               </div>
               <div class="shrink-0">
-                ${isSelf
-              ? '<span class="text-[10px] text-slate-500 font-bold px-2 py-1">Your Account</span>'
-              : isAlreadyFriend
-                ? '<span class="text-[10px] font-bold text-emerald-400 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30">✓ Added</span>'
-                : `<button type="button" data-add-username="${user.name}" class="btn-action-add-friend px-2.5 py-1 rounded-lg text-[10px] font-black chess-green-btn">
+                ${
+                  isSelf 
+                    ? '<span class="text-[10px] text-slate-500 font-bold px-2 py-1">Your Account</span>' 
+                    : isAlreadyFriend
+                    ? '<span class="text-[10px] font-bold text-emerald-400 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30">✓ Added</span>'
+                    : `<button type="button" data-add-username="${user.name}" class="btn-action-add-friend px-2.5 py-1 rounded-lg text-[10px] font-black chess-green-btn">
                         ➕ Add
                       </button>`
-            }
+                }
               </div>
             </div>
           `;
@@ -2652,7 +2666,7 @@
               </div>
 
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" data-challenge-username="${fname}" class="btn-action-challenge-friend px-2 py-1 rounded-lg text-[10px] font-extrabold bg-purple-500/20 text-purple-300 border border-purple-500/35 hover:bg-purple-500/30 transition">
+                <button type="button" data-challenge-username="${fname}" class="btn-action-challenge-friend px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-purple-500/20 text-purple-300 border border-purple-500/35 hover:bg-purple-500/30 transition">
                   ⚔️ Play
                 </button>
                 <button type="button" data-remove-username="${fname}" class="btn-action-remove-friend w-7 h-7 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center justify-center text-xs hover:bg-rose-500/25 transition" title="Remove from friends">
@@ -2673,9 +2687,7 @@
         dom.myFriendsListContainer.querySelectorAll('.btn-action-challenge-friend').forEach((btn) => {
           btn.addEventListener('click', () => {
             const target = btn.getAttribute('data-challenge-username');
-            createMultiplayerRoom();
-            switchScreen('MP_SETUP');
-            updateNetStatusUI(`📨 Room ${STATE.roomCode} Ready • Share Code with ${target}!`, false);
+            sendFriendInvite(target);
           });
         });
       }
@@ -3088,7 +3100,7 @@
           dom.tossWinnerTag.textContent = `🎉 ${winnerTitle} WON THE TOSS!`;
           dom.tossWinnerTag.className = p1Won
             ? 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-            : 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+            : 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-400/40';
           dom.aiTossChoiceContinue.classList.add('hidden');
 
           if (didIWinToss) {
@@ -3112,7 +3124,7 @@
           const botChoseBat = Math.random() < 0.5;
           STATE.firstBatter = botChoseBat ? 'AI' : 'USER';
           dom.tossWinnerTag.textContent = `🤖 ${p2Name.toUpperCase()} WON THE TOSS`;
-          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-400/40';
           dom.tossDecisionSubtext.textContent = `${p2Name} chose to ${botChoseBat ? 'BAT' : 'BOWL'} first!`;
           dom.userTossChoiceButtons.classList.add('hidden');
           dom.aiTossChoiceContinue.classList.remove('hidden');
@@ -3306,7 +3318,6 @@
         dom.gameOverMargin.textContent = reason;
 
         if (!mpMatch) {
-          // Bot Match: Rating is strictly frozen (+0 Elo)
           const uRec = !isPlaceholderUsername(STATE.myUsername) ? ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) : null;
           if (uRec) {
             uRec.updatedAt = Date.now();
@@ -3716,6 +3727,19 @@
         if (dom.btnPlayAgain) dom.btnPlayAgain.addEventListener('click', () => resetMatch(false));
         if (dom.btnQuickRestart) dom.btnQuickRestart.addEventListener('click', () => resetMatch(false));
 
+        // Invite Banner Accept & Dismiss Handlers
+        const inviteBanner = document.getElementById('friendInviteBanner');
+        const btnAcceptInvite = document.getElementById('btnAcceptFriendInvite');
+        const btnDismissInvite = document.getElementById('btnDismissFriendInvite');
+        if (btnAcceptInvite) {
+          btnAcceptInvite.addEventListener('click', acceptFriendInvite);
+        }
+        if (btnDismissInvite && inviteBanner) {
+          btnDismissInvite.addEventListener('click', () => {
+            inviteBanner.classList.add('hidden');
+          });
+        }
+
         if (dom.btnLbSwitchGlobal) {
           dom.btnLbSwitchGlobal.addEventListener('click', () => {
             SoundFX.click();
@@ -3762,7 +3786,7 @@
         });
 
         if (dom.btnInlineCreateRoom) dom.btnInlineCreateRoom.addEventListener('click', createMultiplayerRoom);
-        if (dom.btnInlineJoinRoom) dom.btnInlineJoinRoom.addEventListener('click', joinMultiplayerRoom);
+        if (dom.btnInlineJoinRoom) dom.btnInlineJoinRoom.addEventListener('click', () => joinMultiplayerRoom());
         if (dom.btnInlineCopyCode) {
           dom.btnInlineCopyCode.addEventListener('click', () => {
             if (!STATE.roomCode) return;
@@ -3775,7 +3799,7 @@
               document.body.removeChild(ta);
               dom.btnInlineCopyCode.textContent = '✓';
               setTimeout(() => { dom.btnInlineCopyCode.textContent = 'Copy'; }, 1500);
-            } catch (e) { }
+            } catch (e) {}
           });
         }
         if (dom.btnLaunchMpMatch) {
@@ -3805,7 +3829,7 @@
           if (!isPlaceholderUsername(STATE.myUsername)) {
             try {
               localStorage.setItem(LAST_USER_STORAGE_KEY, STATE.myUsername.trim().toUpperCase());
-            } catch (e) { }
+            } catch (e) {}
           }
           await saveWorldwidePlayersMap(STATE.humanPlayers);
           sessionStorage.removeItem(SESSION_STORAGE_KEY);
@@ -3934,7 +3958,7 @@
               localStorage.setItem(SESSION_STORAGE_KEY, encSess);
               localStorage.setItem(LAST_USER_STORAGE_KEY, uname);
               localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
-            } catch (e) { }
+            } catch (e) {}
 
             STATE.myUsername = uname;
             STATE.myCountryCode = dial;
@@ -3991,6 +4015,7 @@
 
             dom.authModal.classList.add('hidden');
             dom.authModal.classList.remove('flex');
+            initInviteListener();
           });
         }
 
@@ -4008,7 +4033,7 @@
             try {
               const msg = JSON.parse(ev.newValue);
               handleNetMessage(msg);
-            } catch (e) { }
+            } catch (e) {}
           }
         });
       }
@@ -4044,5 +4069,4 @@
     })();
   </script>
 </body>
-
 </html>
