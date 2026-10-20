@@ -1153,7 +1153,7 @@
         const justLogged = localStorage.getItem('oddandeven_just_logged_in');
         const urlParams = new URLSearchParams(window.location.search);
         const requestedScreen = (urlParams.get('screen') || '').trim().toUpperCase();
-        if (requestedScreen === 'EVENTS' || requestedScreen === 'ACHIEVEMENTS') {
+        if (requestedScreen === 'EVENTS' || requestedScreen === 'ACHIEVEMENTS' || requestedScreen === 'UPDATES') {
           STATE.activeScreen = requestedScreen;
         } else if (justLogged === '1' || urlParams.get('from') === 'login') {
           localStorage.removeItem('oddandeven_just_logged_in');
@@ -1254,6 +1254,10 @@
         sideNavEventsSub: document.getElementById('sideNavEventsSub'),
         screenEvents: document.getElementById('screenEvents'),
         btnBackFromEvents: document.getElementById('btnBackFromEvents'),
+        sideNavUpdates: document.getElementById('sideNavUpdates'),
+        sideNavUpdatesSub: document.getElementById('sideNavUpdatesSub'),
+        screenUpdates: document.getElementById('screenUpdates'),
+        btnBackFromUpdates: document.getElementById('btnBackFromUpdates'),
         eventsUserFlag: document.getElementById('eventsUserFlag'),
         eventsUserHeadline: document.getElementById('eventsUserHeadline'),
         eventsUserStatsLine: document.getElementById('eventsUserStatsLine'),
@@ -4401,6 +4405,10 @@
         if (el.sideNavAchievementsSub) {
           el.sideNavAchievementsSub.textContent = `${unlockedCount}/${totalCount} Unlocked`;
         }
+        const bBadge = document.getElementById('bannerAchievementsBadge');
+        if (bBadge) {
+          bBadge.textContent = `${unlockedCount}/${totalCount} Unlocked`;
+        }
 
         let rankTitle = 'Rookie Striker';
         if (unlockedCount >= 9) rankTitle = '👑 Hall of Fame Legend';
@@ -4701,6 +4709,9 @@
         if (el.sideNavEvents) {
           el.sideNavEvents.className = STATE.activeScreen === 'EVENTS' ? navActiveCls : navIdleCls;
         }
+        if (el.sideNavUpdates) {
+          el.sideNavUpdates.className = (STATE.activeScreen === 'UPDATES' ? navActiveCls : navIdleCls) + ' relative';
+        }
         if (el.sideNavLeaderboard) {
           el.sideNavLeaderboard.className = STATE.activeScreen === 'LEADERBOARD' ? navActiveCls : navIdleCls;
         }
@@ -4761,6 +4772,9 @@
         }
         if (el.screenEvents) {
           el.screenEvents.classList.toggle('hidden', STATE.activeScreen !== 'EVENTS');
+        }
+        if (el.screenUpdates) {
+          el.screenUpdates.classList.toggle('hidden', STATE.activeScreen !== 'UPDATES');
         }
         if (el.screenLeaderboard) {
           el.screenLeaderboard.classList.toggle('hidden', STATE.activeScreen !== 'LEADERBOARD');
@@ -5019,8 +5033,8 @@
           if (el.btnLbSwitchRuns) el.btnLbSwitchRuns.className = tab === 'RUNS' ? tabActiveCls : tabIdleCls;
 
           if (tab === 'GLOBAL') {
-            if (el.lbModeSubNote) el.lbModeSubNote.textContent = 'Worldwide Real User Standings • Connected across all Global Accounts & Peers';
-            if (el.lbTableLeftHeader) el.lbTableLeftHeader.textContent = 'Worldwide Registered Usernames (Ranked by Elo)';
+            if (el.lbModeSubNote) el.lbModeSubNote.textContent = 'Top 10 Global Standings + Your Leaderboard Rank • Connected Worldwide';
+            if (el.lbTableLeftHeader) el.lbTableLeftHeader.textContent = 'Top 10 Global Standings + Your Rank (Ranked by Elo)';
             if (el.lbTableRightHeader) el.lbTableRightHeader.textContent = 'Elo • Runs • Wickets';
             if (el.lbCard1Title) el.lbCard1Title.textContent = 'Your Rating';
             if (el.lbCard2Title) el.lbCard2Title.textContent = 'Total Runs';
@@ -5034,11 +5048,8 @@
             el.lbNetDeltaBig.textContent = `${myTotalMatches}M (${myRec.wins || 0}W–${myRec.losses || 0}L)`;
 
             const sortedGlobal = [...allHumans].sort((a, b) => b.elo - a.elo || (b.totalRuns || 0) - (a.totalRuns || 0) || (b.matches || 0) - (a.matches || 0) || (b.wicketsTaken || 0) - (a.wicketsTaken || 0));
-            if (sortedGlobal.length === 0) {
-              el.leaderboardStandingsList.innerHTML = `<div class="p-5 rounded-xl bg-[#262421] border border-[#45423e] text-center text-xs sm:text-sm text-slate-300">🏆 Global Leaderboard is clean &amp; empty (0 players). Sign up or log in to claim Rank #1!</div>`;
-            } else {
-              el.leaderboardStandingsList.innerHTML = sortedGlobal.map((ent, idx) => {
-              const isMe = ent.name === myCleanName;
+            const renderGlobalRow = (ent, rankNum, isMeRow = false) => {
+              const isMe = isMeRow || ent.name === myCleanName;
               const cFlag = ent.countryFlag || '🇮🇳';
               const cDial = ent.countryCode || '+91';
               const entMatches = Math.max(ent.matches || 0, (ent.wins || 0) + (ent.losses || 0));
@@ -5046,7 +5057,7 @@
               return `
                 <div class="p-3.5 rounded-xl flex items-center justify-between gap-2 border ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c] shadow-md' : 'bg-[#262421] border-[#45423e]'}">
                   <div class="flex items-center gap-3 min-w-0">
-                    <span class="w-7 h-7 rounded-lg bg-[#1b1a17] flex items-center justify-center font-mono-num text-xs font-black ${idx === 0 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-300'}">#${idx + 1}</span>
+                    <span class="min-w-[2rem] h-7 px-1.5 rounded-lg bg-[#1b1a17] flex items-center justify-center font-mono-num text-xs font-black ${rankNum === 1 ? 'text-amber-300 border border-amber-400/40' : (isMe ? 'text-[#a3d96c] border border-[#81b64c]/50' : 'text-slate-300')}">#${rankNum}</span>
                     <span class="text-lg">${cFlag}</span>
                     <div class="min-w-0">
                       <div class="text-xs sm:text-sm font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate flex items-center gap-1.5">
@@ -5062,11 +5073,31 @@
                   </span>
                 </div>
               `;
-            }).join('');
+            };
+
+            if (sortedGlobal.length === 0) {
+              el.leaderboardStandingsList.innerHTML = `<div class="p-5 rounded-xl bg-[#262421] border border-[#45423e] text-center text-xs sm:text-sm text-slate-300">🏆 Global Leaderboard is clean &amp; empty (0 players). Sign up or log in to claim Rank #1!</div>`;
+            } else {
+              const top10Global = sortedGlobal.slice(0, 10);
+              const myGlobalIdx = sortedGlobal.findIndex((p) => p.name === myCleanName);
+              const myGlobalRank = myGlobalIdx >= 0 ? myGlobalIdx + 1 : sortedGlobal.length + 1;
+              const myGlobalEnt = myGlobalIdx >= 0 ? sortedGlobal[myGlobalIdx] : Object.assign({}, myRec, { name: myCleanName });
+
+              const top10Html = top10Global.map((ent, idx) => renderGlobalRow(ent, idx + 1, ent.name === myCleanName)).join('');
+              const myRankSectionHtml = `
+                <div class="pt-2 mt-2 border-t-2 border-dashed border-[#81b64c]/45 space-y-1.5">
+                  <div class="flex items-center justify-between text-[10px] font-mono-num font-extrabold uppercase tracking-wider text-[#a3d96c] px-1">
+                    <span>📌 Your Rank in Leaderboard</span>
+                    <span>Rank #${myGlobalRank} of ${Math.max(sortedGlobal.length, myGlobalRank)}</span>
+                  </div>
+                  ${renderGlobalRow(myGlobalEnt, myGlobalRank, true)}
+                </div>
+              `;
+              el.leaderboardStandingsList.innerHTML = top10Html + myRankSectionHtml;
             }
           } else if (tab === 'WEEKLY') {
-            if (el.lbModeSubNote) el.lbModeSubNote.textContent = `Weekly Worldwide Leaderboard (${weekInfo.label}) • Starts Monday & Ends Sunday`;
-            if (el.lbTableLeftHeader) el.lbTableLeftHeader.textContent = 'Weekly Worldwide Standings (Mon – Sun)';
+            if (el.lbModeSubNote) el.lbModeSubNote.textContent = `Top 10 Weekly Standings + Your Rank (${weekInfo.label}) • Starts Monday & Ends Sunday`;
+            if (el.lbTableLeftHeader) el.lbTableLeftHeader.textContent = 'Top 10 Weekly Standings + Your Rank (Mon – Sun)';
             if (el.lbTableRightHeader) el.lbTableRightHeader.textContent = 'Weekly Elo • Runs • Wkts';
             if (el.lbCard1Title) el.lbCard1Title.textContent = 'Weekly Elo Δ';
             if (el.lbCard2Title) el.lbCard2Title.textContent = 'Weekly Runs';
@@ -5085,11 +5116,8 @@
               return (b.weeklyRuns || 0) - (a.weeklyRuns || 0);
             });
 
-            if (sortedWeekly.length === 0) {
-              el.leaderboardStandingsList.innerHTML = `<div class="p-5 rounded-xl bg-[#262421] border border-[#45423e] text-center text-xs sm:text-sm text-slate-300">📅 Weekly Leaderboard is clean &amp; empty (0 players). Sign up or log in to compete this week!</div>`;
-            } else {
-              el.leaderboardStandingsList.innerHTML = sortedWeekly.map((ent, idx) => {
-              const isMe = ent.name === myCleanName;
+            const renderWeeklyRow = (ent, rankNum, isMeRow = false) => {
+              const isMe = isMeRow || ent.name === myCleanName;
               const cFlag = ent.countryFlag || '🇮🇳';
               const cDial = ent.countryCode || '+91';
               const wkGain = ent.weeklyEloGain || 0;
@@ -5099,12 +5127,13 @@
               return `
                 <div class="p-3.5 rounded-xl flex items-center justify-between gap-2 border ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c] shadow-md' : 'bg-[#262421] border-[#45423e]'}">
                   <div class="flex items-center gap-3 min-w-0">
-                    <span class="w-7 h-7 rounded-lg bg-[#1b1a17] flex items-center justify-center font-mono-num text-xs font-black ${idx === 0 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-300'}">#${idx + 1}</span>
+                    <span class="min-w-[2rem] h-7 px-1.5 rounded-lg bg-[#1b1a17] flex items-center justify-center font-mono-num text-xs font-black ${rankNum === 1 ? 'text-amber-300 border border-amber-400/40' : (isMe ? 'text-[#a3d96c] border border-[#81b64c]/50' : 'text-slate-300')}">#${rankNum}</span>
                     <span class="text-lg">${cFlag}</span>
                     <div class="min-w-0">
                       <div class="text-xs sm:text-sm font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate flex items-center gap-1.5">
                         <span>${ent.name}</span>
                         <span class="px-1.5 py-0.2 rounded text-[10px] font-mono-num bg-slate-900 text-amber-300 border border-slate-700">${cDial}</span>
+                        ${isMe ? '<span class="text-[10px] font-black text-emerald-300">(You)</span>' : ''}
                       </div>
                       <div class="text-[11px] text-slate-300 truncate">${subText}</div>
                     </div>
@@ -5117,11 +5146,31 @@
                   </div>
                 </div>
               `;
-            }).join('');
+            };
+
+            if (sortedWeekly.length === 0) {
+              el.leaderboardStandingsList.innerHTML = `<div class="p-5 rounded-xl bg-[#262421] border border-[#45423e] text-center text-xs sm:text-sm text-slate-300">📅 Weekly Leaderboard is clean &amp; empty (0 players). Sign up or log in to compete this week!</div>`;
+            } else {
+              const top10Weekly = sortedWeekly.slice(0, 10);
+              const myWeeklyIdx = sortedWeekly.findIndex((p) => p.name === myCleanName);
+              const myWeeklyRank = myWeeklyIdx >= 0 ? myWeeklyIdx + 1 : sortedWeekly.length + 1;
+              const myWeeklyEnt = myWeeklyIdx >= 0 ? sortedWeekly[myWeeklyIdx] : Object.assign({}, myRec, { name: myCleanName });
+
+              const top10Html = top10Weekly.map((ent, idx) => renderWeeklyRow(ent, idx + 1, ent.name === myCleanName)).join('');
+              const myRankSectionHtml = `
+                <div class="pt-2 mt-2 border-t-2 border-dashed border-[#81b64c]/45 space-y-1.5">
+                  <div class="flex items-center justify-between text-[10px] font-mono-num font-extrabold uppercase tracking-wider text-[#a3d96c] px-1">
+                    <span>📌 Your Rank in Leaderboard</span>
+                    <span>Rank #${myWeeklyRank} of ${Math.max(sortedWeekly.length, myWeeklyRank)}</span>
+                  </div>
+                  ${renderWeeklyRow(myWeeklyEnt, myWeeklyRank, true)}
+                </div>
+              `;
+              el.leaderboardStandingsList.innerHTML = top10Html + myRankSectionHtml;
             }
           } else {
-            if (el.lbModeSubNote) el.lbModeSubNote.textContent = 'Worldwide Total Runs & Wickets • Every Run & Wicket Connected to Real Username';
-            if (el.lbTableLeftHeader) el.lbTableLeftHeader.textContent = 'Total Runs & Wickets Leaderboard (Worldwide)';
+            if (el.lbModeSubNote) el.lbModeSubNote.textContent = 'Top 10 Total Runs & Wickets + Your Rank • Connected to Real Username';
+            if (el.lbTableLeftHeader) el.lbTableLeftHeader.textContent = 'Top 10 Total Runs & Wickets + Your Rank';
             if (el.lbTableRightHeader) el.lbTableRightHeader.textContent = 'Total Runs & Wickets';
             if (el.lbCard1Title) el.lbCard1Title.textContent = 'Your Total Runs';
             if (el.lbCard2Title) el.lbCard2Title.textContent = 'Wickets Taken';
@@ -5134,11 +5183,8 @@
             el.lbNetDeltaBig.textContent = formatSR(myRec.totalRuns || 0, myRec.totalBalls || 0);
 
             const sortedRuns = [...allHumans].sort((a, b) => (b.totalRuns || 0) - (a.totalRuns || 0) || (b.wicketsTaken || 0) - (a.wicketsTaken || 0) || b.elo - a.elo);
-            if (sortedRuns.length === 0) {
-              el.leaderboardStandingsList.innerHTML = `<div class="p-5 rounded-xl bg-[#262421] border border-[#45423e] text-center text-xs sm:text-sm text-slate-300">🏏 Total Runs Leaderboard is clean &amp; empty (0 players). Sign up or log in and score runs!</div>`;
-            } else {
-              el.leaderboardStandingsList.innerHTML = sortedRuns.map((ent, idx) => {
-              const isMe = ent.name === myCleanName;
+            const renderRunsRow = (ent, rankNum, isMeRow = false) => {
+              const isMe = isMeRow || ent.name === myCleanName;
               const cFlag = ent.countryFlag || '🇮🇳';
               const cDial = ent.countryCode || '+91';
               const sr = formatSR(ent.totalRuns || 0, ent.totalBalls || 0);
@@ -5147,12 +5193,13 @@
               return `
                 <div class="p-3.5 rounded-xl flex items-center justify-between gap-2 border ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c] shadow-md' : 'bg-[#262421] border-[#45423e]'}">
                   <div class="flex items-center gap-3 min-w-0">
-                    <span class="w-7 h-7 rounded-lg bg-[#1b1a17] flex items-center justify-center font-mono-num text-xs font-black ${idx === 0 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-300'}">#${idx + 1}</span>
+                    <span class="min-w-[2rem] h-7 px-1.5 rounded-lg bg-[#1b1a17] flex items-center justify-center font-mono-num text-xs font-black ${rankNum === 1 ? 'text-amber-300 border border-amber-400/40' : (isMe ? 'text-[#a3d96c] border border-[#81b64c]/50' : 'text-slate-300')}">#${rankNum}</span>
                     <span class="text-lg">${cFlag}</span>
                     <div class="min-w-0">
                       <div class="text-xs sm:text-sm font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate flex items-center gap-1.5">
                         <span>${ent.name}</span>
                         <span class="px-1.5 py-0.2 rounded text-[10px] font-mono-num bg-slate-900 text-amber-300 border border-slate-700">${cDial}</span>
+                        ${isMe ? '<span class="text-[10px] font-black text-emerald-300">(You)</span>' : ''}
                       </div>
                       <div class="text-[11px] text-slate-300 truncate">${subText}</div>
                     </div>
@@ -5165,7 +5212,27 @@
                   </div>
                 </div>
               `;
-            }).join('');
+            };
+
+            if (sortedRuns.length === 0) {
+              el.leaderboardStandingsList.innerHTML = `<div class="p-5 rounded-xl bg-[#262421] border border-[#45423e] text-center text-xs sm:text-sm text-slate-300">🏏 Total Runs Leaderboard is clean &amp; empty (0 players). Sign up or log in and score runs!</div>`;
+            } else {
+              const top10Runs = sortedRuns.slice(0, 10);
+              const myRunsIdx = sortedRuns.findIndex((p) => p.name === myCleanName);
+              const myRunsRank = myRunsIdx >= 0 ? myRunsIdx + 1 : sortedRuns.length + 1;
+              const myRunsEnt = myRunsIdx >= 0 ? sortedRuns[myRunsIdx] : Object.assign({}, myRec, { name: myCleanName });
+
+              const top10Html = top10Runs.map((ent, idx) => renderRunsRow(ent, idx + 1, ent.name === myCleanName)).join('');
+              const myRankSectionHtml = `
+                <div class="pt-2 mt-2 border-t-2 border-dashed border-[#81b64c]/45 space-y-1.5">
+                  <div class="flex items-center justify-between text-[10px] font-mono-num font-extrabold uppercase tracking-wider text-[#a3d96c] px-1">
+                    <span>📌 Your Rank in Leaderboard</span>
+                    <span>Rank #${myRunsRank} of ${Math.max(sortedRuns.length, myRunsRank)}</span>
+                  </div>
+                  ${renderRunsRow(myRunsEnt, myRunsRank, true)}
+                </div>
+              `;
+              el.leaderboardStandingsList.innerHTML = top10Html + myRankSectionHtml;
             }
           }
 
@@ -5990,7 +6057,7 @@
 
         // Sidebar & Inline Setup Screen Navigation
         function switchCenterScreen(screenName) {
-          if (screenName !== 'LEADERBOARD' && !requireAccountAndPassword()) return;
+          if (screenName !== 'LEADERBOARD' && screenName !== 'UPDATES' && !requireAccountAndPassword()) return;
           SoundFX.click();
           if (screenName === 'PITCH' && isMultiplayer() && !isMultiplayerReadyToPlay()) {
             // If user started multiplayer mode and friend hasn't joined yet, do not start the match on the pitch!
@@ -6065,6 +6132,19 @@
         }
         if (el.btnBackFromEvents) {
           el.btnBackFromEvents.addEventListener('click', () => switchCenterScreen('PITCH'));
+        }
+        if (el.sideNavUpdates) {
+          window.__hcUpdatesBound = true;
+          el.sideNavUpdates.addEventListener('click', () => {
+            if (!isSandboxedPreviewIframe()) {
+              window.location.href = 'updates.html';
+              return;
+            }
+            switchCenterScreen('UPDATES');
+          });
+        }
+        if (el.btnBackFromUpdates) {
+          el.btnBackFromUpdates.addEventListener('click', () => switchCenterScreen('PITCH'));
         }
         if (el.btnJoinEventDuo) {
           el.btnJoinEventDuo.addEventListener('click', () => toggleEventRegistration('duo'));
