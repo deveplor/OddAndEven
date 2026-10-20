@@ -2617,6 +2617,19 @@
 
       function createMultiplayerRoom() {
         SoundFX.click();
+
+        // Clean up any previous room connections before creating a new room.
+        if (STATE.joinRetryTimerId) {
+          clearInterval(STATE.joinRetryTimerId);
+          STATE.joinRetryTimerId = null;
+        }
+        try { if (STATE.conn) STATE.conn.close(); } catch (e) {}
+        try { if (STATE.peer) STATE.peer.destroy(); } catch (e) {}
+        try { if (STATE.legacyPeer) STATE.legacyPeer.destroy(); } catch (e) {}
+        STATE.conn = null;
+        STATE.peer = null;
+        STATE.legacyPeer = null;
+
         const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
         STATE.roomCode = code;
         STATE.onlineRole = 'HOST';
@@ -2624,61 +2637,112 @@
         STATE.onlineConnected = false;
         STATE.roomLocked = false;
         STATE.p2Joined = false;
-        STATE.p1Name = STATE.myUsername;
-        STATE.p1CountryFlag = STATE.myCountryFlag;
-        STATE.p1CountryCode = STATE.myCountryCode;
+        STATE.p1Name = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
+        STATE.p1CountryFlag = STATE.myCountryFlag || '🇮🇳';
+        STATE.p1CountryCode = STATE.myCountryCode || '+91';
         STATE.p2Name = 'WAITING...';
 
-        dom.inlineHostCodeDisplay.classList.remove('hidden');
-        dom.inlineHostCodeValue.textContent = code;
-        updateNetStatusUI(`⏳ Room ${code} • Waiting for P2...`, false);
-        dom.inlineLobbyP1Display.textContent = STATE.p1Name;
-        dom.inlineLobbyP2Display.textContent = '⏳ Waiting to join...';
-        dom.btnLaunchMpMatch.disabled = true;
+        if (dom.inlineHostCodeDisplay) dom.inlineHostCodeDisplay.classList.remove('hidden');
+        if (dom.inlineHostCodeValue) dom.inlineHostCodeValue.textContent = code;
+        if (dom.inlineLobbyP1Display) dom.inlineLobbyP1Display.textContent = STATE.p1Name;
+        if (dom.inlineLobbyP2Display) dom.inlineLobbyP2Display.textContent = '⏳ Waiting to join...';
+        if (dom.btnLaunchMpMatch) dom.btnLaunchMpMatch.disabled = true;
 
         setupBroadcastFallback(code);
+        switchScreen('MP_SETUP');
+        updateNetStatusUI(`⏳ Preparing Room ${code}…`, false);
 
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) STATE.peer.destroy();
-            if (STATE.legacyPeer) STATE.legacyPeer.destroy();
-
-            const attachHostPeer = (peerInstance) => {
-              peerInstance.on('connection', (c) => {
-                if (STATE.roomLocked && STATE.p2Joined && STATE.conn && STATE.conn.open) {
-                  c.on('open', () => {
-                    try {
-                      c.send({
-                        type: 'ROOM_LOCKED_REJECT',
-                        p1Name: STATE.p1Name,
-                        p2Name: STATE.p2Name
-                      });
-                    } catch (e) {}
-                  });
-                  return;
-                }
-                STATE.conn = c;
-                c.on('data', (data) => handleNetMessage(data));
-                c.on('open', () => {
-                  STATE.onlineConnected = true;
-                });
-              });
-            };
-
-            STATE.peer = new Peer('handcricket-arena-' + code);
-            attachHostPeer(STATE.peer);
-
-            STATE.legacyPeer = new Peer('oae-room-' + code);
-            attachHostPeer(STATE.legacyPeer);
-          } catch (e) {}
+        if (typeof Peer === 'undefined') {
+          updateNetStatusUI('❌ Multiplayer connection library failed to load. Refresh and try again.', false);
+          return;
         }
+
+        try {
+          const peerId = 'handcricket-arena-' + code;
+          const hostPeer = new Peer(peerId);
+          STATE.peer = hostPeer;
+
+          hostPeer.on('open', () => {
+            // Only share the room code once the PeerJS server has registered it.
+            updateNetStatusUI(`✅ Room ${code} is ready. Share this code with Player 2.`, false);
+            renderView();
+          });
+
+          hostPeer.on('connection', (c) => {
+            if (STATE.roomLocked && STATE.p2Joined && STATE.conn && STATE.conn.open) {
+              c.on('open', () => {
+                try {
+                  c.send({
+                    type: 'ROOM_LOCKED_REJECT',
+                    p1Name: STATE.p1Name,
+                    p2Name: STATE.p2Name
+                  });
+                } catch (e) {}
+              });
+              return;
+            }
+
+            STATE.conn = c;
+            c.on('open', () => {
+              STATE.onlineConnected = true;
+              updateNetStatusUI(`🔗 Player connection opened for Room ${STATE.roomCode}.`, true);
+            });
+            c.on('data', (data) => handleNetMessage(data));
+            c.on('close', () => {
+              if (STATE.conn === c && !STATE.p2Joined) {
+                STATE.conn = null;
+                STATE.onlineConnected = false;
+                updateNetStatusUI(`⚠️ Player disconnected. Room ${STATE.roomCode} is still waiting.`, false);
+                renderView();
+              }
+            });
+            c.on('error', (err) => {
+              console.warn('Host PeerJS connection error:', err);
+              updateNetStatusUI('⚠️ Connection issue with Player 2. Ask them to rejoin the room.', false);
+            });
+          });
+
+          hostPeer.on('error', (err) => {
+            console.error('Host PeerJS error:', err);
+            const message = err && err.type === 'unavailable-id'
+              ? `❌ Room code ${code} is already in use. Generate a new room code.`
+              : `❌ Could not open multiplayer room (${(err && (err.type || err.message)) || 'connection error'}). Check your internet and try again.`;
+            updateNetStatusUI(message, false);
+            if (dom.btnInlineCreateRoom) {
+              dom.btnInlineCreateRoom.disabled = false;
+              dom.btnInlineCreateRoom.textContent = '↻ Generate Another Room Code';
+            }
+          });
+        } catch (err) {
+          console.error('Could not create PeerJS room:', err);
+          updateNetStatusUI('❌ Could not create the room. Check your connection and try again.', false);
+        }
+
         renderView();
       }
 
       function joinMultiplayerRoom(customCode = null) {
         SoundFX.click();
-        const code = (customCode || dom.inlineInputJoinCode.value || '').trim().toUpperCase();
-        if (!code) return;
+
+        const code = (customCode || (dom.inlineInputJoinCode && dom.inlineInputJoinCode.value) || '')
+          .trim().toUpperCase().replace(/\s+/g, '');
+        if (!/^HC\d{4}$/.test(code)) {
+          updateNetStatusUI('⚠️ Enter a valid room code (example: HC1234).', false);
+          if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.focus();
+          return;
+        }
+
+        if (STATE.joinRetryTimerId) {
+          clearInterval(STATE.joinRetryTimerId);
+          STATE.joinRetryTimerId = null;
+        }
+        try { if (STATE.conn) STATE.conn.close(); } catch (e) {}
+        try { if (STATE.peer) STATE.peer.destroy(); } catch (e) {}
+        try { if (STATE.legacyPeer) STATE.legacyPeer.destroy(); } catch (e) {}
+        STATE.conn = null;
+        STATE.peer = null;
+        STATE.legacyPeer = null;
+        STATE.seenNetMsgIds = new Set();
 
         STATE.roomCode = code;
         STATE.onlineRole = 'GUEST';
@@ -2686,14 +2750,21 @@
         STATE.onlineConnected = false;
         STATE.roomLocked = false;
         STATE.p2Joined = false;
-        STATE.p2Name = STATE.myUsername;
-        STATE.p2CountryFlag = STATE.myCountryFlag;
-        STATE.p2CountryCode = STATE.myCountryCode;
+        STATE.p2Name = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
+        STATE.p2CountryFlag = STATE.myCountryFlag || '🇮🇳';
+        STATE.p2CountryCode = STATE.myCountryCode || '+91';
 
         if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.value = code;
+        if (dom.inlineHostCodeDisplay) dom.inlineHostCodeDisplay.classList.add('hidden');
 
-        updateNetStatusUI(`Connecting to Room ${code} as ${STATE.myUsername}...`, false);
+        switchScreen('MP_SETUP');
+        updateNetStatusUI(`🔄 Connecting to Room ${code}…`, false);
         setupBroadcastFallback(code);
+
+        if (typeof Peer === 'undefined') {
+          updateNetStatusUI('❌ Multiplayer connection library failed to load. Refresh and try again.', false);
+          return;
+        }
 
         const joinPayload = {
           type: 'JOIN_HELLO',
@@ -2704,47 +2775,105 @@
           p2Elo: STATE.eloRating,
           allPlayers: STATE.humanPlayers
         };
-        sendNetMessage(joinPayload);
 
-        if (STATE.joinRetryTimerId) {
-          clearInterval(STATE.joinRetryTimerId);
-          STATE.joinRetryTimerId = null;
-        }
-        let joinAttempts = 0;
-        STATE.joinRetryTimerId = setInterval(() => {
-          joinAttempts += 1;
-          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 6 || STATE.onlineRole !== 'GUEST') {
-            clearInterval(STATE.joinRetryTimerId);
-            STATE.joinRetryTimerId = null;
-            return;
+        let connectAttempts = 0;
+        let finished = false;
+        const maxAttempts = 4;
+
+        const connectToHost = () => {
+          if (finished || STATE.onlineRole !== 'GUEST') return;
+          connectAttempts += 1;
+          updateNetStatusUI(`🔄 Connecting to Room ${code}… (attempt ${connectAttempts}/${maxAttempts})`, false);
+
+          if (!STATE.peer || STATE.peer.destroyed) {
+            try {
+              STATE.peer = new Peer();
+            } catch (err) {
+              retryOrFail(`Could not start the connection (${err.message || 'PeerJS error'}).`);
+              return;
+            }
           }
-          sendNetMessage(Object.assign({}, joinPayload, {
-            msgId: `${Date.now()}_retry_${joinAttempts}`
-          }));
-        }, 1200);
 
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) STATE.peer.destroy();
-            STATE.peer = new Peer();
-            STATE.peer.on('open', () => {
-              const connectToHostId = (hostPeerId) => {
-                try {
-                  const c = STATE.peer.connect(hostPeerId);
-                  c.on('open', () => {
-                    STATE.conn = c;
-                    sendNetMessage(Object.assign({}, joinPayload, {
-                      msgId: `${Date.now()}_peer_open`
-                    }));
-                  });
-                  c.on('data', (data) => handleNetMessage(data));
-                } catch (e) {}
-              };
-              connectToHostId('handcricket-arena-' + code);
-              connectToHostId('oae-room-' + code);
+          const peer = STATE.peer;
+          const beginConnection = () => {
+            if (finished || STATE.onlineRole !== 'GUEST') return;
+            let c;
+            try {
+              // Try the current room ID first, then the legacy ID for compatibility with older desktop builds.
+              const hostPeerId = connectAttempts % 2 === 1
+                ? 'handcricket-arena-' + code
+                : 'oae-room-' + code;
+              c = peer.connect(hostPeerId, { reliable: true });
+            } catch (err) {
+              retryOrFail('Could not reach that room code.');
+              return;
+            }
+
+            let opened = false;
+            const timeoutId = setTimeout(() => {
+              if (!opened && !finished) {
+                try { c.close(); } catch (e) {}
+                retryOrFail('The host is not reachable yet.');
+              }
+            }, 8000);
+
+            c.on('open', () => {
+              if (finished) {
+                try { c.close(); } catch (e) {}
+                return;
+              }
+              opened = true;
+              finished = true;
+              clearTimeout(timeoutId);
+              STATE.conn = c;
+              STATE.onlineConnected = true;
+              c.send(Object.assign({}, joinPayload, {
+                msgId: `${Date.now()}_join_${Math.random().toString(36).slice(2, 8)}`
+              }));
+              updateNetStatusUI(`🔗 Connected to Room ${code}. Waiting for host confirmation…`, true);
+              renderView();
             });
-          } catch (e) {}
-        }
+            c.on('data', (data) => handleNetMessage(data));
+            c.on('error', (err) => {
+              console.warn('Guest PeerJS connection error:', err);
+              if (!opened && !finished) {
+                clearTimeout(timeoutId);
+                retryOrFail('Could not connect to that room code.');
+              }
+            });
+            c.on('close', () => {
+              if (STATE.conn === c && !STATE.p2Joined) {
+                STATE.conn = null;
+                STATE.onlineConnected = false;
+                updateNetStatusUI(`⚠️ Disconnected from Room ${code}. Tap Join to retry.`, false);
+                renderView();
+              }
+            });
+          };
+
+          if (peer.open) {
+            beginConnection();
+          } else {
+            peer.once('open', beginConnection);
+            peer.once('error', (err) => {
+              console.warn('Guest PeerJS setup error:', err);
+              retryOrFail('Could not connect to the multiplayer service.');
+            });
+          }
+        };
+
+        const retryOrFail = (message) => {
+          if (finished || STATE.onlineRole !== 'GUEST') return;
+          if (connectAttempts < maxAttempts) {
+            updateNetStatusUI(`⚠️ ${message} Retrying…`, false);
+            setTimeout(connectToHost, 1200);
+          } else {
+            finished = true;
+            updateNetStatusUI(`❌ Unable to join Room ${code}. Confirm the code and ask the host to keep the room open, then tap Join to retry.`, false);
+          }
+        };
+
+        connectToHost();
         renderView();
       }
 
