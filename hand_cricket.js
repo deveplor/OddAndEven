@@ -376,7 +376,8 @@
 
       const STATE = {
         mode: 'AI', // 'AI' | 'ONLINE_2P'
-        activeScreen: 'PITCH', // 'SHOWCASE' | 'PITCH' | 'BOT_SETUP' | 'MP_SETUP' | 'LEADERBOARD' | 'EVENTS'
+        activeScreen: 'PITCH', // 'PITCH' | 'BOT_SETUP' | 'MP_SETUP' | 'LEADERBOARD' | 'ACHIEVEMENTS' | 'EVENTS'
+        achievementFilter: 'ALL', // 'ALL' | 'BATTING' | 'BOWLING' | 'RANKED'
         eloRating: 1500,
         peakElo: 1500,
         friendEloRating: 1500,
@@ -385,6 +386,8 @@
         friendSearchQuery: '',
         incomingFriendInvite: null, // { fromUser, fromFlag, roomCode, timestamp }
         activeOpenRooms: {}, // { [hostUser]: { roomCode, hostUser, timestamp } }
+        autoStartOnGuestJoin: false,
+        _lastMpAutoStartTs: 0,
         leaderboardTab: 'GLOBAL', // 'GLOBAL' | 'WEEKLY' | 'RUNS'
         eloHistory: [],
         lastEloDelta: null,
@@ -927,6 +930,9 @@
           STATE.myCountryFlag = verifiedAccount.countryFlag || sess.countryFlag || '🇮🇳';
           STATE.myCountryName = verifiedAccount.countryName || sess.countryName || 'India';
           STATE.isAuthenticated = true;
+          if (typeof window.__bindCloudInviteListener === 'function') {
+            try { window.__bindCloudInviteListener(STATE.myUsername); } catch (e) {}
+          }
         } else {
           STATE.myUsername = 'GUEST';
           STATE.myCountryCode = '+91';
@@ -1146,7 +1152,10 @@
       try {
         const justLogged = localStorage.getItem('oddandeven_just_logged_in');
         const urlParams = new URLSearchParams(window.location.search);
-        if (justLogged === '1' || urlParams.get('from') === 'login') {
+        const requestedScreen = (urlParams.get('screen') || '').trim().toUpperCase();
+        if (requestedScreen === 'EVENTS' || requestedScreen === 'ACHIEVEMENTS') {
+          STATE.activeScreen = requestedScreen;
+        } else if (justLogged === '1' || urlParams.get('from') === 'login') {
           localStorage.removeItem('oddandeven_just_logged_in');
           STATE.activeScreen = 'PITCH';
         }
@@ -1225,12 +1234,46 @@
         globalFriendInviteSub: document.getElementById('globalFriendInviteSub'),
         btnAcceptGlobalFriendInvite: document.getElementById('btnAcceptGlobalFriendInvite'),
         btnDismissGlobalFriendInvite: document.getElementById('btnDismissGlobalFriendInvite'),
+        sideNavAchievements: document.getElementById('sideNavAchievements'),
+        sideNavAchievementsSub: document.getElementById('sideNavAchievementsSub'),
+        screenAchievements: document.getElementById('screenAchievements'),
+        btnBackFromAchievements: document.getElementById('btnBackFromAchievements'),
+        achRankTierBadge: document.getElementById('achRankTierBadge'),
+        achUserFlag: document.getElementById('achUserFlag'),
+        achUserHeadline: document.getElementById('achUserHeadline'),
+        achUserSubStats: document.getElementById('achUserSubStats'),
+        achUnlockedSummaryText: document.getElementById('achUnlockedSummaryText'),
+        achTotalXpText: document.getElementById('achTotalXpText'),
+        achOverallProgressBar: document.getElementById('achOverallProgressBar'),
+        btnAchFilterAll: document.getElementById('btnAchFilterAll'),
+        btnAchFilterBatting: document.getElementById('btnAchFilterBatting'),
+        btnAchFilterBowling: document.getElementById('btnAchFilterBowling'),
+        btnAchFilterRanked: document.getElementById('btnAchFilterRanked'),
+        achievementsGridList: document.getElementById('achievementsGridList'),
         sideNavEvents: document.getElementById('sideNavEvents'),
+        sideNavEventsSub: document.getElementById('sideNavEventsSub'),
         screenEvents: document.getElementById('screenEvents'),
         btnBackFromEvents: document.getElementById('btnBackFromEvents'),
         eventsUserFlag: document.getElementById('eventsUserFlag'),
         eventsUserHeadline: document.getElementById('eventsUserHeadline'),
         eventsUserStatsLine: document.getElementById('eventsUserStatsLine'),
+        eventsRegSummaryBadge: document.getElementById('eventsRegSummaryBadge'),
+        eventsInlineToast: document.getElementById('eventsInlineToast'),
+        eventsInlineToastText: document.getElementById('eventsInlineToastText'),
+        hcCalRelDuo: document.getElementById('hcCalRelDuo'),
+        hcCalRelSolo: document.getElementById('hcCalRelSolo'),
+        hcEvStateDuo: document.getElementById('hcEvStateDuo'),
+        hcEvStateSolo: document.getElementById('hcEvStateSolo'),
+        hcDuoD: document.getElementById('hcDuoD'),
+        hcDuoH: document.getElementById('hcDuoH'),
+        hcDuoM: document.getElementById('hcDuoM'),
+        hcDuoS: document.getElementById('hcDuoS'),
+        hcSoloD: document.getElementById('hcSoloD'),
+        hcSoloH: document.getElementById('hcSoloH'),
+        hcSoloM: document.getElementById('hcSoloM'),
+        hcSoloS: document.getElementById('hcSoloS'),
+        btnJoinEventDuo: document.getElementById('btnJoinEventDuo'),
+        btnJoinEventSolo: document.getElementById('btnJoinEventSolo'),
         sidebarUserIdentity: document.getElementById('sidebarUserIdentity'),
         sidebarCareerRuns: document.getElementById('sidebarCareerRuns'),
         sidebarCareerWickets: document.getElementById('sidebarCareerWickets'),
@@ -1918,6 +1961,40 @@
           }
         });
 
+        // Hook for Firebase real-time friend match invites (cross-device large banner)
+        window.__onCloudFriendInvite = function (inviteData) {
+          if (!inviteData || !inviteData.roomCode || !inviteData.fromUser) return;
+          const myClean = (STATE.myUsername || '').trim().toUpperCase();
+          if (!myClean || isPlaceholderUsername(myClean)) return;
+          const targetClean = (inviteData.toUser || '').trim().toUpperCase();
+          if (targetClean && targetClean !== myClean) return;
+          const fromClean = (inviteData.fromUser || '').trim().toUpperCase();
+          if (fromClean === myClean) return;
+          if (Date.now() - (inviteData.timestamp || 0) < 180000) {
+            STATE.incomingFriendInvite = {
+              fromUser: fromClean,
+              fromFlag: inviteData.fromFlag || '🇮🇳',
+              roomCode: String(inviteData.roomCode).trim().toUpperCase(),
+              autoStart: inviteData.autoStart !== false,
+              timestamp: inviteData.timestamp || Date.now(),
+              toUser: myClean
+            };
+            STATE.activeOpenRooms[fromClean] = {
+              roomCode: String(inviteData.roomCode).trim().toUpperCase(),
+              hostUser: fromClean,
+              timestamp: inviteData.timestamp || Date.now()
+            };
+            try { SoundFX.runScored(6); } catch (e) {}
+            renderAll();
+          }
+        };
+
+        // Hook for Firebase Firestore real-time room signaling (cross-device 1v1 multiplayer sync)
+        window.__onCloudRoomMessage = function (msg) {
+          if (!msg || typeof msg !== 'object') return;
+          handleNetMessage(msg);
+        };
+
         // Expose hook for Firebase Cloud Sync module so cloud updates merge seamlessly without lag
         window.__onCloudLeaderboardUpdate = function (cloudPlayersMap, cloudAccountsMap, cloudPurgedArr) {
           let changed = false;
@@ -2153,6 +2230,9 @@
           try {
             localStorage.setItem('oddandeven_room_bus_' + STATE.roomCode, JSON.stringify(msgWithId));
           } catch (e) {}
+          if (typeof window.__sendCloudRoomMessage === 'function') {
+            try { window.__sendCloudRoomMessage(STATE.roomCode, msgWithId); } catch (e) {}
+          }
         }
       }
 
@@ -2261,6 +2341,7 @@
 
           saveSessionStats(true);
 
+          const shouldAutoStart = Boolean(msg.autoStart || STATE.autoStartOnGuestJoin);
           updateNetStatusUI(`🔒 Room Locked: ${STATE.p1Name} vs ${STATE.p2Name}`, true);
           sendNetMessage({
             type: 'HOST_WELCOME',
@@ -2276,10 +2357,16 @@
             p2Elo: p2Rec.elo,
             p2Record: p2Rec,
             roomLocked: true,
+            autoStartMatch: shouldAutoStart,
             allPlayers: STATE.humanPlayers
           });
           SoundFX.click();
-          renderAll();
+          if (shouldAutoStart) {
+            STATE.autoStartOnGuestJoin = false;
+            hostTriggerMultiplayerMatchStart();
+          } else {
+            renderAll();
+          }
         } else if (msg.type === 'ROOM_LOCKED_REJECT') {
           if (STATE.onlineRole === 'GUEST' && (!msg.targetUser || msg.targetUser === STATE.myUsername || msg.targetUser === `${STATE.myUsername}_2`)) {
             if (STATE.joinRetryTimerId) {
@@ -2350,9 +2437,22 @@
 
           updateNetStatusUI(`🔒 Room Locked: ${STATE.p1Name} vs ${STATE.p2Name}`, true);
           SoundFX.click();
-          renderAll();
+          if (msg.autoStartMatch || STATE.autoStartOnGuestJoin) {
+            STATE.autoStartOnGuestJoin = false;
+            STATE.mode = 'ONLINE_2P';
+            if (el.mpModal) {
+              el.mpModal.classList.add('hidden');
+              el.mpModal.classList.remove('flex');
+            }
+            STATE.activeScreen = 'PITCH';
+            STATE._lastMpAutoStartTs = Date.now();
+            resetGame(true);
+            setTimeout(resizeCanvas, 20);
+          } else {
+            renderAll();
+          }
         } else if (msg.type === 'HOST_START_MATCH') {
-          // Host clicked Start Match -> start match on Guest's screen simultaneously!
+          // Host started match (or auto-started on friend join) -> start match on Guest's screen simultaneously!
           STATE.mode = 'ONLINE_2P';
           if (msg.p1Name) STATE.p1Name = msg.p1Name;
           if (msg.p2Name) STATE.p2Name = msg.p2Name;
@@ -2367,8 +2467,15 @@
             el.mpModal.classList.add('hidden');
             el.mpModal.classList.remove('flex');
           }
+          const alreadyAutoStarted = STATE.activeScreen === 'PITCH' && STATE.phase === 'TOSS' && (Date.now() - (STATE._lastMpAutoStartTs || 0) < 2500);
           STATE.activeScreen = 'PITCH';
-          resetGame(true);
+          STATE._lastMpAutoStartTs = Date.now();
+          if (!alreadyAutoStarted) {
+            resetGame(true);
+          } else {
+            renderAll();
+            startTurnTimer(true);
+          }
           setTimeout(resizeCanvas, 20);
         } else if (msg.type === 'TIMER_SYNC') {
           // Keep 15s countdown strictly synchronized across both screens!
@@ -2512,14 +2619,41 @@
         if (!Array.isArray(STATE.friendsMap[me])) {
           STATE.friendsMap[me] = [];
         }
-        if (!STATE.friendsMap[me].includes(target)) {
+        const wasNewFriend = !STATE.friendsMap[me].includes(target);
+        if (wasNewFriend) {
           STATE.friendsMap[me].unshift(target);
           saveFriendsMap();
           saveSessionStats(true);
-          showFriendFeedback(`✓ Added @${target} to your Friends List! Click "Play Match" next to their name to play together.`, true);
-        } else {
-          showFriendFeedback(`@${target} is already in your Friends List!`, true);
         }
+
+        // Automatically open a multiplayer room & send a Play Match Request to the friend so they see the large invite banner immediately!
+        if (!STATE.roomCode || STATE.onlineRole !== 'HOST' || STATE.roomLocked) {
+          createMultiplayerRoom();
+        }
+        STATE.autoStartOnGuestJoin = true;
+        const inviteCode = STATE.roomCode;
+        const invitePacket = {
+          type: 'FRIEND_MATCH_INVITE',
+          fromUser: me,
+          fromFlag: STATE.myCountryFlag || '🇮🇳',
+          fromCode: STATE.myCountryCode || '+91',
+          fromElo: STATE.eloRating || 1500,
+          toUser: target,
+          roomCode: inviteCode,
+          autoStart: true,
+          timestamp: Date.now()
+        };
+        broadcastFriendEventPacket(invitePacket);
+        if (typeof window.__sendCloudFriendInvite === 'function') {
+          try {
+            window.__sendCloudFriendInvite(target, me, STATE.myCountryFlag || '🇮🇳', inviteCode);
+          } catch (e) {}
+        }
+
+        showFriendFeedback(
+          `✓ @${target} is in your Friends List & a live Play Match Request (Room ${inviteCode}) was sent! As soon as @${target} clicks Join on their banner, your multiplayer match will start automatically!`,
+          true
+        );
 
         // Request global sync so if target has played on another device we pull their latest rating
         broadcastGlobalLeaderboardSync(true, true);
@@ -2551,21 +2685,23 @@
           saveFriendsMap();
         }
 
-        // Check if this friend is already hosting an open room we can join immediately!
+        // Check if this friend is already hosting an open room we can join & auto-start immediately!
         const friendOpenRoom = STATE.activeOpenRooms && STATE.activeOpenRooms[target];
         if (friendOpenRoom && friendOpenRoom.roomCode && (Date.now() - (friendOpenRoom.timestamp || 0) < 600000)) {
-          STATE.activeScreen = 'MP_SETUP';
-          joinMultiplayerRoom(friendOpenRoom.roomCode);
+          STATE.autoStartOnGuestJoin = true;
+          STATE.activeScreen = 'PITCH';
+          joinMultiplayerRoom(friendOpenRoom.roomCode, true);
           return;
         }
 
-        // Otherwise, create a fresh Multiplayer Room as Host (P1) and broadcast a direct invite to `target`!
+        // Otherwise, create a fresh Multiplayer Room as Host (P1), enable auto-start on join, and broadcast a direct invite to `target`!
         createMultiplayerRoom();
+        STATE.autoStartOnGuestJoin = true;
         const code = STATE.roomCode;
         STATE.activeScreen = 'MP_SETUP';
-        updateNetStatusUI(`📨 Invited @${target} to Room ${code} • Waiting for @${target} to join...`, false);
+        updateNetStatusUI(`📨 Invited @${target} to Room ${code} • Match will auto-start when @${target} joins!`, false);
         if (el.inlineLobbyWaitHint) {
-          el.inlineLobbyWaitHint.textContent = `📨 Live Match Invite sent to @${target} (Room Code: ${code})! They can click "Accept & Play" on their screen or enter ${code}.`;
+          el.inlineLobbyWaitHint.textContent = `📨 Live Match Invite sent to @${target} (Room Code: ${code})! When @${target} clicks "Join & Start Match" on their banner, the match starts automatically!`;
         }
 
         broadcastFriendEventPacket({
@@ -2576,8 +2712,15 @@
           fromElo: STATE.eloRating || 1500,
           toUser: target,
           roomCode: code,
+          autoStart: true,
           timestamp: Date.now()
         });
+
+        if (typeof window.__sendCloudFriendInvite === 'function') {
+          try {
+            window.__sendCloudFriendInvite(target, me, STATE.myCountryFlag || '🇮🇳', code);
+          } catch (e) {}
+        }
 
         renderAll();
       }
@@ -2605,6 +2748,9 @@
 
         updateNetStatusUI(`⏳ Room ${code} Created • Waiting for Player 2...`, false);
         setupBroadcastFallback(code);
+        if (typeof window.__bindCloudRoom === 'function') {
+          try { window.__bindCloudRoom(code, 'HOST'); } catch (e) {}
+        }
         STATE.activeOpenRooms[STATE.myUsername] = {
           roomCode: code,
           hostUser: STATE.myUsername,
@@ -2655,7 +2801,7 @@
         renderAll();
       }
 
-      function joinMultiplayerRoom(customCodeInput = null) {
+      function joinMultiplayerRoom(customCodeInput = null, autoStart = false) {
         if (!requireAccountAndPassword()) return;
         SoundFX.click();
         syncAuthAndPurgeFakeSeeds();
@@ -2665,6 +2811,7 @@
         STATE.mode = 'ONLINE_2P';
         STATE.roomCode = raw;
         STATE.onlineRole = 'GUEST';
+        STATE.autoStartOnGuestJoin = Boolean(autoStart);
         STATE.onlineConnected = false;
         STATE.p2Joined = false;
         STATE.roomLocked = false;
@@ -2677,6 +2824,9 @@
 
         updateNetStatusUI(`Connecting to Room ${raw} as ${STATE.myUsername}...`, false);
         setupBroadcastFallback(raw);
+        if (typeof window.__bindCloudRoom === 'function') {
+          try { window.__bindCloudRoom(raw, 'GUEST'); } catch (e) {}
+        }
 
         const myRec = ensureHumanPlayerRecord(STATE.myUsername, 1500, {
           countryCode: STATE.myCountryCode,
@@ -2692,6 +2842,7 @@
           p2CountryCode: STATE.myCountryCode,
           p2Elo: myRec.elo,
           p2Record: myRec,
+          autoStart: Boolean(autoStart),
           allPlayers: STATE.humanPlayers
         };
         sendNetMessage(joinPayload);
@@ -2746,7 +2897,11 @@
         }
         if (STATE.roomCode) {
           sendNetMessage({ type: 'ROOM_LEAVE' });
+          if (typeof window.__leaveCloudRoom === 'function') {
+            try { window.__leaveCloudRoom(STATE.roomCode); } catch (e) {}
+          }
         }
+        STATE.autoStartOnGuestJoin = false;
         stopTurnTimer();
         if (STATE.conn) {
           try { STATE.conn.close(); } catch (e) {}
@@ -3946,6 +4101,395 @@
       // ==========================================
       // 7. UI RENDERING
       // ==========================================
+      // ==========================================
+      // 6B. CONNECTED EVENTS (events.html) & ACHIEVEMENTS ENGINE
+      // ==========================================
+      const EVENT_REG_KEY = 'oddandeven_event_regs_v1';
+      const EVENT_REG_MAP_KEY = 'oddandeven_event_regs_map_v1';
+      const HC_EVENTS = [
+        {
+          id: 'duo',
+          name: 'Duo Cup · 2v2',
+          start: '2026-11-07T19:00:00+05:30',
+          closes: '2026-11-05T23:59:00+05:30',
+          ctaDefault: 'Register duo team',
+          joinedMsg: "You're registered for Duo Cup · 2v2! Share your room code with your partner before kickoff."
+        },
+        {
+          id: 'solo',
+          name: 'Solo Championship',
+          start: '2026-11-14T19:00:00+05:30',
+          closes: '2026-11-12T23:59:00+05:30',
+          ctaDefault: 'Enter solo bracket',
+          joinedMsg: 'Solo Championship bracket spot locked! Warm up against the Apex Oracle in the Bot Arena.'
+        }
+      ];
+
+      function loadEventRegistrations() {
+        try {
+          const uname = (STATE.myUsername || '').trim().toUpperCase();
+          if (STATE.isAuthenticated && uname && !isPlaceholderUsername(uname)) {
+            const rawMap = localStorage.getItem(EVENT_REG_MAP_KEY);
+            const map = rawMap ? JSON.parse(rawMap) : {};
+            if (Array.isArray(map[uname])) return map[uname];
+          }
+          const raw = localStorage.getItem(EVENT_REG_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveEventRegistrations(list) {
+        const cleanList = Array.isArray(list) ? Array.from(new Set(list)) : [];
+        try {
+          localStorage.setItem(EVENT_REG_KEY, JSON.stringify(cleanList));
+          const uname = (STATE.myUsername || '').trim().toUpperCase();
+          if (STATE.isAuthenticated && uname && !isPlaceholderUsername(uname)) {
+            const rawMap = localStorage.getItem(EVENT_REG_MAP_KEY);
+            const map = rawMap ? JSON.parse(rawMap) : {};
+            map[uname] = cleanList;
+            localStorage.setItem(EVENT_REG_MAP_KEY, JSON.stringify(map));
+          }
+        } catch (e) {}
+      }
+
+      let _eventsToastTimer = null;
+      function showEventsInlineToast(message) {
+        if (!el.eventsInlineToast || !el.eventsInlineToastText) return;
+        el.eventsInlineToastText.textContent = message;
+        el.eventsInlineToast.classList.remove('hidden');
+        if (_eventsToastTimer) clearTimeout(_eventsToastTimer);
+        _eventsToastTimer = setTimeout(() => {
+          if (el.eventsInlineToast) el.eventsInlineToast.classList.add('hidden');
+        }, 4500);
+      }
+
+      function toggleEventRegistration(eventId) {
+        if (!requireAccountAndPassword()) return;
+        const ev = HC_EVENTS.find((e) => e.id === eventId);
+        if (!ev) return;
+        SoundFX.click();
+        const now = Date.now();
+        const closesMs = new Date(ev.closes).getTime();
+        let regs = loadEventRegistrations();
+        if (regs.includes(eventId)) {
+          if (now >= closesMs) return;
+          regs = regs.filter((x) => x !== eventId);
+          showEventsInlineToast(`Registration withdrawn for ${ev.name}.`);
+        } else {
+          if (now >= closesMs) return;
+          regs.push(eventId);
+          SoundFX.runScored(6);
+          showEventsInlineToast(`✓ ${ev.joinedMsg}`);
+        }
+        saveEventRegistrations(regs);
+        renderEventsTabAndCountdowns();
+        renderAll();
+      }
+
+      function renderEventsTabAndCountdowns() {
+        const now = Date.now();
+        const regs = loadEventRegistrations();
+        const pad2 = (n) => String(n).padStart(2, '0');
+
+        if (el.sideNavEventsSub) {
+          el.sideNavEventsSub.textContent = regs.length > 0 ? `${regs.length}/2 Registered` : 'Season 1 Cups';
+        }
+        if (el.eventsRegSummaryBadge) {
+          el.eventsRegSummaryBadge.textContent = `${regs.length}/2 Registered`;
+          el.eventsRegSummaryBadge.className = regs.length > 0
+            ? 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/50'
+            : 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-slate-800 text-slate-300 border border-slate-700';
+        }
+
+        HC_EVENTS.forEach((ev) => {
+          const startMs = new Date(ev.start).getTime();
+          const closesMs = new Date(ev.closes).getTime();
+          const leftMs = Math.max(0, startMs - now);
+          const totalSec = Math.floor(leftMs / 1000);
+          const dStr = pad2(Math.floor(totalSec / 86400));
+          const hStr = pad2(Math.floor((totalSec % 86400) / 3600));
+          const mStr = pad2(Math.floor((totalSec % 3600) / 60));
+          const sStr = pad2(totalSec % 60);
+
+          const isDuo = ev.id === 'duo';
+          const dEl = isDuo ? el.hcDuoD : el.hcSoloD;
+          const hEl = isDuo ? el.hcDuoH : el.hcSoloH;
+          const mEl = isDuo ? el.hcDuoM : el.hcSoloM;
+          const sEl = isDuo ? el.hcDuoS : el.hcSoloS;
+          const stateEl = isDuo ? el.hcEvStateDuo : el.hcEvStateSolo;
+          const relEl = isDuo ? el.hcCalRelDuo : el.hcCalRelSolo;
+          const btnEl = isDuo ? el.btnJoinEventDuo : el.btnJoinEventSolo;
+
+          if (dEl) dEl.textContent = dStr;
+          if (hEl) hEl.textContent = hStr;
+          if (mEl) mEl.textContent = mStr;
+          if (sEl) sEl.textContent = sStr;
+
+          let label = 'Registration open';
+          let cls = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+          if (now >= startMs) {
+            label = 'Started';
+            cls = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+          } else if (now >= closesMs) {
+            label = 'Registration closed';
+            cls = 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30';
+          }
+          if (stateEl) {
+            stateEl.textContent = label;
+            stateEl.className = `px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border ${cls}`;
+          }
+
+          if (relEl) {
+            const daysLeft = Math.ceil(leftMs / 86400000);
+            relEl.textContent = now >= startMs ? 'started' : (daysLeft <= 1 ? 'today/tomorrow' : `in ${daysLeft} days`);
+          }
+
+          if (btnEl) {
+            const joined = regs.includes(ev.id);
+            const open = now < closesMs;
+            btnEl.disabled = !open && !joined;
+            if (joined) {
+              btnEl.textContent = open ? "You're registered ✓ (tap to withdraw)" : "You're registered ✓";
+              btnEl.className = 'w-full py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm bg-transparent text-[#0d0c12] border-2 border-[#0d0c12] transition';
+            } else {
+              btnEl.textContent = open ? ev.ctaDefault : label;
+              btnEl.className = 'w-full py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm bg-[#0d0c12] hover:bg-[#1d1b25] text-white transition shadow-md disabled:opacity-50';
+            }
+          }
+        });
+      }
+
+      function computePlayerAchievements(myRec) {
+        const rec = myRec || {};
+        const totalMatches = Math.max(STATE.sessionStats.matches || 0, rec.matches || 0, (rec.wins || 0) + (rec.losses || 0));
+        const totalWins = Math.max(STATE.sessionStats.userWins || 0, rec.wins || 0);
+        const totalRuns = Math.max(rec.totalRuns || 0, STATE.userScore || 0);
+        const highScore = Math.max(rec.highScore || 0, STATE.userScore || 0);
+        const totalWickets = Math.max(rec.wicketsTaken || 0, STATE.userMatchWickets || 0);
+        const peakElo = Math.max(rec.peak || 1500, rec.elo || 1500, STATE.peakElo || 1500);
+        const friendsCount = getMyFriendsList().length;
+        const regsCount = loadEventRegistrations().length;
+
+        return [
+          {
+            id: 'first_cap',
+            category: 'RANKED',
+            icon: '🧢',
+            title: 'Debut Cap',
+            desc: 'Complete your first official match in the Hand Cricket Arena.',
+            current: totalMatches,
+            target: 1,
+            unit: 'Match',
+            xp: 50
+          },
+          {
+            id: 'boundary_spark',
+            category: 'BATTING',
+            icon: '🏏',
+            title: 'Boundary Striker',
+            desc: 'Accumulate 50+ career runs under your player username.',
+            current: totalRuns,
+            target: 50,
+            unit: 'Runs',
+            xp: 75
+          },
+          {
+            id: 'half_century',
+            category: 'BATTING',
+            icon: '🔥',
+            title: 'Half-Century Hero (50*)',
+            desc: 'Smash 50 or more runs in a single innings.',
+            current: highScore,
+            target: 50,
+            unit: 'High Score',
+            xp: 125
+          },
+          {
+            id: 'double_ton_club',
+            category: 'BATTING',
+            icon: '👑',
+            title: '250 Career Runs Club',
+            desc: 'Score 250+ cumulative runs across Bot and Multiplayer matches.',
+            current: totalRuns,
+            target: 250,
+            unit: 'Runs',
+            xp: 150
+          },
+          {
+            id: 'first_scalp',
+            category: 'BOWLING',
+            icon: '🎯',
+            title: 'Mind-Reader Wicket',
+            desc: "Take your first wicket by matching the batter's exact hand.",
+            current: totalWickets,
+            target: 1,
+            unit: 'Wicket',
+            xp: 50
+          },
+          {
+            id: 'five_wicket_haul',
+            category: 'BOWLING',
+            icon: '⚡',
+            title: 'Golden Arm (5 Wickets)',
+            desc: 'Claim 5 career wickets through tactical number prediction.',
+            current: totalWickets,
+            target: 5,
+            unit: 'Wickets',
+            xp: 100
+          },
+          {
+            id: 'ten_wicket_master',
+            category: 'BOWLING',
+            icon: '🛡️',
+            title: 'Grandmaster Bowler (15 Wkts)',
+            desc: 'Dismiss 15 batters across your Hand Cricket career.',
+            current: totalWickets,
+            target: 15,
+            unit: 'Wickets',
+            xp: 150
+          },
+          {
+            id: 'match_winner_5',
+            category: 'RANKED',
+            icon: '🏆',
+            title: 'Arena Finisher (5 Wins)',
+            desc: 'Win 5 matches in the Hand Cricket Arena.',
+            current: totalWins,
+            target: 5,
+            unit: 'Wins',
+            xp: 100
+          },
+          {
+            id: 'elo_climber',
+            category: 'RANKED',
+            icon: '♟️',
+            title: 'Ranked Contender (1524+ Elo)',
+            desc: 'Climb to 1524+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 24,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1524 Elo',
+            unit: 'Elo',
+            xp: 120
+          },
+          {
+            id: 'tourney_contender',
+            category: 'RANKED',
+            icon: '🎟️',
+            title: 'Tournament & Squad Ready',
+            desc: 'Register for a Season 1 Event (Duo Cup or Solo Championship) or add a Friend.',
+            current: regsCount + friendsCount,
+            target: 1,
+            unit: 'Entry / Friend',
+            xp: 80
+          }
+        ];
+      }
+
+      function renderAchievementsSection(myRec, myCleanName, myFlag, myDial) {
+        const list = computePlayerAchievements(myRec);
+        const unlockedList = list.filter((a) => a.current >= a.target);
+        const unlockedCount = unlockedList.length;
+        const totalCount = list.length;
+        const pct = Math.round((unlockedCount / totalCount) * 100);
+        const earnedXp = unlockedList.reduce((sum, a) => sum + a.xp, 0);
+        const totalXp = list.reduce((sum, a) => sum + a.xp, 0);
+
+        if (el.sideNavAchievementsSub) {
+          el.sideNavAchievementsSub.textContent = `${unlockedCount}/${totalCount} Unlocked`;
+        }
+
+        let rankTitle = 'Rookie Striker';
+        if (unlockedCount >= 9) rankTitle = '👑 Hall of Fame Legend';
+        else if (unlockedCount >= 6) rankTitle = '🔥 Grandmaster All-Rounder';
+        else if (unlockedCount >= 3) rankTitle = '⚡ Rising Contender';
+        else if (unlockedCount >= 1) rankTitle = '🏏 Cap Holder';
+
+        if (el.achRankTierBadge) el.achRankTierBadge.textContent = rankTitle;
+        if (el.achUserFlag) el.achUserFlag.textContent = myFlag;
+        if (el.achUserHeadline) el.achUserHeadline.textContent = `${myCleanName} (${myDial})`;
+        if (el.achUserSubStats) {
+          const totalWins = Math.max(STATE.sessionStats.userWins || 0, myRec.wins || 0);
+          el.achUserSubStats.textContent = `${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wickets • ${totalWins} Wins • ${myRec.elo || 1500} Elo`;
+        }
+        if (el.achUnlockedSummaryText) {
+          el.achUnlockedSummaryText.textContent = `${unlockedCount} / ${totalCount} Unlocked (${pct}%)`;
+        }
+        if (el.achTotalXpText) {
+          el.achTotalXpText.textContent = `${earnedXp} / ${totalXp} Career XP`;
+        }
+        if (el.achOverallProgressBar) {
+          el.achOverallProgressBar.style.width = `${pct}%`;
+        }
+
+        const filter = STATE.achievementFilter || 'ALL';
+        const activeTabCls = 'py-2 px-2.5 rounded-lg text-xs font-extrabold transition bg-[#81b64c] text-white shadow';
+        const idleTabCls = 'py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white';
+        if (el.btnAchFilterAll) el.btnAchFilterAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+        if (el.btnAchFilterBatting) el.btnAchFilterBatting.className = filter === 'BATTING' ? activeTabCls : idleTabCls;
+        if (el.btnAchFilterBowling) el.btnAchFilterBowling.className = filter === 'BOWLING' ? activeTabCls : idleTabCls;
+        if (el.btnAchFilterRanked) el.btnAchFilterRanked.className = filter === 'RANKED' ? activeTabCls : idleTabCls;
+
+        if (!el.achievementsGridList) return;
+        const visibleItems = filter === 'ALL' ? list : list.filter((a) => a.category === filter);
+        el.achievementsGridList.innerHTML = visibleItems.map((a) => {
+          const isUnlocked = a.current >= a.target;
+          const progPct = Math.max(0, Math.min(100, Math.round((Math.min(a.current, a.target) / a.target) * 100)));
+          const progressLabel = a.displayCurrent
+            ? `${a.displayCurrent} / ${a.displayTarget}`
+            : `${Math.min(a.current, a.target)} / ${a.target} ${a.unit}`;
+
+          return `
+            <div class="p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
+              isUnlocked
+                ? 'bg-gradient-to-br from-[#81b64c]/20 via-[#22201d] to-[#191816] border-[#81b64c] shadow-lg'
+                : 'bg-[#1d1c19] border-[#3d3a36] opacity-85'
+            }">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3 min-w-0">
+                  <span class="w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center text-2xl border ${
+                    isUnlocked
+                      ? 'bg-[#81b64c]/25 border-[#a3d96c]/60 shadow-inner'
+                      : 'bg-slate-900 border-slate-700 grayscale opacity-75'
+                  }">${a.icon}</span>
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <h3 class="text-xs sm:text-sm font-black ${isUnlocked ? 'text-white' : 'text-slate-200'} truncate">${a.title}</h3>
+                      <span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold ${
+                        isUnlocked ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/40' : 'bg-slate-800 text-slate-400'
+                      }">+${a.xp} XP</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed mt-0.5">${a.desc}</p>
+                  </div>
+                </div>
+                <span class="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold uppercase ${
+                  isUnlocked
+                    ? 'bg-emerald-500/20 text-[#a3d96c] border border-[#81b64c]/50'
+                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                }">
+                  ${isUnlocked ? '✓ Unlocked' : 'Locked'}
+                </span>
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-[10px] font-mono-num">
+                  <span class="${isUnlocked ? 'text-[#a3d96c] font-bold' : 'text-slate-400'}">${progressLabel}</span>
+                  <span class="${isUnlocked ? 'text-yellow-300 font-extrabold' : 'text-slate-400'}">${progPct}%</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-[#141311] overflow-hidden border border-white/5">
+                  <div class="h-full transition-all duration-300 ${
+                    isUnlocked ? 'bg-gradient-to-r from-[#81b64c] to-yellow-300' : 'bg-amber-400/70'
+                  }" style="width: ${progPct}%"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
       function renderAll() {
         const mpActive = isMultiplayer();
         const myCleanName = (STATE.myUsername || 'PLAYER_1').trim().toUpperCase();
@@ -4148,7 +4692,12 @@
         if (el.sideNavFriends) {
           el.sideNavFriends.className = (STATE.activeScreen === 'FRIENDS' ? navActiveCls : navIdleCls) + ' relative';
         }
-        el.sideNavShowcase.className = STATE.activeScreen === 'SHOWCASE' ? navActiveCls : navIdleCls;
+        if (el.sideNavShowcase) {
+          el.sideNavShowcase.className = STATE.activeScreen === 'SHOWCASE' ? navActiveCls : navIdleCls;
+        }
+        if (el.sideNavAchievements) {
+          el.sideNavAchievements.className = STATE.activeScreen === 'ACHIEVEMENTS' ? navActiveCls : navIdleCls;
+        }
         if (el.sideNavEvents) {
           el.sideNavEvents.className = STATE.activeScreen === 'EVENTS' ? navActiveCls : navIdleCls;
         }
@@ -4207,12 +4756,17 @@
         if (el.screenFriends) {
           el.screenFriends.classList.toggle('hidden', STATE.activeScreen !== 'FRIENDS');
         }
+        if (el.screenAchievements) {
+          el.screenAchievements.classList.toggle('hidden', STATE.activeScreen !== 'ACHIEVEMENTS');
+        }
         if (el.screenEvents) {
           el.screenEvents.classList.toggle('hidden', STATE.activeScreen !== 'EVENTS');
         }
         if (el.screenLeaderboard) {
           el.screenLeaderboard.classList.toggle('hidden', STATE.activeScreen !== 'LEADERBOARD');
         }
+        renderEventsTabAndCountdowns();
+        renderAchievementsSection(myRec, myCleanName, myFlag, myDial);
 
         // Render Global Incoming Friend Invite Toast & Sidebar Badge
         const myFriends = getMyFriendsList();
@@ -4223,12 +4777,19 @@
           if (el.sideNavFriendsInviteDot) el.sideNavFriendsInviteDot.classList.remove('hidden');
           if (el.globalFriendInviteToast) {
             el.globalFriendInviteToast.classList.remove('hidden');
+            el.globalFriendInviteToast.className = 'glass-card rounded-2xl p-5 sm:p-6 border-2 border-emerald-400 bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-teal-950/95 shadow-2xl animate-pop mb-2';
             const inv = STATE.incomingFriendInvite;
             if (el.globalFriendInviteTitle) {
-              el.globalFriendInviteTitle.textContent = `🏏 ${inv.fromFlag || '🇮🇳'} ${inv.fromUser} invited you to play a 1v1 Match!`;
+              el.globalFriendInviteTitle.className = 'text-base sm:text-xl font-black text-white tracking-tight';
+              el.globalFriendInviteTitle.textContent = `🏏 ${inv.fromFlag || '🇮🇳'} ${inv.fromUser} is inviting you to join the match!`;
             }
             if (el.globalFriendInviteSub) {
-              el.globalFriendInviteSub.textContent = `Live Room Code: ${inv.roomCode} • Click Accept & Play to join instantly!`;
+              el.globalFriendInviteSub.className = 'text-xs sm:text-sm text-emerald-200 font-semibold mt-1';
+              el.globalFriendInviteSub.textContent = `Multiplayer Room ${inv.roomCode} • Tap "Join & Start Match" to launch the match directly between ${inv.fromUser} and you!`;
+            }
+            if (el.btnAcceptGlobalFriendInvite) {
+              el.btnAcceptGlobalFriendInvite.className = 'px-5 py-3 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 shadow-lg shadow-emerald-500/25 transition pulse-cta';
+              el.btnAcceptGlobalFriendInvite.textContent = '⚡ Join & Start Match →';
             }
           }
         } else {
@@ -5480,12 +6041,44 @@
         if (el.sideNavPitch) {
           el.sideNavPitch.addEventListener('click', () => switchCenterScreen('PITCH'));
         }
+        if (el.sideNavAchievements) {
+          el.sideNavAchievements.addEventListener('click', () => switchCenterScreen('ACHIEVEMENTS'));
+        }
+        if (el.btnBackFromAchievements) {
+          el.btnBackFromAchievements.addEventListener('click', () => switchCenterScreen('PITCH'));
+        }
+        const setAchFilter = (f) => {
+          SoundFX.click();
+          STATE.achievementFilter = f;
+          renderAll();
+        };
+        if (el.btnAchFilterAll) el.btnAchFilterAll.addEventListener('click', () => setAchFilter('ALL'));
+        if (el.btnAchFilterBatting) el.btnAchFilterBatting.addEventListener('click', () => setAchFilter('BATTING'));
+        if (el.btnAchFilterBowling) el.btnAchFilterBowling.addEventListener('click', () => setAchFilter('BOWLING'));
+        if (el.btnAchFilterRanked) el.btnAchFilterRanked.addEventListener('click', () => setAchFilter('RANKED'));
+
         if (el.sideNavEvents) {
-          el.sideNavEvents.addEventListener('click', () => switchCenterScreen('EVENTS'));
+          el.sideNavEvents.addEventListener('click', () => {
+            renderEventsTabAndCountdowns();
+            switchCenterScreen('EVENTS');
+          });
         }
         if (el.btnBackFromEvents) {
           el.btnBackFromEvents.addEventListener('click', () => switchCenterScreen('PITCH'));
         }
+        if (el.btnJoinEventDuo) {
+          el.btnJoinEventDuo.addEventListener('click', () => toggleEventRegistration('duo'));
+        }
+        if (el.btnJoinEventSolo) {
+          el.btnJoinEventSolo.addEventListener('click', () => toggleEventRegistration('solo'));
+        }
+        window.addEventListener('storage', (ev) => {
+          if (ev && (ev.key === EVENT_REG_KEY || ev.key === EVENT_REG_MAP_KEY)) {
+            renderEventsTabAndCountdowns();
+            renderAll();
+          }
+        });
+        setInterval(renderEventsTabAndCountdowns, 1000);
         el.sideNavBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
         el.sideNavMultiplayer.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
         if (el.sideNavFriends) {
@@ -5548,15 +6141,25 @@
           el.btnAcceptGlobalFriendInvite.addEventListener('click', () => {
             if (!STATE.incomingFriendInvite || !STATE.incomingFriendInvite.roomCode) return;
             const code = STATE.incomingFriendInvite.roomCode;
+            const me = (STATE.myUsername || '').trim().toUpperCase();
             STATE.incomingFriendInvite = null;
-            STATE.activeScreen = 'MP_SETUP';
-            joinMultiplayerRoom(code);
+            if (typeof window.__clearCloudFriendInvite === 'function' && me) {
+              try { window.__clearCloudFriendInvite(me); } catch (e) {}
+            }
+            STATE.mode = 'ONLINE_2P';
+            STATE.activeScreen = 'PITCH';
+            joinMultiplayerRoom(code, true);
+            setTimeout(resizeCanvas, 20);
           });
         }
         if (el.btnDismissGlobalFriendInvite) {
           el.btnDismissGlobalFriendInvite.addEventListener('click', () => {
             SoundFX.click();
+            const me = (STATE.myUsername || '').trim().toUpperCase();
             STATE.incomingFriendInvite = null;
+            if (typeof window.__clearCloudFriendInvite === 'function' && me) {
+              try { window.__clearCloudFriendInvite(me); } catch (e) {}
+            }
             renderAll();
           });
         }
@@ -5864,6 +6467,9 @@
             STATE.myCountryCode = activeProf.countryCode;
             STATE.myCountryFlag = activeProf.countryFlag;
             STATE.myCountryName = activeProf.countryName;
+            if (typeof window.__bindCloudInviteListener === 'function') {
+              try { window.__bindCloudInviteListener(STATE.myUsername); } catch (e) {}
+            }
             if (STATE.onlineRole !== 'GUEST') {
               STATE.p1Name = STATE.myUsername;
               STATE.p1CountryCode = STATE.myCountryCode;
@@ -6115,15 +6721,27 @@
 (function initFirebaseCloudModule() {
   'use strict';
   const firebaseConfigRaw = typeof __firebase_config !== 'undefined' && __firebase_config ? __firebase_config : null;
-  if (!firebaseConfigRaw) return;
 
   let firebaseConfig = null;
-  try {
-    firebaseConfig = typeof firebaseConfigRaw === 'string' ? JSON.parse(firebaseConfigRaw) : firebaseConfigRaw;
-  } catch (e) {
-    return;
+  if (firebaseConfigRaw) {
+    try {
+      firebaseConfig = typeof firebaseConfigRaw === 'string' ? JSON.parse(firebaseConfigRaw) : firebaseConfigRaw;
+    } catch (e) {
+      firebaseConfig = null;
+    }
   }
-  if (!firebaseConfig) return;
+  // Fallback to the project's Firebase configuration so Firestore leaderboard, invites & rooms work out of the box
+  if (!firebaseConfig) {
+    firebaseConfig = {
+      apiKey: "AIzaSyDW9c3rkUo5kvXTyAVFjvcuGsi3D0SimLk",
+      authDomain: "oddeven-1c742.firebaseapp.com",
+      projectId: "oddeven-1c742",
+      storageBucket: "oddeven-1c742.firebasestorage.app",
+      messagingSenderId: "266550623227",
+      appId: "1:266550623227:web:3edc0b6a98d2e99fa8e95e",
+      measurementId: "G-7M71J054G0"
+    };
+  }
 
   const appId = typeof __app_id !== 'undefined' ? __app_id : 'oddandeven-arena-app';
 
@@ -6133,7 +6751,7 @@
     import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
   ])
     .then(async ([appMod, authMod, firestoreMod]) => {
-      const { initializeApp } = appMod;
+      const { initializeApp, getApps, getApp } = appMod;
       const { getAuth, signInAnonymously, signInWithCustomToken } = authMod;
       const { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } = firestoreMod;
 
@@ -6142,15 +6760,21 @@
       let cloudPlayers = {};
       let cloudAccounts = {};
       let cloudPurged = [];
+      let inviteUnsub = null;
+      let boundInviteUser = null;
+      let roomUnsub = null;
+      let boundRoomCode = null;
 
       window.__syncCloudLeaderboard = async function (humanPlayersMap, usersVault, activeUsername) {
-        if (!db || !currentUser) return;
+        if (!db) return;
         try {
           if (usersVault && typeof usersVault === 'object') {
             for (const k of Object.keys(usersVault)) {
               const clean = (k || '').trim().toUpperCase();
               if (clean && clean.length >= 3 && clean !== 'GUEST' && clean !== 'PLAYER_1' && !cloudAccounts[clean]) {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), usersVault[k]);
+                cloudAccounts[clean] = usersVault[k];
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), usersVault[k]).catch(() => {});
+                setDoc(doc(db, 'accounts', clean), usersVault[k]).catch(() => {});
               }
             }
           }
@@ -6171,7 +6795,8 @@
                 mergedRec.elo !== cloudRec.elo;
               if (isActiveUser || hasNewerStats) {
                 cloudPlayers[clean] = mergedRec;
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), mergedRec);
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), mergedRec).catch(() => {});
+                setDoc(doc(db, 'leaderboard', clean), mergedRec).catch(() => {});
               }
             }
           }
@@ -6179,7 +6804,7 @@
       };
 
       window.__purgeCloudAccount = async function (username) {
-        if (!db || !currentUser || !username) return;
+        if (!db || !username) return;
         const clean = username.trim().toUpperCase();
         try {
           await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean), {
@@ -6187,56 +6812,214 @@
             purgedAt: Date.now()
           });
           await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean));
+          await deleteDoc(doc(db, 'leaderboard', clean));
           await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean));
+          await deleteDoc(doc(db, 'accounts', clean));
         } catch (e) {}
       };
 
-      try {
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        db = getFirestore(app);
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          const cred = await signInWithCustomToken(auth, __initial_auth_token);
-          currentUser = cred.user;
-        } else {
-          const cred = await signInAnonymously(auth);
-          currentUser = cred.user;
-        }
-        if (!currentUser) return;
+      // --- Real-time Friend Match Invites (Firestore) ---
+      window.__sendCloudFriendInvite = async function (toUser, fromUser, fromFlag, roomCode) {
+        if (!db || !toUser || !roomCode) return;
+        const cleanTarget = String(toUser).trim().toUpperCase();
+        const cleanFrom = String(fromUser || '').trim().toUpperCase();
+        const payload = {
+          fromUser: cleanFrom,
+          fromFlag: fromFlag || '🇮🇳',
+          roomCode: String(roomCode).trim().toUpperCase(),
+          autoStart: true,
+          timestamp: Date.now(),
+          toUser: cleanTarget
+        };
+        try {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanTarget), payload);
+          setDoc(doc(db, 'invites', cleanTarget), payload).catch(() => {});
+        } catch (e) {}
+      };
 
-        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'accounts'), (snap) => {
-          cloudAccounts = {};
-          snap.forEach((d) => { if (d.exists()) cloudAccounts[d.id] = d.data(); });
+      window.__clearCloudFriendInvite = async function (username) {
+        if (!db || !username) return;
+        const clean = String(username).trim().toUpperCase();
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean));
+          deleteDoc(doc(db, 'invites', clean)).catch(() => {});
+        } catch (e) {}
+      };
+
+      window.__bindCloudInviteListener = function (username) {
+        const clean = String(username || '').trim().toUpperCase();
+        if (!clean || clean === 'GUEST' || clean === 'PLAYER_1' || clean.length < 3) return;
+        boundInviteUser = clean;
+        if (!db) return;
+        if (typeof inviteUnsub === 'function') {
+          try { inviteUnsub(); } catch (e) {}
+          inviteUnsub = null;
+        }
+        const handleSnap = (docSnap) => {
+          if (!docSnap || !docSnap.exists()) return;
+          const data = docSnap.data();
+          if (!data || !data.roomCode || !data.fromUser) return;
+          if (Date.now() - (data.timestamp || 0) >= 180000) return;
+          if (typeof window.__onCloudFriendInvite === 'function') {
+            try {
+              window.__onCloudFriendInvite({
+                fromUser: data.fromUser,
+                fromFlag: data.fromFlag || '🇮🇳',
+                roomCode: data.roomCode,
+                autoStart: data.autoStart !== false,
+                timestamp: data.timestamp || Date.now(),
+                toUser: clean
+              });
+            } catch (e) {}
+          }
+        };
+        const unsub1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean), handleSnap, () => {});
+        const unsub2 = onSnapshot(doc(db, 'invites', clean), handleSnap, () => {});
+        inviteUnsub = () => {
+          try { unsub1(); } catch (e) {}
+          try { unsub2(); } catch (e) {}
+        };
+      };
+
+      // --- Real-time Multiplayer Room Signaling (Firestore) ---
+      window.__bindCloudRoom = function (roomCode) {
+        const cleanCode = String(roomCode || '').trim().toUpperCase();
+        if (!cleanCode) return;
+        boundRoomCode = cleanCode;
+        if (!db) return;
+        if (typeof roomUnsub === 'function') {
+          try { roomUnsub(); } catch (e) {}
+          roomUnsub = null;
+        }
+        const handleRoomSnap = (docSnap) => {
+          if (!docSnap || !docSnap.exists()) return;
+          const data = docSnap.data();
+          if (!data) return;
+          if (Array.isArray(data.messages)) {
+            data.messages.forEach((m) => {
+              if (m && typeof window.__onCloudRoomMessage === 'function') {
+                try { window.__onCloudRoomMessage(m); } catch (e) {}
+              }
+            });
+          } else if (data.lastMessage && typeof window.__onCloudRoomMessage === 'function') {
+            try { window.__onCloudRoomMessage(data.lastMessage); } catch (e) {}
+          }
+        };
+        const u1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', cleanCode), handleRoomSnap, () => {});
+        const u2 = onSnapshot(doc(db, 'rooms', cleanCode), handleRoomSnap, () => {});
+        roomUnsub = () => {
+          try { u1(); } catch (e) {}
+          try { u2(); } catch (e) {}
+        };
+      };
+
+      let recentRoomMsgs = [];
+      window.__sendCloudRoomMessage = async function (roomCode, msgObj) {
+        if (!db || !roomCode || !msgObj) return;
+        const cleanCode = String(roomCode).trim().toUpperCase();
+        recentRoomMsgs = recentRoomMsgs.filter((m) => m && (Date.now() - (m._ts || 0) < 30000)).slice(-12);
+        const stamped = Object.assign({}, msgObj, { _ts: Date.now() });
+        recentRoomMsgs.push(stamped);
+        const roomPayload = {
+          roomCode: cleanCode,
+          lastMessage: stamped,
+          messages: recentRoomMsgs,
+          updatedAt: Date.now()
+        };
+        try {
+          setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', cleanCode), roomPayload, { merge: true }).catch(() => {});
+          setDoc(doc(db, 'rooms', cleanCode), roomPayload, { merge: true }).catch(() => {});
+        } catch (e) {}
+      };
+
+      window.__leaveCloudRoom = async function (roomCode) {
+        if (typeof roomUnsub === 'function') {
+          try { roomUnsub(); } catch (e) {}
+          roomUnsub = null;
+        }
+        boundRoomCode = null;
+        recentRoomMsgs = [];
+      };
+
+      // Initialize Firebase App, Auth, and Firestore Listeners
+      try {
+        const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        try {
+          const auth = getAuth(app);
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            const cred = await signInWithCustomToken(auth, __initial_auth_token);
+            currentUser = cred.user;
+          } else {
+            const cred = await signInAnonymously(auth);
+            currentUser = cred.user;
+          }
+        } catch (authErr) {
+          // Proceed with Firestore even if Anonymous Auth is not enabled in the Firebase console
+          currentUser = { uid: 'anon-fallback' };
+        }
+
+        const mergeAndNotify = () => {
           if (typeof window.__onCloudLeaderboardUpdate === 'function') {
             window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
           }
+        };
+
+        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'accounts'), (snap) => {
+          snap.forEach((d) => { if (d.exists()) cloudAccounts[d.id.toUpperCase()] = d.data(); });
+          mergeAndNotify();
+        }, () => {});
+
+        onSnapshot(collection(db, 'accounts'), (snap) => {
+          snap.forEach((d) => { if (d.exists()) cloudAccounts[d.id.toUpperCase()] = d.data(); });
+          mergeAndNotify();
         }, () => {});
 
         let initialPushDone = false;
-        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), (snap) => {
-          cloudPlayers = {};
-          snap.forEach((d) => { if (d.exists()) cloudPlayers[d.id] = d.data(); });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+        const handleLbSnapshot = (snap) => {
+          snap.forEach((d) => {
+            if (d.exists()) {
+              const id = d.id.toUpperCase();
+              const incoming = d.data();
+              cloudPlayers[id] = typeof window.__mergeSinglePlayerRecord === 'function' && cloudPlayers[id]
+                ? window.__mergeSinglePlayerRecord(cloudPlayers[id], incoming).record
+                : incoming;
+            }
+          });
+          mergeAndNotify();
           if (!initialPushDone && typeof window.__syncCloudLeaderboard === 'function') {
             initialPushDone = true;
             try {
               const worldRaw = localStorage.getItem('oddandeven_worldwide_players_v1');
               const worldMap = worldRaw ? JSON.parse(worldRaw) : {};
-              window.__syncCloudLeaderboard(worldMap, null, null);
+              const lastUser = localStorage.getItem('oddandeven_last_user_v1') || null;
+              window.__syncCloudLeaderboard(worldMap, null, lastUser);
             } catch (e) {}
           }
-        }, () => {});
+        };
+
+        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), handleLbSnapshot, () => {});
+        onSnapshot(collection(db, 'leaderboard'), handleLbSnapshot, () => {});
 
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts'), (snap) => {
           cloudPurged = [];
           snap.forEach((d) => { if (d.exists()) cloudPurged.push(d.id.toUpperCase()); });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+          mergeAndNotify();
         }, () => {});
-      } catch (e) {}
+
+        // Bind pending invite or room listeners if user logged in before Firebase finished loading
+        const targetInviteUser = boundInviteUser || (localStorage.getItem('oddandeven_last_user_v1') || '').trim().toUpperCase();
+        if (targetInviteUser) {
+          window.__bindCloudInviteListener(targetInviteUser);
+        }
+        if (boundRoomCode) {
+          window.__bindCloudRoom(boundRoomCode);
+        }
+      } catch (e) {
+        console.warn('Firebase Cloud Init Notice:', e);
+      }
     })
-    .catch(() => {});
+    .catch((err) => {
+      console.warn('Firebase Cloud Module Load Notice:', err);
+    });
 })();
