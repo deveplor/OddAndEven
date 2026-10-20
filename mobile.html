@@ -156,6 +156,40 @@
     </div>
   </header>
 
+  <!-- NEW UPDATE VERSION 1.8 BANNER WITH CROSS (✕) ICON (Redirects to updates.html) -->
+  <div id="newUpdateBanner" class="w-full bg-gradient-to-r from-[#13251b] via-[#182936] to-[#231934] border-b border-[#a3d96c]/45 px-3 py-2 shadow-md relative z-30">
+    <div class="max-w-md mx-auto flex items-center justify-between gap-2">
+      <a id="btnBannerNewUpdate" href="updates.html" class="flex-1 flex items-center gap-2.5 text-left min-w-0 group">
+        <span class="w-7 h-7 rounded-xl bg-[#81b64c]/25 border border-[#a3d96c]/60 flex items-center justify-center text-sm shrink-0 shadow-sm">
+          🚀
+        </span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5">
+            <span class="px-1.5 py-0.2 rounded-full text-[8px] font-mono-num font-black uppercase bg-[#81b64c] text-slate-950 shrink-0">
+              NEW UPDATE v1.8
+            </span>
+            <span class="font-brand text-xs font-black text-white group-hover:text-[#a3d96c] transition truncate">
+              What's New in Version 1.8
+            </span>
+          </div>
+          <p class="text-[10px] text-cyan-200/85 truncate">
+            Achievements, Events, Cloud Sync, Bug Fixes &amp; more →
+          </p>
+        </div>
+      </a>
+      <button
+        id="btnDismissUpdateBanner"
+        type="button"
+        aria-label="Close New Update banner"
+        title="Dismiss banner"
+        onclick="event.stopPropagation();var b=document.getElementById('newUpdateBanner');if(b)b.classList.add('hidden');"
+        class="w-7 h-7 rounded-lg bg-[#181715]/90 hover:bg-rose-500/25 text-slate-300 hover:text-white border border-white/15 flex items-center justify-center text-xs font-bold shrink-0 active:scale-95 transition"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
   <!-- SLIDE-OVER BACKDROP FOR LEFT SIDEBAR -->
   <div id="drawerBackdrop" class="fixed inset-0 drawer-backdrop z-50 hidden transition-opacity"></div>
 
@@ -223,21 +257,41 @@
           </div>
         </button>
 
-        <button id="sideNavEvents" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
-          <span class="w-7 h-7 rounded-lg bg-pink-500/20 flex items-center justify-center text-sm">🎟️</span>
-          <div class="min-w-0">
-            <div class="font-extrabold text-white">Events &amp; Cups</div>
-            <div class="text-[9px] text-pink-300 font-normal">Championship Leagues</div>
+        <button id="sideNavAchievements" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
+          <span class="w-7 h-7 rounded-lg bg-yellow-500/20 border border-yellow-400/30 flex items-center justify-center text-sm">🎖️</span>
+          <div class="min-w-0 flex-1 flex items-center justify-between">
+            <div>
+              <div class="font-extrabold text-white">Achievements</div>
+              <div class="text-[9px] text-yellow-300 font-mono-num font-normal" id="sideNavAchievementsSub">0/10 Unlocked</div>
+            </div>
+            <span id="sideNavAchievementsXpPill" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-yellow-500/20 text-yellow-300 border border-yellow-400/30">0 XP</span>
           </div>
         </button>
 
-        <button id="sideNavShowcase" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e]">
-          <span class="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-sm">✨</span>
-          <div class="min-w-0">
-            <div class="font-extrabold text-white">Game Hub</div>
-            <div class="text-[9px] text-slate-400 font-normal">Mode Overview &amp; Features</div>
+        <button id="sideNavEvents" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
+          <span class="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-sm">🎟️</span>
+          <div class="min-w-0 flex-1 flex items-center justify-between">
+            <div>
+              <div class="font-extrabold text-white">Events &amp; Cups</div>
+              <div class="text-[9px] text-pink-300 font-normal" id="sideNavEventsSub">Season 1 · events.html</div>
+            </div>
+            <span id="sideNavEventsCountBadge" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-pink-500/20 text-pink-300 border border-pink-400/30">0/2</span>
           </div>
         </button>
+
+        <a id="sideNavUpdates" href="updates.html" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
+          <span class="w-7 h-7 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/40 flex items-center justify-center text-sm">🚀</span>
+          <div class="min-w-0 flex-1 flex items-center justify-between">
+            <div>
+              <div class="font-extrabold text-white">Updates &amp; Notes</div>
+              <div class="text-[9px] text-[#a3d96c] font-normal">v1.0, v1.5 &amp; v1.8 · updates.html</div>
+            </div>
+            <span class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v1.8</span>
+          </div>
+        </a>
+
+        <!-- Hidden Legacy Game Hub Hook -->
+        <button id="sideNavShowcase" type="button" class="hidden" aria-hidden="true"></button>
       </div>
 
       <!-- Quick Action Utilities -->
@@ -475,17 +529,27 @@
       </button>
     </section>
 
-    <!-- INLINE VIEW 4: LEADERBOARD -->
-    <section id="screenLeaderboard" class="hidden glass-card rounded-2xl p-4 space-y-3">
-      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
-        <div>
-          <h3 class="font-extrabold text-sm text-white flex items-center gap-1.5">
-            <span>🏆</span>
-            <span>Arena Leaderboard</span>
-          </h3>
-          <p id="lbModeSubNote" class="text-[10px] text-amber-300">Worldwide Standings • Real Players Only</p>
+    <!-- INLINE VIEW 4: LEADERBOARD (Global, Weekly Mon-Sun & Career Runs + Worldwide Sync) -->
+    <section id="screenLeaderboard" class="hidden glass-card rounded-2xl p-4 border border-amber-500/35 space-y-3">
+      <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#3d3a35]">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-extrabold text-sm text-white flex items-center gap-1.5">
+              <span>🏆</span>
+              <span>Arena Leaderboard</span>
+            </h3>
+            <span id="lbWorldSyncBadge" class="px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+              🌍 <span id="lbWorldSyncText">Synced</span>
+            </span>
+          </div>
+          <p id="lbModeSubNote" class="text-[10px] text-amber-300 truncate">Worldwide Standings • Real Players Only</p>
         </div>
-        <button id="btnBackFromLeaderboard" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btnSyncGlobalLb" type="button" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40 active:scale-95 transition">
+            🔄 Sync
+          </button>
+          <button id="btnBackFromLeaderboard" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
+        </div>
       </div>
 
       <!-- 3-Way Category Switches: Global | Weekly (Mon-Sun) | Total Runs -->
@@ -524,7 +588,7 @@
       <!-- Column Labels -->
       <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pt-1">
         <span id="lbTableLeftHeader">Player Standings</span>
-        <span id="lbTableRightHeader">Score / Elo</span>
+        <span id="lbTableRightHeader">Elo • Runs • Wkts</span>
       </div>
 
       <!-- Real Players Standings Scroll Area -->
@@ -587,16 +651,215 @@
       </div>
     </section>
 
-    <!-- INLINE VIEW 5: EVENTS -->
-    <section id="screenEvents" class="hidden glass-card rounded-2xl p-4 space-y-3">
-      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a35]">
-        <h3 class="font-extrabold text-sm text-white">🎟️ Events &amp; Tournaments</h3>
-        <button id="btnBackFromEvents" type="button" class="text-xs text-emerald-400 font-bold">← Pitch</button>
+    <!-- INLINE VIEW 5: EVENTS & TOURNAMENTS (Connected Live with events.html) -->
+    <section id="screenEvents" class="hidden glass-card rounded-2xl p-4 border border-pink-500/40 space-y-3.5">
+      <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-[#3d3a35]">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-extrabold text-sm text-white font-brand truncate">🎟️ Events &amp; Tournaments</h3>
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-[#a3d96c]/20 text-[#a3d96c] border border-[#a3d96c]/40 shrink-0">Season 1</span>
+          </div>
+          <p class="text-[10px] text-slate-300 truncate">Synced with <code class="text-[#a3d96c] font-mono-num">events.html</code> (All times in IST)</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <a href="events.html" class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-[#81b64c] text-slate-950 shadow">
+            events.html ↗
+          </a>
+          <button id="btnBackFromEvents" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530]">← Pitch</button>
+        </div>
       </div>
-      <div class="p-3 rounded-xl bg-[#191816] border border-pink-500/30 text-xs space-y-1">
-        <div class="font-black text-pink-300">OddAndEven.in Country Clash</div>
-        <p class="text-slate-400 text-[11px]">Compete with players worldwide and accumulate runs under your username!</p>
+
+      <!-- Contender Pass & Season 1 Calendar Card -->
+      <div class="p-3 rounded-xl bg-[#16151c] border border-white/10 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="font-mono-num text-[10px] font-bold text-[#a3d96c] uppercase tracking-wider">⚡ Contender Pass</span>
+          <span id="eventsRegSummaryBadge" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-slate-800 text-slate-300 border border-slate-700">
+            0/2 Registered
+          </span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span id="eventsUserFlag" class="text-2xl">🇮🇳</span>
+          <div class="min-w-0">
+            <div id="eventsUserHeadline" class="text-xs font-black text-white truncate">PLAYER (+91)</div>
+            <div id="eventsUserStatsLine" class="text-[10px] font-mono-num text-slate-400 truncate">0 Runs • 0 Wickets • 1500 Elo</div>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-white/10 space-y-1 text-[11px]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-bold text-[#f5b83d] w-12">7 Nov</span>
+            <a href="events.html#duo" class="flex-1 font-semibold text-white hover:underline truncate">Duo Cup · 2v2</a>
+            <span id="hcCalRelDuo" class="font-mono-num text-[10px] text-zinc-400">upcoming</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-bold text-[#5ad1e6] w-12">14 Nov</span>
+            <a href="events.html#solo" class="flex-1 font-semibold text-white hover:underline truncate">Solo Championship</a>
+            <span id="hcCalRelSolo" class="font-mono-num text-[10px] text-zinc-400">upcoming</span>
+          </div>
+        </div>
       </div>
+
+      <!-- Live Registration Toast -->
+      <div id="eventsInlineToast" class="hidden p-2.5 rounded-xl text-[11px] font-bold border bg-[#1d1b25] border-[#a3d96c]/50 text-[#a3d96c] flex items-center justify-between gap-2">
+        <span id="eventsInlineToastText">Registration updated!</span>
+        <a href="events.html" class="text-[10px] font-mono-num underline text-white shrink-0">events.html →</a>
+      </div>
+
+      <!-- EVENT TICKET 1: DUO CUP · 2V2 -->
+      <article class="rounded-2xl bg-[#16151c] border border-white/10 overflow-hidden shadow-lg">
+        <div class="p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-mono-num text-[10px] font-bold text-[#f5b83d]">Duo Cup · 2v2 league</span>
+            <span id="hcEvStateDuo" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
+          </div>
+          <h4 class="font-brand text-base font-bold text-white leading-snug">First Ever Duo Event for Odd &amp; Even</h4>
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Partner up with your trusted rival for the ultimate 2v2 Hand Cricket championship. Coordinate batting rotations and claim the inaugural Duo Cup trophy.
+          </p>
+          <div class="grid grid-cols-3 gap-1.5 text-[10px]">
+            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
+              <span class="text-zinc-400 block text-[9px]">Format</span>
+              <strong class="text-white">2v2 League</strong>
+            </div>
+            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
+              <span class="text-zinc-400 block text-[9px]">Team</span>
+              <strong class="text-white">You + Partner</strong>
+            </div>
+            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
+              <span class="text-zinc-400 block text-[9px]">Prize</span>
+              <strong class="text-[#f5b83d]">5,000 Elo Pool</strong>
+            </div>
+          </div>
+        </div>
+        <div class="bg-[#f5b83d] text-[#0d0c12] p-3.5 space-y-2.5 border-t-2 border-dashed border-[#0d0c12]/35">
+          <div class="flex items-baseline justify-between">
+            <span class="font-brand text-2xl font-black">7 Nov</span>
+            <span class="font-mono-num text-[10px] font-bold opacity-80">Sat · 7:00 pm IST</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5 text-center">
+            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+              <b id="hcDuoD" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">DAYS</span>
+            </div>
+            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+              <b id="hcDuoH" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">HRS</span>
+            </div>
+            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+              <b id="hcDuoM" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">MIN</span>
+            </div>
+            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+              <b id="hcDuoS" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">SEC</span>
+            </div>
+          </div>
+          <button id="btnJoinEventDuo" type="button" class="w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#0d0c12] text-white transition shadow">
+            Register duo team
+          </button>
+        </div>
+      </article>
+
+      <!-- EVENT TICKET 2: SOLO CHAMPIONSHIP -->
+      <article class="rounded-2xl bg-[#16151c] border border-white/10 overflow-hidden shadow-lg">
+        <div class="p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-mono-num text-[10px] font-bold text-[#5ad1e6]">Solo Championship · Grandmaster</span>
+            <span id="hcEvStateSolo" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
+          </div>
+          <h4 class="font-brand text-base font-bold text-white leading-snug">Who Will Become the First Champion of the Single Player Tournament?</h4>
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Face the world's finest solo strikers and outwit the 2650 Elo Apex Oracle in the knockout brackets to claim the #1 solo crown.
+          </p>
+          <div class="grid grid-cols-3 gap-1.5 text-[10px]">
+            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
+              <span class="text-zinc-400 block text-[9px]">Format</span>
+              <strong class="text-white">Solo Knockout</strong>
+            </div>
+            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
+              <span class="text-zinc-400 block text-[9px]">Final Boss</span>
+              <strong class="text-white">Oracle · 2650</strong>
+            </div>
+            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
+              <span class="text-zinc-400 block text-[9px]">Prize</span>
+              <strong class="text-[#5ad1e6]">#1 Crown + HoF</strong>
+            </div>
+          </div>
+        </div>
+        <div class="bg-[#5ad1e6] text-[#0d0c12] p-3.5 space-y-2.5 border-t-2 border-dashed border-[#0d0c12]/35">
+          <div class="flex items-baseline justify-between">
+            <span class="font-brand text-2xl font-black">14 Nov</span>
+            <span class="font-mono-num text-[10px] font-bold opacity-80">Sat · 7:00 pm IST</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5 text-center">
+            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+              <b id="hcSoloD" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">DAYS</span>
+            </div>
+            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+              <b id="hcSoloH" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">HRS</span>
+            </div>
+            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+              <b id="hcSoloM" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">MIN</span>
+            </div>
+            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+              <b id="hcSoloS" class="block font-mono-num text-sm font-extrabold">--</b>
+              <span class="text-[8px] text-zinc-400">SEC</span>
+            </div>
+          </div>
+          <button id="btnJoinEventSolo" type="button" class="w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#0d0c12] text-white transition shadow">
+            Enter solo bracket
+          </button>
+        </div>
+      </article>
+    </section>
+
+    <!-- INLINE VIEW 6: ACHIEVEMENTS & TROPHY CABINET -->
+    <section id="screenAchievements" class="hidden glass-card rounded-2xl p-4 border border-yellow-500/40 space-y-3.5">
+      <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-[#3d3a35]">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-extrabold text-sm text-white font-brand truncate">🎖️ Achievements</h3>
+            <span id="achRankTierBadge" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-yellow-500/20 text-yellow-300 border border-yellow-400/35 shrink-0">
+              Rookie Striker
+            </span>
+          </div>
+          <p class="text-[10px] text-slate-300 truncate">Career milestones across Batting, Bowling, Elo &amp; Cups</p>
+        </div>
+        <button id="btnBackFromAchievements" type="button" class="text-xs text-emerald-400 font-bold px-2.5 py-1 rounded-lg bg-[#1a1916] border border-[#383530] shrink-0">← Pitch</button>
+      </div>
+
+      <!-- Player Mastery & Progress Overview Card -->
+      <div class="p-3 rounded-xl bg-[#181715] border border-[#383530] space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="achUserFlag" class="text-xl">🇮🇳</span>
+            <div class="min-w-0">
+              <div id="achUserHeadline" class="text-xs font-black text-white truncate">PLAYER (+91)</div>
+              <div id="achUserSubStats" class="text-[10px] font-mono-num text-slate-400 truncate">0 Runs • 0 Wkts • 0 Wins • 1500 Elo</div>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <div id="achUnlockedSummaryText" class="text-xs font-black font-mono-num text-yellow-300">0/10 (0%)</div>
+            <div id="achTotalXpText" class="text-[9px] font-mono-num text-emerald-300">0 / 1000 XP</div>
+          </div>
+        </div>
+        <div class="w-full h-2 rounded-full bg-[#12110f] overflow-hidden border border-[#302e2b]">
+          <div id="achOverallProgressBar" class="h-full bg-gradient-to-r from-[#81b64c] via-amber-400 to-yellow-300 transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="grid grid-cols-4 gap-1 p-1 rounded-xl bg-[#181715] border border-[#383530] text-[10px] font-bold">
+        <button id="btnAchFilterAll" type="button" class="py-1.5 px-1.5 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate">All (10)</button>
+        <button id="btnAchFilterBatting" type="button" class="py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate">🏏 Bat</button>
+        <button id="btnAchFilterBowling" type="button" class="py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate">⚾ Bowl</button>
+        <button id="btnAchFilterRanked" type="button" class="py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate">🏆 Ranked</button>
+      </div>
+
+      <!-- Dynamic 10-Achievement Cards List -->
+      <div id="achievementsGridList" class="space-y-2 max-h-80 overflow-y-auto pr-0.5"></div>
     </section>
 
     <!-- PRIMARY ACTIVE PITCH (STICKY SCORECARD, TARGET, CANVAS, 15S CLOCK & RUNS KEYPAD) -->
@@ -1241,6 +1504,27 @@
           mergeSourceMap(STATE && STATE.humanPlayers ? STATE.humanPlayers : {});
         } catch (e) {}
 
+        try {
+          const fRaw = localStorage.getItem('oddandeven_friends_map_v1');
+          const fMap = fRaw ? JSON.parse(fRaw) : {};
+          if (fMap && typeof fMap === 'object') {
+            Object.keys(fMap).forEach((owner) => {
+              const cOwner = (owner || '').trim().toUpperCase();
+              if (cOwner && !isPlaceholderUsername(cOwner) && !purged.includes(cOwner) && !merged[cOwner]) {
+                merged[cOwner] = { name: cOwner, isRealRegisteredUser: true, elo: 1500, peak: 1500, wins: 0, losses: 0, matches: 0, totalRuns: 0, wicketsTaken: 0 };
+              }
+              if (Array.isArray(fMap[owner])) {
+                fMap[owner].forEach((fn) => {
+                  const cFn = (fn || '').trim().toUpperCase();
+                  if (cFn && !isPlaceholderUsername(cFn) && !purged.includes(cFn) && !merged[cFn]) {
+                    merged[cFn] = { name: cFn, isRealRegisteredUser: true, elo: 1500, peak: 1500, wins: 0, losses: 0, matches: 0, totalRuns: 0, wicketsTaken: 0 };
+                  }
+                });
+              }
+            });
+          }
+        } catch (e) {}
+
         return merged;
       }
 
@@ -1471,7 +1755,8 @@
       // ==========================================
       const STATE = {
         mode: 'AI', // 'AI' | 'ONLINE_2P'
-        activeScreen: 'PITCH', // 'PITCH' | 'BOT_SETUP' | 'MP_SETUP' | 'LEADERBOARD' | 'FRIENDS' | 'EVENTS' | 'SHOWCASE'
+        activeScreen: 'PITCH', // 'PITCH' | 'BOT_SETUP' | 'MP_SETUP' | 'LEADERBOARD' | 'FRIENDS' | 'ACHIEVEMENTS' | 'EVENTS' | 'SHOWCASE'
+        achievementFilter: 'ALL',
         eloRating: 1500,
         peakElo: 1500,
         friendEloRating: 1500,
@@ -1568,7 +1853,52 @@
         friendSearchResultsList: document.getElementById('friendSearchResultsList'),
         myFriendsCountPill: document.getElementById('myFriendsCountPill'),
         myFriendsListContainer: document.getElementById('myFriendsListContainer'),
+        viewAchievementsBanner: document.getElementById('viewAchievementsBanner'),
+        btnBannerViewAchievements: document.getElementById('btnBannerViewAchievements'),
+        bannerAchievementsBadge: document.getElementById('bannerAchievementsBadge'),
+        btnDismissAchievementsBanner: document.getElementById('btnDismissAchievementsBanner'),
+        sideNavAchievements: document.getElementById('sideNavAchievements'),
+        sideNavAchievementsSub: document.getElementById('sideNavAchievementsSub'),
+        sideNavAchievementsXpPill: document.getElementById('sideNavAchievementsXpPill'),
+        screenAchievements: document.getElementById('screenAchievements'),
+        btnBackFromAchievements: document.getElementById('btnBackFromAchievements'),
+        achRankTierBadge: document.getElementById('achRankTierBadge'),
+        achUserFlag: document.getElementById('achUserFlag'),
+        achUserHeadline: document.getElementById('achUserHeadline'),
+        achUserSubStats: document.getElementById('achUserSubStats'),
+        achUnlockedSummaryText: document.getElementById('achUnlockedSummaryText'),
+        achTotalXpText: document.getElementById('achTotalXpText'),
+        achOverallProgressBar: document.getElementById('achOverallProgressBar'),
+        btnAchFilterAll: document.getElementById('btnAchFilterAll'),
+        btnAchFilterBatting: document.getElementById('btnAchFilterBatting'),
+        btnAchFilterBowling: document.getElementById('btnAchFilterBowling'),
+        btnAchFilterRanked: document.getElementById('btnAchFilterRanked'),
+        achievementsGridList: document.getElementById('achievementsGridList'),
         sideNavEvents: document.getElementById('sideNavEvents'),
+        sideNavEventsSub: document.getElementById('sideNavEventsSub'),
+        sideNavEventsCountBadge: document.getElementById('sideNavEventsCountBadge'),
+        eventsRegSummaryBadge: document.getElementById('eventsRegSummaryBadge'),
+        eventsUserFlag: document.getElementById('eventsUserFlag'),
+        eventsUserHeadline: document.getElementById('eventsUserHeadline'),
+        eventsUserStatsLine: document.getElementById('eventsUserStatsLine'),
+        eventsInlineToast: document.getElementById('eventsInlineToast'),
+        eventsInlineToastText: document.getElementById('eventsInlineToastText'),
+        hcCalRelDuo: document.getElementById('hcCalRelDuo'),
+        hcCalRelSolo: document.getElementById('hcCalRelSolo'),
+        hcEvStateDuo: document.getElementById('hcEvStateDuo'),
+        hcEvStateSolo: document.getElementById('hcEvStateSolo'),
+        hcDuoD: document.getElementById('hcDuoD'),
+        hcDuoH: document.getElementById('hcDuoH'),
+        hcDuoM: document.getElementById('hcDuoM'),
+        hcDuoS: document.getElementById('hcDuoS'),
+        hcSoloD: document.getElementById('hcSoloD'),
+        hcSoloH: document.getElementById('hcSoloH'),
+        hcSoloM: document.getElementById('hcSoloM'),
+        hcSoloS: document.getElementById('hcSoloS'),
+        btnJoinEventDuo: document.getElementById('btnJoinEventDuo'),
+        btnJoinEventSolo: document.getElementById('btnJoinEventSolo'),
+        lbWorldSyncText: document.getElementById('lbWorldSyncText'),
+        btnSyncGlobalLb: document.getElementById('btnSyncGlobalLb'),
         sideNavShowcase: document.getElementById('sideNavShowcase'),
 
         sidebarUserIdentity: document.getElementById('sidebarUserIdentity'),
@@ -1898,6 +2228,9 @@
         const allPlayers = Object.values(STATE.humanPlayers).filter(
           (p) => p && typeof p.elo === 'number' && !isPlaceholderUsername(p.name)
         );
+        if (dom.lbWorldSyncText) {
+          dom.lbWorldSyncText.textContent = `${allPlayers.length} Global`;
+        }
         const highlightName = activeRec && activeRec.name ? activeRec.name.toUpperCase() : STATE.myUsername.toUpperCase();
 
         if (tab === 'GLOBAL') {
@@ -1916,6 +2249,27 @@
           if (dom.lbWinLossBig) dom.lbWinLossBig.textContent = `${activeRec.wins || 0}–${activeRec.losses || 0}`;
 
           const sorted = [...allPlayers].sort((a, b) => b.elo - a.elo || (b.totalRuns || 0) - (a.totalRuns || 0));
+          const renderMobGlobalRow = (p, rankNum, isMeRow = false) => {
+            const isMe = isMeRow || p.name === highlightName;
+            return `
+              <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="min-w-[1.5rem] h-6 px-1 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${rankNum === 1 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-400'}">#${rankNum}</span>
+                  <span class="text-base">${p.countryFlag || '🇮🇳'}</span>
+                  <div class="min-w-0">
+                    <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs flex items-center gap-1">
+                      <span>${p.name}</span>
+                      ${isMe ? '<span class="text-[9px] font-black text-emerald-300">(You)</span>' : ''}
+                    </div>
+                    <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.wins || 0}W – ${p.losses || 0}L • ${p.totalRuns || 0} Runs</div>
+                  </div>
+                </div>
+                <span class="font-mono-num font-black text-xs px-2.5 py-1 rounded-lg ${isMe ? 'bg-[#81b64c] text-white' : 'bg-[#2b2823] text-amber-300 border border-[#423f38]'} shrink-0">
+                  ${p.elo} ELO
+                </span>
+              </div>
+            `;
+          };
 
           if (sorted.length === 0) {
             dom.leaderboardStandingsList.innerHTML = `
@@ -1923,27 +2277,19 @@
                 No matches logged yet. Play to claim #1 rank!
               </div>`;
           } else {
-            dom.leaderboardStandingsList.innerHTML = sorted.map((p, idx) => {
-              const isMe = p.name === highlightName;
-              return `
-                <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <span class="w-6 h-6 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${idx === 0 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-400'}">#${idx + 1}</span>
-                    <span class="text-base">${p.countryFlag || '🇮🇳'}</span>
-                    <div class="min-w-0">
-                      <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs flex items-center gap-1">
-                        <span>${p.name}</span>
-                        ${isMe ? '<span class="text-[9px] font-black text-emerald-300">(You)</span>' : ''}
-                      </div>
-                      <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.wins || 0}W – ${p.losses || 0}L • ${p.totalRuns || 0} Runs</div>
-                    </div>
-                  </div>
-                  <span class="font-mono-num font-black text-xs px-2.5 py-1 rounded-lg ${isMe ? 'bg-[#81b64c] text-white' : 'bg-[#2b2823] text-amber-300 border border-[#423f38]'} shrink-0">
-                    ${p.elo} ELO
-                  </span>
+            const top10 = sorted.slice(0, 10);
+            const myIdx = sorted.findIndex((p) => p.name === highlightName);
+            const myRank = myIdx >= 0 ? myIdx + 1 : sorted.length + 1;
+            const myEnt = myIdx >= 0 ? sorted[myIdx] : Object.assign({}, activeRec, { name: highlightName });
+            dom.leaderboardStandingsList.innerHTML = top10.map((p, idx) => renderMobGlobalRow(p, idx + 1, p.name === highlightName)).join('') + `
+              <div class="pt-2 mt-1.5 border-t border-dashed border-[#81b64c]/45 space-y-1">
+                <div class="flex items-center justify-between text-[9px] font-mono-num font-extrabold uppercase text-[#a3d96c] px-1">
+                  <span>📌 Your Rank in Leaderboard</span>
+                  <span>#${myRank}</span>
                 </div>
-              `;
-            }).join('');
+                ${renderMobGlobalRow(myEnt, myRank, true)}
+              </div>
+            `;
           }
         } else if (tab === 'WEEKLY') {
           if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Weekly Leaderboard • Monday to Sunday Cycle';
@@ -2435,6 +2781,413 @@
         }
       }
 
+      // ==========================================
+      // CONNECTED EVENTS (events.html) & ACHIEVEMENTS ENGINE FOR MOBILE
+      // ==========================================
+      const EVENT_REG_KEY = 'oddandeven_event_regs_v1';
+      const EVENT_REG_MAP_KEY = 'oddandeven_event_regs_map_v1';
+      const HC_EVENTS = [
+        {
+          id: 'duo',
+          name: 'Duo Cup · 2v2',
+          start: '2026-11-07T19:00:00+05:30',
+          closes: '2026-11-05T23:59:00+05:30',
+          ctaDefault: 'Register duo team',
+          joinedMsg: "Registered for Duo Cup · 2v2! Share your room code with your partner before kickoff."
+        },
+        {
+          id: 'solo',
+          name: 'Solo Championship',
+          start: '2026-11-14T19:00:00+05:30',
+          closes: '2026-11-12T23:59:00+05:30',
+          ctaDefault: 'Enter solo bracket',
+          joinedMsg: 'Solo Championship bracket spot locked! Warm up in the Bot Arena.'
+        }
+      ];
+
+      function loadEventRegistrations() {
+        try {
+          const uname = (STATE.myUsername || '').trim().toUpperCase();
+          if (uname && !isPlaceholderUsername(uname)) {
+            const rawMap = localStorage.getItem(EVENT_REG_MAP_KEY);
+            const map = rawMap ? JSON.parse(rawMap) : {};
+            if (Array.isArray(map[uname])) return map[uname];
+          }
+          const raw = localStorage.getItem(EVENT_REG_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveEventRegistrations(list) {
+        const cleanList = Array.isArray(list) ? Array.from(new Set(list)) : [];
+        try {
+          localStorage.setItem(EVENT_REG_KEY, JSON.stringify(cleanList));
+          const uname = (STATE.myUsername || '').trim().toUpperCase();
+          if (uname && !isPlaceholderUsername(uname)) {
+            const rawMap = localStorage.getItem(EVENT_REG_MAP_KEY);
+            const map = rawMap ? JSON.parse(rawMap) : {};
+            map[uname] = cleanList;
+            localStorage.setItem(EVENT_REG_MAP_KEY, JSON.stringify(map));
+          }
+        } catch (e) {}
+      }
+
+      let _mobEventsToastTimer = null;
+      function showEventsInlineToast(message) {
+        if (!dom.eventsInlineToast || !dom.eventsInlineToastText) return;
+        dom.eventsInlineToastText.textContent = message;
+        dom.eventsInlineToast.classList.remove('hidden');
+        if (_mobEventsToastTimer) clearTimeout(_mobEventsToastTimer);
+        _mobEventsToastTimer = setTimeout(() => {
+          if (dom.eventsInlineToast) dom.eventsInlineToast.classList.add('hidden');
+        }, 4200);
+      }
+
+      function toggleEventRegistration(eventId) {
+        const ev = HC_EVENTS.find((e) => e.id === eventId);
+        if (!ev) return;
+        if (isPlaceholderUsername(STATE.myUsername)) {
+          dom.authModal.classList.remove('hidden');
+          dom.authModal.classList.add('flex');
+          return;
+        }
+        SoundFX.click();
+        const now = Date.now();
+        const closesMs = new Date(ev.closes).getTime();
+        let regs = loadEventRegistrations();
+        if (regs.includes(eventId)) {
+          if (now >= closesMs) return;
+          regs = regs.filter((x) => x !== eventId);
+          showEventsInlineToast(`Registration withdrawn for ${ev.name}.`);
+        } else {
+          if (now >= closesMs) return;
+          regs.push(eventId);
+          SoundFX.runScored(6);
+          showEventsInlineToast(`✓ ${ev.joinedMsg}`);
+        }
+        saveEventRegistrations(regs);
+        renderEventsTabAndCountdowns();
+        renderAchievementsSection();
+      }
+
+      function renderEventsTabAndCountdowns() {
+        const now = Date.now();
+        const regs = loadEventRegistrations();
+        const pad2 = (n) => String(n).padStart(2, '0');
+        const uRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+
+        if (dom.sideNavEventsSub) {
+          dom.sideNavEventsSub.textContent = regs.length > 0 ? `${regs.length}/2 Registered` : 'Season 1 · events.html';
+        }
+        if (dom.sideNavEventsCountBadge) {
+          dom.sideNavEventsCountBadge.textContent = `${regs.length}/2`;
+        }
+        if (dom.eventsRegSummaryBadge) {
+          dom.eventsRegSummaryBadge.textContent = `${regs.length}/2 Registered`;
+          dom.eventsRegSummaryBadge.className = regs.length > 0
+            ? 'px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/50'
+            : 'px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-slate-800 text-slate-300 border border-slate-700';
+        }
+        if (dom.eventsUserFlag) dom.eventsUserFlag.textContent = STATE.myCountryFlag || '🇮🇳';
+        if (dom.eventsUserHeadline) dom.eventsUserHeadline.textContent = `${STATE.myUsername} (${STATE.myCountryCode || '+91'})`;
+        if (dom.eventsUserStatsLine) {
+          dom.eventsUserStatsLine.textContent = `${uRec.totalRuns || 0} Runs • ${uRec.wicketsTaken || 0} Wickets • ${uRec.elo || 1500} Elo`;
+        }
+
+        HC_EVENTS.forEach((ev) => {
+          const startMs = new Date(ev.start).getTime();
+          const closesMs = new Date(ev.closes).getTime();
+          const leftMs = Math.max(0, startMs - now);
+          const totalSec = Math.floor(leftMs / 1000);
+          const dStr = pad2(Math.floor(totalSec / 86400));
+          const hStr = pad2(Math.floor((totalSec % 86400) / 3600));
+          const mStr = pad2(Math.floor((totalSec % 3600) / 60));
+          const sStr = pad2(totalSec % 60);
+
+          const isDuo = ev.id === 'duo';
+          const dEl = isDuo ? dom.hcDuoD : dom.hcSoloD;
+          const hEl = isDuo ? dom.hcDuoH : dom.hcSoloH;
+          const mEl = isDuo ? dom.hcDuoM : dom.hcSoloM;
+          const sEl = isDuo ? dom.hcDuoS : dom.hcSoloS;
+          const stateEl = isDuo ? dom.hcEvStateDuo : dom.hcEvStateSolo;
+          const relEl = isDuo ? dom.hcCalRelDuo : dom.hcCalRelSolo;
+          const btnEl = isDuo ? dom.btnJoinEventDuo : dom.btnJoinEventSolo;
+
+          if (dEl) dEl.textContent = dStr;
+          if (hEl) hEl.textContent = hStr;
+          if (mEl) mEl.textContent = mStr;
+          if (sEl) sEl.textContent = sStr;
+
+          let label = 'Registration open';
+          let cls = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+          if (now >= startMs) {
+            label = 'Started';
+            cls = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+          } else if (now >= closesMs) {
+            label = 'Registration closed';
+            cls = 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30';
+          }
+          if (stateEl) {
+            stateEl.textContent = label;
+            stateEl.className = `px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border ${cls}`;
+          }
+
+          if (relEl) {
+            const daysLeft = Math.ceil(leftMs / 86400000);
+            relEl.textContent = now >= startMs ? 'started' : (daysLeft <= 1 ? 'today/tomorrow' : `in ${daysLeft} days`);
+          }
+
+          if (btnEl) {
+            const joined = regs.includes(ev.id);
+            const open = now < closesMs;
+            btnEl.disabled = !open && !joined;
+            if (joined) {
+              btnEl.textContent = open ? "You're registered ✓ (tap to withdraw)" : "You're registered ✓";
+              btnEl.className = 'w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-transparent text-[#0d0c12] border-2 border-[#0d0c12] transition';
+            } else {
+              btnEl.textContent = open ? ev.ctaDefault : label;
+              btnEl.className = 'w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#0d0c12] text-white transition shadow disabled:opacity-50';
+            }
+          }
+        });
+      }
+
+      function computePlayerAchievements(myRec) {
+        const rec = myRec || {};
+        const totalMatches = Math.max(rec.matches || 0, (rec.wins || 0) + (rec.losses || 0));
+        const totalWins = rec.wins || 0;
+        const totalRuns = Math.max(rec.totalRuns || 0, STATE.userScore || 0);
+        const highScore = Math.max(rec.highScore || 0, STATE.userScore || 0);
+        const totalWickets = Math.max(rec.wicketsTaken || 0, STATE.userMatchWickets || 0);
+        const peakElo = Math.max(rec.peak || 1500, rec.elo || 1500, STATE.peakElo || 1500);
+        const friendsCount = loadUserFriends().length;
+        const regsCount = loadEventRegistrations().length;
+
+        return [
+          {
+            id: 'first_cap',
+            category: 'RANKED',
+            icon: '🧢',
+            title: 'Debut Cap',
+            desc: 'Complete your first official match in the Hand Cricket Arena.',
+            current: totalMatches,
+            target: 1,
+            unit: 'Match',
+            xp: 50
+          },
+          {
+            id: 'boundary_spark',
+            category: 'BATTING',
+            icon: '🏏',
+            title: 'Boundary Striker',
+            desc: 'Accumulate 50+ career runs under your player username.',
+            current: totalRuns,
+            target: 50,
+            unit: 'Runs',
+            xp: 75
+          },
+          {
+            id: 'half_century',
+            category: 'BATTING',
+            icon: '🔥',
+            title: 'Half-Century Hero (50*)',
+            desc: 'Smash 50 or more runs in a single innings.',
+            current: highScore,
+            target: 50,
+            unit: 'High Score',
+            xp: 125
+          },
+          {
+            id: 'double_ton_club',
+            category: 'BATTING',
+            icon: '👑',
+            title: '250 Career Runs Club',
+            desc: 'Score 250+ cumulative runs across Bot and Multiplayer matches.',
+            current: totalRuns,
+            target: 250,
+            unit: 'Runs',
+            xp: 150
+          },
+          {
+            id: 'first_scalp',
+            category: 'BOWLING',
+            icon: '🎯',
+            title: 'Mind-Reader Wicket',
+            desc: "Take your first wicket by matching the batter's exact hand.",
+            current: totalWickets,
+            target: 1,
+            unit: 'Wicket',
+            xp: 50
+          },
+          {
+            id: 'five_wicket_haul',
+            category: 'BOWLING',
+            icon: '⚡',
+            title: 'Golden Arm (5 Wickets)',
+            desc: 'Claim 5 career wickets through tactical number prediction.',
+            current: totalWickets,
+            target: 5,
+            unit: 'Wickets',
+            xp: 100
+          },
+          {
+            id: 'ten_wicket_master',
+            category: 'BOWLING',
+            icon: '🛡️',
+            title: 'Grandmaster Bowler (15 Wkts)',
+            desc: 'Dismiss 15 batters across your Hand Cricket career.',
+            current: totalWickets,
+            target: 15,
+            unit: 'Wickets',
+            xp: 150
+          },
+          {
+            id: 'match_winner_5',
+            category: 'RANKED',
+            icon: '🏆',
+            title: 'Arena Finisher (5 Wins)',
+            desc: 'Win 5 matches in the Hand Cricket Arena.',
+            current: totalWins,
+            target: 5,
+            unit: 'Wins',
+            xp: 100
+          },
+          {
+            id: 'elo_climber',
+            category: 'RANKED',
+            icon: '♟️',
+            title: 'Ranked Contender (1524+ Elo)',
+            desc: 'Climb to 1524+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 24,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1524 Elo',
+            unit: 'Elo',
+            xp: 120
+          },
+          {
+            id: 'tourney_contender',
+            category: 'RANKED',
+            icon: '🎟️',
+            title: 'Tournament & Squad Ready',
+            desc: 'Register for a Season 1 Event (Duo Cup or Solo Championship) or add a Friend.',
+            current: regsCount + friendsCount,
+            target: 1,
+            unit: 'Entry / Friend',
+            xp: 80
+          }
+        ];
+      }
+
+      function renderAchievementsSection() {
+        const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+        const list = computePlayerAchievements(myRec);
+        const unlockedList = list.filter((a) => a.current >= a.target);
+        const unlockedCount = unlockedList.length;
+        const totalCount = list.length;
+        const pct = Math.round((unlockedCount / totalCount) * 100);
+        const earnedXp = unlockedList.reduce((sum, a) => sum + a.xp, 0);
+        const totalXp = list.reduce((sum, a) => sum + a.xp, 0);
+
+        if (dom.sideNavAchievementsSub) {
+          dom.sideNavAchievementsSub.textContent = `${unlockedCount}/${totalCount} Unlocked`;
+        }
+        if (dom.sideNavAchievementsXpPill) {
+          dom.sideNavAchievementsXpPill.textContent = `${earnedXp} XP`;
+        }
+        if (dom.bannerAchievementsBadge) {
+          dom.bannerAchievementsBadge.textContent = `${unlockedCount}/${totalCount} Unlocked`;
+        }
+
+        let rankTitle = 'Rookie Striker';
+        if (unlockedCount >= 9) rankTitle = '👑 Hall of Fame Legend';
+        else if (unlockedCount >= 6) rankTitle = '🔥 Grandmaster All-Rounder';
+        else if (unlockedCount >= 3) rankTitle = '⚡ Rising Contender';
+        else if (unlockedCount >= 1) rankTitle = '🏏 Cap Holder';
+
+        if (dom.achRankTierBadge) dom.achRankTierBadge.textContent = rankTitle;
+        if (dom.achUserFlag) dom.achUserFlag.textContent = STATE.myCountryFlag || '🇮🇳';
+        if (dom.achUserHeadline) dom.achUserHeadline.textContent = `${STATE.myUsername} (${STATE.myCountryCode || '+91'})`;
+        if (dom.achUserSubStats) {
+          dom.achUserSubStats.textContent = `${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts • ${myRec.wins || 0} Wins • ${myRec.elo || 1500} Elo`;
+        }
+        if (dom.achUnlockedSummaryText) {
+          dom.achUnlockedSummaryText.textContent = `${unlockedCount}/${totalCount} (${pct}%)`;
+        }
+        if (dom.achTotalXpText) {
+          dom.achTotalXpText.textContent = `${earnedXp} / ${totalXp} XP`;
+        }
+        if (dom.achOverallProgressBar) {
+          dom.achOverallProgressBar.style.width = `${pct}%`;
+        }
+
+        const filter = STATE.achievementFilter || 'ALL';
+        const activeTabCls = 'py-1.5 px-1.5 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate';
+        const idleTabCls = 'py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate';
+        if (dom.btnAchFilterAll) dom.btnAchFilterAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+        if (dom.btnAchFilterBatting) dom.btnAchFilterBatting.className = filter === 'BATTING' ? activeTabCls : idleTabCls;
+        if (dom.btnAchFilterBowling) dom.btnAchFilterBowling.className = filter === 'BOWLING' ? activeTabCls : idleTabCls;
+        if (dom.btnAchFilterRanked) dom.btnAchFilterRanked.className = filter === 'RANKED' ? activeTabCls : idleTabCls;
+
+        if (!dom.achievementsGridList) return;
+        const visibleItems = filter === 'ALL' ? list : list.filter((a) => a.category === filter);
+        dom.achievementsGridList.innerHTML = visibleItems.map((a) => {
+          const isUnlocked = a.current >= a.target;
+          const progPct = Math.max(0, Math.min(100, Math.round((Math.min(a.current, a.target) / a.target) * 100)));
+          const progressLabel = a.displayCurrent
+            ? `${a.displayCurrent} / ${a.displayTarget}`
+            : `${Math.min(a.current, a.target)} / ${a.target} ${a.unit}`;
+
+          return `
+            <div class="p-3 rounded-xl border transition-all space-y-2 ${
+              isUnlocked
+                ? 'bg-gradient-to-br from-[#81b64c]/20 via-[#22201d] to-[#191816] border-[#81b64c]'
+                : 'bg-[#1b1a17] border-[#36332e] opacity-85'
+            }">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-start gap-2.5 min-w-0">
+                  <span class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-lg border ${
+                    isUnlocked
+                      ? 'bg-[#81b64c]/25 border-[#a3d96c]/60'
+                      : 'bg-slate-900 border-slate-700 grayscale opacity-75'
+                  }">${a.icon}</span>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <h4 class="text-xs font-black ${isUnlocked ? 'text-white' : 'text-slate-200'} truncate">${a.title}</h4>
+                      <span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold ${
+                        isUnlocked ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/40' : 'bg-slate-800 text-slate-400'
+                      }">+${a.xp} XP</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 leading-snug mt-0.5">${a.desc}</p>
+                  </div>
+                </div>
+                <span class="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-mono-num font-extrabold uppercase ${
+                  isUnlocked
+                    ? 'bg-emerald-500/20 text-[#a3d96c] border border-[#81b64c]/50'
+                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                }">
+                  ${isUnlocked ? '✓ Unlocked' : 'Locked'}
+                </span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-[9px] font-mono-num">
+                  <span class="${isUnlocked ? 'text-[#a3d96c] font-bold' : 'text-slate-400'}">${progressLabel}</span>
+                  <span class="${isUnlocked ? 'text-yellow-300 font-extrabold' : 'text-slate-400'}">${progPct}%</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-[#12110f] overflow-hidden">
+                  <div class="h-full transition-all duration-300 ${
+                    isUnlocked ? 'bg-gradient-to-r from-[#81b64c] to-yellow-300' : 'bg-amber-400/70'
+                  }" style="width: ${progPct}%"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
       function switchScreen(screenName) {
         SoundFX.click();
         toggleDrawer(false);
@@ -2450,8 +3203,9 @@
         dom.screenMpSetup.classList.toggle('hidden', STATE.activeScreen !== 'MP_SETUP');
         dom.screenLeaderboard.classList.toggle('hidden', STATE.activeScreen !== 'LEADERBOARD');
         if (dom.screenFriends) dom.screenFriends.classList.toggle('hidden', STATE.activeScreen !== 'FRIENDS');
+        if (dom.screenAchievements) dom.screenAchievements.classList.toggle('hidden', STATE.activeScreen !== 'ACHIEVEMENTS');
         dom.screenEvents.classList.toggle('hidden', STATE.activeScreen !== 'EVENTS');
-        dom.centerShowcasePanel.classList.toggle('hidden', STATE.activeScreen !== 'SHOWCASE');
+        if (dom.centerShowcasePanel) dom.centerShowcasePanel.classList.toggle('hidden', STATE.activeScreen !== 'SHOWCASE');
         if (STATE.activeScreen === 'PITCH') {
           startTurnTimer(true);
           setTimeout(resizeCanvas, 30);
@@ -2463,6 +3217,12 @@
         }
         if (STATE.activeScreen === 'FRIENDS') {
           renderFriendsRoster();
+        }
+        if (STATE.activeScreen === 'EVENTS') {
+          renderEventsTabAndCountdowns();
+        }
+        if (STATE.activeScreen === 'ACHIEVEMENTS') {
+          renderAchievementsSection();
         }
         renderView();
       }
@@ -3690,6 +4450,18 @@
           : (STATE.phase === 'INNINGS_1' ? '1ST INNINGS' : (STATE.phase === 'INNINGS_2' ? '2ND INNINGS' : 'GAME OVER'));
         dom.phaseBadge.textContent = dom.inningsLabel.textContent;
 
+        const navActive = 'w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 transition';
+        const navIdle = 'w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition';
+        if (dom.sideNavPitch) dom.sideNavPitch.className = STATE.activeScreen === 'PITCH' ? navActive : navIdle;
+        if (dom.sideNavBot) dom.sideNavBot.className = STATE.activeScreen === 'BOT_SETUP' ? navActive : navIdle;
+        if (dom.sideNavMultiplayer) dom.sideNavMultiplayer.className = STATE.activeScreen === 'MP_SETUP' ? navActive : navIdle;
+        if (dom.sideNavLeaderboard) dom.sideNavLeaderboard.className = STATE.activeScreen === 'LEADERBOARD' ? navActive : navIdle;
+        if (dom.sideNavFriends) dom.sideNavFriends.className = STATE.activeScreen === 'FRIENDS' ? navActive : navIdle;
+        if (dom.sideNavAchievements) dom.sideNavAchievements.className = STATE.activeScreen === 'ACHIEVEMENTS' ? navActive : navIdle;
+        if (dom.sideNavEvents) dom.sideNavEvents.className = STATE.activeScreen === 'EVENTS' ? navActive : navIdle;
+
+        renderEventsTabAndCountdowns();
+        renderAchievementsSection();
         renderTimerDisplay();
         drawCanvas();
       }
@@ -3708,8 +4480,51 @@
         if (dom.inputSearchFriendUsername) {
           dom.inputSearchFriendUsername.addEventListener('input', handleFriendsSearch);
         }
-        dom.sideNavEvents.addEventListener('click', () => switchScreen('EVENTS'));
-        dom.sideNavShowcase.addEventListener('click', () => switchScreen('SHOWCASE'));
+        if (dom.btnBannerViewAchievements) {
+          dom.btnBannerViewAchievements.addEventListener('click', () => switchScreen('ACHIEVEMENTS'));
+        }
+        if (dom.btnDismissAchievementsBanner && dom.viewAchievementsBanner) {
+          dom.btnDismissAchievementsBanner.addEventListener('click', (e) => {
+            e.stopPropagation();
+            SoundFX.click();
+            dom.viewAchievementsBanner.classList.add('hidden');
+          });
+        }
+        if (dom.sideNavAchievements) {
+          dom.sideNavAchievements.addEventListener('click', () => switchScreen('ACHIEVEMENTS'));
+        }
+        if (dom.btnBackFromAchievements) {
+          dom.btnBackFromAchievements.addEventListener('click', () => switchScreen('PITCH'));
+        }
+        const setMobAchFilter = (f) => {
+          SoundFX.click();
+          STATE.achievementFilter = f;
+          renderAchievementsSection();
+        };
+        if (dom.btnAchFilterAll) dom.btnAchFilterAll.addEventListener('click', () => setMobAchFilter('ALL'));
+        if (dom.btnAchFilterBatting) dom.btnAchFilterBatting.addEventListener('click', () => setMobAchFilter('BATTING'));
+        if (dom.btnAchFilterBowling) dom.btnAchFilterBowling.addEventListener('click', () => setMobAchFilter('BOWLING'));
+        if (dom.btnAchFilterRanked) dom.btnAchFilterRanked.addEventListener('click', () => setMobAchFilter('RANKED'));
+
+        dom.sideNavEvents.addEventListener('click', () => {
+          renderEventsTabAndCountdowns();
+          switchScreen('EVENTS');
+        });
+        if (dom.btnJoinEventDuo) {
+          dom.btnJoinEventDuo.addEventListener('click', () => toggleEventRegistration('duo'));
+        }
+        if (dom.btnJoinEventSolo) {
+          dom.btnJoinEventSolo.addEventListener('click', () => toggleEventRegistration('solo'));
+        }
+        if (dom.btnSyncGlobalLb) {
+          dom.btnSyncGlobalLb.addEventListener('click', () => {
+            SoundFX.click();
+            syncLeaderboardRegistry();
+            renderLeaderboard();
+            renderView();
+          });
+        }
+        if (dom.sideNavShowcase) dom.sideNavShowcase.addEventListener('click', () => switchScreen('SHOWCASE'));
 
         dom.btnBackFromBotSetup.addEventListener('click', () => switchScreen('PITCH'));
         dom.btnBackFromMpSetup.addEventListener('click', () => switchScreen('PITCH'));
@@ -4025,9 +4840,11 @@
 
         window.addEventListener('storage', (ev) => {
           if (!ev || !ev.key) return;
-          if (ev.key === WORLDWIDE_PLAYERS_KEY || ev.key === DESKTOP_ELO_STORAGE_KEY || ev.key === AUTH_STORAGE_KEY) {
+          if (ev.key === WORLDWIDE_PLAYERS_KEY || ev.key === DESKTOP_ELO_STORAGE_KEY || ev.key === AUTH_STORAGE_KEY || ev.key === EVENT_REG_KEY || ev.key === EVENT_REG_MAP_KEY) {
             syncLeaderboardRegistry();
             renderLeaderboard();
+            renderEventsTabAndCountdowns();
+            renderAchievementsSection();
             renderView();
           } else if (STATE.roomCode && ev.key === 'oddandeven_room_bus_' + STATE.roomCode && ev.newValue) {
             try {
@@ -4061,8 +4878,18 @@
         buildNumberButtons();
         initEvents();
         highlightBotSelectionCard(STATE.botDifficulty || 'TACTICIAN');
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const reqScreen = (urlParams.get('screen') || '').trim().toUpperCase();
+          if (reqScreen === 'EVENTS' || reqScreen === 'ACHIEVEMENTS' || reqScreen === 'LEADERBOARD') {
+            switchScreen(reqScreen);
+          }
+        } catch (e) {}
         renderView();
         renderLeaderboard();
+        renderEventsTabAndCountdowns();
+        renderAchievementsSection();
+        setInterval(renderEventsTabAndCountdowns, 1000);
         resizeCanvas();
         startTurnTimer();
       };
