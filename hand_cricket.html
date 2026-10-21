@@ -125,7 +125,7 @@
       </div>
 
       <!-- Navigation Buttons (Compact horizontal strip on mobile, full rail on desktop) -->
-      <div class="grid grid-cols-7 lg:flex lg:flex-col gap-1 sm:gap-1.5">
+      <div class="grid grid-cols-4 sm:grid-cols-7 lg:flex lg:flex-col gap-1 sm:gap-1.5">
         <!-- Sidebar 1: Play Bot (Unrated Practice vs 250-2800 Bots) -->
         <button id="sideNavBot" type="button" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
           <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-xs sm:text-base">🤖</span>
@@ -163,35 +163,38 @@
           </div>
         </button>
 
-        <!-- Sidebar 5: Achievements (Trophies, Career Milestones & Badges) -->
+        <!-- Hidden Legacy Game Hub Hook -->
+        <button id="sideNavShowcase" type="button" class="hidden" aria-hidden="true"></button>
+
+        <!-- Sidebar 6: Achievements -->
         <button id="sideNavAchievements" type="button" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
-          <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-yellow-500/15 border border-yellow-400/30 flex items-center justify-center text-xs sm:text-base">🎖️</span>
-          <div class="min-w-0">
+          <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-yellow-500/20 border border-yellow-400/30 flex items-center justify-center text-xs sm:text-base">🎖️</span>
+          <div class="min-w-0 flex-1">
             <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white truncate">Achievements</div>
             <div class="hidden lg:block text-[10px] text-yellow-300/90 font-mono-num truncate" id="sideNavAchievementsSub">0/10 Unlocked</div>
           </div>
+          <span id="sideNavAchievementsXpPill" class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-400/30">0 XP</span>
         </button>
 
-        <!-- Sidebar 6: Events (Connected to events.html) -->
+        <!-- Sidebar 7: Events (Connected to events.html) -->
         <button id="sideNavEvents" type="button" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
           <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-xs sm:text-base">🎟️</span>
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white truncate">Events</div>
-            <div class="hidden lg:block text-[10px] text-pink-300/90 truncate" id="sideNavEventsSub">Season 1 Cups</div>
+            <div class="hidden lg:block text-[10px] text-pink-300/90 truncate" id="sideNavEventsSub">Season 1 · events.html</div>
           </div>
+          <span id="sideNavEventsCountBadge" class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-pink-500/20 text-pink-300 border border-pink-400/30">0/2</span>
         </button>
 
-        <!-- Sidebar 7: Updates (Connected to updates.html — v1.0, v1.5 & v1.8 Release Notes) -->
-        <button id="sideNavUpdates" type="button" onclick="if(!window.__hcUpdatesBound){window.location.href='updates.html';}" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800 relative">
-          <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/40 flex items-center justify-center text-xs sm:text-base">🚀</span>
-          <div class="min-w-0">
-            <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white truncate flex items-center gap-1">
-              <span>Updates</span>
-              <span class="hidden xl:inline-block px-1 py-0.2 rounded text-[8px] font-mono-num font-black bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/40">v1.8</span>
-            </div>
-            <div class="hidden lg:block text-[10px] text-[#a3d96c] font-mono-num truncate" id="sideNavUpdatesSub">v1.8 Release Notes</div>
+        <!-- Sidebar 8: Updates & Notes -->
+        <a id="sideNavUpdates" href="updates.html" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800 group">
+          <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/40 flex items-center justify-center text-xs sm:text-base group-hover:scale-105 transition-transform">🚀</span>
+          <div class="min-w-0 flex-1">
+            <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white group-hover:text-[#a3d96c] truncate">Updates &amp; Notes</div>
+            <div class="hidden lg:block text-[10px] text-[#a3d96c] truncate">v1.8 Changelog</div>
           </div>
-        </button>
+          <span class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v1.8</span>
+        </a>
       </div>
     </div>
 
@@ -246,7 +249,84 @@
   <!-- RIGHT OF SIDEBAR: MAIN WORKSPACE AREA (Top Invite Banner + Top Bar + Clean Middle Column + Right Scorecard & Commentary Sidebar) -->
   <div class="flex-1 min-w-0 flex flex-col min-h-screen">
 
-    <!-- AESTHETIC TOP "INVITE YOUR FRIENDS" BANNER (Redirects to Friends Tab in Sidebar) -->
+    <!-- AESTHETIC NEW UPDATE VERSION 1.8 BANNER (Redirects to updates.html) -->
+    <div
+      id="newUpdateBanner"
+      class="w-full relative overflow-hidden bg-gradient-to-r from-[#0c140d]/95 via-[#0e1a22]/95 to-[#1a1226]/95 backdrop-blur-xl border-b border-[#a3d96c]/30 px-3 sm:px-6 py-2.5 transition-all shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-30 group/banner"
+    >
+      <!-- Ambient Radial Aura & Shimmer Highlights -->
+      <div class="absolute -left-12 -top-10 w-48 h-28 bg-[#81b64c]/20 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute left-1/3 -bottom-10 w-64 h-24 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -right-8 -top-10 w-44 h-28 bg-purple-500/15 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#a3d96c]/60 to-transparent"></div>
+
+      <div class="max-w-[1520px] mx-auto flex items-center justify-between gap-3 relative z-10">
+        <a
+          id="btnBannerNewUpdate"
+          href="updates.html"
+          class="flex-1 flex items-center gap-3 text-left min-w-0 group"
+          aria-label="View Version 1.8 release notes and changelog"
+        >
+          <!-- Glowing Animated Rocket Icon Pill -->
+          <div class="relative shrink-0">
+            <span class="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-br from-[#81b64c]/30 via-emerald-500/20 to-cyan-500/15 border border-[#a3d96c]/50 flex items-center justify-center text-base sm:text-lg shadow-md shadow-[#81b64c]/20 group-hover:scale-105 group-hover:shadow-[#81b64c]/40 group-hover:border-[#a3d96c] transition-all duration-200">
+              🚀
+            </span>
+            <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-ping absolute -top-0.5 -right-0.5"></span>
+            <span class="w-2 h-2 rounded-full bg-[#a3d96c] absolute -top-0.5 -right-0.5"></span>
+          </div>
+
+          <!-- Content Strip with Aesthetic Badge and Highlights -->
+          <div class="min-w-0 flex-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono-num font-black uppercase tracking-wider bg-gradient-to-r from-[#81b64c] via-emerald-400 to-[#a3d96c] text-slate-950 shadow-sm shrink-0">
+              <span>⚡</span>
+              <span>VERSION 1.8 LIVE</span>
+            </span>
+
+            <span class="font-brand text-xs sm:text-sm font-black text-white group-hover:text-[#a3d96c] transition-colors truncate">
+              What's New in Version 1.8
+            </span>
+
+            <!-- Feature Tags -->
+            <div class="hidden md:flex items-center gap-1.5 text-[11px] shrink-0">
+              <span class="px-2 py-0.5 rounded-lg bg-yellow-500/15 text-yellow-300 border border-yellow-400/30 font-semibold flex items-center gap-1">
+                <span>🎖️</span><span>Achievements</span>
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-pink-500/15 text-pink-300 border border-pink-400/30 font-semibold flex items-center gap-1">
+                <span>🎟️</span><span>Events &amp; Tournaments</span>
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 font-semibold flex items-center gap-1">
+                <span>☁️</span><span>Cloud Sync</span>
+              </span>
+            </div>
+
+            <span class="hidden xl:inline text-xs text-zinc-400 truncate">
+              — Top-10 Leaderboard, Bug Fixes &amp; More
+            </span>
+          </div>
+
+          <!-- CTA Pill -->
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-extrabold bg-[#81b64c]/15 hover:bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/40 group-hover:border-[#a3d96c] transition-all shrink-0 ml-auto mr-1">
+            <span>Read Changelog</span>
+            <span class="group-hover:translate-x-0.5 transition-transform font-black">→</span>
+          </span>
+        </a>
+
+        <!-- Modern Dismiss Button -->
+        <button
+          id="btnDismissUpdateBanner"
+          type="button"
+          aria-label="Close New Update banner"
+          title="Dismiss banner"
+          onclick="event.stopPropagation();var b=document.getElementById('newUpdateBanner');if(b)b.classList.add('hidden');"
+          class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-xs font-bold shrink-0 active:scale-90 transition-all"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+<!-- AESTHETIC TOP "INVITE YOUR FRIENDS" BANNER (Redirects to Friends Tab in Sidebar) -->
     <div
       id="topInviteFriendsBanner"
       role="button"
@@ -288,63 +368,6 @@
           <span>Invite Friends</span>
           <span class="font-black">→</span>
         </button>
-      </div>
-    </div>
-
-    <!-- DISMISSIBLE AESTHETIC "NEW UPDATE • VERSION 1.8" BANNER WITH CROSS (✕) ICON (Redirects to updates.html) -->
-    <div
-      id="newUpdateBanner"
-      role="region"
-      aria-label="New Update Version 1.8 Announcement"
-      class="w-full relative overflow-hidden bg-gradient-to-r from-[#13251b] via-[#182936] to-[#231934] hover:from-[#172e21] hover:via-[#1c3140] hover:to-[#2a1e3f] border-b border-[#a3d96c]/45 px-3 sm:px-6 py-2.5 transition-all shadow-lg group"
-    >
-      <!-- Ambient Aesthetic Glow Accents -->
-      <div class="absolute -left-8 -top-10 w-40 h-24 bg-[#81b64c]/25 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="absolute left-1/2 -bottom-10 w-48 h-24 bg-cyan-400/20 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="absolute right-12 -top-8 w-36 h-24 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
-
-      <div class="max-w-[1520px] mx-auto flex items-center justify-between gap-2.5 relative z-10">
-        <a
-          id="btnBannerNewUpdate"
-          href="updates.html"
-          class="flex-1 flex items-center gap-2.5 sm:gap-3 min-w-0 text-left cursor-pointer"
-        >
-          <span class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#81b64c]/35 to-cyan-500/25 border border-[#a3d96c]/60 flex items-center justify-center text-sm sm:text-base shadow-md shrink-0 group-hover:scale-105 transition-transform">
-            🚀
-          </span>
-          <div class="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 min-w-0">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono-num font-black uppercase tracking-widest bg-[#81b64c] text-slate-950 shadow-sm shrink-0">
-              <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
-              <span>NEW UPDATE • VERSION 1.8</span>
-            </span>
-            <span class="font-brand text-xs sm:text-sm font-black text-white tracking-tight group-hover:text-[#a3d96c] transition truncate">
-              What's New in v1.8: Achievements, Season 1 Events, Cloud-Based Sync, Bug Fixes &amp; Much More!
-            </span>
-            <span class="hidden xl:inline text-xs text-cyan-200/90 font-medium truncate">
-              — Click to view full v1.0, v1.5 &amp; v1.8 release notes →
-            </span>
-          </div>
-        </a>
-
-        <div class="flex items-center gap-2 shrink-0">
-          <a
-            href="updates.html"
-            class="hidden sm:inline-flex px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-[#a3d96c] via-emerald-400 to-cyan-400 hover:from-[#b5e682] hover:to-cyan-300 text-slate-950 shadow-md shadow-[#81b64c]/20 transition items-center gap-1.5 group-hover:translate-x-0.5"
-          >
-            <span>Explore v1.8</span>
-            <span class="font-black">→</span>
-          </a>
-          <button
-            id="btnDismissUpdateBanner"
-            type="button"
-            aria-label="Dismiss New Update Version 1.8 banner"
-            title="Dismiss banner"
-            onclick="event.stopPropagation();event.preventDefault();var b=document.getElementById('newUpdateBanner');if(b)b.classList.add('hidden');"
-            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900/90 hover:bg-rose-500/25 text-slate-300 hover:text-rose-200 border border-white/15 hover:border-rose-400/50 flex items-center justify-center text-xs sm:text-sm font-bold transition"
-          >
-            ✕
-          </button>
-        </div>
       </div>
     </div>
 
@@ -395,7 +418,6 @@
           <span id="phaseBadge">Toss</span>
           <span id="headerUserStatsPill"><span id="headerUserStatsText"></span></span>
           <button id="sideNavPitch" type="button"></button>
-          <button id="sideNavShowcase" type="button"></button>
           <button id="btnHeaderRemoveAccount" type="button"></button>
           <button id="btnMute" type="button"><span id="muteIcon">🔊</span><span id="muteLabel">Sound On</span></button>
           <button id="btnQuickRestart" type="button"></button>
@@ -410,7 +432,7 @@
       <div class="xl:col-span-8 flex flex-col gap-4">
 
       <!-- CLEAN STARTING UI (Two Hero Buttons: Play Bot & Play Multiplayer + Game Features) -->
-      <section id="centerShowcasePanel" class="hidden glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-cyan-500/35 animate-pop">
+      <section id="centerShowcasePanel" class="glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-cyan-500/35 animate-pop">
         <div class="absolute -right-12 -top-12 w-52 h-52 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -left-12 -bottom-12 w-52 h-52 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -711,13 +733,13 @@
           </div>
         </div>
 
-        <!-- Standings Table (Humans Only — Scrollable Top 10 + Pinned User Rank) -->
+        <!-- Standings Table (Humans Only) -->
         <div class="space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
-            <span id="lbTableLeftHeader">Top 10 Global Human Standings + Your Rank</span>
+            <span id="lbTableLeftHeader">Global Human Standings (Ranked by Elo)</span>
             <span id="lbTableRightHeader">Elo Rating</span>
           </div>
-          <div id="leaderboardStandingsList" class="space-y-2 max-h-80 sm:max-h-96 overflow-y-auto pr-1.5 scroll-smooth"></div>
+          <div id="leaderboardStandingsList" class="space-y-2"></div>
         </div>
 
         <!-- Recent Elo & Match History Log -->
@@ -828,25 +850,25 @@
         </button>
       </section>
 
-      <!-- INLINE SCREEN 4: EVENTS & TOURNAMENTS HUB (Adjusted for events.html & Connected Live) -->
-      <section id="screenEvents" class="hidden glass-card rounded-2xl p-5 border border-pink-500/40 space-y-5 animate-pop">
-        <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-[#45423e] pb-3.5">
+      <!-- INLINE SCREEN 4: EVENTS & TOURNAMENTS HUB (Connected with events.html) -->
+      <section id="screenEvents" class="hidden glass-card rounded-2xl p-5 border border-pink-500/40 space-y-4 animate-pop">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#45423e] pb-3">
           <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-[#16151c] border border-pink-400/40 flex items-center justify-center text-2xl shadow-inner">
+            <div class="w-11 h-11 rounded-2xl bg-pink-500/20 border border-pink-400/40 flex items-center justify-center text-2xl">
               🎟️
             </div>
             <div>
-              <div class="flex flex-wrap items-center gap-2">
-                <h2 class="text-lg sm:text-xl font-black text-white font-brand">OddAndEven.in — Events &amp; Tournaments</h2>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-[#a3d96c]/20 text-[#a3d96c] border border-[#a3d96c]/40">Season 1 · Hand Cricket</span>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-black text-white font-brand">OddAndEven.in Live Events</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-[#a3d96c]/20 text-[#a3d96c] border border-[#a3d96c]/40">Season 1</span>
               </div>
-              <p class="text-xs text-slate-300 mt-0.5">Official leagues with real brackets &amp; rankings. Connected live with <code class="text-[#a3d96c] font-mono-num">events.html</code> (All times in IST).</p>
+              <p class="text-xs text-slate-300">Official tournament fixtures synced live with <code class="text-[#a3d96c] font-mono-num">events.html</code> (All times in IST)</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <a id="btnOpenEventsPortal" href="events.html" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 transition shadow flex items-center gap-1.5">
-              <span>🎟️</span>
-              <span>Open events.html ↗</span>
+            <a href="events.html" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 shadow transition flex items-center gap-1">
+              <span>events.html</span>
+              <span>↗</span>
             </a>
             <button id="btnBackFromEvents" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
               ← Back to Pitch
@@ -854,200 +876,169 @@
           </div>
         </div>
 
-        <!-- Connected Player Eligibility & Season Calendar Strip (Matching events.html) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch">
-          <div class="lg:col-span-7 p-4 rounded-2xl bg-[#16151c] border border-white/10 flex flex-col justify-between gap-3">
-            <div class="flex items-center justify-between gap-2">
-              <span class="font-mono-num text-[11px] font-bold text-[#a3d96c] uppercase tracking-wider">⚡ Contender Pass · Synced with events.html</span>
-              <span id="eventsRegSummaryBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/35">
-                0/2 Registered
-              </span>
+        <!-- Season 1 Calendar Schedule Strip -->
+        <div class="p-3.5 rounded-xl bg-[#16151c] border border-white/10 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-xs font-bold text-[#a3d96c] uppercase tracking-wider">⚡ Season 1 Tournament Fixtures</span>
+            <a href="events.html" class="text-xs font-mono-num text-zinc-400 hover:text-white underline">Full Schedule in events.html →</a>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5">
+              <div class="flex items-center gap-2">
+                <span class="font-mono-num font-bold text-[#f5b83d]">7 Nov</span>
+                <a href="events.html#duo" class="font-bold text-white hover:underline">Duo Cup · 2v2</a>
+              </div>
+              <span id="hcCalRelDuo" class="font-mono-num text-[11px] text-zinc-400">upcoming</span>
             </div>
-            <div class="flex items-center gap-3">
-              <span class="text-3xl" id="eventsUserFlag">🇮🇳</span>
-              <div class="min-w-0">
-                <div class="text-sm font-black text-white truncate" id="eventsUserHeadline">Registered Contender: PLAYER (+91)</div>
-                <div class="text-xs text-slate-400 font-mono-num mt-0.5 truncate" id="eventsUserStatsLine">
-                  Connected Stats: 0 Runs • 0 Wickets • 1500 Elo
+            <div class="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5">
+              <div class="flex items-center gap-2">
+                <span class="font-mono-num font-bold text-[#5ad1e6]">14 Nov</span>
+                <a href="events.html#solo" class="font-bold text-white hover:underline">Solo Championship</a>
+              </div>
+              <span id="hcCalRelSolo" class="font-mono-num text-[11px] text-zinc-400">upcoming</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connected Player Event Eligibility Strip -->
+        <div class="p-4 rounded-xl bg-[#22201d] border border-[#45423e] flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl" id="eventsUserFlag">🇮🇳</span>
+            <div>
+              <div class="text-xs font-extrabold text-white" id="eventsUserHeadline">Registered Contender: PLAYER (+91)</div>
+              <div class="text-[11px] text-slate-400 font-mono-num mt-0.5" id="eventsUserStatsLine">
+                Connected Stats: 0 Runs • 0 Wickets • 1500 Elo
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="eventsRegSummaryBadge" class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+              0/2 Registered
+            </span>
+          </div>
+        </div>
+
+        <!-- Live Registration Feedback Toast -->
+        <div id="eventsInlineToast" class="hidden p-3 rounded-xl text-xs font-bold border bg-[#1d1b25] border-[#a3d96c]/50 text-[#a3d96c] flex items-center justify-between gap-2">
+          <span id="eventsInlineToastText">Registration updated!</span>
+          <a href="events.html" class="text-[11px] font-mono-num underline text-white shrink-0">Open events.html →</a>
+        </div>
+
+        <!-- Upcoming Season 1 Events Cards (Connected directly to events.html) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- EVENT 1: DUO CUP · 2V2 -->
+          <article class="rounded-2xl bg-[#16151c] border border-white/10 overflow-hidden shadow-lg flex flex-col justify-between">
+            <div class="p-4 space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-mono-num text-xs font-bold text-[#f5b83d]">Duo Cup · 2v2 League</span>
+                <span id="hcEvStateDuo" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
+              </div>
+              <h3 class="font-brand text-base font-bold text-white leading-snug">First Ever Duo Event for Odd &amp; Even</h3>
+              <p class="text-xs text-zinc-400 leading-relaxed">
+                Partner up with your trusted rival for the ultimate 2v2 Hand Cricket championship. Coordinate your batting rotations, lock in defensive strategies, and claim the inaugural Duo Cup trophy.
+              </p>
+              <div class="grid grid-cols-3 gap-2 text-[11px] pt-1">
+                <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10 text-center">
+                  <span class="text-zinc-400 block text-[9px]">Format</span>
+                  <strong class="text-white">2v2 League</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10 text-center">
+                  <span class="text-zinc-400 block text-[9px]">Team</span>
+                  <strong class="text-white">You + Partner</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10 text-center">
+                  <span class="text-zinc-400 block text-[9px]">Prize</span>
+                  <strong class="text-[#f5b83d]">5,000 Elo Pool</strong>
                 </div>
               </div>
             </div>
-            <p class="text-[11px] text-zinc-400 leading-relaxed">
-              Registering here or on <a href="events.html" class="text-[#a3d96c] font-bold underline">events.html</a> locks your spot under your authenticated username across both portals.
-            </p>
-          </div>
-
-          <aside class="lg:col-span-5 rounded-2xl border border-white/10 bg-[#16151c] p-4 flex flex-col justify-between" aria-label="Season calendar">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-brand font-bold text-xs uppercase tracking-wider text-zinc-300">Season 1 Calendar (IST)</h3>
-              <a href="events.html" class="text-[10px] font-mono-num text-[#a3d96c] hover:underline">Full Schedule ↗</a>
+            <div class="bg-[#f5b83d] text-[#0d0c12] p-4 space-y-3 border-t-2 border-dashed border-[#0d0c12]/35">
+              <div class="flex items-baseline justify-between">
+                <span class="font-brand text-2xl font-black">7 Nov 2026</span>
+                <span class="font-mono-num text-xs font-bold opacity-80">Sat · 7:00 pm IST</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5 text-center">
+                <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+                  <b id="hcDuoD" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">DAYS</span>
+                </div>
+                <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+                  <b id="hcDuoH" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">HRS</span>
+                </div>
+                <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+                  <b id="hcDuoM" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">MIN</span>
+                </div>
+                <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
+                  <b id="hcDuoS" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">SEC</span>
+                </div>
+              </div>
+              <button id="btnJoinEventDuo" type="button" class="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs bg-[#0d0c12] hover:bg-[#1a1824] text-white transition shadow">
+                Register duo team
+              </button>
             </div>
-            <ol id="hcEventsCalendar" class="divide-y divide-white/10 text-xs">
-              <li class="py-2.5 flex items-center gap-3">
-                <span class="font-mono-num text-xs font-bold w-14 shrink-0 text-[#f5b83d]">7 Nov</span>
-                <a href="events.html#duo" class="flex-1 font-semibold text-white hover:underline truncate">Duo Cup · 2v2</a>
-                <span id="hcCalRelDuo" class="font-mono-num text-[11px] text-zinc-400">upcoming</span>
-              </li>
-              <li class="py-2.5 flex items-center gap-3">
-                <span class="font-mono-num text-xs font-bold w-14 shrink-0 text-[#5ad1e6]">14 Nov</span>
-                <a href="events.html#solo" class="flex-1 font-semibold text-white hover:underline truncate">Solo Championship</a>
-                <span id="hcCalRelSolo" class="font-mono-num text-[11px] text-zinc-400">upcoming</span>
-              </li>
-            </ol>
-          </aside>
-        </div>
+          </article>
 
-        <!-- Live Registration Toast / Feedback Banner -->
-        <div id="eventsInlineToast" class="hidden p-3.5 rounded-xl text-xs font-bold border bg-[#1d1b25] border-[#a3d96c]/50 text-[#a3d96c] flex items-center justify-between gap-2 shadow-lg">
-          <span id="eventsInlineToastText">Registration updated!</span>
-          <a href="events.html" class="text-[11px] font-mono-num underline text-white shrink-0">View in events.html →</a>
-        </div>
-
-        <!-- EVENT TICKET 1: DUO CUP · 2V2 LEAGUE (Directly synced with events.html#duo) -->
-        <article id="hcTicketDuo" data-hc-event="duo" class="rounded-[22px] bg-[#16151c] border border-white/10 overflow-hidden grid grid-cols-1 md:grid-cols-12 shadow-xl">
-          <div class="md:col-span-8 p-5 sm:p-6 flex flex-col justify-between gap-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="font-mono-num text-xs font-bold text-[#f5b83d]">Duo Cup · 2v2 league</span>
-                <span id="hcEvStateDuo" class="px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
+          <!-- EVENT 2: SOLO CHAMPIONSHIP -->
+          <article class="rounded-2xl bg-[#16151c] border border-white/10 overflow-hidden shadow-lg flex flex-col justify-between">
+            <div class="p-4 space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-mono-num text-xs font-bold text-[#5ad1e6]">Solo Championship · Grandmaster Bracket</span>
+                <span id="hcEvStateSolo" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
               </div>
-              <a href="events.html#duo" class="text-[11px] font-mono-num font-bold text-[#f5b83d] hover:underline">events.html#duo ↗</a>
-            </div>
-
-            <div class="space-y-1.5">
-              <h3 class="font-brand text-xl sm:text-2xl font-bold tracking-tight text-white">
-                First Ever Duo Event for Odd &amp; Even
-              </h3>
-              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                Partner up with your trusted rival for the ultimate 2v2 Hand Cricket championship. Coordinate your batting rotations, lock in defensive strategies, and claim the inaugural Duo Cup trophy.
-              </p>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5 px-3">
-                <small class="block text-[10px] text-zinc-400 uppercase font-semibold">Format</small>
-                <strong class="text-xs sm:text-sm font-bold text-white">2v2 Hand Cricket</strong>
-              </div>
-              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5 px-3">
-                <small class="block text-[10px] text-zinc-400 uppercase font-semibold">Team</small>
-                <strong class="text-xs sm:text-sm font-bold text-white">You + one partner</strong>
-              </div>
-              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5 px-3">
-                <small class="block text-[10px] text-zinc-400 uppercase font-semibold">Prize</small>
-                <strong class="text-xs sm:text-sm font-bold text-[#f5b83d]">5,000 Elo pool + badge</strong>
-              </div>
-            </div>
-          </div>
-
-          <div class="md:col-span-4 bg-[#f5b83d] text-[#0d0c12] p-5 flex flex-col justify-between gap-4 border-t-2 md:border-t-0 md:border-l-2 border-dashed border-[#0d0c12]/35">
-            <div>
-              <div class="font-mono-num text-xs font-bold opacity-75">Sat · 7:00 pm IST</div>
-              <div class="font-brand text-4xl font-bold leading-none mt-1">7 <span class="text-2xl">Nov</span></div>
-            </div>
-
-            <div class="grid grid-cols-4 gap-1.5 text-center" role="timer" aria-label="Time until Duo Cup kickoff">
-              <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-xl py-2 px-1">
-                <b id="hcDuoD" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">DAYS</span>
-              </div>
-              <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-xl py-2 px-1">
-                <b id="hcDuoH" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">HRS</span>
-              </div>
-              <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-xl py-2 px-1">
-                <b id="hcDuoM" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">MIN</span>
-              </div>
-              <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-xl py-2 px-1">
-                <b id="hcDuoS" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">SEC</span>
-              </div>
-            </div>
-
-            <button id="btnJoinEventDuo" type="button" data-hc-event-join="duo" class="w-full py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm bg-[#0d0c12] hover:bg-[#1d1b25] text-white transition shadow-md">
-              Register duo team
-            </button>
-          </div>
-        </article>
-
-        <!-- EVENT TICKET 2: SOLO CHAMPIONSHIP · GRANDMASTER BRACKET (Directly synced with events.html#solo) -->
-        <article id="hcTicketSolo" data-hc-event="solo" class="rounded-[22px] bg-[#16151c] border border-white/10 overflow-hidden grid grid-cols-1 md:grid-cols-12 shadow-xl">
-          <div class="md:col-span-8 p-5 sm:p-6 flex flex-col justify-between gap-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="font-mono-num text-xs font-bold text-[#5ad1e6]">Solo Championship · Grandmaster bracket</span>
-                <span id="hcEvStateSolo" class="px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
-              </div>
-              <a href="events.html#solo" class="text-[11px] font-mono-num font-bold text-[#5ad1e6] hover:underline">events.html#solo ↗</a>
-            </div>
-
-            <div class="space-y-1.5">
-              <h3 class="font-brand text-xl sm:text-2xl font-bold tracking-tight text-white">
-                Who Will Become the First Champion of the Single Player Tournament?
-              </h3>
-              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              <h3 class="font-brand text-base font-bold text-white leading-snug">Who Will Become the First Champion of the Single Player Tournament?</h3>
+              <p class="text-xs text-zinc-400 leading-relaxed">
                 Face the world's finest solo strikers and outwit the 2650 Elo Apex Oracle in the knockout brackets. Only one competitor raises the golden shield and takes the #1 solo crown.
               </p>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5 px-3">
-                <small class="block text-[10px] text-zinc-400 uppercase font-semibold">Format</small>
-                <strong class="text-xs sm:text-sm font-bold text-white">Solo knockout bracket</strong>
-              </div>
-              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5 px-3">
-                <small class="block text-[10px] text-zinc-400 uppercase font-semibold">Final boss</small>
-                <strong class="text-xs sm:text-sm font-bold text-white">Apex Oracle · 2650 Elo</strong>
-              </div>
-              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-2.5 px-3">
-                <small class="block text-[10px] text-zinc-400 uppercase font-semibold">Prize</small>
-                <strong class="text-xs sm:text-sm font-bold text-[#5ad1e6]">#1 crown + Hall of Fame</strong>
-              </div>
-            </div>
-          </div>
-
-          <div class="md:col-span-4 bg-[#5ad1e6] text-[#0d0c12] p-5 flex flex-col justify-between gap-4 border-t-2 md:border-t-0 md:border-l-2 border-dashed border-[#0d0c12]/35">
-            <div>
-              <div class="font-mono-num text-xs font-bold opacity-75">Sat · 7:00 pm IST</div>
-              <div class="font-brand text-4xl font-bold leading-none mt-1">14 <span class="text-2xl">Nov</span></div>
-            </div>
-
-            <div class="grid grid-cols-4 gap-1.5 text-center" role="timer" aria-label="Time until Solo Championship kickoff">
-              <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-xl py-2 px-1">
-                <b id="hcSoloD" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">DAYS</span>
-              </div>
-              <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-xl py-2 px-1">
-                <b id="hcSoloH" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">HRS</span>
-              </div>
-              <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-xl py-2 px-1">
-                <b id="hcSoloM" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">MIN</span>
-              </div>
-              <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-xl py-2 px-1">
-                <b id="hcSoloS" class="block font-mono-num text-base sm:text-lg font-extrabold leading-tight">--</b>
-                <span class="text-[9px] tracking-wider text-zinc-400 block">SEC</span>
+              <div class="grid grid-cols-3 gap-2 text-[11px] pt-1">
+                <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10 text-center">
+                  <span class="text-zinc-400 block text-[9px]">Format</span>
+                  <strong class="text-white">Solo Knockout</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10 text-center">
+                  <span class="text-zinc-400 block text-[9px]">Final Boss</span>
+                  <strong class="text-white">Apex Oracle (2650)</strong>
+                </div>
+                <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10 text-center">
+                  <span class="text-zinc-400 block text-[9px]">Prize</span>
+                  <strong class="text-[#5ad1e6]">#1 Crown + Hall of Fame</strong>
+                </div>
               </div>
             </div>
-
-            <button id="btnJoinEventSolo" type="button" data-hc-event-join="solo" class="w-full py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm bg-[#0d0c12] hover:bg-[#1d1b25] text-white transition shadow-md">
-              Enter solo bracket
-            </button>
-          </div>
-        </article>
-
-        <!-- Bottom Direct Link Bar to Standalone events.html -->
-        <div class="p-3.5 rounded-xl bg-[#16151c] border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span class="text-zinc-400">Want the full-screen tournament ticket view?</span>
-          <a href="events.html" class="font-mono-num font-extrabold text-[#a3d96c] hover:underline flex items-center gap-1">
-            <span>Go to events.html</span>
-            <span>→</span>
-          </a>
+            <div class="bg-[#5ad1e6] text-[#0d0c12] p-4 space-y-3 border-t-2 border-dashed border-[#0d0c12]/35">
+              <div class="flex items-baseline justify-between">
+                <span class="font-brand text-2xl font-black">14 Nov 2026</span>
+                <span class="font-mono-num text-xs font-bold opacity-80">Sat · 7:00 pm IST</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5 text-center">
+                <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+                  <b id="hcSoloD" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">DAYS</span>
+                </div>
+                <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+                  <b id="hcSoloH" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">HRS</span>
+                </div>
+                <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+                  <b id="hcSoloM" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">MIN</span>
+                </div>
+                <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+                  <b id="hcSoloS" class="block font-mono-num text-base font-extrabold">--</b>
+                  <span class="text-[8px] text-zinc-400 uppercase">SEC</span>
+                </div>
+              </div>
+              <button id="btnJoinEventSolo" type="button" class="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs bg-[#0d0c12] hover:bg-[#1a1824] text-white transition shadow">
+                Enter solo bracket
+              </button>
+            </div>
+          </article>
         </div>
       </section>
 
-      <!-- INLINE SCREEN 4B: PLAYER ACHIEVEMENTS & TROPHY CABINET (Loaded when clicking Achievements in Left Sidebar) -->
+      <!-- INLINE SCREEN 6: ACHIEVEMENTS & TROPHY CABINET -->
       <section id="screenAchievements" class="hidden glass-card rounded-2xl p-5 border border-yellow-500/40 space-y-4 animate-pop">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#45423e] pb-3">
           <div class="flex items-center gap-3">
@@ -1061,7 +1052,7 @@
                   Rookie Striker
                 </span>
               </div>
-              <p class="text-xs text-slate-300">Unlock career badges across Batting, Bowling, Ranked Elo &amp; Season 1 Events</p>
+              <p class="text-xs text-slate-300">Career milestones across Batting, Bowling, Ranked Elo &amp; Tournaments</p>
             </div>
           </div>
           <button id="btnBackFromAchievements" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
@@ -1070,195 +1061,76 @@
         </div>
 
         <!-- Player Mastery & Progress Overview Card -->
-        <div class="p-4 rounded-2xl bg-[#22201d] border border-[#45423e] space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
+        <div class="p-4 rounded-2xl bg-[#1d1c19] border border-[#45423e] space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
               <span id="achUserFlag" class="text-2xl">🇮🇳</span>
-              <div>
-                <div id="achUserHeadline" class="text-xs sm:text-sm font-black text-white">PLAYER (+91)</div>
-                <div id="achUserSubStats" class="text-[11px] font-mono-num text-slate-400">0 Runs • 0 Wickets • 0 Wins • 1500 Elo</div>
+              <div class="min-w-0">
+                <div id="achUserHeadline" class="text-sm font-black text-white truncate">PLAYER (+91)</div>
+                <div id="achUserSubStats" class="text-xs font-mono-num text-slate-400 truncate">0 Runs • 0 Wkts • 0 Wins • 1500 Elo</div>
               </div>
             </div>
-            <div class="text-right">
-              <div id="achUnlockedSummaryText" class="text-xs sm:text-sm font-black font-mono-num text-yellow-300">0 / 10 Unlocked (0%)</div>
-              <div id="achTotalXpText" class="text-[10px] font-mono-num text-emerald-300">0 / 1,000 Career XP</div>
+            <div class="text-right shrink-0">
+              <div id="achUnlockedSummaryText" class="text-base font-black font-mono-num text-yellow-300">0/10 (0%)</div>
+              <div id="achTotalXpText" class="text-xs font-mono-num text-emerald-300 font-bold">0 / 1000 XP</div>
             </div>
           </div>
-          <div class="w-full h-2.5 rounded-full bg-[#161512] overflow-hidden border border-[#383531]">
+          <div class="w-full h-2.5 rounded-full bg-[#12110f] overflow-hidden border border-[#302e2b]">
             <div id="achOverallProgressBar" class="h-full bg-gradient-to-r from-[#81b64c] via-amber-400 to-yellow-300 transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
 
         <!-- Category Filter Tabs -->
-        <div class="grid grid-cols-4 gap-1.5 p-1.5 rounded-xl bg-[#211f1c] border border-[#45423e]">
-          <button id="btnAchFilterAll" type="button" class="py-2 px-2.5 rounded-lg text-xs font-extrabold transition bg-[#81b64c] text-white shadow">
-            🎖️ All (10)
-          </button>
-          <button id="btnAchFilterBatting" type="button" class="py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
-            🏏 Batting
-          </button>
-          <button id="btnAchFilterBowling" type="button" class="py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
-            ⚾ Bowling
-          </button>
-          <button id="btnAchFilterRanked" type="button" class="py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
-            🏆 Ranked &amp; Cups
-          </button>
+        <div class="grid grid-cols-4 gap-1.5 p-1.5 rounded-xl bg-[#211f1c] border border-[#45423e] text-xs font-bold">
+          <button id="btnAchFilterAll" type="button" class="py-2 px-3 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate">All (10)</button>
+          <button id="btnAchFilterBatting" type="button" class="py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🏏 Batting</button>
+          <button id="btnAchFilterBowling" type="button" class="py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">⚾ Bowling</button>
+          <button id="btnAchFilterRanked" type="button" class="py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🏆 Ranked</button>
         </div>
 
         <!-- Dynamic 10-Achievement Cards Grid -->
-        <div id="achievementsGridList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        <div id="achievementsGridList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[36rem] overflow-y-auto pr-1"></div>
       </section>
 
-            <!-- INLINE SCREEN 4C: UPDATES & CHANGELOG HUB (Connected to updates.html — v1.0, v1.5 & v1.8) -->
-      <section id="screenUpdates" class="hidden glass-card rounded-2xl p-5 border border-[#81b64c]/50 space-y-5 animate-pop">
-        <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-[#45423e] pb-3.5">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-[#81b64c]/20 border border-[#81b64c]/50 flex items-center justify-center text-2xl shadow-inner">
-              🚀
+      <!-- LARGE INCOMING FRIEND MATCH CALL BANNER (Fixed High-Visibility Overlay & Inline Alert with Accept or Decline) -->
+      <div id="globalFriendInviteToast" role="dialog" aria-live="assertive" aria-label="Incoming Friend Match Call" class="hidden fixed top-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-2xl z-50 rounded-3xl p-5 sm:p-6 border-2 border-emerald-400 bg-gradient-to-r from-[#0e291e] via-[#131f2e] to-[#231532] shadow-[0_24px_60px_rgba(0,0,0,0.92)] animate-pop">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+            <div class="relative shrink-0">
+              <span class="w-14 h-14 rounded-2xl bg-emerald-500/25 border-2 border-emerald-400 flex items-center justify-center text-3xl shadow-lg">📞</span>
+              <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 animate-ping absolute -top-1 -right-1"></span>
             </div>
-            <div>
+            <div class="min-w-0 space-y-1">
               <div class="flex flex-wrap items-center gap-2">
-                <h2 class="text-lg sm:text-xl font-black text-white font-brand">OddAndEven.in — Official Updates &amp; Changelog</h2>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-[#81b64c] text-slate-950">Current: Version 1.8</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase tracking-widest bg-emerald-400 text-slate-950 animate-pulse">
+                  INCOMING MATCH CALL • 1V1
+                </span>
+                <span id="globalFriendInviteRoomPill" class="px-2.5 py-0.5 rounded-lg text-[11px] font-mono-num font-extrabold bg-slate-950/90 text-amber-300 border border-amber-400/40">
+                  ROOM HC----
+                </span>
               </div>
-              <p class="text-xs text-slate-300 mt-0.5">Complete release timeline from <strong class="text-white">Version 1.0</strong> launch to <strong class="text-purple-300">Version 1.5</strong> and <strong class="text-[#a3d96c]">Version 1.8</strong>. Connected with <code class="text-[#a3d96c] font-mono-num">updates.html</code>.</p>
+              <div id="globalFriendInviteTitle" class="text-base sm:text-xl font-black text-white tracking-tight truncate">
+                🏏 Friend is calling you for a 1v1 Match!
+              </div>
+              <div id="globalFriendInviteSub" class="text-xs sm:text-sm text-emerald-200 font-semibold leading-snug">
+                Accept to automatically redirect to the pitch and start the match immediately, or Decline to dismiss.
+              </div>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <a id="btnOpenUpdatesPortal" href="updates.html" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 transition shadow flex items-center gap-1.5">
-              <span>🚀</span>
-              <span>Open updates.html ↗</span>
-            </a>
-            <button id="btnBackFromUpdates" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
-              ← Back to Pitch
+          <div class="grid grid-cols-2 sm:flex items-center gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
+            <button id="btnAcceptGlobalFriendInvite" type="button" class="px-5 py-3 rounded-2xl text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 shadow-lg shadow-emerald-500/30 transition pulse-cta flex items-center justify-center gap-1.5">
+              <span>✓</span>
+              <span>Accept &amp; Start</span>
             </button>
-          </div>
-        </div>
-
-        <!-- VERSION 1.8 (LATEST RELEASE) -->
-        <article class="rounded-2xl bg-gradient-to-br from-[#192818] via-[#1c2026] to-[#191816] border-2 border-[#81b64c] p-4 sm:p-5 space-y-3.5 shadow-xl">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-black bg-[#81b64c] text-slate-950">VERSION 1.8</span>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-emerald-500/20 text-[#a3d96c] border border-[#81b64c]/40">LATEST RELEASE • LIVE NOW</span>
-            </div>
-            <a href="updates.html#v1-8" class="text-xs font-mono-num font-bold text-[#a3d96c] hover:underline">updates.html#v1-8 ↗</a>
-          </div>
-          <div>
-            <h3 class="font-brand text-base sm:text-lg font-black text-white">Achievements, Season 1 Events, Fix Bugs, Cloud-Based Sync &amp; Much More</h3>
-            <p class="text-xs text-slate-300 mt-0.5">Our biggest arena upgrade bringing full trophy progression, tournament brackets, real-time cloud synchronization, and Top-10 + Personal Rank leaderboards.</p>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
-              <span class="text-lg">🎖️</span>
-              <div>
-                <div class="font-extrabold text-yellow-300">Achievements &amp; Trophy Cabinet</div>
-                <p class="text-[11px] text-slate-300 mt-0.5">10 unlockable career milestones &amp; XP progression across Batting, Bowling, Ranked Elo &amp; Season 1 Cups.</p>
-              </div>
-            </div>
-            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
-              <span class="text-lg">🎟️</span>
-              <div>
-                <div class="font-extrabold text-pink-300">Season 1 Events &amp; Tournaments</div>
-                <p class="text-[11px] text-slate-300 mt-0.5">Live IST countdowns and 1-click contender registration for Duo Cup (2v2) and Solo Championship.</p>
-              </div>
-            </div>
-            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
-              <span class="text-lg">☁️</span>
-              <div>
-                <div class="font-extrabold text-cyan-300">Cloud-Based Sync</div>
-                <p class="text-[11px] text-slate-300 mt-0.5">Real-time Firebase Firestore &amp; PeerJS cloud sync for accounts, ratings, rooms, and instant friend challenges.</p>
-              </div>
-            </div>
-            <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex items-start gap-2.5">
-              <span class="text-lg">🛠️</span>
-              <div>
-                <div class="font-extrabold text-emerald-300">Fix Bugs, Top-10 Rank View &amp; Much More</div>
-                <p class="text-[11px] text-slate-300 mt-0.5">Scrollable Top 10 Leaderboard + pinned personal rank row, self-healing stats, and 15s clock sync fixes.</p>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <!-- VERSION 1.5 -->
-        <article class="rounded-2xl bg-[#1d1c19] border border-purple-500/40 p-4 sm:p-5 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-black bg-purple-500/25 text-purple-200 border border-purple-400/40">VERSION 1.5</span>
-              <span class="text-[11px] font-mono-num text-purple-300 font-bold">MULTIPLAYER &amp; SOCIAL EXPANSION</span>
-            </div>
-            <a href="updates.html#v1-5" class="text-xs font-mono-num font-bold text-purple-300 hover:underline">updates.html#v1-5 ↗</a>
-          </div>
-          <h3 class="font-brand text-sm sm:text-base font-black text-white">Invite Friends, Fix Bugs, Multiplayer Games &amp; Much More</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
-              <span>🤝</span>
-              <span><strong class="text-emerald-300">Invite Friends:</strong> Search usernames, build your friends list &amp; send 1v1 match invites.</span>
-            </div>
-            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
-              <span>👥</span>
-              <span><strong class="text-purple-300">Multiplayer Games:</strong> Live 1v1 Ranked Rooms (±8 Elo) with automatic 2-player room lock.</span>
-            </div>
-            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
-              <span>🔧</span>
-              <span><strong class="text-amber-300">Fix Bugs:</strong> Fixed toss parity lock, role swap transition, and duplicate room messages.</span>
-            </div>
-            <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-2">
-              <span>✨</span>
-              <span><strong class="text-cyan-300">And Much More:</strong> Match scorecard history, Weekly (Mon–Sun) &amp; Runs leaderboards.</span>
-            </div>
-          </div>
-        </article>
-
-        <!-- VERSION 1.0 (2 CORE POINTS: WEBSITE LAUNCH & CORE FEATURES) -->
-        <article class="rounded-2xl bg-[#1d1c19] border border-cyan-500/35 p-4 sm:p-5 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">VERSION 1.0</span>
-              <span class="text-[11px] font-mono-num text-cyan-300 font-bold">FOUNDATION RELEASE</span>
-            </div>
-            <a href="updates.html#v1-0" class="text-xs font-mono-num font-bold text-cyan-300 hover:underline">updates.html#v1-0 ↗</a>
-          </div>
-          <h3 class="font-brand text-sm sm:text-base font-black text-white">Official Website Launch &amp; Core Hand Cricket Features</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
-              <div class="font-extrabold text-cyan-300">1. Official Website Launch</div>
-              <p class="text-[11px] text-slate-300 leading-relaxed">Launched OddAndEven.in with custom stadium canvas animations, synthesized Web Audio sound effects, and encrypted Country Code + 5-Digit PIN accounts.</p>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
-              <div class="font-extrabold text-[#a3d96c]">2. Core Arena Features</div>
-              <p class="text-[11px] text-slate-300 leading-relaxed">Full Odd/Even Toss &amp; 2-Innings chase rules (1–10 keypad), 15-second shot clock, 4 Elo-tiered AI bots (Sunny 450 to Apex Oracle 2650), and 3 live commentary styles.</p>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <!-- GLOBAL INCOMING FRIEND CHALLENGE BANNER (Visible on any screen when a friend invites you to play) -->
-      <div id="globalFriendInviteToast" class="hidden glass-card rounded-2xl p-3.5 border-2 border-emerald-400 bg-emerald-950/90 shadow-xl animate-pop">
-        <div class="flex flex-wrap items-center justify-between gap-2.5">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <span class="w-9 h-9 rounded-xl bg-emerald-500/25 border border-emerald-400/50 flex items-center justify-center text-lg shrink-0">🏏</span>
-            <div class="min-w-0">
-              <div id="globalFriendInviteTitle" class="text-xs sm:text-sm font-black text-white truncate">
-                Friend Match Challenge!
-              </div>
-              <div id="globalFriendInviteSub" class="text-[11px] text-emerald-200 truncate">
-                Click Accept to join your friend's room and start playing!
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 shrink-0">
-            <button id="btnAcceptGlobalFriendInvite" type="button" class="px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-400 hover:bg-emerald-300 text-slate-950 shadow-md transition">
-              ⚡ Accept &amp; Play
-            </button>
-            <button id="btnDismissGlobalFriendInvite" type="button" class="px-2.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
-              ✕
+            <button id="btnDismissGlobalFriendInvite" type="button" class="px-4 py-3 rounded-2xl text-xs sm:text-sm font-extrabold bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/50 transition flex items-center justify-center gap-1.5">
+              <span>✕</span>
+              <span>Decline</span>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- INLINE SCREEN 5: FRIENDS HUB (Search Username, Add Friends & Play With Them) -->
+      <!-- INLINE SCREEN 5: FRIENDS HUB (Search Username, Friend Requests Accept/Decline & Play Together) -->
       <section id="screenFriends" class="hidden glass-card rounded-2xl p-4 sm:p-5 border border-emerald-500/40 space-y-4 animate-pop">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#45423e] pb-3">
           <div class="flex items-center gap-3">
@@ -1267,7 +1139,7 @@
             </div>
             <div>
               <h2 class="text-base sm:text-xl font-black text-white">Friends &amp; Player Search</h2>
-              <p class="text-[11px] sm:text-xs text-slate-300">Search any player by username, add them as a friend, and play 1v1 matches together</p>
+              <p class="text-[11px] sm:text-xs text-slate-300">Send friend requests, accept or decline incoming requests, and call friends for live 1v1 matches</p>
             </div>
           </div>
           <button id="btnBackFromFriends" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
@@ -1275,10 +1147,10 @@
           </button>
         </div>
 
-        <!-- Search Bar to Find & Add Friends by Username -->
+        <!-- Search Bar to Find & Send Friend Requests by Username -->
         <div class="p-3.5 sm:p-4 rounded-2xl bg-[#1d1c19] border border-[#45423e] space-y-3">
           <label for="inputFriendSearch" class="block text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
-            🔍 Search Player by Username
+            🔍 Search Player &amp; Send Friend Request
           </label>
           <div class="flex flex-col sm:flex-row gap-2">
             <div class="relative flex-1">
@@ -1295,7 +1167,7 @@
                 🔍 Search
               </button>
               <button id="btnAddDirectFriendUsername" type="button" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl font-extrabold text-xs bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40 transition">
-                ➕ Add Username
+                ➕ Send Friend Request
               </button>
             </div>
           </div>
@@ -1312,7 +1184,21 @@
           </div>
         </div>
 
-        <!-- My Added Friends List (With One-Click "Play Together") -->
+        <!-- Incoming & Outgoing Friend Requests Section (Accept or Decline in P2 Friend List) -->
+        <div id="pendingFriendRequestsCard" class="p-3.5 sm:p-4 rounded-2xl bg-[#1d1c19] border-2 border-cyan-500/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-cyan-300">📩 Friend Requests (Accept or Decline)</span>
+              <span id="pendingFriendRequestsBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
+                0 Pending
+              </span>
+            </div>
+            <span class="text-[10px] text-slate-400 hidden sm:inline">Accepting adds both players to each other's Friends List</span>
+          </div>
+          <div id="pendingFriendRequestsList" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- My Added Friends List (With One-Click "Call for Match") -->
         <div class="p-3.5 sm:p-4 rounded-2xl bg-[#1d1c19] border border-[#45423e] space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -1321,7 +1207,7 @@
                 0 Friends
               </span>
             </div>
-            <span class="text-[10px] text-slate-400 hidden sm:inline">Click "Play Match" to create a room &amp; invite your friend</span>
+            <span class="text-[10px] text-slate-400 hidden sm:inline">Click "Call for Match" to ring your friend with a large match banner</span>
           </div>
 
           <div id="myFriendsListContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
@@ -1856,10 +1742,9 @@
           <span>— Official Hand Cricket Arena</span>
         </div>
         <div class="flex items-center gap-3">
-          <a href="updates.html" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 transition flex items-center gap-1" title="View Version 1.8 Release Notes">
-            <span>🚀</span>
-            <span>Version 1.8</span>
-          </a>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
+            Version 1.8
+          </span>
         </div>
       </div>
     </footer>
@@ -2315,7 +2200,7 @@
 
       reconcileAllNewPlayersIntoLeaderboard();
       window.addEventListener('DOMContentLoaded', function () {
-        ['sideNavLeaderboard', 'btnHeaderElo', 'btnSyncGlobalLb', 'sideNavFriends', 'sideNavAchievements', 'sideNavEvents', 'sideNavUpdates', 'topInviteFriendsBanner', 'btnTopInviteFriendsCta'].forEach(function (id) {
+        ['sideNavLeaderboard', 'btnHeaderElo', 'btnSyncGlobalLb', 'sideNavFriends', 'topInviteFriendsBanner', 'btnTopInviteFriendsCta'].forEach(function (id) {
           const elem = document.getElementById(id);
           if (elem) {
             elem.addEventListener('click', reconcileAllNewPlayersIntoLeaderboard, true);
