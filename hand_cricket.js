@@ -947,17 +947,20 @@
         }
         STATE.sessionInitialized = true;
 
-        // In AI mode or when not Guest in ONLINE_2P, P1 is myUsername; when Guest in ONLINE_2P, keep P2 as myUsername
-        if (STATE.mode !== 'ONLINE_2P' || STATE.onlineRole !== 'GUEST') {
-          STATE.p1Name = STATE.myUsername;
-          STATE.p1CountryCode = STATE.myCountryCode;
-          STATE.p1CountryFlag = STATE.myCountryFlag;
-          STATE.p1CountryName = STATE.myCountryName;
-        } else if (STATE.onlineRole === 'GUEST') {
+        // In AI mode or when not Guest in ONLINE_2P, P1 is myUsername; when Guest in ONLINE_2P, keep P2 as myUsername and preserve Host
+        if (STATE.mode === 'ONLINE_2P' && STATE.onlineRole === 'GUEST') {
           STATE.p2Name = STATE.myUsername;
           STATE.p2CountryCode = STATE.myCountryCode;
           STATE.p2CountryFlag = STATE.myCountryFlag;
           STATE.p2CountryName = STATE.myCountryName;
+          if (!STATE.p1Name || STATE.p1Name === STATE.myUsername) {
+            STATE.p1Name = 'HOST';
+          }
+        } else {
+          STATE.p1Name = STATE.myUsername;
+          STATE.p1CountryCode = STATE.myCountryCode;
+          STATE.p1CountryFlag = STATE.myCountryFlag;
+          STATE.p1CountryName = STATE.myCountryName;
         }
 
         // Keep bot-match entries in eloHistory labeled as FROZEN
@@ -1834,26 +1837,71 @@
       }
 
       function getP1Label() {
-        if ((!isMultiplayer() || STATE.onlineRole !== 'GUEST') && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-          STATE.p1Name = STATE.myUsername.trim().toUpperCase();
-          return STATE.p1Name;
+        if (isMultiplayer()) {
+          if (STATE.onlineRole === 'GUEST') {
+            if (STATE.p1Name && STATE.p1Name !== STATE.myUsername) {
+              return STATE.p1Name.trim().toUpperCase();
+            }
+            return 'HOST';
+          } else {
+            return (STATE.p1Name || STATE.myUsername || 'HOST').trim().toUpperCase();
+          }
         }
-        if (STATE.p1Name && !isPlaceholderUsername(STATE.p1Name)) {
-          return STATE.p1Name.trim().toUpperCase();
-        }
-        return (STATE.myUsername || STATE.p1Name || 'PLAYER_1').trim().toUpperCase();
+        return (STATE.myUsername || STATE.p1Name || 'YOU').trim().toUpperCase();
       }
 
       function getP2Label() {
         if (isMultiplayer()) {
-          if (STATE.onlineRole === 'GUEST' && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-            STATE.p2Name = STATE.myUsername.trim().toUpperCase();
-            return STATE.p2Name;
+          const p1 = getP1Label();
+          let p2 = (STATE.p2Name || (STATE.onlineRole === 'GUEST' ? STATE.myUsername : 'WAITING...')).trim().toUpperCase();
+          if (STATE.roomLocked && STATE.p2Joined && (p2 === p1 || p2 === 'WAITING...')) {
+            p2 = STATE.onlineRole === 'GUEST' ? (p1 + ' (Guest)') : 'PLAYER_2';
           }
-          return (STATE.p2Name || 'PLAYER_2').trim().toUpperCase();
+          return p2;
         }
         const prof = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
         return prof.name;
+      }
+
+      function handleIncomingMatchInvite(data) {
+        if (!data || !data.roomCode || !data.fromUser) return;
+        const myClean = (STATE.myUsername || '').trim().toUpperCase();
+        const toClean = String(data.toUser || '').trim().toUpperCase();
+        const fromClean = String(data.fromUser || '').trim().toUpperCase();
+        const isCurrentHostOfRoom = STATE.onlineRole === 'HOST' && STATE.roomCode === String(data.roomCode).trim().toUpperCase();
+        const isAddressedToMe = !toClean || toClean === myClean || toClean === 'ALL' || isPlaceholderUsername(myClean);
+
+        if (isAddressedToMe && !isCurrentHostOfRoom && Math.abs(Date.now() - (data.timestamp || 0)) < 600000) {
+          STATE.incomingFriendInvite = {
+            fromUser: fromClean,
+            fromFlag: data.fromFlag || '🇮🇳',
+            fromCode: data.fromCode || '+91',
+            fromElo: data.fromElo || 1500,
+            roomCode: String(data.roomCode).trim().toUpperCase(),
+            autoStart: data.autoStart !== false,
+            timestamp: data.timestamp || Date.now(),
+            toUser: myClean
+          };
+          STATE.activeOpenRooms[fromClean] = {
+            roomCode: STATE.incomingFriendInvite.roomCode,
+            hostUser: fromClean,
+            timestamp: STATE.incomingFriendInvite.timestamp
+          };
+          try { SoundFX.runScored(6); } catch (e) {}
+          if (el.globalFriendInviteToast) {
+            el.globalFriendInviteToast.classList.remove('hidden');
+            if (el.globalFriendInviteRoomPill) {
+              el.globalFriendInviteRoomPill.textContent = 'ROOM ' + STATE.incomingFriendInvite.roomCode;
+            }
+            if (el.globalFriendInviteTitle) {
+              el.globalFriendInviteTitle.textContent = '📞 ' + (data.fromFlag || '🇮🇳') + ' ' + fromClean + ' is calling you for a 1v1 Match!';
+            }
+            if (el.globalFriendInviteSub) {
+              el.globalFriendInviteSub.textContent = 'Room ' + STATE.incomingFriendInvite.roomCode + ' (' + (data.fromElo || 1500) + ' ELO) • Click "Accept & Start" to automatically redirect to the match and start playing!';
+            }
+          }
+          renderAll();
+        }
       }
 
       // Worldwide PeerJS Hub Mesh + BroadcastChannel + Cloud Bridge so all players stay synced without lag
@@ -1871,18 +1919,8 @@
               if (STATE.activeScreen === 'FRIENDS') renderAll();
               return;
             }
-            if (ev.data.type === 'FRIEND_MATCH_INVITE' && ev.data.toUser) {
-              const myClean = (STATE.myUsername || '').trim().toUpperCase();
-              if (ev.data.toUser.trim().toUpperCase() === myClean && ev.data.fromUser !== myClean) {
-                STATE.incomingFriendInvite = ev.data;
-                STATE.activeOpenRooms[ev.data.fromUser.trim().toUpperCase()] = {
-                  roomCode: ev.data.roomCode,
-                  hostUser: ev.data.fromUser.trim().toUpperCase(),
-                  timestamp: ev.data.timestamp || Date.now()
-                };
-                SoundFX.runScored(6);
-                renderAll();
-              }
+            if (ev.data.type === 'FRIEND_MATCH_INVITE' && ev.data.roomCode) {
+              handleIncomingMatchInvite(ev.data);
               return;
             }
             if (ev.data.type === 'FRIEND_MATCH_DECLINE' && ev.data.toUser) {
@@ -1956,18 +1994,8 @@
                   timestamp: data.timestamp || Date.now()
                 };
                 if (STATE.activeScreen === 'FRIENDS') renderAll();
-              } else if (data && data.type === 'FRIEND_MATCH_INVITE' && data.toUser) {
-                const myClean = (STATE.myUsername || '').trim().toUpperCase();
-                if (data.toUser.trim().toUpperCase() === myClean && data.fromUser !== myClean) {
-                  STATE.incomingFriendInvite = data;
-                  STATE.activeOpenRooms[data.fromUser.trim().toUpperCase()] = {
-                    roomCode: data.roomCode,
-                    hostUser: data.fromUser.trim().toUpperCase(),
-                    timestamp: data.timestamp || Date.now()
-                  };
-                  SoundFX.runScored(6);
-                  renderAll();
-                }
+              } else if (data && data.type === 'FRIEND_MATCH_INVITE' && data.roomCode) {
+                handleIncomingMatchInvite(data);
               } else if (data && data.type === 'FRIEND_MATCH_DECLINE' && data.toUser) {
                 const myClean = (STATE.myUsername || '').trim().toUpperCase();
                 if (data.toUser.trim().toUpperCase() === myClean) {
@@ -1992,28 +2020,10 @@
 
         // Hook for Firebase real-time friend match invites (cross-device banner)
         window.__onCloudFriendInvite = function (inviteData) {
-          if (!inviteData || !inviteData.roomCode || !inviteData.fromUser) return;
-          const myClean = (STATE.myUsername || '').trim().toUpperCase();
-          if (!myClean || isPlaceholderUsername(myClean)) return;
-          if ((inviteData.toUser || '').trim().toUpperCase() === myClean || !inviteData.toUser) {
-            // Fresh invite (within 60s)
-            if (Date.now() - (inviteData.timestamp || 0) < 60000) {
-              STATE.incomingFriendInvite = {
-                fromUser: (inviteData.fromUser || '').trim().toUpperCase(),
-                fromFlag: inviteData.fromFlag || '🇮🇳',
-                roomCode: inviteData.roomCode,
-                timestamp: inviteData.timestamp || Date.now(),
-                toUser: myClean
-              };
-              STATE.activeOpenRooms[STATE.incomingFriendInvite.fromUser] = {
-                roomCode: inviteData.roomCode,
-                hostUser: STATE.incomingFriendInvite.fromUser,
-                timestamp: inviteData.timestamp || Date.now()
-              };
-              try { SoundFX.runScored(6); } catch (e) {}
-              renderAll();
-            }
-          }
+          handleIncomingMatchInvite(inviteData);
+        };
+        window.__onCloudRoomMessage = function (msg) {
+          handleNetMessage(msg);
         };
 
         // Expose hook for Firebase Cloud Sync module so cloud updates merge seamlessly without lag
@@ -2097,18 +2107,8 @@
               if (STATE.activeScreen === 'FRIENDS') renderAll();
               return;
             }
-            if (data.type === 'FRIEND_MATCH_INVITE' && data.toUser) {
-              const myClean = (STATE.myUsername || '').trim().toUpperCase();
-              if (data.toUser.trim().toUpperCase() === myClean && data.fromUser !== myClean) {
-                STATE.incomingFriendInvite = data;
-                STATE.activeOpenRooms[data.fromUser.trim().toUpperCase()] = {
-                  roomCode: data.roomCode,
-                  hostUser: data.fromUser.trim().toUpperCase(),
-                  timestamp: data.timestamp || Date.now()
-                };
-                SoundFX.runScored(6);
-                renderAll();
-              }
+            if (data.type === 'FRIEND_MATCH_INVITE' && data.roomCode) {
+              handleIncomingMatchInvite(data);
               return;
             }
             if (data.type === 'FRIEND_MATCH_DECLINE' && data.toUser) {
@@ -2244,11 +2244,76 @@
         tryClaimHubSlot(0);
       }
 
+            let boundRoomCode = null;
+      let roomUnsub = null;
+      let recentHostMsgs = [];
+      let recentGuestMsgs = [];
+      let pendingRoomOutboundQueue = [];
+
+      function bindCloudRoom(roomCode) {
+        const cleanCode = String(roomCode || '').trim().toUpperCase();
+        if (!cleanCode) return;
+        if (boundRoomCode !== cleanCode) {
+          recentHostMsgs = [];
+          recentGuestMsgs = [];
+        }
+        boundRoomCode = cleanCode;
+        if (typeof window.__bindCloudRoom === 'function') {
+          window.__bindCloudRoom(cleanCode);
+        }
+      }
+
+      function sendCloudRoomMessage(roomCode, msgObj) {
+        if (typeof window.__sendCloudRoomMessage === 'function') {
+          window.__sendCloudRoomMessage(roomCode, msgObj);
+        } else {
+          pendingRoomOutboundQueue.push({ roomCode: String(roomCode).trim().toUpperCase(), msgObj });
+        }
+      }
+
+      function leaveCloudRoom() {
+        if (typeof window.__leaveCloudRoom === 'function') {
+          window.__leaveCloudRoom();
+        }
+        boundRoomCode = null;
+        recentHostMsgs = [];
+        recentGuestMsgs = [];
+      }
+
+      function pollRoomLocalMessages(code) {
+        const cleanRoom = String(code || STATE.roomCode || '').trim().toUpperCase();
+        if (!cleanRoom) return;
+        try {
+          const listKey = 'oddandeven_room_msgs_' + cleanRoom;
+          const rawList = localStorage.getItem(listKey);
+          if (rawList) {
+            const list = JSON.parse(rawList);
+            if (Array.isArray(list)) {
+              list.forEach((m) => {
+                if (m && (!m.roomCode || m.roomCode === cleanRoom)) {
+                  handleNetMessage(m);
+                }
+              });
+            }
+          }
+          const singleRaw = localStorage.getItem('oddandeven_room_bus_' + cleanRoom);
+          if (singleRaw) {
+            const singleMsg = JSON.parse(singleRaw);
+            if (singleMsg && (!singleMsg.roomCode || singleMsg.roomCode === cleanRoom)) {
+              handleNetMessage(singleMsg);
+            }
+          }
+        } catch (e) {}
+      }
+
       function sendNetMessage(payload) {
         if (!payload || typeof payload !== 'object') return;
+        const cleanRoom = STATE.roomCode ? String(STATE.roomCode).trim().toUpperCase() : null;
         const msgWithId = Object.assign({}, payload, {
-          msgId: payload.msgId || `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
-          senderRole: STATE.onlineRole || 'HOST'
+          msgId: payload.msgId || (Date.now() + '_' + Math.random().toString(36).slice(2, 9)),
+          senderRole: STATE.onlineRole || 'HOST',
+          roomCode: payload.roomCode || cleanRoom,
+          _ts: Date.now()
         });
         STATE.seenNetMsgIds.add(msgWithId.msgId);
 
@@ -2258,22 +2323,59 @@
         if (STATE.bc) {
           try { STATE.bc.postMessage(msgWithId); } catch (e) {}
         }
-        if (STATE.roomCode) {
+        const gbc = getSharedGlobalBc();
+        if (gbc && cleanRoom) {
           try {
-            localStorage.setItem('oddandeven_room_bus_' + STATE.roomCode, JSON.stringify(msgWithId));
+            gbc.postMessage({
+              type: 'ROOM_RELAY_PACKET',
+              roomCode: cleanRoom,
+              packet: msgWithId
+            });
           } catch (e) {}
+        }
+        if (cleanRoom) {
+          try {
+            localStorage.setItem('oddandeven_room_bus_' + cleanRoom, JSON.stringify(msgWithId));
+            const listKey = 'oddandeven_room_msgs_' + cleanRoom;
+            let list = [];
+            try {
+              const rawList = localStorage.getItem(listKey);
+              if (rawList) list = JSON.parse(rawList) || [];
+            } catch (e) {}
+            list = list.filter((m) => m && (Date.now() - (m._ts || 0) < 45000)).slice(-20);
+            list.push(msgWithId);
+            localStorage.setItem(listKey, JSON.stringify(list));
+          } catch (e) {}
+          sendCloudRoomMessage(cleanRoom, msgWithId);
         }
       }
 
       function setupBroadcastFallback(code) {
+        const cleanRoom = String(code || '').trim().toUpperCase();
         if (STATE.bc) {
           try { STATE.bc.close(); } catch (e) {}
+          STATE.bc = null;
         }
-        if (typeof BroadcastChannel !== 'undefined') {
-          STATE.bc = new BroadcastChannel('hc_arena_room_' + code);
+        if (STATE.roomPollTimerId) {
+          clearInterval(STATE.roomPollTimerId);
+          STATE.roomPollTimerId = null;
+        }
+        if (typeof BroadcastChannel !== 'undefined' && cleanRoom) {
+          STATE.bc = new BroadcastChannel('hc_arena_room_' + cleanRoom);
           STATE.bc.onmessage = (ev) => {
             if (ev && ev.data) handleNetMessage(ev.data);
           };
+        }
+        if (cleanRoom) {
+          pollRoomLocalMessages(cleanRoom);
+          STATE.roomPollTimerId = setInterval(() => {
+            if (!STATE.roomCode || String(STATE.roomCode).trim().toUpperCase() !== cleanRoom) {
+              clearInterval(STATE.roomPollTimerId);
+              STATE.roomPollTimerId = null;
+              return;
+            }
+            pollRoomLocalMessages(cleanRoom);
+          }, 350);
         }
       }
 
@@ -2320,18 +2422,26 @@
           return;
         }
 
+        if (msg.type === 'ROOM_RELAY_PACKET' && msg.roomCode && msg.packet) {
+          if (STATE.roomCode && String(STATE.roomCode).trim().toUpperCase() === String(msg.roomCode).trim().toUpperCase()) {
+            handleNetMessage(msg.packet);
+          }
+          return;
+        }
+
         if (msg.type === 'JOIN_HELLO' || msg.type === 'GUEST_JOINED') {
           // Only Host processes JOIN_HELLO / GUEST_JOINED
           if (STATE.onlineRole !== 'HOST') return;
-          let incomingP2 = (msg.p2Name || msg.guestName || 'PLAYER_2').trim().toUpperCase();
+          let incomingP2 = (msg.p2Name || msg.guestName || 'GUEST').trim().toUpperCase();
           if (incomingP2 === STATE.p1Name) {
-            incomingP2 = `${incomingP2}_2`;
+            incomingP2 = incomingP2 + ' (Guest)';
           }
 
           // If room is already locked with a different player, reject 3rd player!
-          if (STATE.roomLocked && STATE.p2Joined && STATE.p2Name !== incomingP2) {
+          if (STATE.roomLocked && STATE.p2Joined && STATE.p2Name && STATE.p2Name !== 'WAITING...' && STATE.p2Name !== incomingP2) {
             sendNetMessage({
               type: 'ROOM_LOCKED_REJECT',
+              roomCode: STATE.roomCode,
               targetUser: incomingP2,
               p1Name: STATE.p1Name,
               p2Name: STATE.p2Name
@@ -2347,7 +2457,6 @@
           STATE.p2CountryFlag = msg.p2CountryFlag || '🇮🇳';
           STATE.p2CountryCode = msg.p2CountryCode || '+91';
 
-          // Merge P2's full record so Host has P2's true current Elo (fixes stale rating desync like 1596 vs 1620!)
           if (msg.p2Record && typeof msg.p2Record === 'object') {
             mergeGlobalPlayers({ [STATE.p2Name]: msg.p2Record });
           }
@@ -2370,9 +2479,11 @@
 
           saveSessionStats(true);
 
-          updateNetStatusUI(`🔒 Room Locked: ${STATE.p1Name} vs ${STATE.p2Name}`, true);
+          updateNetStatusUI('🔒 Room Locked: ' + STATE.p1Name + ' vs ' + STATE.p2Name, true);
+          const shouldAutoStart = Boolean(msg.autoStart || STATE.autoStartOnGuestJoin);
           sendNetMessage({
             type: 'HOST_WELCOME',
+            roomCode: STATE.roomCode,
             hostName: STATE.p1Name,
             p1Name: STATE.p1Name,
             p1CountryFlag: STATE.p1CountryFlag,
@@ -2385,12 +2496,20 @@
             p2Elo: p2Rec.elo,
             p2Record: p2Rec,
             roomLocked: true,
+            autoStartMatch: shouldAutoStart,
             allPlayers: STATE.humanPlayers
           });
           SoundFX.click();
-          renderAll();
+          if (shouldAutoStart) {
+            STATE.autoStartOnGuestJoin = false;
+            hostTriggerMultiplayerMatchStart();
+          } else {
+            renderAll();
+          }
         } else if (msg.type === 'ROOM_LOCKED_REJECT') {
-          if (STATE.onlineRole === 'GUEST' && (!msg.targetUser || msg.targetUser === STATE.myUsername || msg.targetUser === `${STATE.myUsername}_2`)) {
+          const myU = (STATE.myUsername || '').trim().toUpperCase();
+          const amIAlreadyInRoom = (msg.p2Name === myU || msg.p2Name === (myU + ' (Guest)') || STATE.p2Joined);
+          if (STATE.onlineRole === 'GUEST' && !amIAlreadyInRoom && msg.targetUser && (msg.targetUser === myU || msg.targetUser === (myU + ' (Guest)'))) {
             if (STATE.joinRetryTimerId) {
               clearInterval(STATE.joinRetryTimerId);
               STATE.joinRetryTimerId = null;
@@ -2398,7 +2517,7 @@
             STATE.onlineConnected = false;
             STATE.roomLocked = true;
             STATE.p2Joined = false;
-            updateNetStatusUI(`🔒 Room Full & Locked (${msg.p1Name} vs ${msg.p2Name})`, false);
+            updateNetStatusUI('🔒 Room Full & Locked (' + msg.p1Name + ' vs ' + msg.p2Name + ')', false);
             renderAll();
           }
         } else if (msg.type === 'ROOM_LEAVE') {
@@ -2408,7 +2527,7 @@
           STATE.roomLocked = false;
           STATE.p2Name = 'WAITING...';
           if (STATE.onlineRole === 'HOST') {
-            updateNetStatusUI(`⏳ Opponent left • Room ${STATE.roomCode} unlocked & waiting for P2...`, false);
+            updateNetStatusUI('⏳ Opponent left • Room ' + STATE.roomCode + ' unlocked & waiting for P2...', false);
           } else {
             STATE.roomCode = null;
             STATE.onlineRole = null;
@@ -2427,9 +2546,12 @@
           STATE.p1Name = (msg.p1Name || msg.hostName || 'HOST').trim().toUpperCase();
           STATE.p1CountryFlag = msg.p1CountryFlag || '🇮🇳';
           STATE.p1CountryCode = msg.p1CountryCode || '+91';
-          STATE.p2Name = (msg.p2Name || STATE.myUsername).trim().toUpperCase();
+          STATE.p2Name = (msg.p2Name || STATE.myUsername || 'GUEST').trim().toUpperCase();
           STATE.p2CountryFlag = msg.p2CountryFlag || STATE.myCountryFlag || '🇮🇳';
           STATE.p2CountryCode = msg.p2CountryCode || STATE.myCountryCode || '+91';
+          if (STATE.p1Name === STATE.p2Name) {
+            STATE.p2Name = STATE.p2Name + ' (Guest)';
+          }
 
           if (msg.p1Record && typeof msg.p1Record === 'object') {
             mergeGlobalPlayers({ [STATE.p1Name]: msg.p1Record });
@@ -2457,11 +2579,18 @@
 
           saveSessionStats(true);
 
-          updateNetStatusUI(`🔒 Room Locked: ${STATE.p1Name} vs ${STATE.p2Name}`, true);
+          updateNetStatusUI('🔒 Room Locked: ' + STATE.p1Name + ' vs ' + STATE.p2Name, true);
           SoundFX.click();
-          renderAll();
+          if (msg.autoStartMatch || STATE.autoStartOnGuestJoin) {
+            STATE.autoStartOnGuestJoin = false;
+            STATE.mode = 'ONLINE_2P';
+            STATE.activeScreen = 'PITCH';
+            resetGame(true);
+            setTimeout(resizeCanvas, 20);
+          } else {
+            renderAll();
+          }
         } else if (msg.type === 'HOST_START_MATCH') {
-          // Host clicked Start Match -> start match on Guest's screen simultaneously!
           STATE.mode = 'ONLINE_2P';
           if (msg.p1Name) STATE.p1Name = msg.p1Name;
           if (msg.p2Name) STATE.p2Name = msg.p2Name;
@@ -2972,7 +3101,7 @@
         STATE.onlineConnected = false;
         STATE.p2Joined = false;
         STATE.roomLocked = false;
-        STATE.p1Name = STATE.myUsername;
+        STATE.p1Name = STATE.myUsername && !isPlaceholderUsername(STATE.myUsername) ? STATE.myUsername : 'HOST';
         STATE.p1CountryFlag = STATE.myCountryFlag;
         STATE.p1CountryCode = STATE.myCountryCode;
         STATE.p2Name = 'WAITING...';
@@ -2984,6 +3113,7 @@
 
         updateNetStatusUI(`⏳ Room ${code} Created • Waiting for Player 2...`, false);
         setupBroadcastFallback(code);
+        bindCloudRoom(code);
         STATE.activeOpenRooms[STATE.myUsername] = {
           roomCode: code,
           hostUser: STATE.myUsername,
@@ -3034,20 +3164,27 @@
         renderAll();
       }
 
-      function joinMultiplayerRoom(customCodeInput = null) {
+      function joinMultiplayerRoom(customCodeInput = null, autoStart = false) {
         if (!requireAccountAndPassword()) return;
         SoundFX.click();
-        syncAuthAndPurgeFakeSeeds();
         const raw = (customCodeInput || (el.inputJoinRoomCode && el.inputJoinRoomCode.value) || (el.inlineInputJoinCode && el.inlineInputJoinCode.value) || '').trim().toUpperCase();
         if (!raw) return;
+
+        const previousHostName = (STATE.p1Name && STATE.p1Name !== STATE.myUsername && STATE.p1Name !== 'WAITING...') ? STATE.p1Name : null;
 
         STATE.mode = 'ONLINE_2P';
         STATE.roomCode = raw;
         STATE.onlineRole = 'GUEST';
+        STATE.autoStartOnGuestJoin = Boolean(autoStart);
         STATE.onlineConnected = false;
         STATE.p2Joined = false;
         STATE.roomLocked = false;
-        STATE.p2Name = STATE.myUsername;
+
+        syncAuthAndPurgeFakeSeeds();
+
+        // Preserve Host as P1 and Guest as P2
+        STATE.p1Name = previousHostName || 'HOST';
+        STATE.p2Name = STATE.myUsername && STATE.myUsername !== STATE.p1Name ? STATE.myUsername : (STATE.myUsername ? (STATE.myUsername + ' (Guest)') : 'GUEST');
         STATE.p2CountryFlag = STATE.myCountryFlag;
         STATE.p2CountryCode = STATE.myCountryCode;
 
@@ -3056,6 +3193,7 @@
 
         updateNetStatusUI(`Connecting to Room ${raw} as ${STATE.myUsername}...`, false);
         setupBroadcastFallback(raw);
+        bindCloudRoom(raw);
 
         const myRec = ensureHumanPlayerRecord(STATE.myUsername, 1500, {
           countryCode: STATE.myCountryCode,
@@ -3065,12 +3203,14 @@
 
         const joinPayload = {
           type: 'JOIN_HELLO',
-          p2Name: STATE.myUsername,
-          guestName: STATE.myUsername,
+          roomCode: raw,
+          p2Name: STATE.p2Name,
+          guestName: STATE.p2Name,
           p2CountryFlag: STATE.myCountryFlag,
           p2CountryCode: STATE.myCountryCode,
           p2Elo: myRec.elo,
           p2Record: myRec,
+          autoStart: Boolean(autoStart),
           allPlayers: STATE.humanPlayers
         };
         sendNetMessage(joinPayload);
@@ -3082,15 +3222,16 @@
         let joinAttempts = 0;
         STATE.joinRetryTimerId = setInterval(() => {
           joinAttempts += 1;
-          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 6 || STATE.onlineRole !== 'GUEST') {
+          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 15 || STATE.onlineRole !== 'GUEST' || STATE.roomCode !== raw) {
             clearInterval(STATE.joinRetryTimerId);
             STATE.joinRetryTimerId = null;
             return;
           }
+          pollRoomLocalMessages(raw);
           sendNetMessage(Object.assign({}, joinPayload, {
             msgId: `${Date.now()}_retry_${joinAttempts}`
           }));
-        }, 1200);
+        }, 900);
 
         if (typeof Peer !== 'undefined') {
           try {
@@ -3103,7 +3244,7 @@
                   conn.on('open', () => {
                     STATE.conn = conn;
                     sendNetMessage(Object.assign({}, joinPayload, {
-                      msgId: `${Date.now()}_peer_open`
+                      msgId: `${Date.now()}_peer_open_${hostPeerId}`
                     }));
                   });
                   conn.on('data', (data) => handleNetMessage(data));
@@ -3123,9 +3264,14 @@
           clearInterval(STATE.joinRetryTimerId);
           STATE.joinRetryTimerId = null;
         }
-        if (STATE.roomCode) {
-          sendNetMessage({ type: 'ROOM_LEAVE' });
+        if (STATE.roomPollTimerId) {
+          clearInterval(STATE.roomPollTimerId);
+          STATE.roomPollTimerId = null;
         }
+        if (STATE.roomCode) {
+          sendNetMessage({ type: 'ROOM_LEAVE', roomCode: STATE.roomCode });
+        }
+        leaveCloudRoom();
         stopTurnTimer();
         if (STATE.conn) {
           try { STATE.conn.close(); } catch (e) {}
@@ -6512,12 +6658,14 @@
             const inv = STATE.incomingFriendInvite;
             const code = String(inv.roomCode).trim().toUpperCase();
             const caller = String(inv.fromUser || 'HOST').trim().toUpperCase();
-            const me = (STATE.myUsername || '').trim().toUpperCase();
+            const me = (STATE.myUsername || 'GUEST').trim().toUpperCase();
             STATE.incomingFriendInvite = null;
+            if (el.globalFriendInviteToast) {
+              el.globalFriendInviteToast.classList.add('hidden');
+            }
             if (typeof window.__clearCloudFriendInvite === 'function' && me) {
               try { window.__clearCloudFriendInvite(me); } catch (e) {}
             }
-            // Close any open modals so user redirects cleanly to the active match pitch
             if (el.mpModal) {
               el.mpModal.classList.add('hidden');
               el.mpModal.classList.remove('flex');
@@ -6527,10 +6675,14 @@
               el.rulesModal.classList.remove('flex');
             }
             STATE.mode = 'ONLINE_2P';
+            STATE.onlineRole = 'GUEST';
+            STATE.roomCode = code;
             STATE.p1Name = caller;
             STATE.p1CountryFlag = inv.fromFlag || '🇮🇳';
             STATE.p1CountryCode = inv.fromCode || '+91';
-            STATE.p2Name = me;
+            STATE.p2Name = me === caller ? (me + ' (Guest)') : me;
+            STATE.p2CountryFlag = STATE.myCountryFlag || '🇮🇳';
+            STATE.p2CountryCode = STATE.myCountryCode || '+91';
             STATE.p2Joined = true;
             STATE.roomLocked = true;
             STATE.activeScreen = 'PITCH';
@@ -7321,6 +7473,93 @@
         } catch (e) {}
       };
 
+      // Real-time Cloud Room Signaling
+      let boundRoomCode = null;
+      let roomUnsub = null;
+      let recentHostMsgs = [];
+      let recentGuestMsgs = [];
+      let pendingRoomOutboundQueue = [];
+
+      window.__bindCloudRoom = function (roomCode) {
+        const cleanCode = String(roomCode || '').trim().toUpperCase();
+        if (!cleanCode) return;
+        if (boundRoomCode !== cleanCode) {
+          recentHostMsgs = [];
+          recentGuestMsgs = [];
+        }
+        boundRoomCode = cleanCode;
+        if (!db) return;
+        if (typeof roomUnsub === 'function') {
+          try { roomUnsub(); } catch (e) {}
+          roomUnsub = null;
+        }
+        const handleRoomSnap = (docSnap) => {
+          if (!docSnap || !docSnap.exists()) return;
+          const data = docSnap.data();
+          if (!data) return;
+          const combinedMsgs = [];
+          if (Array.isArray(data.hostMessages)) combinedMsgs.push(...data.hostMessages);
+          if (Array.isArray(data.guestMessages)) combinedMsgs.push(...data.guestMessages);
+          if (Array.isArray(data.messages)) combinedMsgs.push(...data.messages);
+          if (data.lastHostMessage) combinedMsgs.push(data.lastHostMessage);
+          if (data.lastGuestMessage) combinedMsgs.push(data.lastGuestMessage);
+          if (data.lastMessage) combinedMsgs.push(data.lastMessage);
+          combinedMsgs.sort((a, b) => ((a && a._ts) || 0) - ((b && b._ts) || 0));
+          combinedMsgs.forEach((m) => {
+            if (m && typeof window.__onCloudRoomMessage === 'function') {
+              window.__onCloudRoomMessage(m);
+            }
+          });
+        };
+        const u1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', cleanCode), handleRoomSnap, () => {});
+        const u2 = onSnapshot(doc(db, 'rooms', cleanCode), handleRoomSnap, () => {});
+        roomUnsub = () => {
+          try { u1(); } catch (e) {}
+          try { u2(); } catch (e) {}
+        };
+      };
+
+      window.__sendCloudRoomMessage = async function (roomCode, msgObj) {
+        if (!roomCode || !msgObj) return;
+        const cleanCode = String(roomCode).trim().toUpperCase();
+        const stamped = Object.assign({}, msgObj, { roomCode: cleanCode, _ts: Date.now() });
+        if (!db) {
+          pendingRoomOutboundQueue.push({ roomCode: cleanCode, msgObj: stamped });
+          return;
+        }
+        const isGuestMsg = stamped.senderRole === 'GUEST' || stamped.type === 'JOIN_HELLO' || stamped.type === 'GUEST_JOINED';
+        const roomPayload = {
+          roomCode: cleanCode,
+          lastMessage: stamped,
+          updatedAt: Date.now()
+        };
+        if (isGuestMsg) {
+          recentGuestMsgs = recentGuestMsgs.filter((m) => m && m.roomCode === cleanCode && (Date.now() - (m._ts || 0) < 45000)).slice(-12);
+          recentGuestMsgs.push(stamped);
+          roomPayload.lastGuestMessage = stamped;
+          roomPayload.guestMessages = recentGuestMsgs;
+        } else {
+          recentHostMsgs = recentHostMsgs.filter((m) => m && m.roomCode === cleanCode && (Date.now() - (m._ts || 0) < 45000)).slice(-12);
+          recentHostMsgs.push(stamped);
+          roomPayload.lastHostMessage = stamped;
+          roomPayload.hostMessages = recentHostMsgs;
+        }
+        try {
+          setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', cleanCode), roomPayload, { merge: true }).catch(() => {});
+          setDoc(doc(db, 'rooms', cleanCode), roomPayload, { merge: true }).catch(() => {});
+        } catch (e) {}
+      };
+
+      window.__leaveCloudRoom = function () {
+        if (typeof roomUnsub === 'function') {
+          try { roomUnsub(); } catch (e) {}
+          roomUnsub = null;
+        }
+        boundRoomCode = null;
+        recentHostMsgs = [];
+        recentGuestMsgs = [];
+      };
+
       // Real-time Friend Match Invites (Firestore)
       let inviteUnsub = null;
       let boundInviteUser = null;
@@ -7339,7 +7578,9 @@
         try {
           await Promise.allSettled([
             setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanTarget), payload),
-            setDoc(doc(db, 'invites', cleanTarget), payload)
+            setDoc(doc(db, 'invites', cleanTarget), payload),
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), payload),
+            setDoc(doc(db, 'invites', 'GLOBAL_LATEST'), payload)
           ]);
         } catch (e) {}
       };
@@ -7421,7 +7662,7 @@
 
       window.__bindCloudInviteListener = function (username) {
         const clean = String(username || '').trim().toUpperCase();
-        if (!clean || clean === 'GUEST' || clean === 'PLAYER_1' || clean.length < 3) return;
+        if (!clean || clean.length < 2) return;
         if (boundInviteUser === clean && inviteUnsub) return;
         boundInviteUser = clean;
         if (!db) return;
@@ -7443,21 +7684,8 @@
             deleteDoc(doc(db, 'invites', clean)).catch(() => {});
             return;
           }
-          if (!data.roomCode || !data.fromUser) return;
-          if (Date.now() - (data.timestamp || 0) >= 180000) return;
           if (typeof window.__onCloudFriendInvite === 'function') {
-            try {
-              window.__onCloudFriendInvite({
-                fromUser: data.fromUser,
-                fromFlag: data.fromFlag || '🇮🇳',
-                fromCode: data.fromCode || '+91',
-                fromElo: data.fromElo || 1500,
-                roomCode: data.roomCode,
-                autoStart: data.autoStart !== false,
-                timestamp: data.timestamp || Date.now(),
-                toUser: clean
-              });
-            } catch (e) {}
+            try { window.__onCloudFriendInvite(data); } catch (e) {}
           }
         };
 
@@ -7490,17 +7718,37 @@
           }
         };
 
-        const unsub1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean), handleSnap, () => {});
-        const unsub2 = onSnapshot(doc(db, 'invites', clean), handleSnap, () => {});
-        const unsub3 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', clean), handleReqSnap, () => {});
-        const unsub4 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', clean), handleFriendsSnap, () => {});
+        const u1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean), handleSnap, () => {});
+        const u2 = onSnapshot(doc(db, 'invites', clean), handleSnap, () => {});
+        const u3 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
+        const u4 = onSnapshot(doc(db, 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
+        const u5 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', clean), handleReqSnap, () => {});
+        const u6 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', clean), handleFriendsSnap, () => {});
         inviteUnsub = () => {
-          try { unsub1(); } catch (e) {}
-          try { unsub2(); } catch (e) {}
-          try { unsub3(); } catch (e) {}
-          try { unsub4(); } catch (e) {}
+          try { u1(); } catch (e) {}
+          try { u2(); } catch (e) {}
+          try { u3(); } catch (e) {}
+          try { u4(); } catch (e) {}
+          try { u5(); } catch (e) {}
+          try { u6(); } catch (e) {}
         };
       };
+
+      // Auto-bind current user to listen for invites immediately
+      try {
+        const u = (typeof STATE !== 'undefined' && STATE.myUsername) ? STATE.myUsername : 'PLAYER';
+        window.__bindCloudInviteListener(u);
+      } catch (e) {}
+
+      // Flush any pending room messages
+      if (boundRoomCode) {
+        window.__bindCloudRoom(boundRoomCode);
+      }
+      if (pendingRoomOutboundQueue.length > 0) {
+        const q = pendingRoomOutboundQueue.slice();
+        pendingRoomOutboundQueue = [];
+        q.forEach((item) => window.__sendCloudRoomMessage(item.roomCode, item.msgObj));
+      }
 
       // Auto-bind current session user if already authenticated
       try {
