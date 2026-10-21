@@ -872,33 +872,31 @@
         }
       }
 
-      function isSandboxedPreviewIframe() {
-        try {
-          const proto = window.location.protocol;
-          if (proto === 'about:' || proto === 'blob:' || proto === 'data:') return true;
-          if (window.self !== window.top && window.frameElement !== null) return true;
-        } catch (e) {
-          return true;
-        }
-        return false;
-      }
-
-      function navigateToHandCricketArena(querySuffix) {
+      function navigateToHandCricketArena(querySuffix = '') {
         const target = getArenaTargetUrl(querySuffix);
-        if (isSandboxedPreviewIframe()) {
-          updateUIState();
-          showBanner(`✓ Authenticated & synced! On your live site, this directs to ${target}.`, true);
-          return;
+        showBanner(`✓ Redirecting to Arena (${target})…`, true);
+        try {
+          window.location.href = target;
+        } catch (e) {
+          try {
+            window.location.assign(target);
+          } catch (err) {
+            window.open(target, '_self');
+          }
         }
-        window.location.href = target;
       }
 
       function navigateToAdminConsole() {
-        if (isSandboxedPreviewIframe()) {
-          showBanner('✓ Admin Authenticated! Redirecting to admin.html...', true);
-          return;
+        showBanner('✓ Admin Authenticated! Launching Admin Panel...', true);
+        try {
+          window.location.href = 'admin.html';
+        } catch (e) {
+          try {
+            window.location.assign('admin.html');
+          } catch (err) {
+            window.open('admin.html', '_self');
+          }
         }
-        window.location.href = 'admin.html';
       }
 
       function withTimeout(promise, ms, label) {
@@ -1188,17 +1186,15 @@
         updateUIState();
         showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena...`, true);
 
-        // Navigating away cancels in-flight Firestore writes, so wait for them (capped at 3s).
+        // Non-blocking background cloud sync
         try {
-          await Promise.race([
-            Promise.all([
-              pushAccountToFirebase(activeProf),
-              pushLeaderboardSeedToFirebase(uname, activeProf)
-            ]),
-            new Promise((resolve) => setTimeout(resolve, 3000))
-          ]);
+          pushAccountToFirebase(activeProf).catch(() => {});
+          pushLeaderboardSeedToFirebase(uname, activeProf).catch(() => {});
         } catch (e) {}
-        navigateToHandCricketArena('?from=login');
+
+        setTimeout(() => {
+          navigateToHandCricketArena('?from=login');
+        }, 150);
       }
 
       function usernameFromGoogleProfile(user) {
@@ -1636,15 +1632,26 @@
         const pin5 = (el.inputAuthPin5.value || '').trim();
         const { dial, cName, cFlag } = readCountrySelection();
 
+        // 1. If username and PIN are empty but active session exists, continue into Arena immediately
+        if (!uname && !pin5) {
+          const activeSess = loadActiveSession();
+          if (activeSess && activeSess.username && !isPlaceholderUsername(activeSess.username)) {
+            navigateToHandCricketArena('?from=login');
+            return;
+          }
+        }
+
+        // 2. Admin Check
         const isAdminMatch = (uname === ADMIN_CONFIG.username && pin5 === ADMIN_CONFIG.pin && dial === ADMIN_CONFIG.countryCode) ||
                              (uname === ADMIN_CONFIG.username && (pin5 === ADMIN_CONFIG.pin || pin5 === ADMIN_CONFIG.masterKey));
         if (isAdminMatch) {
           sessionStorage.setItem('oddandeven_admin_auth', '1');
           showBanner('✓ Administrator Verified! Launching Control Panel...', true);
-          setTimeout(() => navigateToAdminConsole(), 350);
+          setTimeout(() => navigateToAdminConsole(), 200);
           return;
         }
 
+        // 3. Validation
         if (uname.length < 3) {
           showBanner('Username must be at least 3 alphanumeric characters.', false);
           return;
@@ -1660,19 +1667,20 @@
 
         setAuthBusy(true);
         try {
-          await initFirebaseAuthBridge();
+          let usersMap = loadEncryptedUsersMap();
+          let rec = usersMap[uname];
 
-          // Direct cloud document check in Firestore so single accounts load immediately even if collection listing is restricted
-          if (fbReady && fbDb) {
+          // If not in local vault, fast check cloud with 1.5s timeout (non-blocking)
+          if (!rec && fbReady && fbDb) {
             try {
-              let snap = await fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname));
-              if (!snap.exists()) {
-                snap = await fbGetDoc(fbDoc(fbDb, 'accounts', uname));
-              }
-              if (snap.exists()) {
+              const snap = await withTimeout(
+                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
+                1500,
+                'lookup-timeout'
+              );
+              if (snap && snap.exists()) {
                 const data = snap.data();
-                const curUsers = loadEncryptedUsersMap();
-                curUsers[uname] = {
+                rec = {
                   username: uname,
                   countryCode: data.countryCode || dial,
                   countryName: data.countryName || cName,
@@ -1682,26 +1690,26 @@
                   authProvider: data.authProvider || 'pin',
                   createdAt: data.createdAt || new Date().toISOString()
                 };
-                saveEncryptedUsersMap(curUsers);
+                usersMap[uname] = rec;
+                saveEncryptedUsersMap(usersMap);
               }
             } catch (e) {}
           }
-          await pullCloudAccountsIntoLocal();
-
-          let usersMap = loadEncryptedUsersMap();
-          const rec = usersMap[uname];
 
           if (authMode === 'SIGNUP') {
             if (rec) {
               if (!rec.encryptedAuth) {
                 showBanner(`Username ${uname} is already registered with Google. Choose another username or use "Continue with Google".`, false);
+                setAuthBusy(false);
                 return;
               }
               if (!verifyUserCredentials(rec, dial, pin5)) {
                 showBanner(`Username ${uname} is already registered. Enter its matching 5-digit PIN or choose a new username.`, false);
+                setAuthBusy(false);
                 return;
               }
               await finalizePlayerSession(rec);
+              setAuthBusy(false);
               return;
             }
 
@@ -1716,15 +1724,16 @@
             };
             usersMap[uname] = profile;
             saveEncryptedUsersMap(usersMap);
-            await pushAccountToFirebase(profile);
-            await pushLeaderboardSeedToFirebase(uname, profile);
+            pushAccountToFirebase(profile).catch(() => {});
+            pushLeaderboardSeedToFirebase(uname, profile).catch(() => {});
             await finalizePlayerSession(profile);
+            setAuthBusy(false);
             return;
           }
 
           // LOGIN MODE
           if (!rec) {
-            // New account login: automatically register in Firebase and local storage without showing "username not found"!
+            // New account login: automatically register without blocking
             showBanner(`Creating new player account for ${cFlag} ${uname}…`, true);
             const profile = {
               username: uname,
@@ -1737,26 +1746,29 @@
             };
             usersMap[uname] = profile;
             saveEncryptedUsersMap(usersMap);
-            await pushAccountToFirebase(profile);
-            await pushLeaderboardSeedToFirebase(uname, profile);
+            pushAccountToFirebase(profile).catch(() => {});
+            pushLeaderboardSeedToFirebase(uname, profile).catch(() => {});
             await finalizePlayerSession(profile);
+            setAuthBusy(false);
             return;
           }
 
           if (!rec.encryptedAuth) {
             showBanner(`${uname} was created with Google. Use "Continue with Google" to sign in.`, false);
+            setAuthBusy(false);
             return;
           }
           if (!verifyUserCredentials(rec, dial, pin5)) {
             showBanner(`Incorrect Country Code (${dial}) or 5-Digit Password for ${uname}.`, false);
+            setAuthBusy(false);
             return;
           }
           await finalizePlayerSession(rec);
+          setAuthBusy(false);
 
         } catch (e) {
           console.warn('Auth submit error', e);
           showBanner('Something went wrong. Please try again.', false);
-        } finally {
           setAuthBusy(false);
         }
       }
@@ -1794,9 +1806,9 @@
           showBanner('You have signed out safely. Sign in below to return to the pitch.', true);
         } else {
           const activeSess = loadActiveSession();
-          if (activeSess && activeSess.username && params.get('stay') !== '1' && !googlePending && !isSandboxedPreviewIframe()) {
+          if (activeSess && activeSess.username && params.get('stay') !== '1' && params.get('signedout') !== '1' && !googlePending) {
             updateUIState();
-            setTimeout(() => navigateToHandCricketArena('?from=login'), 300);
+            setTimeout(() => navigateToHandCricketArena('?from=login'), 350);
           }
         }
 
