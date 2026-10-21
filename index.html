@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OddAndEven.in — Official Hand Cricket Arena</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -295,14 +295,34 @@
               </div>
             </div>
 
-            <div class="pt-1">
+            <div class="pt-1 space-y-3">
               <button
                 id="btnSubmitAuth"
                 type="button"
-                class="w-full py-3.5 px-6 rounded-xl font-black text-sm sm:text-base arena-cta-btn flex items-center justify-center gap-2"
+                class="w-full py-3.5 px-6 rounded-xl font-black text-sm sm:text-base arena-cta-btn flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span id="btnSubmitAuthText">SIGN IN TO ARENA</span>
                 <span>→</span>
+              </button>
+
+              <div class="relative flex items-center gap-3">
+                <div class="flex-1 h-px bg-white/[0.08]"></div>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-500">or</span>
+                <div class="flex-1 h-px bg-white/[0.08]"></div>
+              </div>
+
+              <button
+                id="btnGoogleSignIn"
+                type="button"
+                class="w-full py-3 px-6 rounded-xl font-extrabold text-sm bg-white hover:bg-zinc-100 text-zinc-900 border border-white/20 shadow-lg flex items-center justify-center gap-2.5 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+                <span id="btnGoogleSignInText">Continue with Google</span>
               </button>
             </div>
 
@@ -333,6 +353,30 @@
       </div>
     </div>
   </footer>
+
+  <!-- Username picker (shown only for brand-new Google accounts) -->
+  <div id="usernameModal" class="hidden fixed inset-0 z-50 items-center justify-center px-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="usernameModalTitle">
+    <div class="obsidian-card rounded-3xl p-6 sm:p-8 w-full max-w-md space-y-5 relative overflow-hidden">
+      <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#81b64c] to-transparent opacity-80"></div>
+      <div>
+        <h2 id="usernameModalTitle" class="text-xl sm:text-2xl font-black text-white font-brand tracking-tight">Choose your player name</h2>
+        <p id="usernameModalSub" class="text-xs text-zinc-400 mt-1">This is the name other players see on the leaderboard. It can't be changed later.</p>
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="inputChooseUsername" class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">Player Username</label>
+          <span class="text-[10px] font-mono-num text-zinc-400">3–16 Chars</span>
+        </div>
+        <input id="inputChooseUsername" type="text" maxlength="16" autocomplete="off" spellcheck="false"
+          class="obsidian-input w-full px-4 py-3 rounded-xl text-sm font-extrabold uppercase tracking-wide" />
+        <p id="usernameModalError" class="text-xs font-bold text-rose-300 mt-2 min-h-[1rem]" role="alert"></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="btnUsernameCancel" type="button" class="px-4 py-3 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-white/10 transition">Cancel</button>
+        <button id="btnUsernameConfirm" type="button" class="flex-1 py-3 px-6 rounded-xl font-black text-sm arena-cta-btn disabled:opacity-60 disabled:cursor-not-allowed">Confirm &amp; Play</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -366,7 +410,7 @@
         'oddandeven-world-hub-v1-4'
       ];
 
-      // Administrator Master Credentials (direct verification on login without separate buttons)
+      // Administrator Master Credentials
       const ADMIN_CONFIG = {
         username: 'ADMIN',
         countryCode: '+91',
@@ -377,6 +421,55 @@
       let authMode = 'LOGIN'; // 'LOGIN' | 'SIGNUP'
       let globalHubPeer = null;
       const globalHubConns = [];
+
+      // Firebase cloud bridge
+      const FIREBASE_APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'oddandeven-arena-app';
+      const FIREBASE_CONFIG = (typeof __firebase_config !== 'undefined' && __firebase_config)
+        ? (typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config)
+        : {
+            apiKey: 'AIzaSyDW9c3rkUo5kvXTyAVFjvcuGsi3D0SimLk',
+            authDomain: 'oddeven-1c742.firebaseapp.com',
+            projectId: 'oddeven-1c742',
+            storageBucket: 'oddeven-1c742.firebasestorage.app',
+            messagingSenderId: '266550623227',
+            appId: '1:266550623227:web:3edc0b6a98d2e99fa8e95e',
+            measurementId: 'G-7M71J054G0'
+          };
+
+      let fbApp = null;
+      let fbAuth = null;
+      let fbDb = null;
+      let fbUser = null;
+      let fbReady = false;
+      let GoogleAuthProviderCtor = null;
+      let signInWithRedirectFn = null;
+      let getRedirectResultFn = null;
+      let fbDoc = null;
+      let fbSetDoc = null;
+      let fbGetDoc = null;
+      let fbCollection = null;
+      let fbGetDocs = null;
+      let fbQueryFn = null;
+      let fbWhereFn = null;
+      let fbSignInWithPopupFn = null;
+      let fbRunTransaction = null;
+      let fbCorePromise = null;      // Firebase SDK + auth ready (all Google sign-in needs)
+      let googleFlowActive = false;  // stops background anonymous sign-in from replacing the Google user
+      let fbInitPromise = null;      // single shared init (prevents duplicate-app errors)
+      let fbRedirectResult = null;
+      let fbRedirectError = null;
+      let lbChannel = null;          // one reusable BroadcastChannel (was leaking one per call)
+      let authBusy = false;
+      const GOOGLE_PENDING_KEY = 'oddandeven_google_pending_v1';
+      const RESERVED_USERNAMES = ['ADMIN', 'ADMINISTRATOR', 'MODERATOR', 'SYSTEM', 'OFFICIAL', 'WAITING'];
+
+      function getLbChannel() {
+        if (typeof BroadcastChannel === 'undefined') return null;
+        if (!lbChannel) {
+          try { lbChannel = new BroadcastChannel(GLOBAL_LB_CHANNEL); } catch (e) { lbChannel = null; }
+        }
+        return lbChannel;
+      }
 
       function isMobileDevice() {
         const manualOverride = sessionStorage.getItem(PREFERRED_DEVICE_OVERRIDE_KEY);
@@ -514,19 +607,28 @@
         } catch (e) {}
       }
 
+      function isValidUserRecord(key, rec) {
+        if (!rec || typeof rec !== 'object') return false;
+        if (String(rec.username || '').trim().toUpperCase() !== key) return false;
+        const ea = rec.encryptedAuth;
+        if (ea !== null && ea !== undefined && !(typeof ea === 'string' && ea.startsWith('OAE1.'))) return false;
+        return true;
+      }
+
       function mergeIncomingGlobalData(incomingPlayers, incomingUsers) {
-        let changed = false;
+        let usersChanged = false;
+        let playersChanged = false;
         if (incomingUsers && typeof incomingUsers === 'object') {
           const localUsers = loadEncryptedUsersMap();
           Object.keys(incomingUsers).forEach((k) => {
             const clean = (k || '').trim().toUpperCase();
-            if (!clean || FAKE_SEED_NAMES.includes(clean)) return;
-            if (incomingUsers[k] && !localUsers[clean]) {
+            if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
+            if (isValidUserRecord(clean, incomingUsers[k]) && !localUsers[clean]) {
               localUsers[clean] = incomingUsers[k];
-              changed = true;
+              usersChanged = true;
             }
           });
-          if (changed) saveEncryptedUsersMap(localUsers);
+          if (usersChanged) saveEncryptedUsersMap(localUsers);
         }
 
         if (incomingPlayers && typeof incomingPlayers === 'object') {
@@ -538,12 +640,12 @@
             if (!inc || typeof inc !== 'object') return;
             if (!worldMap[clean] || (inc.updatedAt || 0) > (worldMap[clean].updatedAt || 0)) {
               worldMap[clean] = Object.assign({}, inc, { name: clean, isRealRegisteredUser: true });
-              changed = true;
+              playersChanged = true;
             }
           });
-          if (changed) saveWorldwidePlayersMap(worldMap);
+          if (playersChanged) saveWorldwidePlayersMap(worldMap);
         }
-        return changed;
+        return usersChanged || playersChanged;
       }
 
       function broadcastWorldwideSync(requestReply = false) {
@@ -554,11 +656,9 @@
           requestReply: Boolean(requestReply),
           timestamp: Date.now()
         };
-        if (typeof BroadcastChannel !== 'undefined') {
-          try {
-            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
-            gbc.postMessage(packet);
-          } catch (e) {}
+        const gbc = getLbChannel();
+        if (gbc) {
+          try { gbc.postMessage(packet); } catch (e) {}
         }
         globalHubConns.forEach((c) => {
           if (c && c.open) {
@@ -570,8 +670,8 @@
       function initWorldwideLeaderboardHub() {
         if (typeof BroadcastChannel !== 'undefined') {
           try {
-            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
-            gbc.onmessage = (ev) => {
+            const gbc = getLbChannel();
+            if (gbc) gbc.onmessage = (ev) => {
               if (ev && ev.data && ev.data.type === 'GLOBAL_LEADERBOARD_SYNC') {
                 if (mergeIncomingGlobalData(ev.data.allPlayers, ev.data.encryptedUsers)) {
                   updateUIState();
@@ -699,7 +799,9 @@
         btnTogglePinVisibility: document.getElementById('btnTogglePinVisibility'),
         keyPreviewBadge: document.getElementById('keyPreviewBadge'),
         btnSubmitAuth: document.getElementById('btnSubmitAuth'),
-        btnSubmitAuthText: document.getElementById('btnSubmitAuthText')
+        btnSubmitAuthText: document.getElementById('btnSubmitAuthText'),
+        btnGoogleSignIn: document.getElementById('btnGoogleSignIn'),
+        btnGoogleSignInText: document.getElementById('btnGoogleSignInText')
       };
 
       function updateDeviceIndicator() {
@@ -799,71 +901,240 @@
         window.location.href = 'admin.html';
       }
 
-      function handleAuthSubmit() {
-        const uname = (el.inputAuthUsername.value || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
-        const pin5 = (el.inputAuthPin5.value || '').trim();
-        const opt = el.selectAuthCountry.options[el.selectAuthCountry.selectedIndex];
-        const dial = opt ? opt.value : '+91';
-        const cName = opt ? (opt.getAttribute('data-country') || 'India') : 'India';
-        const cFlag = opt ? (opt.getAttribute('data-flag') || '🇮🇳') : '🇮🇳';
+      function withTimeout(promise, ms, label) {
+        let timer;
+        const timeout = new Promise((_, reject) => {
+          timer = setTimeout(() => {
+            const err = new Error(label || 'timeout');
+            err.code = label || 'timeout';
+            reject(err);
+          }, ms);
+        });
+        return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+      }
 
-        // 1. ADMIN CREDENTIALS RECOGNITION (Direct verification without separate buttons)
-        const isAdminMatch = (uname === ADMIN_CONFIG.username && pin5 === ADMIN_CONFIG.pin && dial === ADMIN_CONFIG.countryCode) ||
-                             (uname === ADMIN_CONFIG.username && (pin5 === ADMIN_CONFIG.pin || pin5 === ADMIN_CONFIG.masterKey));
-        if (isAdminMatch) {
-          sessionStorage.setItem('oddandeven_admin_auth', '1');
-          showBanner('✓ Administrator Verified! Launching Control Panel...', true);
-          setTimeout(() => navigateToAdminConsole(), 350);
-          return;
-        }
+      // CORE: load SDK + create app/auth/db + read any pending redirect result.
+      // Deliberately does NOT sign in anonymously or sync Firestore, so the Google button never waits on those.
+      function initFirebaseCore() {
+        if (fbCorePromise) return fbCorePromise;
+        fbCorePromise = (async () => {
+          try {
+            const [appMod, authMod, fsMod] = await Promise.all([
+              import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+              import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'),
+              import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
+            ]);
+            const { initializeApp, getApps, getApp } = appMod;
+            const { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult } = authMod;
+            const { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, runTransaction } = fsMod;
 
-        // 2. REGULAR PLAYER LOGIN / SIGNUP
-        if (uname.length < 3) {
-          showBanner('Username must be at least 3 alphanumeric characters.', false);
-          return;
-        }
-        if (FAKE_SEED_NAMES.includes(uname) || uname === 'WAITING') {
-          showBanner('Please choose a unique personal username.', false);
-          return;
-        }
-        if (!/^\d{5}$/.test(pin5)) {
-          showBanner(`Please enter a valid 5-digit numeric password (PIN) connected with ${dial}.`, false);
-          return;
-        }
+            GoogleAuthProviderCtor = GoogleAuthProvider;
+            signInWithRedirectFn = signInWithRedirect;
+            fbSignInWithPopupFn = signInWithPopup;
+            getRedirectResultFn = getRedirectResult;
+            fbDoc = doc;
+            fbSetDoc = setDoc;
+            fbGetDoc = getDoc;
+            fbCollection = collection;
+            fbGetDocs = getDocs;
+            fbQueryFn = query;
+            fbWhereFn = where;
+            fbRunTransaction = runTransaction;
 
+            fbApp = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+            fbAuth = getAuth(fbApp);
+            fbDb = getFirestore(fbApp);
+
+            // Must run BEFORE any other auth call, otherwise a pending Google redirect result is lost.
+            try {
+              fbRedirectResult = await withTimeout(getRedirectResult(fbAuth), 8000, 'redirect-timeout');
+            } catch (e) {
+              fbRedirectError = (e && e.code === 'redirect-timeout') ? null : e;
+            }
+
+            fbReady = true;
+            return true;
+          } catch (e) {
+            console.warn('Firebase core init failed', e);
+            fbReady = false;
+            fbCorePromise = null; // allow retry
+            return false;
+          }
+        })();
+        return fbCorePromise;
+      }
+
+      // BRIDGE: core + best-effort anonymous session + cloud account sync. Every step is time-boxed
+      // so a slow/blocked Firestore can never hang the UI.
+      function initFirebaseAuthBridge() {
+        if (fbInitPromise) return fbInitPromise;
+        fbInitPromise = (async () => {
+          const ok = await initFirebaseCore();
+          if (!ok) { fbInitPromise = null; return false; }
+          try {
+            if (typeof fbAuth.authStateReady === 'function') await withTimeout(fbAuth.authStateReady(), 6000, 'auth-ready-timeout');
+          } catch (e) {}
+
+          if (!fbAuth.currentUser && !googleFlowActive) {
+            try {
+              const authMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
+              if (!fbAuth.currentUser && !googleFlowActive) {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                  await withTimeout(authMod.signInWithCustomToken(fbAuth, __initial_auth_token), 8000, 'anon-timeout');
+                } else {
+                  await withTimeout(authMod.signInAnonymously(fbAuth), 8000, 'anon-timeout');
+                }
+              }
+            } catch (e) {
+              console.warn('Anonymous session unavailable (continuing)', e);
+            }
+          }
+
+          fbUser = fbAuth.currentUser || null;
+          if (fbUser) {
+            try {
+              await withTimeout(migrateLocalAccountsToFirebase(), 10000, 'migrate-timeout');
+              await withTimeout(pullCloudAccountsIntoLocal(), 10000, 'pull-timeout');
+            } catch (e) {
+              console.warn('Cloud sync skipped', e);
+            }
+          }
+          return true;
+        })();
+        return fbInitPromise;
+      }
+
+      async function pushAccountToFirebase(accountRecord) {
+        if (!fbReady || !fbDb || !accountRecord || !accountRecord.username) return;
+        const clean = String(accountRecord.username).trim().toUpperCase();
+        if (!clean || FAKE_SEED_NAMES.includes(clean)) return;
+        const payload = {
+          username: clean,
+          countryCode: accountRecord.countryCode || '+91',
+          countryName: accountRecord.countryName || 'India',
+          countryFlag: accountRecord.countryFlag || '🇮🇳',
+          encryptedAuth: accountRecord.encryptedAuth || null,
+          googleUid: accountRecord.googleUid || null,
+          googleEmail: null, // never publish emails to a world-readable collection
+          authProvider: accountRecord.authProvider || 'pin',
+          createdAt: accountRecord.createdAt || new Date().toISOString(),
+          migratedAt: Date.now()
+        };
+        try {
+          await Promise.allSettled([
+            fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean), payload, { merge: true }),
+            fbSetDoc(fbDoc(fbDb, 'accounts', clean), payload, { merge: true })
+          ]);
+        } catch (e) {}
+      }
+
+      async function pushLeaderboardSeedToFirebase(uname, profile) {
+        if (!fbReady || !fbDb || !uname) return;
+        const clean = String(uname).trim().toUpperCase();
+        const payload = {
+          name: clean,
+          countryCode: (profile && profile.countryCode) || '+91',
+          countryFlag: (profile && profile.countryFlag) || '🇮🇳',
+          countryName: (profile && profile.countryName) || 'India',
+          isRealRegisteredUser: true,
+          elo: 1500,
+          peak: 1500,
+          wins: 0,
+          losses: 0,
+          matches: 0,
+          totalRuns: 0,
+          totalBalls: 0,
+          highScore: 0,
+          wicketsTaken: 0,
+          wicketsLost: 0,
+          ballsBowled: 0,
+          weeklyEloGain: 0,
+          weeklyWins: 0,
+          weeklyLosses: 0,
+          weeklyMatches: 0,
+          weeklyRuns: 0,
+          weeklyWickets: 0,
+          updatedAt: Date.now()
+        };
+        try {
+          await Promise.allSettled([
+            fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean), payload, { merge: true }),
+            fbSetDoc(fbDoc(fbDb, 'leaderboard', clean), payload, { merge: true })
+          ]);
+        } catch (e) {}
+      }
+
+      async function migrateLocalAccountsToFirebase() {
+        if (!fbReady || !fbDb) return;
         const usersMap = loadEncryptedUsersMap();
-        if (authMode === 'SIGNUP') {
-          if (usersMap[uname] && !verifyUserCredentials(usersMap[uname], dial, pin5)) {
-            showBanner(`Username ${uname} is already registered. Switch to Login or enter its matching 5-digit PIN.`, false);
-            return;
-          }
-          usersMap[uname] = {
-            username: uname,
-            countryCode: dial,
-            countryName: cName,
-            countryFlag: cFlag,
-            encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
-            createdAt: new Date().toISOString()
-          };
-          saveEncryptedUsersMap(usersMap);
-        } else {
-          if (!usersMap[uname]) {
-            showBanner(`Account ${uname} not found. Switch to "Sign Up" to register it first.`, false);
-            return;
-          }
-          if (!verifyUserCredentials(usersMap[uname], dial, pin5)) {
-            showBanner(`Incorrect Country Code (${dial}) or 5-Digit Password for ${uname}.`, false);
-            return;
-          }
+        const keys = Object.keys(usersMap || {});
+        if (!keys.length) return;
+        let migrated = 0;
+        for (const k of keys) {
+          const clean = (k || '').trim().toUpperCase();
+          if (!clean || FAKE_SEED_NAMES.includes(clean)) continue;
+          const rec = usersMap[k];
+          if (!rec) continue;
+          try {
+            const ref = fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean);
+            const snap = await fbGetDoc(ref);
+            if (!snap.exists()) {
+              await pushAccountToFirebase(Object.assign({}, rec, { username: clean }));
+              migrated++;
+            }
+          } catch (e) {}
         }
+        if (migrated > 0 && el.worldSyncText) {
+          el.worldSyncText.textContent = `Migrated ${migrated} account${migrated === 1 ? '' : 's'} → Cloud`;
+        }
+      }
 
-        const activeProf = usersMap[uname];
+      async function pullCloudAccountsIntoLocal() {
+        if (!fbReady || !fbDb) return;
+        try {
+          const colRef = fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts');
+          const snap = await fbGetDocs(colRef);
+          const usersMap = loadEncryptedUsersMap();
+          let changed = false;
+          snap.forEach((d) => {
+            if (!d.exists()) return;
+            const data = d.data();
+            const clean = ((data && data.username) || d.id || '').trim().toUpperCase();
+            if (!clean || FAKE_SEED_NAMES.includes(clean) || clean.length < 3) return;
+            if (!usersMap[clean]) {
+              usersMap[clean] = {
+                username: clean,
+                countryCode: data.countryCode || '+91',
+                countryName: data.countryName || 'India',
+                countryFlag: data.countryFlag || '🇮🇳',
+                encryptedAuth: data.encryptedAuth || null,
+                googleUid: data.googleUid || null,
+                googleEmail: data.googleEmail || null,
+                authProvider: data.authProvider || 'pin',
+                createdAt: data.createdAt || new Date().toISOString()
+              };
+              changed = true;
+            } else if (data.googleUid && !usersMap[clean].googleUid) {
+              usersMap[clean].googleUid = data.googleUid;
+              usersMap[clean].googleEmail = data.googleEmail || null;
+              usersMap[clean].authProvider = data.authProvider || usersMap[clean].authProvider;
+              changed = true;
+            }
+          });
+          if (changed) saveEncryptedUsersMap(usersMap);
+        } catch (e) {}
+      }
+
+      async function finalizePlayerSession(activeProf) {
+        const uname = activeProf.username;
         const sessObj = {
           username: activeProf.username,
-          countryCode: activeProf.countryCode,
-          countryName: activeProf.countryName,
-          countryFlag: activeProf.countryFlag,
-          loggedInAt: new Date().toISOString()
+          countryCode: activeProf.countryCode || '+91',
+          countryName: activeProf.countryName || 'India',
+          countryFlag: activeProf.countryFlag || '🇮🇳',
+          loggedInAt: new Date().toISOString(),
+          authProvider: activeProf.authProvider || 'pin',
+          googleUid: activeProf.googleUid || null
         };
 
         try {
@@ -872,15 +1143,16 @@
           localStorage.setItem(SESSION_STORAGE_KEY, encSess);
           localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
           localStorage.setItem('oddandeven_just_logged_in', '1');
+          localStorage.setItem('oddandeven_last_user_v1', uname);
         } catch (e) {}
 
         const worldMap = loadWorldwidePlayersMap();
         if (!worldMap[uname]) {
           worldMap[uname] = {
             name: uname,
-            countryCode: activeProf.countryCode,
-            countryFlag: activeProf.countryFlag,
-            countryName: activeProf.countryName,
+            countryCode: activeProf.countryCode || '+91',
+            countryFlag: activeProf.countryFlag || '🇮🇳',
+            countryName: activeProf.countryName || 'India',
             isRealRegisteredUser: true,
             elo: 1500,
             peak: 1500,
@@ -908,20 +1180,604 @@
           try {
             const authBc = new BroadcastChannel('oddandeven_auth_sync');
             authBc.postMessage({ type: 'AUTH_LOGIN_SUCCESS', session: sessObj });
+            setTimeout(() => { try { authBc.close(); } catch (e) {} }, 500);
           } catch (e) {}
         }
         broadcastWorldwideSync(true);
 
         updateUIState();
-        showBanner(`✓ Connected as ${activeProf.countryFlag} ${uname}! Launching Arena...`, true);
-        setTimeout(() => navigateToHandCricketArena('?from=login'), 250);
+        showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena...`, true);
+
+        // Navigating away cancels in-flight Firestore writes, so wait for them (capped at 3s).
+        try {
+          await Promise.race([
+            Promise.all([
+              pushAccountToFirebase(activeProf),
+              pushLeaderboardSeedToFirebase(uname, activeProf)
+            ]),
+            new Promise((resolve) => setTimeout(resolve, 3000))
+          ]);
+        } catch (e) {}
+        navigateToHandCricketArena('?from=login');
       }
 
-      window.onload = function () {
+      function usernameFromGoogleProfile(user) {
+        const email = (user.email || '').split('@')[0] || '';
+        let base = email.replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 12);
+        if (base.length < 3) {
+          const dn = (user.displayName || 'PLAYER').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 10);
+          base = dn.length >= 3 ? dn : ('G' + String(user.uid || '').slice(0, 8).toUpperCase());
+        }
+        return base.slice(0, 16);
+      }
+
+      function readCountrySelection() {
+        const opt = el.selectAuthCountry && el.selectAuthCountry.options[el.selectAuthCountry.selectedIndex];
+        return {
+          dial: opt ? opt.value : '+91',
+          cName: opt ? (opt.getAttribute('data-country') || 'India') : 'India',
+          cFlag: opt ? (opt.getAttribute('data-flag') || '🇮🇳') : '🇮🇳'
+        };
+      }
+
+      function setAuthBusy(busy) {
+        authBusy = busy;
+        if (el.btnGoogleSignIn) el.btnGoogleSignIn.disabled = busy;
+        if (el.btnSubmitAuth) el.btnSubmitAuth.disabled = busy;
+      }
+
+      function googleErrorMessage(e) {
+        const code = (e && e.code) || '';
+        switch (code) {
+          case 'auth/unauthorized-domain':
+            return `Google Sign-In blocked: add "${location.hostname}" under Firebase Console → Authentication → Settings → Authorized domains.`;
+          case 'auth/operation-not-allowed':
+            return 'Google provider is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.';
+          case 'auth/network-request-failed':
+            return 'Network error while contacting Google. Check your connection and try again.';
+          case 'auth/popup-closed-by-user':
+          case 'auth/cancelled-popup-request':
+            return 'Google Sign-In was cancelled.';
+          case 'auth/account-exists-with-different-credential':
+            return 'An account already exists with a different sign-in method.';
+          case 'auth/internal-error':
+            return 'Google Sign-In hit an internal error. Please try again.';
+          default:
+            return `Google Sign-In failed${code ? ' (' + code + ')' : ''}. Please try again.`;
+        }
+      }
+
+      async function usernameIsTaken(candidate, googleUid) {
+        const local = loadEncryptedUsersMap()[candidate];
+        if (local && local.googleUid !== googleUid) return true;
+        if (fbReady && fbDb) {
+          try {
+            const snap = await fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidate));
+            if (snap.exists()) {
+              const d = snap.data();
+              if (!d || d.googleUid !== googleUid) return true;
+            }
+          } catch (e) {}
+        }
+        return false;
+      }
+
+      // Returns the existing account record for a returning Google user, or null for a first-time user.
+      // THROWS if it cannot tell (e.g. Firestore denied/unreachable) so we never show the username
+      // prompt to someone who already has an account.
+      async function lookupGoogleAccount(gUser) {
+        const googleUid = gUser.uid;
+
+        // 1) Local cache (fast path)
+        const usersMap = loadEncryptedUsersMap();
+        for (const k of Object.keys(usersMap)) {
+          if (usersMap[k] && usersMap[k].googleUid === googleUid) return usersMap[k];
+        }
+
+        if (!fbReady || !fbDb) {
+          return null;
+        }
+
+        // 2) Private profile keyed by uid: authoritative, and always readable by its owner.
+        let profSnap = null;
+        try {
+          profSnap = await withTimeout(
+            fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', googleUid, 'profile', 'main')),
+            6000, 'lookup-timeout'
+          );
+        } catch (e) {
+          profSnap = null;
+        }
+        if (profSnap.exists()) {
+          const p = profSnap.data() || {};
+          const uname = String(p.username || '').trim().toUpperCase();
+          if (uname) {
+            let a = {};
+            try {
+              const accSnap = await fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname));
+              if (accSnap.exists()) a = accSnap.data() || {};
+            } catch (e) {}
+            return {
+              username: uname,
+              countryCode: a.countryCode || p.countryCode || '+91',
+              countryName: a.countryName || p.countryName || 'India',
+              countryFlag: a.countryFlag || p.countryFlag || '🇮🇳',
+              encryptedAuth: null,
+              googleUid: googleUid,
+              googleEmail: null,
+              authProvider: 'google',
+              createdAt: p.createdAt || a.createdAt || new Date().toISOString()
+            };
+          }
+        }
+
+        // 3) Legacy accounts created before private profiles existed (query by uid)
+        const colRef = fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts');
+        const q = (fbQueryFn && fbWhereFn) ? fbQueryFn(colRef, fbWhereFn('googleUid', '==', googleUid)) : colRef;
+        const snap = await withTimeout(fbGetDocs(q), 10000, 'lookup-timeout');
+        let legacy = null;
+        snap.forEach((d) => {
+          if (!d.exists()) return;
+          const data = d.data();
+          if (data && data.googleUid === googleUid) {
+            legacy = {
+              username: String(data.username || d.id).trim().toUpperCase(),
+              countryCode: data.countryCode || '+91',
+              countryName: data.countryName || 'India',
+              countryFlag: data.countryFlag || '🇮🇳',
+              encryptedAuth: data.encryptedAuth || null,
+              googleUid: googleUid,
+              googleEmail: null,
+              authProvider: data.authProvider || 'google',
+              createdAt: data.createdAt || new Date().toISOString()
+            };
+          }
+        });
+        return legacy; // null => genuinely first-time user
+      }
+
+      // Best-effort: refresh lastLoginAt (and backfill the private profile for legacy accounts).
+      async function touchPrivateProfile(gUser, acct) {
+        if (!fbReady || !fbDb || !acct) return;
+        try {
+          await fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), {
+            uid: gUser.uid,
+            username: acct.username,
+            email: gUser.email || null,
+            emailVerified: Boolean(gUser.emailVerified),
+            displayName: gUser.displayName || null,
+            photoURL: gUser.photoURL || null,
+            countryCode: acct.countryCode || '+91',
+            countryName: acct.countryName || 'India',
+            countryFlag: acct.countryFlag || '🇮🇳',
+            authProvider: 'google',
+            lastLoginAt: new Date().toISOString()
+          }, { merge: true });
+        } catch (e) {
+          console.warn('Could not update private profile', e);
+        }
+      }
+
+      // Shared by the popup flow and the redirect fallback.
+      async function completeGoogleSignIn(gUser, sel) {
+        const country = sel || readCountrySelection();
+        const googleUid = gUser.uid;
+        fbUser = (fbAuth && fbAuth.currentUser) || fbUser;
+
+        // We are now authenticated as the Google user, so Firestore reads that were denied earlier can succeed.
+        try { await withTimeout(pullCloudAccountsIntoLocal(), 8000, 'pull-timeout'); } catch (e) {}
+
+        let existing = null;
+        try {
+          existing = await lookupGoogleAccount(gUser);
+        } catch (e) {
+          console.warn('Account lookup failed', e);
+          const code = (e && e.code) ? ` (${e.code})` : '';
+          showBanner(`Couldn't check your account${code}. Check your connection and Firestore rules, then try again.`, false);
+          return;
+        }
+
+        if (existing) {
+          // Returning user: NO username prompt.
+          const usersMap = loadEncryptedUsersMap();
+          usersMap[existing.username] = existing;
+          saveEncryptedUsersMap(usersMap);
+          try { await withTimeout(touchPrivateProfile(gUser, existing), 2500, 'touch-timeout'); } catch (e) {}
+          await finalizePlayerSession(existing);
+          return;
+        }
+
+        // New Google account: let the user choose a username (login of an existing account never reaches here).
+        const base = usernameFromGoogleProfile(gUser);
+        let suggestion = base;
+        let n = 1;
+        while (
+          RESERVED_USERNAMES.includes(suggestion) ||
+          FAKE_SEED_NAMES.includes(suggestion) ||
+          await usernameIsTaken(suggestion, googleUid)
+        ) {
+          const suffix = String(n);
+          suggestion = base.slice(0, 16 - suffix.length) + suffix;
+          n += 1;
+          if (n > 99) break;
+        }
+
+        const chosen = await chooseGoogleUsername(suggestion, gUser, country);
+        if (!chosen) {
+          try { if (fbAuth) await fbAuth.signOut(); } catch (e) {}
+          showBanner('Sign-up cancelled. Pick a username to finish creating your account.', false);
+          return;
+        }
+
+        const newProf = {
+          username: chosen,
+          countryCode: country.dial,
+          countryName: country.cName,
+          countryFlag: country.cFlag,
+          encryptedAuth: null,
+          googleUid: googleUid,
+          googleEmail: null, // email lives only in the user's private Firestore profile
+          authProvider: 'google',
+          createdAt: new Date().toISOString()
+        };
+        const usersMap = loadEncryptedUsersMap();
+        usersMap[chosen] = newProf;
+        saveEncryptedUsersMap(usersMap);
+        await finalizePlayerSession(newProf);
+      }
+
+      function validateChosenUsername(name) {
+        if (name.length < 3) return 'Username must be at least 3 characters (letters, numbers, underscore).';
+        if (FAKE_SEED_NAMES.includes(name) || RESERVED_USERNAMES.includes(name)) return 'That username is reserved. Please choose another.';
+        return null;
+      }
+
+      // Atomically claims the username in Firestore and stores the user's private profile.
+      async function reserveGoogleUsername(name, gUser, country) {
+        const local = loadEncryptedUsersMap()[name];
+        if (local && local.googleUid !== gUser.uid) return { ok: false, error: 'That username is already taken.' };
+        if (!fbReady || !fbDb || !fbRunTransaction) {
+          return { ok: false, error: 'Cloud database unavailable. Check your connection and try again.' };
+        }
+        const createdAt = new Date().toISOString();
+        try {
+          const acctRef = fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', name);
+          await fbRunTransaction(fbDb, async (tx) => {
+            const snap = await tx.get(acctRef);
+            if (snap.exists()) {
+              const d = snap.data();
+              if (!d || d.googleUid !== gUser.uid) {
+                const err = new Error('username-taken');
+                err.code = 'username-taken';
+                throw err;
+              }
+            }
+            tx.set(acctRef, {
+              username: name,
+              countryCode: country.dial,
+              countryName: country.cName,
+              countryFlag: country.cFlag,
+              encryptedAuth: null,
+              googleUid: gUser.uid,
+              googleEmail: null,
+              authProvider: 'google',
+              createdAt: createdAt,
+              migratedAt: Date.now()
+            });
+          });
+
+          // Private profile: readable/writable only by this user (see Firestore rules).
+          await fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), {
+            uid: gUser.uid,
+            username: name,
+            email: gUser.email || null,
+            emailVerified: Boolean(gUser.emailVerified),
+            displayName: gUser.displayName || null,
+            photoURL: gUser.photoURL || null,
+            countryCode: country.dial,
+            countryName: country.cName,
+            countryFlag: country.cFlag,
+            authProvider: 'google',
+            createdAt: createdAt,
+            lastLoginAt: createdAt
+          });
+          return { ok: true };
+        } catch (e) {
+          if (e && e.code === 'username-taken') return { ok: false, error: 'That username is already taken.' };
+          console.warn('Username reservation failed', e);
+          const code = (e && e.code) ? ` (${e.code})` : '';
+          return { ok: false, error: `Couldn't save your account${code}. Please try again.` };
+        }
+      }
+
+      function chooseGoogleUsername(suggestion, gUser, country) {
+        return new Promise((resolve) => {
+          const modal = document.getElementById('usernameModal');
+          const input = document.getElementById('inputChooseUsername');
+          const errEl = document.getElementById('usernameModalError');
+          const btnOk = document.getElementById('btnUsernameConfirm');
+          const btnCancel = document.getElementById('btnUsernameCancel');
+          if (!modal || !input || !btnOk || !btnCancel) { resolve(suggestion); return; }
+
+          const clean = (v) => String(v || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 16);
+          const okLabel = btnOk.textContent;
+          let working = false;
+
+          function close(value) {
+            input.removeEventListener('input', onInput);
+            input.removeEventListener('keydown', onKey);
+            btnOk.removeEventListener('click', submit);
+            btnCancel.removeEventListener('click', onCancel);
+            document.removeEventListener('keydown', onEsc);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            resolve(value);
+          }
+          function onInput() { input.value = clean(input.value); errEl.textContent = ''; }
+          function onKey(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }
+          function onEsc(e) { if (e.key === 'Escape' && !working) close(null); }
+          function onCancel() { if (!working) close(null); }
+
+          async function submit() {
+            if (working) return;
+            const name = clean(input.value);
+            input.value = name;
+            const problem = validateChosenUsername(name);
+            if (problem) { errEl.textContent = problem; return; }
+            working = true;
+            btnOk.disabled = true;
+            btnOk.textContent = 'Checking…';
+            const res = await reserveGoogleUsername(name, gUser, country);
+            working = false;
+            btnOk.disabled = false;
+            btnOk.textContent = okLabel;
+            if (res.ok) close(name);
+            else errEl.textContent = res.error;
+          }
+
+          input.value = clean(suggestion);
+          errEl.textContent = '';
+          input.addEventListener('input', onInput);
+          input.addEventListener('keydown', onKey);
+          btnOk.addEventListener('click', submit);
+          btnCancel.addEventListener('click', onCancel);
+          document.addEventListener('keydown', onEsc);
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          setTimeout(() => { input.focus(); input.select(); }, 50);
+        });
+      }
+
+      async function handleGoogleSignIn() {
+        if (authBusy) return;
+        if (location.protocol === 'file:') {
+          showBanner('Google Sign-In needs https:// (or http://localhost). Open the page from your hosted domain, not as a local file.', false);
+          return;
+        }
+        setAuthBusy(true);
+        googleFlowActive = true;
+        showBanner('Opening Google Sign-In…', true);
+        try {
+          // Firebase is preloaded on page load, so the popup opens synchronously inside the click.
+          // Only if it is still loading do we wait (browsers may then block the popup -> redirect fallback).
+          if (!fbAuth || !GoogleAuthProviderCtor || !fbSignInWithPopupFn) {
+            showBanner('Loading Google Sign-In…', true);
+            let ok = false;
+            try { ok = await withTimeout(initFirebaseCore(), 12000, 'init-timeout'); } catch (e) { ok = false; }
+            if (!ok || !fbAuth || !GoogleAuthProviderCtor || !fbSignInWithPopupFn) {
+              showBanner('Google Sign-In could not load. Check your network or disable blockers for gstatic.com, then try again.', false);
+              return;
+            }
+          }
+
+          const provider = new GoogleAuthProviderCtor();
+          provider.setCustomParameters({ prompt: 'select_account' });
+          const sel = readCountrySelection(); // capture now: a redirect reloads the page and resets the dropdown
+
+          try {
+            const popupPromise = fbSignInWithPopupFn(fbAuth, provider);
+            showBanner('Complete sign-in in the Google window. Nothing opened? Allow popups for this site.', true);
+            const result = await withTimeout(popupPromise, 180000, 'popup-timeout');
+            showBanner('Google verified. Setting up your account…', true);
+            await completeGoogleSignIn(result.user, sel);
+          } catch (e) {
+            const code = (e && e.code) || '';
+            if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+              try { sessionStorage.setItem(GOOGLE_PENDING_KEY, JSON.stringify(sel)); } catch (err) {}
+              showBanner('Popup blocked — redirecting to Google…', true);
+              await signInWithRedirectFn(fbAuth, provider);
+              return;
+            }
+            throw e;
+          }
+        } catch (e) {
+          console.warn('Google sign-in error', e);
+          if (e && e.code === 'popup-timeout') {
+            showBanner('Google window did not respond. Allow popups for this site and try again.', false);
+          } else {
+            showBanner(googleErrorMessage(e), (e && e.code) === 'auth/popup-closed-by-user');
+          }
+        } finally {
+          googleFlowActive = false;
+          setAuthBusy(false);
+        }
+      }
+
+      // Only used after the redirect fallback.
+      async function checkRedirectResult() {
+        let sel = null;
+        try {
+          const raw = sessionStorage.getItem(GOOGLE_PENDING_KEY);
+          if (raw) sel = JSON.parse(raw);
+          sessionStorage.removeItem(GOOGLE_PENDING_KEY);
+        } catch (e) {}
+        try {
+          const ok = await initFirebaseCore();
+          if (!ok) return;
+          if (fbRedirectError) {
+            const err = fbRedirectError;
+            fbRedirectError = null;
+            showBanner(googleErrorMessage(err), false);
+            return;
+          }
+          const result = fbRedirectResult;
+          fbRedirectResult = null;
+          if (!result || !result.user) return;
+          await completeGoogleSignIn(result.user, sel);
+        } catch (e) {
+          console.warn('Redirect result handling error', e);
+          showBanner(googleErrorMessage(e), false);
+        }
+      }
+
+      async function handleAuthSubmit() {
+        if (authBusy) return;
+        const uname = (el.inputAuthUsername.value || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+        const pin5 = (el.inputAuthPin5.value || '').trim();
+        const { dial, cName, cFlag } = readCountrySelection();
+
+        const isAdminMatch = (uname === ADMIN_CONFIG.username && pin5 === ADMIN_CONFIG.pin && dial === ADMIN_CONFIG.countryCode) ||
+                             (uname === ADMIN_CONFIG.username && (pin5 === ADMIN_CONFIG.pin || pin5 === ADMIN_CONFIG.masterKey));
+        if (isAdminMatch) {
+          sessionStorage.setItem('oddandeven_admin_auth', '1');
+          showBanner('✓ Administrator Verified! Launching Control Panel...', true);
+          setTimeout(() => navigateToAdminConsole(), 350);
+          return;
+        }
+
+        if (uname.length < 3) {
+          showBanner('Username must be at least 3 alphanumeric characters.', false);
+          return;
+        }
+        if (FAKE_SEED_NAMES.includes(uname) || RESERVED_USERNAMES.includes(uname)) {
+          showBanner('Please choose a unique personal username.', false);
+          return;
+        }
+        if (!/^\d{5}$/.test(pin5)) {
+          showBanner(`Please enter a valid 5-digit numeric password (PIN) connected with ${dial}.`, false);
+          return;
+        }
+
+        setAuthBusy(true);
+        try {
+          await initFirebaseAuthBridge();
+
+          // Direct cloud document check in Firestore so single accounts load immediately even if collection listing is restricted
+          if (fbReady && fbDb) {
+            try {
+              let snap = await fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname));
+              if (!snap.exists()) {
+                snap = await fbGetDoc(fbDoc(fbDb, 'accounts', uname));
+              }
+              if (snap.exists()) {
+                const data = snap.data();
+                const curUsers = loadEncryptedUsersMap();
+                curUsers[uname] = {
+                  username: uname,
+                  countryCode: data.countryCode || dial,
+                  countryName: data.countryName || cName,
+                  countryFlag: data.countryFlag || cFlag,
+                  encryptedAuth: data.encryptedAuth || null,
+                  googleUid: data.googleUid || null,
+                  authProvider: data.authProvider || 'pin',
+                  createdAt: data.createdAt || new Date().toISOString()
+                };
+                saveEncryptedUsersMap(curUsers);
+              }
+            } catch (e) {}
+          }
+          await pullCloudAccountsIntoLocal();
+
+          let usersMap = loadEncryptedUsersMap();
+          const rec = usersMap[uname];
+
+          if (authMode === 'SIGNUP') {
+            if (rec) {
+              if (!rec.encryptedAuth) {
+                showBanner(`Username ${uname} is already registered with Google. Choose another username or use "Continue with Google".`, false);
+                return;
+              }
+              if (!verifyUserCredentials(rec, dial, pin5)) {
+                showBanner(`Username ${uname} is already registered. Enter its matching 5-digit PIN or choose a new username.`, false);
+                return;
+              }
+              await finalizePlayerSession(rec);
+              return;
+            }
+
+            const profile = {
+              username: uname,
+              countryCode: dial,
+              countryName: cName,
+              countryFlag: cFlag,
+              encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
+              authProvider: 'pin',
+              createdAt: new Date().toISOString()
+            };
+            usersMap[uname] = profile;
+            saveEncryptedUsersMap(usersMap);
+            await pushAccountToFirebase(profile);
+            await pushLeaderboardSeedToFirebase(uname, profile);
+            await finalizePlayerSession(profile);
+            return;
+          }
+
+          // LOGIN MODE
+          if (!rec) {
+            // New account login: automatically register in Firebase and local storage without showing "username not found"!
+            showBanner(`Creating new player account for ${cFlag} ${uname}…`, true);
+            const profile = {
+              username: uname,
+              countryCode: dial,
+              countryName: cName,
+              countryFlag: cFlag,
+              encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
+              authProvider: 'pin',
+              createdAt: new Date().toISOString()
+            };
+            usersMap[uname] = profile;
+            saveEncryptedUsersMap(usersMap);
+            await pushAccountToFirebase(profile);
+            await pushLeaderboardSeedToFirebase(uname, profile);
+            await finalizePlayerSession(profile);
+            return;
+          }
+
+          if (!rec.encryptedAuth) {
+            showBanner(`${uname} was created with Google. Use "Continue with Google" to sign in.`, false);
+            return;
+          }
+          if (!verifyUserCredentials(rec, dial, pin5)) {
+            showBanner(`Incorrect Country Code (${dial}) or 5-Digit Password for ${uname}.`, false);
+            return;
+          }
+          await finalizePlayerSession(rec);
+
+        } catch (e) {
+          console.warn('Auth submit error', e);
+          showBanner('Something went wrong. Please try again.', false);
+        } finally {
+          setAuthBusy(false);
+        }
+      }
+
+      function boot() {
         initWorldwideLeaderboardHub();
+        initFirebaseCore().then((ok) => { if (ok) checkRedirectResult(); });
+        initFirebaseAuthBridge().then(async (ok) => {
+          if (ok) {
+            if (el.worldSyncText) {
+              const n = Object.keys(loadEncryptedUsersMap()).length;
+              if (n > 0) el.worldSyncText.textContent = `Cloud Linked • ${n} Account${n === 1 ? '' : 's'}`;
+            }
+          }
+        });
 
         const params = new URLSearchParams(window.location.search);
         const signedOutParam = params.get('signedout') === '1';
+        const googlePending = (() => {
+          try { return Boolean(sessionStorage.getItem(GOOGLE_PENDING_KEY)); } catch (e) { return false; }
+        })();
 
         if (params.get('view') === 'mobile' || params.get('view') === 'desktop') {
           sessionStorage.setItem(PREFERRED_DEVICE_OVERRIDE_KEY, params.get('view'));
@@ -938,7 +1794,7 @@
           showBanner('You have signed out safely. Sign in below to return to the pitch.', true);
         } else {
           const activeSess = loadActiveSession();
-          if (activeSess && activeSess.username && params.get('stay') !== '1' && !isSandboxedPreviewIframe()) {
+          if (activeSess && activeSess.username && params.get('stay') !== '1' && !googlePending && !isSandboxedPreviewIframe()) {
             updateUIState();
             setTimeout(() => navigateToHandCricketArena('?from=login'), 300);
           }
@@ -950,6 +1806,9 @@
         el.inputAuthPin5.addEventListener('input', updateUIState);
         el.selectAuthCountry.addEventListener('change', updateUIState);
         el.btnSubmitAuth.addEventListener('click', handleAuthSubmit);
+        if (el.btnGoogleSignIn) {
+          el.btnGoogleSignIn.addEventListener('click', () => { handleGoogleSignIn(); });
+        }
 
         if (el.btnSwitchDeviceMode) {
           el.btnSwitchDeviceMode.addEventListener('click', () => {
@@ -974,6 +1833,7 @@
             sessionStorage.removeItem(SESSION_STORAGE_KEY);
             localStorage.removeItem(SESSION_STORAGE_KEY);
             localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+            localStorage.removeItem('oddandeven_just_logged_in');
           } catch (e) {}
           updateUIState();
           showBanner('Signed out of active session.', true);
@@ -981,12 +1841,26 @@
 
         window.addEventListener('resize', updateUIState);
 
-        window.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') handleAuthSubmit();
+        // Enter only submits from the form inputs (it used to fire from anywhere, e.g. while on the Google button).
+        [el.inputAuthUsername, el.inputAuthPin5].forEach((inp) => {
+          inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleAuthSubmit();
+            }
+          });
         });
 
         updateUIState();
-      };
+      }
+
+      // Script sits at the end of <body>, so the DOM is ready. Booting here instead of window.onload
+      // stops the UI from staying dead while slow CDNs (PeerJS, fonts) finish loading.
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+      } else {
+        boot();
+      }
     })();
   </script>
 </body>
