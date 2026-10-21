@@ -156,34 +156,56 @@
     </div>
   </header>
 
-  <!-- NEW UPDATE VERSION 1.8 BANNER WITH CROSS (✕) ICON (Redirects to updates.html) -->
-  <div id="newUpdateBanner" class="w-full bg-gradient-to-r from-[#13251b] via-[#182936] to-[#231934] border-b border-[#a3d96c]/45 px-3 py-2 shadow-md relative z-30">
-    <div class="max-w-md mx-auto flex items-center justify-between gap-2">
-      <a id="btnBannerNewUpdate" href="updates.html" class="flex-1 flex items-center gap-2.5 text-left min-w-0 group">
-        <span class="w-7 h-7 rounded-xl bg-[#81b64c]/25 border border-[#a3d96c]/60 flex items-center justify-center text-sm shrink-0 shadow-sm">
-          🚀
-        </span>
+  <!-- AESTHETIC NEW UPDATE VERSION 1.8 BANNER (Redirects to updates.html) -->
+  <div
+    id="newUpdateBanner"
+    class="w-full relative overflow-hidden bg-gradient-to-r from-[#0c140d]/95 via-[#0e1a22]/95 to-[#1a1226]/95 backdrop-blur-xl border-b border-[#a3d96c]/30 px-3 py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.5)] z-30 group/banner"
+  >
+    <!-- Ambient Radial Glow Highlights -->
+    <div class="absolute -left-10 -top-10 w-36 h-24 bg-[#81b64c]/20 rounded-full blur-2xl pointer-events-none"></div>
+    <div class="absolute right-0 -bottom-10 w-40 h-24 bg-cyan-400/15 rounded-full blur-2xl pointer-events-none"></div>
+    <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#a3d96c]/60 to-transparent"></div>
+
+    <div class="max-w-md mx-auto flex items-center justify-between gap-2.5 relative z-10">
+      <a
+        id="btnBannerNewUpdate"
+        href="updates.html"
+        class="flex-1 flex items-center gap-2.5 text-left min-w-0 group"
+        aria-label="View Version 1.8 release notes and changelog"
+      >
+        <!-- Glowing Animated Rocket Icon -->
+        <div class="relative shrink-0">
+          <span class="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#81b64c]/30 via-emerald-500/20 to-cyan-500/15 border border-[#a3d96c]/50 flex items-center justify-center text-sm shadow-md shadow-[#81b64c]/20 group-hover:scale-105 group-hover:border-[#a3d96c] transition-all duration-200">
+            🚀
+          </span>
+          <span class="w-1.5 h-1.5 rounded-full bg-[#a3d96c] animate-ping absolute -top-0.5 -right-0.5"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-[#a3d96c] absolute -top-0.5 -right-0.5"></span>
+        </div>
+
         <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-1.5">
-            <span class="px-1.5 py-0.2 rounded-full text-[8px] font-mono-num font-black uppercase bg-[#81b64c] text-slate-950 shrink-0">
-              NEW UPDATE v1.8
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase tracking-wider bg-gradient-to-r from-[#81b64c] to-emerald-400 text-slate-950 shadow-sm shrink-0">
+              <span>⚡</span>
+              <span>v1.8 LIVE</span>
             </span>
-            <span class="font-brand text-xs font-black text-white group-hover:text-[#a3d96c] transition truncate">
+            <span class="font-brand text-xs font-black text-white group-hover:text-[#a3d96c] transition-colors truncate">
               What's New in Version 1.8
             </span>
           </div>
-          <p class="text-[10px] text-cyan-200/85 truncate">
-            Achievements, Events, Cloud Sync, Bug Fixes &amp; more →
+          <p class="text-[10px] text-cyan-200/90 truncate mt-0.5">
+            Achievements, Season 1 Events, Cloud Sync &amp; more →
           </p>
         </div>
       </a>
+
+      <!-- Modern Dismiss Button -->
       <button
         id="btnDismissUpdateBanner"
         type="button"
         aria-label="Close New Update banner"
         title="Dismiss banner"
         onclick="event.stopPropagation();var b=document.getElementById('newUpdateBanner');if(b)b.classList.add('hidden');"
-        class="w-7 h-7 rounded-lg bg-[#181715]/90 hover:bg-rose-500/25 text-slate-300 hover:text-white border border-white/15 flex items-center justify-center text-xs font-bold shrink-0 active:scale-95 transition"
+        class="w-7 h-7 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-xs font-bold shrink-0 active:scale-90 transition-all"
       >
         ✕
       </button>
@@ -1768,7 +1790,7 @@
         SoundFX.click();
         const cleanTarget = (targetUsername || '').trim().toUpperCase();
         const myName = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
-        if (!cleanTarget || isPlaceholderUsername(cleanTarget) || cleanTarget === myName) return;
+        if (!cleanTarget || cleanTarget === myName) return;
 
         // Check if friend already has an open room we can join directly
         const friendOpen = STATE.activeOpenRooms && STATE.activeOpenRooms[cleanTarget];
@@ -1812,8 +1834,12 @@
 
         if (db) {
           try {
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanTarget), invitePayload);
-            setDoc(doc(db, 'invites', cleanTarget), invitePayload).catch(() => {});
+            await Promise.allSettled([
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanTarget), invitePayload),
+              setDoc(doc(db, 'invites', cleanTarget), invitePayload),
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), invitePayload),
+              setDoc(doc(db, 'invites', 'GLOBAL_LATEST'), invitePayload)
+            ]);
           } catch (e) {}
         }
 
@@ -1824,12 +1850,15 @@
         }
       }
 
-      function showIncomingInviteBanner(data) {
+      function handleIncomingMatchInvite(data) {
         if (!data || !data.roomCode || !data.fromUser) return;
         const myName = (STATE.myUsername || '').trim().toUpperCase();
+        const toClean = String(data.toUser || '').trim().toUpperCase();
         const fromClean = String(data.fromUser).trim().toUpperCase();
-        if (fromClean === myName) return;
-        if (Date.now() - (data.timestamp || 0) < 180000) {
+        const isCurrentHostOfRoom = STATE.onlineRole === 'HOST' && STATE.roomCode === String(data.roomCode).trim().toUpperCase();
+        const isAddressedToMe = !toClean || toClean === myName || toClean === 'ALL' || isPlaceholderUsername(myName);
+
+        if (isAddressedToMe && !isCurrentHostOfRoom && Math.abs(Date.now() - (data.timestamp || 0)) < 600000) {
           activeInviteRoomCode = String(data.roomCode).trim().toUpperCase();
           STATE.activeOpenRooms[fromClean] = {
             roomCode: activeInviteRoomCode,
@@ -1840,30 +1869,38 @@
           const title = document.getElementById('inviteBannerTitle');
           const sub = document.getElementById('inviteBannerSub');
           if (banner && title && sub) {
-            title.textContent = `⚔️ ${data.fromFlag || '🇮🇳'} ${fromClean} Challenged You!`;
-            sub.textContent = `Room ${activeInviteRoomCode} • Tap Accept & Join to launch 1v1 match!`;
+            title.textContent = '⚔️ ' + (data.fromFlag || '🇮🇳') + ' ' + fromClean + ' Challenged You!';
+            sub.textContent = 'Room ' + activeInviteRoomCode + ' • Tap Accept & Join to start!';
             banner.classList.remove('hidden');
-            SoundFX.runScored(6);
+            try { SoundFX.runScored(6); } catch (e) {}
           }
         }
       }
 
+      function showIncomingInviteBanner(data) {
+        handleIncomingMatchInvite(data);
+      }
+
       function initInviteListener() {
-        if (!db || isPlaceholderUsername(STATE.myUsername)) return;
-        const myName = STATE.myUsername.trim().toUpperCase();
+        if (!db) return;
+        const myName = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
         if (typeof inviteUnsub === 'function') {
           try { inviteUnsub(); } catch (e) {}
           inviteUnsub = null;
         }
         const handleSnap = (docSnap) => {
           if (!docSnap || !docSnap.exists()) return;
-          showIncomingInviteBanner(docSnap.data());
+          handleIncomingMatchInvite(docSnap.data());
         };
         const u1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', myName), handleSnap, () => {});
         const u2 = onSnapshot(doc(db, 'invites', myName), handleSnap, () => {});
+        const u3 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
+        const u4 = onSnapshot(doc(db, 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
         inviteUnsub = () => {
           try { u1(); } catch (e) {}
           try { u2(); } catch (e) {}
+          try { u3(); } catch (e) {}
+          try { u4(); } catch (e) {}
         };
       }
 
@@ -1875,17 +1912,31 @@
         const banner = document.getElementById('friendInviteBanner');
         if (banner) banner.classList.add('hidden');
 
+        const caller = Object.keys(STATE.activeOpenRooms || {}).find(
+          (u) => STATE.activeOpenRooms[u] && STATE.activeOpenRooms[u].roomCode === codeToJoin
+        ) || 'HOST';
+
         if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.value = codeToJoin;
         STATE.mode = 'ONLINE_2P';
+        STATE.onlineRole = 'GUEST';
+        STATE.roomCode = codeToJoin;
+        STATE.p1Name = caller;
+        STATE.p2Name = STATE.myUsername && STATE.myUsername !== caller ? STATE.myUsername : (STATE.myUsername ? (STATE.myUsername + ' (Guest)') : 'GUEST');
+        STATE.p2Joined = true;
+        STATE.roomLocked = true;
         switchScreen('PITCH');
         joinMultiplayerRoom(codeToJoin, true);
 
-        if (db && !isPlaceholderUsername(STATE.myUsername)) {
-          const cleanMe = STATE.myUsername.trim().toUpperCase();
-          try {
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanMe));
-            deleteDoc(doc(db, 'invites', cleanMe)).catch(() => {});
-          } catch (e) {}
+        if (db) {
+          const cleanMe = (STATE.myUsername || '').trim().toUpperCase();
+          if (cleanMe) {
+            try {
+              await Promise.allSettled([
+                deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanMe)),
+                deleteDoc(doc(db, 'invites', cleanMe))
+              ]);
+            } catch (e) {}
+          }
         }
       }
 
@@ -2648,26 +2699,27 @@
       }
 
       function getP1Label() {
-        if ((!isMultiplayer() || STATE.onlineRole !== 'GUEST') && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-          STATE.p1Name = STATE.myUsername.trim().toUpperCase();
-          return STATE.p1Name;
+        if (isMultiplayer()) {
+          if (STATE.onlineRole === 'GUEST') {
+            if (STATE.p1Name && STATE.p1Name !== STATE.myUsername) {
+              return STATE.p1Name.trim().toUpperCase();
+            }
+            return 'HOST';
+          } else {
+            return (STATE.p1Name || STATE.myUsername || 'HOST').trim().toUpperCase();
+          }
         }
-        if (STATE.p1Name && !isPlaceholderUsername(STATE.p1Name)) {
-          return STATE.p1Name.trim().toUpperCase();
-        }
-        return (STATE.myUsername || STATE.p1Name || 'PLAYER_1').trim().toUpperCase();
+        return (STATE.myUsername || STATE.p1Name || 'YOU').trim().toUpperCase();
       }
 
       function getP2Label() {
         if (isMultiplayer()) {
-          if (STATE.p2Name && STATE.p2Name !== 'WAITING...' && !isPlaceholderUsername(STATE.p2Name)) {
-            return STATE.p2Name.trim().toUpperCase();
+          const p1 = getP1Label();
+          let p2 = (STATE.p2Name || (STATE.onlineRole === 'GUEST' ? STATE.myUsername : 'WAITING...')).trim().toUpperCase();
+          if (STATE.roomLocked && STATE.p2Joined && (p2 === p1 || p2 === 'WAITING...')) {
+            p2 = STATE.onlineRole === 'GUEST' ? (p1 + ' (Guest)') : 'PLAYER_2';
           }
-          if (STATE.onlineRole === 'GUEST' && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-            STATE.p2Name = STATE.myUsername.trim().toUpperCase();
-            return STATE.p2Name;
-          }
-          return (STATE.p2Name || 'PLAYER_2').trim().toUpperCase();
+          return p2;
         }
         const prof = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
         return prof.shortName;
@@ -3189,6 +3241,9 @@
           STATE.p1CountryFlag = msg.p1CountryFlag || '🇮🇳';
           STATE.p1CountryCode = msg.p1CountryCode || '+91';
           STATE.p2Name = (msg.p2Name || STATE.myUsername).trim().toUpperCase();
+          if (STATE.p1Name === STATE.p2Name) {
+            STATE.p2Name = STATE.p2Name + ' (Guest)';
+          }
           STATE.p2CountryFlag = msg.p2CountryFlag || STATE.myCountryFlag || '🇮🇳';
           STATE.p2CountryCode = msg.p2CountryCode || STATE.myCountryCode || '+91';
 
@@ -3332,7 +3387,7 @@
         STATE.roomLocked = false;
         STATE.p2Joined = false;
         STATE.peerConns = [];
-        STATE.p1Name = STATE.myUsername;
+        STATE.p1Name = STATE.myUsername && !isPlaceholderUsername(STATE.myUsername) ? STATE.myUsername : 'HOST';
         STATE.p1CountryFlag = STATE.myCountryFlag;
         STATE.p1CountryCode = STATE.myCountryCode;
         STATE.p2Name = 'WAITING...';
@@ -3411,6 +3466,102 @@
 
             STATE.legacyPeer = new Peer('oae-room-' + code);
             attachHostPeer(STATE.legacyPeer);
+          } catch (e) {}
+        }
+        renderView();
+      }
+
+      function joinMultiplayerRoom(customCode = null, autoStart = false) {
+        SoundFX.click();
+        const code = String(customCode || (dom.inlineInputJoinCode && dom.inlineInputJoinCode.value) || '').trim().toUpperCase();
+        if (!code) {
+          updateNetStatusUI('⚠️ Enter a valid Room Code (e.g. HC1234)', false);
+          return;
+        }
+
+        cleanupRoomSession(Boolean(STATE.roomCode && STATE.roomCode !== code));
+        stopTurnTimer();
+
+        const previousHost = (STATE.p1Name && STATE.p1Name !== STATE.myUsername && STATE.p1Name !== 'WAITING...') ? STATE.p1Name : null;
+
+        STATE.roomCode = code;
+        STATE.onlineRole = 'GUEST';
+        STATE.mode = 'ONLINE_2P';
+        STATE.autoStartOnGuestJoin = Boolean(autoStart);
+        STATE.onlineConnected = false;
+        STATE.roomLocked = false;
+        STATE.p2Joined = false;
+        STATE.peerConns = [];
+
+        syncLeaderboardRegistry();
+
+        // Preserve Host as P1 and Guest as P2
+        STATE.p1Name = previousHost || 'HOST';
+        STATE.p2Name = STATE.myUsername && STATE.myUsername !== STATE.p1Name ? STATE.myUsername : (STATE.myUsername ? (STATE.myUsername + ' (Guest)') : 'GUEST');
+        STATE.p2CountryFlag = STATE.myCountryFlag;
+        STATE.p2CountryCode = STATE.myCountryCode;
+
+        if (dom.inlineHostCodeDisplay) dom.inlineHostCodeDisplay.classList.add('hidden');
+        if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.value = code;
+
+        updateNetStatusUI('Connecting to Room ' + code + ' as ' + STATE.p2Name + '...', false);
+        setupBroadcastFallback(code);
+        bindCloudRoom(code);
+
+        const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
+          countryCode: STATE.myCountryCode,
+          countryFlag: STATE.myCountryFlag
+        }, true);
+
+        const joinPayload = {
+          type: 'JOIN_HELLO',
+          roomCode: code,
+          p2Name: STATE.p2Name,
+          guestName: STATE.p2Name,
+          p2CountryFlag: STATE.myCountryFlag,
+          p2CountryCode: STATE.myCountryCode,
+          p2Elo: myRec.elo,
+          p2Record: myRec,
+          autoStart: Boolean(autoStart),
+          allPlayers: STATE.humanPlayers
+        };
+        sendNetMessage(joinPayload);
+
+        let joinAttempts = 0;
+        STATE.joinRetryTimerId = setInterval(() => {
+          joinAttempts += 1;
+          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 15 || STATE.onlineRole !== 'GUEST' || STATE.roomCode !== code) {
+            clearInterval(STATE.joinRetryTimerId);
+            STATE.joinRetryTimerId = null;
+            return;
+          }
+          pollRoomLocalMessages(code);
+          sendNetMessage(Object.assign({}, joinPayload, {
+            msgId: `${Date.now()}_retry_${joinAttempts}`
+          }));
+        }, 900);
+
+        if (typeof Peer !== 'undefined') {
+          try {
+            STATE.peer = new Peer();
+            STATE.peer.on('open', () => {
+              const connectToHostId = (hostPeerId) => {
+                try {
+                  const c = STATE.peer.connect(hostPeerId);
+                  c.on('open', () => {
+                    if (!STATE.peerConns) STATE.peerConns = [];
+                    STATE.peerConns.push(c);
+                    STATE.conn = c;
+                    sendNetMessage(Object.assign({}, joinPayload, {
+                      msgId: `${Date.now()}_peer_open_${hostPeerId}`
+                    }));
+                  });
+                  c.on('data', (data) => handleNetMessage(data));
+                } catch (e) {}
+              };
+              connectToHostId('handcricket-arena-' + code);
+              connectToHostId('oae-room-' + code);
+            });
           } catch (e) {}
         }
         renderView();
@@ -4776,20 +4927,29 @@
 
         if (isOut) {
           SoundFX.wicket();
-          if (isUserBatting) {
-            if (p1Rec) p1Rec.wicketsLost = (p1Rec.wicketsLost || 0) + 1;
-            if (p2Rec) {
-              p2Rec.wicketsTaken = (p2Rec.wicketsTaken || 0) + 1;
-              p2Rec.weeklyWickets = (p2Rec.weeklyWickets || 0) + 1;
-              STATE.aiMatchWickets += 1;
+          if (mpMatch) {
+            if (isUserBatting) {
+              if (p1Rec) p1Rec.wicketsLost = (p1Rec.wicketsLost || 0) + 1;
+              if (p2Rec) {
+                p2Rec.wicketsTaken = (p2Rec.wicketsTaken || 0) + 1;
+                p2Rec.weeklyWickets = (p2Rec.weeklyWickets || 0) + 1;
+                STATE.aiMatchWickets += 1;
+              }
+            } else {
+              if (p1Rec) {
+                p1Rec.wicketsTaken = (p1Rec.wicketsTaken || 0) + 1;
+                p1Rec.weeklyWickets = (p1Rec.weeklyWickets || 0) + 1;
+                STATE.userMatchWickets += 1;
+              }
+              if (p2Rec) p2Rec.wicketsLost = (p2Rec.wicketsLost || 0) + 1;
             }
           } else {
-            if (p1Rec) {
-              p1Rec.wicketsTaken = (p1Rec.wicketsTaken || 0) + 1;
-              p1Rec.weeklyWickets = (p1Rec.weeklyWickets || 0) + 1;
+            // Bot match: do not register runs or wickets on leaderboard
+            if (!isUserBatting) {
               STATE.userMatchWickets += 1;
+            } else {
+              STATE.aiMatchWickets += 1;
             }
-            if (p2Rec) p2Rec.wicketsLost = (p2Rec.wicketsLost || 0) + 1;
           }
           saveWorldwidePlayersMap(STATE.humanPlayers);
 
@@ -4809,7 +4969,7 @@
           const scoredRuns = isUserBatting ? userNum : oppNum;
           if (isUserBatting) {
             STATE.userScore += scoredRuns;
-            if (p1Rec) {
+            if (p1Rec && mpMatch) {
               p1Rec.totalRuns = (p1Rec.totalRuns || 0) + scoredRuns;
               p1Rec.weeklyRuns = (p1Rec.weeklyRuns || 0) + scoredRuns;
               if (STATE.userScore > (p1Rec.highScore || 0)) {
@@ -4819,7 +4979,7 @@
             }
           } else {
             STATE.aiScore += scoredRuns;
-            if (p2Rec) {
+            if (p2Rec && mpMatch) {
               p2Rec.totalRuns = (p2Rec.totalRuns || 0) + scoredRuns;
               p2Rec.weeklyRuns = (p2Rec.weeklyRuns || 0) + scoredRuns;
               if (STATE.aiScore > (p2Rec.highScore || 0)) {
