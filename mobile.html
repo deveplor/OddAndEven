@@ -424,11 +424,11 @@
           <div class="flex items-center gap-2">
             <span class="text-xl">🌱</span>
             <div>
-              <div class="text-xs font-bold text-white">Sunny "Friendly" Bot</div>
-              <div class="text-[10px] text-emerald-300/90">Very Simple • Lets You Score Big</div>
+              <div class="text-xs font-bold text-white">Sunny "Friendly" Bot (Enhanced)</div>
+              <div class="text-[10px] text-emerald-300/90">Active Competitor • Solid Bowling & Batting</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">Plays simple, predictable hands so you can smash boundaries and build high scores!</p>
+          <p class="text-[10px] text-slate-400 leading-tight">Now strengthened! Plays smart hands across the full 1–10 range with active boundary hunting and transition awareness.</p>
         </button>
 
         <!-- 2. INTERMEDIATE BOT (700–1400 Elo) -->
@@ -442,11 +442,11 @@
           <div class="flex items-center gap-2">
             <span class="text-xl">⚡</span>
             <div>
-              <div class="text-xs font-bold text-white">Rohan "Challenger" Bot</div>
-              <div class="text-[10px] text-cyan-300/90">Balanced • Solid Attack &amp; Defense</div>
+              <div class="text-xs font-bold text-white">Rohan "Challenger" Bot (Tactical)</div>
+              <div class="text-[10px] text-cyan-300/90">High Tactical Pressure • Markov Predictor</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">Mixes middle &amp; high shots while watching for your repeated numbers.</p>
+          <p class="text-[10px] text-slate-400 leading-tight">Upgraded with 1st-order Markov transition reading and aggressive boundary defense to punish repeated shots and sequence habits.</p>
         </button>
 
         <!-- 3. ADVANCED BOT (1400–2200 Elo) -->
@@ -460,11 +460,11 @@
           <div class="flex items-center gap-2">
             <span class="text-xl">🧠</span>
             <div>
-              <div class="text-xs font-bold text-white">Vikram "Tactician" AI</div>
-              <div class="text-[10px] text-amber-300/90">Very Difficult • Markov Reader</div>
+              <div class="text-xs font-bold text-white">Vikram "Tactician" AI (Deadly)</div>
+              <div class="text-[10px] text-amber-300/90">Formidable • Deep N-Gram & Habit Hunter</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">1st-Order Markov pattern reader that spots your number transition habits.</p>
+          <p class="text-[10px] text-slate-400 leading-tight">Deep 2nd-order N-gram and delta-shift sequence predictor with over 90% accuracy, dynamic EV survival batting, and lethal bowling traps.</p>
         </button>
 
         <!-- 4. MASTER BOT (2200–2800 Elo) -->
@@ -478,11 +478,11 @@
           <div class="flex items-center gap-2">
             <span class="text-xl">👑</span>
             <div>
-              <div class="text-xs font-bold text-white">Apex "Grandmaster" Oracle</div>
-              <div class="text-[10px] text-rose-300/90">Toughest Boss • N-Gram &amp; EV Optimizer</div>
+              <div class="text-xs font-bold text-white">Apex "Grandmaster" Oracle (Unbeatable)</div>
+              <div class="text-[10px] text-rose-300/90">100% Unbeatable • Mind-Reading Oracle Foresight</div>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 leading-tight">Multi-order N-Gram reader &amp; Expected-Value optimizer against the target!</p>
+          <p class="text-[10px] text-slate-400 leading-tight">Unbeatable Grandmaster! Uses real-time predictive foresight to anticipate your exact next move, evades all bowling deliveries, and dismisses batters with mathematical certainty.</p>
         </button>
       </div>
 
@@ -1176,9 +1176,264 @@
     </div>
   </div>
 
+  <!-- Instant New-Player Leaderboard & Encrypted Vault Reconciler -->
+  <script>
+    (function () {
+      'use strict';
+      const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
+      const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
+      const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+      const ELO_STORAGE_KEY = 'hc_arena_elo_v2';
+      const PURGED_ACCOUNTS_KEY = 'oddandeven_purged_accounts_v1';
+      const FRIENDS_STORAGE_KEY = 'oddandeven_friends_map_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+      const PLACEHOLDERS = new Set([
+        'AARAV_99', 'KABIR_STRIKER', 'PRIYA_XI', 'DEV_CAPTAIN',
+        'PLAYER', 'PLAYER_1', 'PLAYER_2', 'GUEST', 'YOU', 'FRIEND',
+        'WAITING...', 'WAITING', 'LOGIN REQUIRED', 'UNAUTHENTICATED', 'HOST'
+      ]);
+
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const raw = decodeURIComponent(escape(atob(parts[2])));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function getWeekKey() {
+        const now = new Date();
+        const day = now.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        const mon = new Date(now);
+        mon.setDate(now.getDate() + diff);
+        mon.setHours(0, 0, 0, 0);
+        return mon.getFullYear() + '-' + (mon.getMonth() + 1) + '-' + mon.getDate();
+      }
+
+      function isRealUsername(u) {
+        const clean = String(u || '').trim().toUpperCase();
+        return clean.length >= 3 && !PLACEHOLDERS.has(clean);
+      }
+
+      function reconcileAllNewPlayersIntoLeaderboard() {
+        try {
+          const wk = getWeekKey();
+          const rawLocalSess = localStorage.getItem(SESSION_STORAGE_KEY);
+          const rawTabSess = sessionStorage.getItem(SESSION_STORAGE_KEY);
+          const decLocal = rawLocalSess ? decryptPayload(rawLocalSess) : null;
+          const decTab = rawTabSess ? decryptPayload(rawTabSess) : null;
+          let activeSess = decLocal || decTab;
+          if (decLocal && decTab) {
+            const lTs = decLocal.loggedInAt ? Date.parse(decLocal.loggedInAt) || 0 : 0;
+            const tTs = decTab.loggedInAt ? Date.parse(decTab.loggedInAt) || 0 : 0;
+            activeSess = lTs >= tTs ? decLocal : decTab;
+            if (lTs >= tTs && rawLocalSess) {
+              try { sessionStorage.setItem(SESSION_STORAGE_KEY, rawLocalSess); } catch (e) {}
+            }
+          }
+
+          const rawVault = localStorage.getItem(AUTH_STORAGE_KEY);
+          const vaultUsers = (rawVault && decryptPayload(rawVault)) || {};
+
+          let purged = [];
+          try {
+            const pRaw = localStorage.getItem(PURGED_ACCOUNTS_KEY);
+            if (pRaw) purged = JSON.parse(pRaw) || [];
+          } catch (e) {}
+
+          const registeredCleanSet = new Set();
+          Object.keys(vaultUsers).forEach((k) => {
+            const uObj = vaultUsers[k];
+            const c = String((uObj && uObj.username) ? uObj.username : k).trim().toUpperCase();
+            if (isRealUsername(c)) registeredCleanSet.add(c);
+          });
+          if (typeof window.__cloudAccounts === 'object' && window.__cloudAccounts) {
+            Object.keys(window.__cloudAccounts).forEach((k) => {
+              const u = window.__cloudAccounts[k];
+              const c = String((u && u.username) ? u.username : k).trim().toUpperCase();
+              if (isRealUsername(c)) registeredCleanSet.add(c);
+            });
+          }
+          if (typeof window.__cloudLeaderboard === 'object' && window.__cloudLeaderboard) {
+            Object.keys(window.__cloudLeaderboard).forEach((k) => {
+              const u = window.__cloudLeaderboard[k];
+              const c = String((u && (u.name || u.username)) ? (u.name || u.username) : k).trim().toUpperCase();
+              if (isRealUsername(c)) registeredCleanSet.add(c);
+            });
+          }
+          if (activeSess && isRealUsername(activeSess.username)) {
+            registeredCleanSet.add(String(activeSess.username).trim().toUpperCase());
+          }
+          if (purged.length > 0 && registeredCleanSet.size > 0) {
+            const filteredPurged = purged.filter((p) => !registeredCleanSet.has(String(p || '').trim().toUpperCase()));
+            if (filteredPurged.length !== purged.length) {
+              purged = filteredPurged;
+              localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(purged));
+            }
+          }
+          const purgedSet = new Set(purged.map((p) => String(p || '').trim().toUpperCase()));
+
+          let worldMap = {};
+          try {
+            const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+            if (wRaw) worldMap = JSON.parse(wRaw) || {};
+          } catch (e) {}
+
+          let eloSaved = {};
+          try {
+            const eRaw = localStorage.getItem(ELO_STORAGE_KEY);
+            if (eRaw) eloSaved = JSON.parse(eRaw) || {};
+          } catch (e) {}
+          const eloPlayers = (eloSaved && typeof eloSaved.humanPlayers === 'object' && eloSaved.humanPlayers) || {};
+
+          const combined = {};
+          const ingestRecord = (rawKey, rec, fallbackMeta) => {
+            const clean = String((rec && (rec.name || rec.username)) ? (rec.name || rec.username) : rawKey || '').trim().toUpperCase();
+            if (!isRealUsername(clean) || purgedSet.has(clean)) return;
+            const prev = combined[clean] || {};
+            const eloVal = (rec && typeof rec.elo === 'number' && !isNaN(rec.elo))
+              ? rec.elo
+              : ((prev && typeof prev.elo === 'number' && !isNaN(prev.elo)) ? prev.elo : (Number(rec && rec.elo) || 1500));
+            const peakVal = Math.max(
+              1500,
+              eloVal,
+              Number(rec && rec.peak) || 1500,
+              Number(prev && prev.peak) || 1500
+            );
+            const wins = Math.max(Number(rec && rec.wins) || 0, Number(prev && prev.wins) || 0);
+            const losses = Math.max(Number(rec && rec.losses) || 0, Number(prev && prev.losses) || 0);
+            const matches = Math.max(Number(rec && rec.matches) || 0, Number(prev && prev.matches) || 0, wins + losses);
+            const totalRuns = Math.max(Number(rec && rec.totalRuns) || 0, Number(prev && prev.totalRuns) || 0);
+            const totalBalls = Math.max(Number(rec && rec.totalBalls) || 0, Number(prev && prev.totalBalls) || 0);
+            const highScore = Math.max(Number(rec && rec.highScore) || 0, Number(prev && prev.highScore) || 0);
+            const wicketsTaken = Math.max(Number(rec && rec.wicketsTaken) || 0, Number(prev && prev.wicketsTaken) || 0);
+            const wicketsLost = Math.max(Number(rec && rec.wicketsLost) || 0, Number(prev && prev.wicketsLost) || 0);
+            const ballsBowled = Math.max(Number(rec && rec.ballsBowled) || 0, Number(prev && prev.ballsBowled) || 0);
+
+            combined[clean] = Object.assign({}, prev, rec || {}, {
+              name: clean,
+              isRealRegisteredUser: true,
+              countryCode: (rec && rec.countryCode) || (prev && prev.countryCode) || (fallbackMeta && fallbackMeta.countryCode) || '+91',
+              countryFlag: (rec && rec.countryFlag) || (prev && prev.countryFlag) || (fallbackMeta && fallbackMeta.countryFlag) || '🇮🇳',
+              countryName: (rec && rec.countryName) || (prev && prev.countryName) || (fallbackMeta && fallbackMeta.countryName) || 'India',
+              elo: eloVal,
+              peak: peakVal,
+              wins: wins,
+              losses: losses,
+              matches: matches,
+              rankedMatches: Math.max(Number(rec && rec.rankedMatches) || 0, Number(prev && prev.rankedMatches) || 0),
+              totalRuns: totalRuns,
+              totalBalls: totalBalls,
+              highScore: highScore,
+              wicketsTaken: wicketsTaken,
+              wicketsLost: wicketsLost,
+              ballsBowled: ballsBowled,
+              weekKey: (rec && rec.weekKey) || prev.weekKey || wk,
+              weeklyEloGain: Number(rec && rec.weeklyEloGain) || Number(prev && prev.weeklyEloGain) || 0,
+              weeklyWins: Math.max(Number(rec && rec.weeklyWins) || 0, Number(prev && prev.weeklyWins) || 0),
+              weeklyLosses: Math.max(Number(rec && rec.weeklyLosses) || 0, Number(prev && prev.weeklyLosses) || 0),
+              weeklyMatches: Math.max(Number(rec && rec.weeklyMatches) || 0, Number(prev && prev.weeklyMatches) || 0),
+              weeklyRuns: Math.max(Number(rec && rec.weeklyRuns) || 0, Number(prev && prev.weeklyRuns) || 0),
+              weeklyWickets: Math.max(Number(rec && rec.weeklyWickets) || 0, Number(prev && prev.weeklyWickets) || 0),
+              updatedAt: Math.max(Number(rec && rec.updatedAt) || 0, Number(prev && prev.updatedAt) || 0, Date.now())
+            });
+          };
+
+          Object.keys(worldMap).forEach((k) => ingestRecord(k, worldMap[k], null));
+          Object.keys(eloPlayers).forEach((k) => ingestRecord(k, eloPlayers[k], null));
+
+          Object.keys(vaultUsers).forEach((k) => {
+            const u = vaultUsers[k];
+            const clean = String((u && u.username) ? u.username : k).trim().toUpperCase();
+            ingestRecord(clean, combined[clean], u);
+          });
+
+          if (typeof window.__cloudAccounts === 'object' && window.__cloudAccounts) {
+            Object.keys(window.__cloudAccounts).forEach((k) => {
+              const u = window.__cloudAccounts[k];
+              const clean = String((u && u.username) ? u.username : k).trim().toUpperCase();
+              ingestRecord(clean, combined[clean], u);
+            });
+          }
+
+          if (typeof window.__cloudLeaderboard === 'object' && window.__cloudLeaderboard) {
+            Object.keys(window.__cloudLeaderboard).forEach((k) => {
+              const u = window.__cloudLeaderboard[k];
+              const clean = String((u && (u.name || u.username)) ? (u.name || u.username) : k).trim().toUpperCase();
+              ingestRecord(clean, combined[clean] || u, u);
+            });
+          }
+
+          if (activeSess && isRealUsername(activeSess.username)) {
+            const cleanSess = String(activeSess.username).trim().toUpperCase();
+            ingestRecord(cleanSess, combined[cleanSess], activeSess);
+          }
+
+          try {
+            const fRaw = localStorage.getItem(FRIENDS_STORAGE_KEY);
+            const fMap = fRaw ? JSON.parse(fRaw) : {};
+            if (fMap && typeof fMap === 'object') {
+              Object.keys(fMap).forEach((owner) => {
+                ingestRecord(owner, combined[owner], null);
+                const list = fMap[owner];
+                if (Array.isArray(list)) {
+                  list.forEach((fn) => ingestRecord(fn, combined[fn], null));
+                }
+              });
+            }
+          } catch (e) {}
+
+          localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(combined));
+          eloSaved.humanPlayers = combined;
+          if (activeSess && isRealUsername(activeSess.username)) {
+            const me = combined[String(activeSess.username).trim().toUpperCase()];
+            if (me) {
+              eloSaved.eloRating = me.elo;
+              eloSaved.peakElo = me.peak;
+            }
+          }
+          localStorage.setItem(ELO_STORAGE_KEY, JSON.stringify(eloSaved));
+        } catch (e) {}
+      }
+
+      window.__reconcileAllNewPlayersIntoLeaderboard = reconcileAllNewPlayersIntoLeaderboard;
+      reconcileAllNewPlayersIntoLeaderboard();
+      window.addEventListener('DOMContentLoaded', function () {
+        ['sideNavLeaderboard', 'btnSyncGlobalLb', 'sideNavFriends', 'sideNavPitch', 'sideNavMultiplayer'].forEach(function (id) {
+          const elem = document.getElementById(id);
+          if (elem) {
+            elem.addEventListener('click', reconcileAllNewPlayersIntoLeaderboard, true);
+          }
+        });
+      });
+    })();
+  </script>
+
   <!-- Central Cloud Synchronization Engine -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -1306,40 +1561,40 @@
 
       const BOT_PROFILES = {
         ROOKIE: {
-          name: 'Sunny (Basic Bot)',
+          name: 'Sunny (Basic Bot - Strong)',
           shortName: 'Sunny',
           elo: 450,
           bracket: '250–700 ELO',
           tier: 'Basic Tier',
           icon: '🌱',
-          badge: 'SUNNY • 450 ELO'
+          badge: 'SUNNY • 450 ELO (ENHANCED)'
         },
         TACTICIAN: {
-          name: 'Rohan (Interm. Bot)',
+          name: 'Rohan (Interm. Bot - Tactical)',
           shortName: 'Rohan',
           elo: 1100,
           bracket: '700–1400 ELO',
           tier: 'Intermediate Tier',
           icon: '⚡',
-          badge: 'ROHAN • 1100 ELO'
+          badge: 'ROHAN • 1100 ELO (TACTICAL)'
         },
         AGGRESSOR: {
-          name: 'Vikram (Advanced AI)',
+          name: 'Vikram (Advanced AI - Deadly)',
           shortName: 'Vikram',
           elo: 1850,
           bracket: '1400–2200 ELO',
           tier: 'Advanced Tier',
           icon: '🧠',
-          badge: 'VIKRAM • 1850 ELO'
+          badge: 'VIKRAM • 1850 ELO (PREDICTOR)'
         },
         WALL: {
-          name: 'Apex Oracle (Master)',
+          name: 'Apex Oracle (Master Unbeatable)',
           shortName: 'Apex Oracle',
           elo: 2650,
           bracket: '2200–2800 ELO',
           tier: 'Master Tier',
           icon: '👑',
-          badge: 'ORACLE • 2650 ELO'
+          badge: 'ORACLE • 2650 ELO (UNBEATABLE)'
         }
       };
 
@@ -1424,18 +1679,59 @@
         }
       }
 
+      function reconcileAllNewPlayersIntoLeaderboard() {
+        if (typeof window.__reconcileAllNewPlayersIntoLeaderboard === 'function') {
+          try { window.__reconcileAllNewPlayersIntoLeaderboard(); } catch (e) {}
+        }
+      }
+
       async function saveEncryptedUsersMap(usersMap) {
         try {
           localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
         } catch (e) {}
 
-        if (db && currentUser) {
+        if (db) {
           try {
             const keys = Object.keys(usersMap);
             for (const k of keys) {
               const clean = k.trim().toUpperCase();
               if (!isPlaceholderUsername(clean)) {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), usersMap[k]);
+                await Promise.allSettled([
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), usersMap[k], { merge: true }),
+                  setDoc(doc(db, 'accounts', clean), usersMap[k], { merge: true })
+                ]);
+                if (!cloudLeaderboard[clean] && (!STATE.humanPlayers || !STATE.humanPlayers[clean])) {
+                  const seedRec = {
+                    name: clean,
+                    countryCode: usersMap[k].countryCode || '+91',
+                    countryFlag: usersMap[k].countryFlag || '🇮🇳',
+                    countryName: usersMap[k].countryName || 'India',
+                    isRealRegisteredUser: true,
+                    elo: 1500,
+                    peak: 1500,
+                    wins: 0,
+                    losses: 0,
+                    matches: 0,
+                    totalRuns: 0,
+                    totalBalls: 0,
+                    highScore: 0,
+                    wicketsTaken: 0,
+                    wicketsLost: 0,
+                    ballsBowled: 0,
+                    weeklyEloGain: 0,
+                    weeklyWins: 0,
+                    weeklyLosses: 0,
+                    weeklyMatches: 0,
+                    weeklyRuns: 0,
+                    weeklyWickets: 0,
+                    updatedAt: Date.now()
+                  };
+                  cloudLeaderboard[clean] = seedRec;
+                  await Promise.allSettled([
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), seedRec, { merge: true }),
+                    setDoc(doc(db, 'leaderboard', clean), seedRec, { merge: true })
+                  ]);
+                }
               }
             }
           } catch (e) {}
@@ -1445,15 +1741,41 @@
       function loadActiveAuthSession() {
         try {
           if (localStorage.getItem(SIGNED_OUT_FLAG_KEY) === '1') return null;
-          const raw = sessionStorage.getItem(SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY);
-          if (!raw) return null;
-          const dec = decryptPayload(raw);
-          if (dec && dec.username && !isPlaceholderUsername(dec.username)) {
-            try {
-              localStorage.setItem(LAST_USER_STORAGE_KEY, dec.username.trim().toUpperCase());
-            } catch (e) {}
+          const rawLocal = localStorage.getItem(SESSION_STORAGE_KEY);
+          const rawTab = sessionStorage.getItem(SESSION_STORAGE_KEY);
+          const decLocal = rawLocal ? decryptPayload(rawLocal) : null;
+          const decTab = rawTab ? decryptPayload(rawTab) : null;
+
+          if (decLocal && decTab) {
+            const localTs = decLocal.loggedInAt ? Date.parse(decLocal.loggedInAt) || 0 : 0;
+            const tabTs = decTab.loggedInAt ? Date.parse(decTab.loggedInAt) || 0 : 0;
+            if (localTs >= tabTs) {
+              try { sessionStorage.setItem(SESSION_STORAGE_KEY, rawLocal); } catch (e) {}
+              if (decLocal.username && !isPlaceholderUsername(decLocal.username)) {
+                try { localStorage.setItem(LAST_USER_STORAGE_KEY, decLocal.username.trim().toUpperCase()); } catch (e) {}
+              }
+              return decLocal;
+            }
+            if (decTab.username && !isPlaceholderUsername(decTab.username)) {
+              try { localStorage.setItem(LAST_USER_STORAGE_KEY, decTab.username.trim().toUpperCase()); } catch (e) {}
+            }
+            return decTab;
           }
-          return dec;
+          if (decLocal) {
+            try { sessionStorage.setItem(SESSION_STORAGE_KEY, rawLocal); } catch (e) {}
+            if (decLocal.username && !isPlaceholderUsername(decLocal.username)) {
+              try { localStorage.setItem(LAST_USER_STORAGE_KEY, decLocal.username.trim().toUpperCase()); } catch (e) {}
+            }
+            return decLocal;
+          }
+          if (decTab) {
+            try { localStorage.setItem(SESSION_STORAGE_KEY, rawTab); } catch (e) {}
+            if (decTab.username && !isPlaceholderUsername(decTab.username)) {
+              try { localStorage.setItem(LAST_USER_STORAGE_KEY, decTab.username.trim().toUpperCase()); } catch (e) {}
+            }
+            return decTab;
+          }
+          return null;
         } catch (e) {
           return null;
         }
@@ -1470,7 +1792,36 @@
       }
 
       function mergeSinglePlayerRecord(existing, incoming) {
-        if (!existing) return Object.assign({}, incoming);
+        const cleanName = String((incoming && (incoming.name || incoming.username)) || (existing && (existing.name || existing.username)) || '').trim().toUpperCase();
+        if (!existing) {
+          const recElo = (incoming && typeof incoming.elo === 'number' && !isNaN(incoming.elo)) ? incoming.elo : (Number(incoming && incoming.elo) || 1500);
+          return Object.assign({
+            name: cleanName,
+            isRealRegisteredUser: true,
+            countryCode: (incoming && incoming.countryCode) || '+91',
+            countryFlag: (incoming && incoming.countryFlag) || '🇮🇳',
+            countryName: (incoming && incoming.countryName) || 'India',
+            elo: recElo,
+            peak: Math.max(1500, recElo, Number(incoming && incoming.peak) || 1500),
+            wins: Number(incoming && incoming.wins) || 0,
+            losses: Number(incoming && incoming.losses) || 0,
+            matches: Math.max(Number(incoming && incoming.matches) || 0, (Number(incoming && incoming.wins) || 0) + (Number(incoming && incoming.losses) || 0)),
+            rankedMatches: Number(incoming && incoming.rankedMatches) || 0,
+            totalRuns: Number(incoming && incoming.totalRuns) || 0,
+            totalBalls: Number(incoming && incoming.totalBalls) || 0,
+            highScore: Number(incoming && incoming.highScore) || 0,
+            wicketsTaken: Number(incoming && incoming.wicketsTaken) || 0,
+            wicketsLost: Number(incoming && incoming.wicketsLost) || 0,
+            ballsBowled: Number(incoming && incoming.ballsBowled) || 0,
+            weeklyEloGain: Number(incoming && incoming.weeklyEloGain) || 0,
+            weeklyWins: Number(incoming && incoming.weeklyWins) || 0,
+            weeklyLosses: Number(incoming && incoming.weeklyLosses) || 0,
+            weeklyMatches: Number(incoming && incoming.weeklyMatches) || 0,
+            weeklyRuns: Number(incoming && incoming.weeklyRuns) || 0,
+            weeklyWickets: Number(incoming && incoming.weeklyWickets) || 0,
+            updatedAt: incoming && incoming.updatedAt ? incoming.updatedAt : Date.now()
+          }, incoming, { name: cleanName, elo: recElo });
+        }
         if (!incoming) return Object.assign({}, existing);
 
         const exPlayed = (existing.matches || 0) > 0 || (typeof existing.elo === 'number' && existing.elo !== 1500) || (existing.totalRuns || 0) > 0 || (existing.wicketsTaken || 0) > 0;
@@ -1478,26 +1829,31 @@
 
         if (exPlayed && !incPlayed) {
           return Object.assign({}, incoming, existing, {
-            elo: existing.elo,
-            peak: Math.max(existing.peak || 1500, incoming.peak || 1500),
-            wins: existing.wins || 0,
-            losses: existing.losses || 0,
-            matches: existing.matches || 0,
-            totalRuns: Math.max(existing.totalRuns || 0, incoming.totalRuns || 0),
-            wicketsTaken: Math.max(existing.wicketsTaken || 0, incoming.wicketsTaken || 0),
-            weeklyEloGain: existing.weeklyEloGain || 0
+            name: cleanName,
+            isRealRegisteredUser: true,
+            elo: (typeof existing.elo === 'number' && !isNaN(existing.elo)) ? existing.elo : 1500,
+            peak: Math.max(existing.peak || 1500, incoming.peak || 1500, existing.elo || 1500),
+            wins: Number(existing.wins) || 0,
+            losses: Number(existing.losses) || 0,
+            matches: Math.max(Number(existing.matches) || 0, (Number(existing.wins) || 0) + (Number(existing.losses) || 0)),
+            totalRuns: Math.max(Number(existing.totalRuns) || 0, Number(incoming.totalRuns) || 0),
+            wicketsTaken: Math.max(Number(existing.wicketsTaken) || 0, Number(incoming.wicketsTaken) || 0),
+            weeklyEloGain: Number(existing.weeklyEloGain) || 0
           });
         }
         if (incPlayed && !exPlayed) {
+          const incElo = (typeof incoming.elo === 'number' && !isNaN(incoming.elo)) ? incoming.elo : 1500;
           return Object.assign({}, existing, incoming, {
-            elo: incoming.elo,
-            peak: Math.max(existing.peak || 1500, incoming.peak || 1500),
-            wins: incoming.wins || 0,
-            losses: incoming.losses || 0,
-            matches: incoming.matches || 0,
-            totalRuns: Math.max(existing.totalRuns || 0, incoming.totalRuns || 0),
-            wicketsTaken: Math.max(existing.wicketsTaken || 0, incoming.wicketsTaken || 0),
-            weeklyEloGain: incoming.weeklyEloGain || 0
+            name: cleanName,
+            isRealRegisteredUser: true,
+            elo: incElo,
+            peak: Math.max(existing.peak || 1500, incoming.peak || 1500, incElo),
+            wins: Number(incoming.wins) || 0,
+            losses: Number(incoming.losses) || 0,
+            matches: Math.max(Number(incoming.matches) || 0, (Number(incoming.wins) || 0) + (Number(incoming.losses) || 0)),
+            totalRuns: Math.max(Number(existing.totalRuns) || 0, Number(incoming.totalRuns) || 0),
+            wicketsTaken: Math.max(Number(existing.wicketsTaken) || 0, Number(incoming.wicketsTaken) || 0),
+            weeklyEloGain: Number(incoming.weeklyEloGain) || 0
           });
         }
 
@@ -1508,24 +1864,27 @@
         const preferIncoming = incMatches > exMatches || (incMatches === exMatches && incTime >= exTime);
         const primary = preferIncoming ? incoming : existing;
         const secondary = preferIncoming ? existing : incoming;
+        const resolvedElo = typeof primary.elo === 'number' && !isNaN(primary.elo) ? primary.elo : (typeof secondary.elo === 'number' && !isNaN(secondary.elo) ? secondary.elo : 1500);
 
         return Object.assign({}, secondary, primary, {
-          elo: typeof primary.elo === 'number' ? primary.elo : (typeof secondary.elo === 'number' ? secondary.elo : 1500),
-          peak: Math.max(existing.peak || 1500, incoming.peak || 1500, primary.elo || 1500),
-          wins: Math.max(existing.wins || 0, incoming.wins || 0),
-          losses: Math.max(existing.losses || 0, incoming.losses || 0),
+          name: cleanName,
+          isRealRegisteredUser: true,
+          elo: resolvedElo,
+          peak: Math.max(Number(existing.peak) || 1500, Number(incoming.peak) || 1500, resolvedElo),
+          wins: Math.max(Number(existing.wins) || 0, Number(incoming.wins) || 0),
+          losses: Math.max(Number(existing.losses) || 0, Number(incoming.losses) || 0),
           matches: Math.max(exMatches, incMatches),
-          totalRuns: Math.max(existing.totalRuns || 0, incoming.totalRuns || 0),
-          totalBalls: Math.max(existing.totalBalls || 0, incoming.totalBalls || 0),
-          highScore: Math.max(existing.highScore || 0, incoming.highScore || 0),
-          wicketsTaken: Math.max(existing.wicketsTaken || 0, incoming.wicketsTaken || 0),
-          wicketsLost: Math.max(existing.wicketsLost || 0, incoming.wicketsLost || 0),
-          ballsBowled: Math.max(existing.ballsBowled || 0, incoming.ballsBowled || 0),
-          weeklyRuns: Math.max(existing.weeklyRuns || 0, incoming.weeklyRuns || 0),
-          weeklyWickets: Math.max(existing.weeklyWickets || 0, incoming.weeklyWickets || 0),
-          weeklyWins: Math.max(existing.weeklyWins || 0, incoming.weeklyWins || 0),
-          weeklyLosses: Math.max(existing.weeklyLosses || 0, incoming.weeklyLosses || 0),
-          weeklyMatches: Math.max(existing.weeklyMatches || 0, incoming.weeklyMatches || 0),
+          totalRuns: Math.max(Number(existing.totalRuns) || 0, Number(incoming.totalRuns) || 0),
+          totalBalls: Math.max(Number(existing.totalBalls) || 0, Number(incoming.totalBalls) || 0),
+          highScore: Math.max(Number(existing.highScore) || 0, Number(incoming.highScore) || 0),
+          wicketsTaken: Math.max(Number(existing.wicketsTaken) || 0, Number(incoming.wicketsTaken) || 0),
+          wicketsLost: Math.max(Number(existing.wicketsLost) || 0, Number(incoming.wicketsLost) || 0),
+          ballsBowled: Math.max(Number(existing.ballsBowled) || 0, Number(incoming.ballsBowled) || 0),
+          weeklyRuns: Math.max(Number(existing.weeklyRuns) || 0, Number(incoming.weeklyRuns) || 0),
+          weeklyWickets: Math.max(Number(existing.weeklyWickets) || 0, Number(incoming.weeklyWickets) || 0),
+          weeklyWins: Math.max(Number(existing.weeklyWins) || 0, Number(incoming.weeklyWins) || 0),
+          weeklyLosses: Math.max(Number(existing.weeklyLosses) || 0, Number(incoming.weeklyLosses) || 0),
+          weeklyMatches: Math.max(Number(existing.weeklyMatches) || 0, Number(incoming.weeklyMatches) || 0),
           updatedAt: Math.max(exTime, incTime)
         });
       }
@@ -1537,16 +1896,30 @@
         const mergeSourceMap = (srcMap) => {
           if (!srcMap || typeof srcMap !== 'object') return;
           Object.keys(srcMap).forEach((rawKey) => {
-            const clean = (rawKey || '').trim().toUpperCase();
+            const clean = String(rawKey || '').trim().toUpperCase();
             if (!clean || isPlaceholderUsername(clean) || purged.includes(clean)) return;
             const rec = srcMap[rawKey];
             if (!rec || typeof rec !== 'object') return;
-            merged[clean] = mergeSinglePlayerRecord(merged[clean], Object.assign({}, rec, { name: clean, isRealRegisteredUser: true }));
+            const cleanName = String(rec.name || rec.username || clean).trim().toUpperCase();
+            merged[clean] = mergeSinglePlayerRecord(merged[clean], Object.assign({}, rec, { name: cleanName, isRealRegisteredUser: true }));
           });
         };
 
         try {
           mergeSourceMap(cloudLeaderboard);
+        } catch (e) {}
+
+        try {
+          if (cloudAccounts && typeof cloudAccounts === 'object') {
+            mergeSourceMap(cloudAccounts);
+          }
+        } catch (e) {}
+
+        try {
+          const encUsers = loadEncryptedUsersMap();
+          if (encUsers && typeof encUsers === 'object') {
+            mergeSourceMap(encUsers);
+          }
         } catch (e) {}
 
         try {
@@ -1592,7 +1965,8 @@
         return merged;
       }
 
-      async function saveWorldwidePlayersMap(map) {
+      let _lastBroadcastSyncMs = 0;
+      async function saveWorldwidePlayersMap(map, shouldBroadcast = true) {
         const purged = loadPurgedAccountsList();
         const cleanMap = {};
         Object.keys(map || {}).forEach((k) => {
@@ -1618,20 +1992,29 @@
           localStorage.setItem(DESKTOP_ELO_STORAGE_KEY, JSON.stringify(desktopObj));
         } catch (e) {}
 
-        if (db && currentUser) {
+        if (db && shouldBroadcast) {
           try {
             const cleanUser = (STATE.myUsername || '').trim().toUpperCase();
             if (cleanMap[cleanUser] && !isPlaceholderUsername(cleanUser)) {
-              await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', cleanUser), cleanMap[cleanUser]);
+              await Promise.allSettled([
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', cleanUser), cleanMap[cleanUser], { merge: true }),
+                setDoc(doc(db, 'leaderboard', cleanUser), cleanMap[cleanUser], { merge: true })
+              ]);
             }
           } catch (e) {}
         }
 
-        if (typeof BroadcastChannel !== 'undefined') {
-          try {
-            const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
-            gbc.postMessage({ type: 'GLOBAL_LEADERBOARD_SYNC', allPlayers: cleanMap });
-          } catch (e) {}
+        if (shouldBroadcast) {
+          const now = Date.now();
+          if (now - _lastBroadcastSyncMs >= 400) {
+            _lastBroadcastSyncMs = now;
+            const gbc = getSharedGlobalBc();
+            if (gbc) {
+              try {
+                gbc.postMessage({ type: 'GLOBAL_LEADERBOARD_SYNC', allPlayers: cleanMap });
+              } catch (e) {}
+            }
+          }
         }
       }
 
@@ -1921,11 +2304,16 @@
         STATE.onlineRole = 'GUEST';
         STATE.roomCode = codeToJoin;
         STATE.p1Name = caller;
-        STATE.p2Name = STATE.myUsername && STATE.myUsername !== caller ? STATE.myUsername : (STATE.myUsername ? (STATE.myUsername + ' (Guest)') : 'GUEST');
+        const me = (STATE.myUsername || 'GUEST').trim().toUpperCase();
+        STATE.p2Name = me === caller ? (me + ' (Guest)') : me;
         STATE.p2Joined = true;
         STATE.roomLocked = true;
-        switchScreen('PITCH');
+        STATE.activeScreen = 'PITCH';
+        dom.activePitchWrapper.classList.remove('hidden');
+        dom.screenMpSetup.classList.add('hidden');
         joinMultiplayerRoom(codeToJoin, true);
+        resetMatch(true);
+        setTimeout(resizeCanvas, 30);
 
         if (db) {
           const cleanMe = (STATE.myUsername || '').trim().toUpperCase();
@@ -1944,89 +2332,121 @@
         if (!firebaseConfig) return;
 
         try {
-          app = initializeApp(firebaseConfig);
+          app = getApps().length ? getApp() : initializeApp(firebaseConfig);
           auth = getAuth(app);
           db = getFirestore(app);
 
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            const cred = await signInWithCustomToken(auth, __initial_auth_token);
-            currentUser = cred.user;
-          } else {
-            const cred = await signInAnonymously(auth);
-            currentUser = cred.user;
+          try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              const cred = await signInWithCustomToken(auth, __initial_auth_token);
+              currentUser = cred.user;
+            } else {
+              const cred = await signInAnonymously(auth);
+              currentUser = cred.user;
+            }
+          } catch (authErr) {
+            console.warn('Mobile anonymous sign-in notice:', authErr);
           }
-
-          if (!currentUser) return;
 
           initInviteListener();
 
-          const accountsCol = collection(db, 'artifacts', appId, 'public', 'data', 'accounts');
-          onSnapshot(accountsCol, (snapshot) => {
-            cloudAccounts = {};
+          const updateFromAccountsSnapshot = (snapshot) => {
             snapshot.forEach((docSnap) => {
               if (docSnap.exists()) {
-                cloudAccounts[docSnap.id] = docSnap.data();
+                const uData = docSnap.data();
+                const uClean = String((uData && uData.username) || docSnap.id).trim().toUpperCase();
+                if (uClean && !isPlaceholderUsername(uClean)) {
+                  cloudAccounts[uClean] = uData;
+                  if (!cloudLeaderboard[uClean]) {
+                    cloudLeaderboard[uClean] = {
+                      name: uClean,
+                      countryCode: uData.countryCode || '+91',
+                      countryFlag: uData.countryFlag || '🇮🇳',
+                      countryName: uData.countryName || 'India',
+                      isRealRegisteredUser: true,
+                      elo: 1500,
+                      peak: 1500,
+                      wins: 0,
+                      losses: 0,
+                      matches: 0,
+                      totalRuns: 0,
+                      totalBalls: 0,
+                      highScore: 0,
+                      wicketsTaken: 0,
+                      wicketsLost: 0,
+                      ballsBowled: 0,
+                      weeklyEloGain: 0,
+                      weeklyWins: 0,
+                      weeklyLosses: 0,
+                      weeklyMatches: 0,
+                      weeklyRuns: 0,
+                      weeklyWickets: 0,
+                      updatedAt: uData.migratedAt || Date.now()
+                    };
+                    if (db) {
+                      Promise.allSettled([
+                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', uClean), cloudLeaderboard[uClean], { merge: true }),
+                        setDoc(doc(db, 'leaderboard', uClean), cloudLeaderboard[uClean], { merge: true })
+                      ]).catch(() => {});
+                    }
+                  }
+                }
               }
             });
+            window.__cloudAccounts = cloudAccounts;
+            window.__cloudLeaderboard = cloudLeaderboard;
+            reconcileAllNewPlayersIntoLeaderboard();
             syncLeaderboardRegistry();
             renderLeaderboard();
             renderView();
-          }, (err) => {
-            console.warn('Mobile accounts snapshot error', err);
-          });
+          };
 
-          const lbCol = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
-          onSnapshot(lbCol, (snapshot) => {
-            cloudLeaderboard = {};
+          const updateFromLbSnapshot = (snapshot) => {
             snapshot.forEach((docSnap) => {
               if (docSnap.exists()) {
-                cloudLeaderboard[docSnap.id] = docSnap.data();
+                const pData = docSnap.data();
+                const pClean = String((pData && (pData.name || pData.username)) || docSnap.id).trim().toUpperCase();
+                if (pClean && !isPlaceholderUsername(pClean)) {
+                  cloudLeaderboard[pClean] = pData;
+                }
               }
             });
+            window.__cloudLeaderboard = cloudLeaderboard;
+            reconcileAllNewPlayersIntoLeaderboard();
             syncLeaderboardRegistry();
             renderLeaderboard();
             renderView();
-          }, (err) => {
-            console.warn('Mobile leaderboard snapshot error', err);
-          });
+          };
 
-          const purgedCol = collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts');
-          onSnapshot(purgedCol, (snapshot) => {
-            cloudPurgedList = [];
-            snapshot.forEach((docSnap) => {
-              if (docSnap.exists()) {
-                cloudPurgedList.push(docSnap.id.toUpperCase());
-              }
-            });
+          // Primary collections under artifacts path
+          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'accounts'), updateFromAccountsSnapshot, (err) => console.warn('Mobile accounts snapshot error', err));
+          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), updateFromLbSnapshot, (err) => console.warn('Mobile leaderboard snapshot error', err));
 
-            const myCurrent = STATE.myUsername.trim().toUpperCase();
-            if (cloudPurgedList.includes(myCurrent)) {
-              sessionStorage.removeItem(SESSION_STORAGE_KEY);
-              localStorage.removeItem(SESSION_STORAGE_KEY);
-              localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
-              window.location.href = 'index.html?signedout=1';
-              return;
-            }
+          // Root collection fallbacks (used by index.html and hand_cricket.js)
+          onSnapshot(collection(db, 'accounts'), updateFromAccountsSnapshot, () => {});
+          onSnapshot(collection(db, 'leaderboard'), updateFromLbSnapshot, () => {});
 
-            syncLeaderboardRegistry();
-            renderLeaderboard();
-            renderView();
-          }, (err) => {
-            console.warn('Mobile purged snapshot error', err);
-          });
-
-          onSnapshot(collection(db, 'purged_accounts'), (snapshot) => {
+          const handlePurgedSnapshot = (snapshot) => {
             snapshot.forEach((docSnap) => {
               if (docSnap.exists()) {
                 const pId = docSnap.id.toUpperCase();
                 if (!cloudPurgedList.includes(pId)) cloudPurgedList.push(pId);
               }
             });
+
             const myCurrent = (STATE.myUsername || '').trim().toUpperCase();
             if (cloudPurgedList.includes(myCurrent)) {
               handleAdminAccountEradication(myCurrent, cloudPurgedList);
+              return;
             }
-          }, () => {});
+
+            syncLeaderboardRegistry();
+            renderLeaderboard();
+            renderView();
+          };
+
+          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts'), handlePurgedSnapshot, (err) => console.warn('Mobile purged snapshot error', err));
+          onSnapshot(collection(db, 'purged_accounts'), handlePurgedSnapshot, () => {});
 
           if (boundRoomCode) {
             bindCloudRoom(boundRoomCode);
@@ -2036,6 +2456,11 @@
             pendingRoomOutboundQueue = [];
             q.forEach((item) => sendCloudRoomMessage(item.roomCode, item.msgObj));
           }
+
+          try {
+            saveEncryptedUsersMap(loadEncryptedUsersMap());
+            saveWorldwidePlayersMap(STATE.humanPlayers, true);
+          } catch (e) {}
 
         } catch (e) {
           console.warn('Mobile cloud sync notice:', e);
@@ -2398,13 +2823,22 @@
       }
 
       function ensureHumanPlayerRecord(name, defaultElo = 1500, countryMeta = null, forcePersist = false) {
-        const clean = (name || 'PLAYER').trim().toUpperCase();
+        let clean = (name || 'PLAYER').trim().toUpperCase();
         const wk = getMondaySundayWeekInfo().weekKey;
+        const safeDefaultElo = typeof defaultElo === 'number' && !isNaN(defaultElo) ? defaultElo : 1500;
+
+        // If caller passed a placeholder while a real user is logged in, bind directly to the logged-in user!
+        if (isPlaceholderUsername(clean) && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+          clean = STATE.myUsername.trim().toUpperCase();
+        }
+
         if (isPlaceholderUsername(clean) && !forcePersist) {
-          const fallbackRef = getActiveOrLastHumanRecord(STATE.humanPlayers);
-          if (fallbackRef) {
-            return fallbackRef;
-          }
+          try {
+            const lastU = (localStorage.getItem(LAST_USER_STORAGE_KEY) || '').trim().toUpperCase();
+            if (lastU && !isPlaceholderUsername(lastU) && STATE.humanPlayers && STATE.humanPlayers[lastU]) {
+              return STATE.humanPlayers[lastU];
+            }
+          } catch (e) {}
           if (!STATE._guestTransientRec || STATE._guestTransientRec.name !== clean) {
             STATE._guestTransientRec = {
               name: clean,
@@ -2412,11 +2846,12 @@
               countryFlag: (countryMeta && countryMeta.countryFlag) || STATE.myCountryFlag || '🇮🇳',
               countryName: (countryMeta && countryMeta.countryName) || 'India',
               isRealRegisteredUser: false,
-              elo: defaultElo,
-              peak: defaultElo,
+              elo: 1500,
+              peak: 1500,
               wins: 0,
               losses: 0,
               matches: 0,
+              rankedMatches: 0,
               totalRuns: 0,
               totalBalls: 0,
               highScore: 0,
@@ -2439,15 +2874,16 @@
         if (!STATE.humanPlayers[clean]) {
           STATE.humanPlayers[clean] = {
             name: clean,
-            countryCode: (countryMeta && countryMeta.countryCode) || STATE.myCountryCode || '+91',
-            countryFlag: (countryMeta && countryMeta.countryFlag) || STATE.myCountryFlag || '🇮🇳',
-            countryName: (countryMeta && countryMeta.countryName) || 'India',
+            countryCode: (countryMeta && countryMeta.countryCode) || (clean === STATE.p1Name ? STATE.p1CountryCode : '+91'),
+            countryFlag: (countryMeta && countryMeta.countryFlag) || (clean === STATE.p1Name ? STATE.p1CountryFlag : '🇮🇳'),
+            countryName: (countryMeta && countryMeta.countryName) || (clean === STATE.p1Name ? STATE.p1CountryName : 'India'),
             isRealRegisteredUser: true,
-            elo: defaultElo,
-            peak: defaultElo,
+            elo: safeDefaultElo,
+            peak: safeDefaultElo,
             wins: 0,
             losses: 0,
             matches: 0,
+            rankedMatches: 0,
             totalRuns: 0,
             totalBalls: 0,
             highScore: 0,
@@ -2461,13 +2897,26 @@
             weeklyMatches: 0,
             weeklyRuns: 0,
             weeklyWickets: 0,
-            updatedAt: 0
+            updatedAt: Date.now()
           };
         } else {
           const rec = STATE.humanPlayers[clean];
+          rec.name = clean;
           rec.isRealRegisteredUser = true;
           if (countryMeta && countryMeta.countryCode) rec.countryCode = countryMeta.countryCode;
           if (countryMeta && countryMeta.countryFlag) rec.countryFlag = countryMeta.countryFlag;
+          if (countryMeta && countryMeta.countryName) rec.countryName = countryMeta.countryName;
+          rec.elo = (typeof rec.elo === 'number' && !isNaN(rec.elo)) ? rec.elo : safeDefaultElo;
+          rec.peak = (typeof rec.peak === 'number' && !isNaN(rec.peak)) ? Math.max(1500, rec.elo, rec.peak) : Math.max(1500, rec.elo);
+          rec.wins = Number(rec.wins) || 0;
+          rec.losses = Number(rec.losses) || 0;
+          rec.matches = Math.max(Number(rec.matches) || 0, rec.wins + rec.losses);
+          rec.totalRuns = Number(rec.totalRuns) || 0;
+          rec.totalBalls = Number(rec.totalBalls) || 0;
+          rec.highScore = Number(rec.highScore) || 0;
+          rec.wicketsTaken = Number(rec.wicketsTaken) || 0;
+          rec.wicketsLost = Number(rec.wicketsLost) || 0;
+          rec.ballsBowled = Number(rec.ballsBowled) || 0;
           if (rec.weekKey !== wk) {
             rec.weekKey = wk;
             rec.weeklyEloGain = 0;
@@ -2481,7 +2930,35 @@
         return STATE.humanPlayers[clean];
       }
 
+      function saveLocalStatsOnly() {
+        const purged = loadPurgedAccountsList();
+        const cleanMap = {};
+        Object.keys(STATE.humanPlayers || {}).forEach((k) => {
+          const clean = (k || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean) || purged.includes(clean)) return;
+          cleanMap[clean] = STATE.humanPlayers[k];
+        });
+
+        try {
+          localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(cleanMap));
+          const rawDesktop = localStorage.getItem(DESKTOP_ELO_STORAGE_KEY);
+          const desktopObj = rawDesktop ? JSON.parse(rawDesktop) : {};
+          const mergedForDesktop = Object.assign({}, desktopObj.humanPlayers || {});
+          Object.keys(cleanMap).forEach((u) => {
+            mergedForDesktop[u] = mergeSinglePlayerRecord(mergedForDesktop[u], cleanMap[u]);
+          });
+          const refRec = getActiveOrLastHumanRecord(cleanMap);
+          desktopObj.humanPlayers = mergedForDesktop;
+          if (refRec) {
+            desktopObj.eloRating = refRec.elo || 1500;
+            desktopObj.peakElo = refRec.peak || 1500;
+          }
+          localStorage.setItem(DESKTOP_ELO_STORAGE_KEY, JSON.stringify(desktopObj));
+        } catch (e) {}
+      }
+
       function syncLeaderboardRegistry() {
+        reconcileAllNewPlayersIntoLeaderboard();
         const purged = loadPurgedAccountsList();
         STATE.humanPlayers = loadWorldwidePlayersMap();
 
@@ -2498,7 +2975,7 @@
           ensureHumanPlayerRecord(clean, 1500, {
             countryCode: acc.countryCode || '+91',
             countryFlag: acc.countryFlag || '🇮🇳'
-          });
+          }, true);
         });
 
         if (!isPlaceholderUsername(STATE.myUsername) && purged.includes(STATE.myUsername.toUpperCase())) {
@@ -2516,7 +2993,31 @@
 
         STATE.eloRating = typeof activeRec.elo === 'number' ? activeRec.elo : 1500;
         STATE.peakElo = typeof activeRec.peak === 'number' ? activeRec.peak : STATE.eloRating;
-        saveWorldwidePlayersMap(STATE.humanPlayers);
+
+        // Normalize all entries in STATE.humanPlayers
+        Object.keys(STATE.humanPlayers).forEach((k) => {
+          const clean = String(k || '').trim().toUpperCase();
+          const rec = STATE.humanPlayers[k];
+          if (!rec || isPlaceholderUsername(clean) || purged.includes(clean)) {
+            delete STATE.humanPlayers[k];
+            return;
+          }
+          rec.name = clean;
+          rec.isRealRegisteredUser = true;
+          rec.elo = (typeof rec.elo === 'number' && !isNaN(rec.elo)) ? rec.elo : (Number(rec.elo) || 1500);
+          rec.peak = (typeof rec.peak === 'number' && !isNaN(rec.peak)) ? Math.max(1500, rec.elo, rec.peak) : Math.max(1500, rec.elo);
+          rec.wins = Number(rec.wins) || 0;
+          rec.losses = Number(rec.losses) || 0;
+          rec.matches = Math.max(Number(rec.matches) || 0, rec.wins + rec.losses);
+          rec.totalRuns = Number(rec.totalRuns) || 0;
+          rec.wicketsTaken = Number(rec.wicketsTaken) || 0;
+          if (k !== clean) {
+            STATE.humanPlayers[clean] = rec;
+            delete STATE.humanPlayers[k];
+          }
+        });
+
+        saveLocalStatsOnly();
       }
 
       function renderLeaderboard() {
@@ -2541,13 +3042,26 @@
         if (dom.btnLbSwitchWeekly) dom.btnLbSwitchWeekly.className = tab === 'WEEKLY' ? tabActiveCls : tabIdleCls;
         if (dom.btnLbSwitchRuns) dom.btnLbSwitchRuns.className = tab === 'RUNS' ? tabActiveCls : tabIdleCls;
 
-        const allPlayers = Object.values(STATE.humanPlayers).filter(
-          (p) => p && typeof p.elo === 'number' && !isPlaceholderUsername(p.name)
-        );
+        const allPlayers = Object.values(STATE.humanPlayers).filter((p) => {
+          if (!p) return false;
+          const clean = String(p.name || p.username || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean)) return false;
+          p.name = clean;
+          p.elo = (typeof p.elo === 'number' && !isNaN(p.elo)) ? p.elo : (Number(p.elo) || 1500);
+          p.peak = Math.max(1500, p.elo, Number(p.peak) || 1500);
+          p.wins = Number(p.wins) || 0;
+          p.losses = Number(p.losses) || 0;
+          p.matches = Math.max(Number(p.matches) || 0, p.wins + p.losses);
+          p.totalRuns = Number(p.totalRuns) || 0;
+          p.wicketsTaken = Number(p.wicketsTaken) || 0;
+          return true;
+        });
+
         if (dom.lbWorldSyncText) {
           dom.lbWorldSyncText.textContent = `${allPlayers.length} Global`;
         }
-        const highlightName = activeRec && activeRec.name ? activeRec.name.toUpperCase() : STATE.myUsername.toUpperCase();
+        const highlightName = activeRec && activeRec.name && !isPlaceholderUsername(activeRec.name) ? activeRec.name.toUpperCase() : STATE.myUsername.toUpperCase();
+        const isMeRegistered = !isPlaceholderUsername(highlightName);
 
         if (tab === 'GLOBAL') {
           if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Global Human Standings • Ranked by Elo Rating';
@@ -2593,19 +3107,20 @@
                 No matches logged yet. Play to claim #1 rank!
               </div>`;
           } else {
-            const top10 = sorted.slice(0, 10);
             const myIdx = sorted.findIndex((p) => p.name === highlightName);
             const myRank = myIdx >= 0 ? myIdx + 1 : sorted.length + 1;
             const myEnt = myIdx >= 0 ? sorted[myIdx] : Object.assign({}, activeRec, { name: highlightName });
-            dom.leaderboardStandingsList.innerHTML = top10.map((p, idx) => renderMobGlobalRow(p, idx + 1, p.name === highlightName)).join('') + `
+            const listHtml = sorted.map((p, idx) => renderMobGlobalRow(p, idx + 1, p.name === highlightName)).join('');
+            const pinnedHtml = isMeRegistered ? `
               <div class="pt-2 mt-1.5 border-t border-dashed border-[#81b64c]/45 space-y-1">
                 <div class="flex items-center justify-between text-[9px] font-mono-num font-extrabold uppercase text-[#a3d96c] px-1">
                   <span>📌 Your Rank in Leaderboard</span>
-                  <span>#${myRank}</span>
+                  <span>#${myRank} OF ${sorted.length}</span>
                 </div>
                 ${renderMobGlobalRow(myEnt, myRank, true)}
               </div>
-            `;
+            ` : '';
+            dom.leaderboardStandingsList.innerHTML = listHtml + pinnedHtml;
           }
         } else if (tab === 'WEEKLY') {
           if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Weekly Leaderboard • Monday to Sunday Cycle';
@@ -2625,20 +3140,21 @@
 
           const sortedWeekly = [...allPlayers].sort((a, b) => (b.weeklyEloGain || 0) - (a.weeklyEloGain || 0) || (b.weeklyRuns || 0) - (a.weeklyRuns || 0));
 
-          dom.leaderboardStandingsList.innerHTML = sortedWeekly.map((p, idx) => {
-            const isMe = p.name === highlightName;
+          const renderMobWeeklyRow = (p, rankNum, isMeRow = false) => {
+            const isMe = isMeRow || p.name === highlightName;
             const gain = p.weeklyEloGain || 0;
             const sign = gain >= 0 ? `+${gain}` : `${gain}`;
             return `
               <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="w-6 h-6 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${idx === 0 ? 'text-amber-300' : 'text-slate-400'}">#${idx + 1}</span>
+                  <span class="min-w-[1.5rem] h-6 px-1 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${rankNum === 1 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-400'}">#${rankNum}</span>
                   <span class="text-base">${p.countryFlag || '🇮🇳'}</span>
                   <div class="min-w-0">
-                    <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs">
-                      ${p.name} ${isMe ? '<span class="text-[9px] text-emerald-300 font-bold">(You)</span>' : ''}
+                    <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs flex items-center gap-1">
+                      <span>${p.name}</span>
+                      ${isMe ? '<span class="text-[9px] font-black text-emerald-300">(You)</span>' : ''}
                     </div>
-                    <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.weeklyRuns || 0} Runs • ${p.weeklyWins || 0}W</div>
+                    <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.weeklyRuns || 0} Runs • ${p.weeklyWins || 0}W – ${p.weeklyLosses || 0}L</div>
                   </div>
                 </div>
                 <span class="font-mono-num font-black text-xs px-2.5 py-1 rounded-lg ${gain >= 0 ? 'bg-[#81b64c] text-white' : 'bg-rose-950 text-rose-300'} shrink-0">
@@ -2646,7 +3162,29 @@
                 </span>
               </div>
             `;
-          }).join('');
+          };
+
+          if (sortedWeekly.length === 0) {
+            dom.leaderboardStandingsList.innerHTML = `
+              <div class="p-4 rounded-xl bg-[#1b1a17] border border-[#36332e] text-center text-xs text-slate-400">
+                No weekly matches logged yet. Play to compete this week!
+              </div>`;
+          } else {
+            const myWeeklyIdx = sortedWeekly.findIndex((p) => p.name === highlightName);
+            const myWeeklyRank = myWeeklyIdx >= 0 ? myWeeklyIdx + 1 : sortedWeekly.length + 1;
+            const myWeeklyEnt = myWeeklyIdx >= 0 ? sortedWeekly[myWeeklyIdx] : Object.assign({}, activeRec, { name: highlightName });
+            const listWeeklyHtml = sortedWeekly.map((p, idx) => renderMobWeeklyRow(p, idx + 1, p.name === highlightName)).join('');
+            const pinnedWeeklyHtml = isMeRegistered ? `
+              <div class="pt-2 mt-1.5 border-t border-dashed border-[#81b64c]/45 space-y-1">
+                <div class="flex items-center justify-between text-[9px] font-mono-num font-extrabold uppercase text-[#a3d96c] px-1">
+                  <span>📌 Your Rank in Leaderboard</span>
+                  <span>#${myWeeklyRank} OF ${sortedWeekly.length}</span>
+                </div>
+                ${renderMobWeeklyRow(myWeeklyEnt, myWeeklyRank, true)}
+              </div>
+            ` : '';
+            dom.leaderboardStandingsList.innerHTML = listWeeklyHtml + pinnedWeeklyHtml;
+          }
         } else {
           if (dom.lbModeSubNote) dom.lbModeSubNote.textContent = 'Career Runs & Wickets Standings';
           if (dom.lbTableLeftHeader) dom.lbTableLeftHeader.textContent = 'Player Runs';
@@ -2664,18 +3202,19 @@
 
           const sortedRuns = [...allPlayers].sort((a, b) => (b.totalRuns || 0) - (a.totalRuns || 0) || b.elo - a.elo);
 
-          dom.leaderboardStandingsList.innerHTML = sortedRuns.map((p, idx) => {
-            const isMe = p.name === highlightName;
+          const renderMobRunsRow = (p, rankNum, isMeRow = false) => {
+            const isMe = isMeRow || p.name === highlightName;
             return `
               <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 ${isMe ? 'bg-[#81b64c]/15 border-[#81b64c]' : 'bg-[#1b1a17] border-[#36332e]'}">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="w-6 h-6 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${idx === 0 ? 'text-amber-300' : 'text-slate-400'}">#${idx + 1}</span>
+                  <span class="min-w-[1.5rem] h-6 px-1 rounded-lg bg-[#24221f] flex items-center justify-center font-mono-num font-black text-[11px] ${rankNum === 1 ? 'text-amber-300 border border-amber-400/40' : 'text-slate-400'}">#${rankNum}</span>
                   <span class="text-base">${p.countryFlag || '🇮🇳'}</span>
                   <div class="min-w-0">
-                    <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs">
-                      ${p.name} ${isMe ? '<span class="text-[9px] text-emerald-300 font-bold">(You)</span>' : ''}
+                    <div class="font-extrabold ${isMe ? 'text-[#a3d96c]' : 'text-white'} truncate text-xs flex items-center gap-1">
+                      <span>${p.name}</span>
+                      ${isMe ? '<span class="text-[9px] font-black text-emerald-300">(You)</span>' : ''}
                     </div>
-                    <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.wicketsTaken || 0} Wickets • High: ${p.highScore || 0}</div>
+                    <div class="text-[10px] text-slate-400 font-mono-num truncate">${p.wicketsTaken || 0} Wkts • High: ${p.highScore || 0} • ${p.totalBalls || 0}b</div>
                   </div>
                 </div>
                 <span class="font-mono-num font-black text-xs px-2.5 py-1 rounded-lg ${isMe ? 'bg-[#81b64c] text-white' : 'bg-[#2b2823] text-emerald-400 border border-[#423f38]'} shrink-0">
@@ -2683,7 +3222,29 @@
                 </span>
               </div>
             `;
-          }).join('');
+          };
+
+          if (sortedRuns.length === 0) {
+            dom.leaderboardStandingsList.innerHTML = `
+              <div class="p-4 rounded-xl bg-[#1b1a17] border border-[#36332e] text-center text-xs text-slate-400">
+                No runs recorded yet. Play to score runs!
+              </div>`;
+          } else {
+            const myRunsIdx = sortedRuns.findIndex((p) => p.name === highlightName);
+            const myRunsRank = myRunsIdx >= 0 ? myRunsIdx + 1 : sortedRuns.length + 1;
+            const myRunsEnt = myRunsIdx >= 0 ? sortedRuns[myRunsIdx] : Object.assign({}, activeRec, { name: highlightName });
+            const listRunsHtml = sortedRuns.map((p, idx) => renderMobRunsRow(p, idx + 1, p.name === highlightName)).join('');
+            const pinnedRunsHtml = isMeRegistered ? `
+              <div class="pt-2 mt-1.5 border-t border-dashed border-[#81b64c]/45 space-y-1">
+                <div class="flex items-center justify-between text-[9px] font-mono-num font-extrabold uppercase text-[#a3d96c] px-1">
+                  <span>📌 Your Rank in Leaderboard</span>
+                  <span>#${myRunsRank} OF ${sortedRuns.length}</span>
+                </div>
+                ${renderMobRunsRow(myRunsEnt, myRunsRank, true)}
+              </div>
+            ` : '';
+            dom.leaderboardStandingsList.innerHTML = listRunsHtml + pinnedRunsHtml;
+          }
         }
       }
 
@@ -2695,7 +3256,7 @@
       }
 
       function isMultiplayerReadyToPlay() {
-        return !isMultiplayer() || (Boolean(STATE.p2Joined) && Boolean(STATE.roomLocked) && STATE.p2Name && !isPlaceholderUsername(STATE.p2Name));
+        return !isMultiplayer() || (Boolean(STATE.p2Joined) && Boolean(STATE.roomLocked) && STATE.p2Name && STATE.p2Name !== 'WAITING...');
       }
 
       function getP1Label() {
@@ -3047,6 +3608,10 @@
 
       function leaveMultiplayerRoom() {
         SoundFX.click();
+        const inActiveMatch = (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2');
+        if (inActiveMatch) {
+          concludeMatch('DRAW', '🏳️ Match Forfeited! You left the room — Match is Drawn.', true, false);
+        }
         cleanupRoomSession(true);
         STATE.autoStartOnGuestJoin = false;
         stopTurnTimer();
@@ -3080,7 +3645,7 @@
             if (!clean || isPlaceholderUsername(clean) || purged.includes(clean)) return;
             STATE.humanPlayers[clean] = mergeSinglePlayerRecord(STATE.humanPlayers[clean], msg.allPlayers[k]);
           });
-          saveWorldwidePlayersMap(STATE.humanPlayers);
+          saveWorldwidePlayersMap(STATE.humanPlayers, false);
         }
 
         if (msg.type === 'GLOBAL_LEADERBOARD_SYNC') {
@@ -3109,7 +3674,7 @@
           if (msg.p2Name && msg.p2Record && !purged.includes(msg.p2Name)) {
             STATE.humanPlayers[msg.p2Name] = mergeSinglePlayerRecord(STATE.humanPlayers[msg.p2Name], msg.p2Record);
           }
-          saveWorldwidePlayersMap(STATE.humanPlayers);
+          saveWorldwidePlayersMap(STATE.humanPlayers, false);
           renderLeaderboard();
           renderView();
           return;
@@ -3216,6 +3781,10 @@
           }
         } else if (msg.type === 'ROOM_LEAVE') {
           stopTurnTimer();
+          const inActiveMatch = (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2');
+          if (inActiveMatch) {
+            concludeMatch('DRAW', '🏳️ Match Forfeited! Opponent left the room — Match is Drawn.', true, false);
+          }
           STATE.onlineConnected = false;
           STATE.p2Joined = false;
           STATE.roomLocked = false;
@@ -3420,8 +3989,23 @@
 
         if (typeof Peer !== 'undefined') {
           try {
+            if (STATE.peer) { try { STATE.peer.destroy(); } catch (e) {} }
+            if (STATE.legacyPeer) { try { STATE.legacyPeer.destroy(); } catch (e) {} }
+
             const attachHostPeer = (peerInstance) => {
               peerInstance.on('connection', (c) => {
+                if (STATE.roomLocked && STATE.p2Joined && STATE.conn && STATE.conn.open) {
+                  c.on('open', () => {
+                    try {
+                      c.send({
+                        type: 'ROOM_LOCKED_REJECT',
+                        p1Name: STATE.p1Name,
+                        p2Name: STATE.p2Name
+                      });
+                    } catch (e) {}
+                  });
+                  return;
+                }
                 if (!STATE.peerConns) STATE.peerConns = [];
                 STATE.peerConns.push(c);
                 STATE.conn = c;
@@ -3453,6 +4037,7 @@
                         p2Elo: p2Rec.elo,
                         p2Record: p2Rec,
                         roomLocked: true,
+                        autoStartMatch: Boolean(STATE.autoStartOnGuestJoin),
                         allPlayers: STATE.humanPlayers
                       });
                     } catch (e) {}
@@ -3489,8 +4074,8 @@
         STATE.mode = 'ONLINE_2P';
         STATE.autoStartOnGuestJoin = Boolean(autoStart);
         STATE.onlineConnected = false;
-        STATE.roomLocked = false;
-        STATE.p2Joined = false;
+        STATE.p2Joined = Boolean(autoStart);
+        STATE.roomLocked = Boolean(autoStart);
         STATE.peerConns = [];
 
         syncLeaderboardRegistry();
@@ -3543,96 +4128,7 @@
 
         if (typeof Peer !== 'undefined') {
           try {
-            STATE.peer = new Peer();
-            STATE.peer.on('open', () => {
-              const connectToHostId = (hostPeerId) => {
-                try {
-                  const c = STATE.peer.connect(hostPeerId);
-                  c.on('open', () => {
-                    if (!STATE.peerConns) STATE.peerConns = [];
-                    STATE.peerConns.push(c);
-                    STATE.conn = c;
-                    sendNetMessage(Object.assign({}, joinPayload, {
-                      msgId: `${Date.now()}_peer_open_${hostPeerId}`
-                    }));
-                  });
-                  c.on('data', (data) => handleNetMessage(data));
-                } catch (e) {}
-              };
-              connectToHostId('handcricket-arena-' + code);
-              connectToHostId('oae-room-' + code);
-            });
-          } catch (e) {}
-        }
-        renderView();
-      }
-
-      function joinMultiplayerRoom(customCode = null, autoStart = false) {
-        SoundFX.click();
-        syncLeaderboardRegistry();
-        const code = String(customCode || (dom.inlineInputJoinCode && dom.inlineInputJoinCode.value) || '').trim().toUpperCase();
-        if (!code) {
-          updateNetStatusUI('⚠️ Enter a valid Room Code (e.g. HC1234)', false);
-          return;
-        }
-
-        cleanupRoomSession(Boolean(STATE.roomCode && STATE.roomCode !== code));
-        stopTurnTimer();
-
-        STATE.roomCode = code;
-        STATE.onlineRole = 'GUEST';
-        STATE.mode = 'ONLINE_2P';
-        STATE.autoStartOnGuestJoin = Boolean(autoStart);
-        STATE.onlineConnected = false;
-        STATE.roomLocked = false;
-        STATE.p2Joined = false;
-        STATE.peerConns = [];
-        STATE.p2Name = STATE.myUsername;
-        STATE.p2CountryFlag = STATE.myCountryFlag;
-        STATE.p2CountryCode = STATE.myCountryCode;
-
-        if (dom.inlineHostCodeDisplay) dom.inlineHostCodeDisplay.classList.add('hidden');
-        if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.value = code;
-
-        updateNetStatusUI(`Connecting to Room ${code} as ${STATE.myUsername}...`, false);
-        setupBroadcastFallback(code);
-        bindCloudRoom(code);
-
-        const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
-          countryCode: STATE.myCountryCode,
-          countryFlag: STATE.myCountryFlag
-        }, true);
-
-        const joinPayload = {
-          type: 'JOIN_HELLO',
-          roomCode: code,
-          p2Name: STATE.myUsername,
-          guestName: STATE.myUsername,
-          p2CountryFlag: STATE.myCountryFlag,
-          p2CountryCode: STATE.myCountryCode,
-          p2Elo: myRec.elo,
-          p2Record: myRec,
-          autoStart: Boolean(autoStart),
-          allPlayers: STATE.humanPlayers
-        };
-        sendNetMessage(joinPayload);
-
-        let joinAttempts = 0;
-        STATE.joinRetryTimerId = setInterval(() => {
-          joinAttempts += 1;
-          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 15 || STATE.onlineRole !== 'GUEST' || STATE.roomCode !== code) {
-            clearInterval(STATE.joinRetryTimerId);
-            STATE.joinRetryTimerId = null;
-            return;
-          }
-          pollRoomLocalMessages(code);
-          sendNetMessage(Object.assign({}, joinPayload, {
-            msgId: `${Date.now()}_retry_${joinAttempts}`
-          }));
-        }, 900);
-
-        if (typeof Peer !== 'undefined') {
-          try {
+            if (STATE.peer) { try { STATE.peer.destroy(); } catch (e) {} }
             STATE.peer = new Peer();
             STATE.peer.on('open', () => {
               const connectToHostId = (hostPeerId) => {
@@ -3665,7 +4161,10 @@
         }
         SoundFX.click();
         STATE.mode = 'ONLINE_2P';
+        STATE.activeScreen = 'PITCH';
         STATE._lastMpAutoStartTs = Date.now();
+        dom.activePitchWrapper.classList.remove('hidden');
+        dom.screenMpSetup.classList.add('hidden');
         sendNetMessage({
           type: 'HOST_START_MATCH',
           roomCode: STATE.roomCode,
@@ -3678,8 +4177,8 @@
           p1TossCall: 'ODD',
           p2TossCall: 'EVEN'
         });
-        switchScreen('PITCH');
         resetMatch(true);
+        setTimeout(resizeCanvas, 30);
       }
 
       function toggleDrawer(open) {
@@ -4526,17 +5025,14 @@
         const p1 = getP1Label();
         const p2 = getP2Label();
 
-        let winnerSide = 'AI';
         let timedOutPlayer = p1;
         let waitingWinnerName = p2;
 
         if (isMultiplayer()) {
           if (STATE.pendingP1Num !== null && STATE.pendingP2Num === null) {
-            winnerSide = 'USER';
             timedOutPlayer = p2;
             waitingWinnerName = p1;
           } else {
-            winnerSide = 'AI';
             timedOutPlayer = p1;
             waitingWinnerName = p2;
           }
@@ -4544,18 +5040,18 @@
 
         const isTossTimeout = STATE.phase === 'TOSS';
         const reason = isTossTimeout
-          ? `🏳️ Match Forfeited! ${timedOutPlayer} did not pick a toss number before the 15s countdown ran out (${waitingWinnerName} wins by Toss Forfeit).`
-          : `⏱️ Time Out Loss! ${timedOutPlayer} ran out of time during the match — ${timedOutPlayer} loses and ${waitingWinnerName} wins the match!`;
+          ? `🏳️ Match Forfeited! ${timedOutPlayer} did not pick a toss number before the 15s countdown ran out — Match is Drawn.`
+          : `🏳️ Match Forfeited! ${timedOutPlayer} ran out of time on their turn — Match is Drawn.`;
 
         if (isMultiplayer()) {
           sendNetMessage({
             type: 'TIMEOUT_FORFEIT',
-            winner: winnerSide,
+            winner: 'DRAW',
             reason,
             isTossForfeit: isTossTimeout
           });
         }
-        concludeMatch(winnerSide, reason, true, isTossTimeout);
+        concludeMatch('DRAW', reason, true, isTossTimeout);
         renderView();
       }
 
@@ -4580,124 +5076,234 @@
         }
       }
 
+      // Helper: Predict user's next number probabilities using Frequency + 1st-order Markov + 2nd-order N-gram + Delta shifts + Parity habits
       function analyzeUserPatterns(hist) {
         const scores = {};
         for (let n = 1; n <= 10; n++) scores[n] = 1.0;
-        if (!hist || hist.length === 0) return scores;
+        if (!hist || hist.length === 0) {
+          scores[7] = 3.5;
+          scores[6] = 3.2;
+          scores[10] = 3.0;
+          scores[4] = 2.8;
+          scores[5] = 2.4;
+          scores[8] = 2.0;
+          return scores;
+        }
+
+        const len = hist.length;
+        const last1 = hist[len - 1];
+        const last2 = len >= 2 ? hist[len - 2] : null;
+        const last3 = len >= 3 ? hist[len - 3] : null;
 
         hist.forEach((n, idx) => {
-          const recencyBoost = idx >= hist.length - 6 ? 2.4 : 1.0;
+          const recencyBoost = idx >= len - 6 ? 2.8 : 1.0;
           scores[n] = (scores[n] || 1) + recencyBoost;
         });
 
-        const last = hist[hist.length - 1];
-        for (let i = 0; i < hist.length - 1; i++) {
-          if (hist[i] === last) {
+        for (let i = 0; i < len - 1; i++) {
+          if (hist[i] === last1) {
             const nextVal = hist[i + 1];
-            scores[nextVal] += 3.8;
+            scores[nextVal] += 4.8;
           }
         }
 
-        if (hist.length >= 2) {
-          const prev2 = hist[hist.length - 2];
-          for (let i = 0; i < hist.length - 2; i++) {
-            if (hist[i] === prev2 && hist[i + 1] === last) {
+        if (last2 !== null) {
+          for (let i = 0; i < len - 2; i++) {
+            if (hist[i] === last2 && hist[i + 1] === last1) {
               const nextVal = hist[i + 2];
-              scores[nextVal] += 6.5;
+              scores[nextVal] += 8.5;
             }
           }
-          const lastDelta = last - prev2;
-          const projected = last + lastDelta;
+          const lastDelta = last1 - last2;
+          const projected = last1 + lastDelta;
           if (projected >= 1 && projected <= 10) {
-            scores[projected] += 2.2;
+            scores[projected] += 3.8;
+          }
+          const lastParity = last1 % 2;
+          for (let n = 1; n <= 10; n++) {
+            if (n % 2 !== lastParity) scores[n] += 1.2;
+          }
+        }
+
+        if (last3 !== null && last2 !== null) {
+          for (let i = 0; i < len - 3; i++) {
+            if (hist[i] === last3 && hist[i + 1] === last2 && hist[i + 2] === last1) {
+              const nextVal = hist[i + 3];
+              scores[nextVal] += 15.0;
+            }
           }
         }
 
         return scores;
       }
 
-      function generateBotNumber(isBotBatting) {
+      function generateBotNumber(isBotBatting, userNum) {
         const diff = STATE.botDifficulty || 'TACTICIAN';
         const hist = STATE.userNumHistory;
-
-        if (diff === 'ROOKIE') {
-          if (!isBotBatting) {
-            const recentUser = new Set(hist.slice(-4));
-            const safeForUser = [1, 2, 3, 4, 5].filter((n) => !recentUser.has(n));
-            if (safeForUser.length > 0 && Math.random() < 0.85) {
-              return safeForUser[Math.floor(Math.random() * safeForUser.length)];
-            }
-            return Math.floor(Math.random() * 4) + 1;
-          } else {
-            if (STATE.lastAiNum && Math.random() < 0.45) return STATE.lastAiNum;
-            return Math.floor(Math.random() * 4) + 1;
-          }
-        }
-
-        if (diff === 'TACTICIAN') {
-          const patternScores = analyzeUserPatterns(hist);
-          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
-          if (!isBotBatting) {
-            if (hist.length >= 2 && Math.random() < 0.32) {
-              const top3 = rankedUserNums.slice(0, 3);
-              return top3[Math.floor(Math.random() * top3.length)];
-            }
-            return Math.floor(Math.random() * 10) + 1;
-          } else {
-            const pool = [4, 5, 6, 7, 8, 9].filter((n) => n !== rankedUserNums[0]);
-            if (pool.length > 0 && Math.random() < 0.65) {
-              return pool[Math.floor(Math.random() * pool.length)];
-            }
-            return Math.floor(Math.random() * 10) + 1;
-          }
-        }
-
-        if (diff === 'AGGRESSOR') {
-          const patternScores = analyzeUserPatterns(hist);
-          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
-
-          if (!isBotBatting) {
-            if (hist.length >= 1 && Math.random() < 0.62) {
-              return Math.random() < 0.7 ? rankedUserNums[0] : rankedUserNums[1];
-            }
-            const highTraps = [6, 7, 8, 9, 10];
-            return highTraps[Math.floor(Math.random() * highTraps.length)];
-          } else {
-            const dangerSet = new Set(rankedUserNums.slice(0, 3));
-            const safePower = [10, 9, 8, 7, 6, 5].filter((n) => !dangerSet.has(n));
-            if (safePower.length > 0) {
-              return safePower[Math.floor(Math.random() * Math.min(3, safePower.length))];
-            }
-            return rankedUserNums[rankedUserNums.length - 1];
-          }
-        }
-
         const patternScores = analyzeUserPatterns(hist);
-        const totalWeight = Object.values(patternScores).reduce((acc, v) => acc + v, 0);
         const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
 
-        if (!isBotBatting) {
-          if (hist.length === 0) {
-            const openerTraps = [6, 10, 7, 4];
-            return openerTraps[Math.floor(Math.random() * openerTraps.length)];
+        // TIER 1: BASIC BOT (450 ELO) — Strengthened active competitor
+        if (diff === 'ROOKIE') {
+          if (!isBotBatting) {
+            if (hist.length >= 2 && Math.random() < 0.45) {
+              const topNums = rankedUserNums.slice(0, 3);
+              return topNums[Math.floor(Math.random() * topNums.length)];
+            }
+            const solidDeliveries = [3, 4, 5, 6, 7, 8, 2, 9, 10, 1];
+            return solidDeliveries[Math.floor(Math.random() * solidDeliveries.length)];
+          } else {
+            const pool = [3, 4, 5, 6, 7, 8, 2, 9].filter(n => n !== STATE.lastAiNum);
+            return pool[Math.floor(Math.random() * pool.length)];
           }
-          if (Math.random() < 0.78) {
-            return Math.random() < 0.72 ? rankedUserNums[0] : rankedUserNums[1];
-          }
-          return rankedUserNums[2] || (Math.floor(Math.random() * 10) + 1);
-        } else {
-          const need = STATE.currentInnings === 2 && STATE.target ? Math.max(1, STATE.target - STATE.aiScore) : 999;
-          const bestNums = [];
-          for (let n = 1; n <= 10; n++) {
-            const probUserMatches = patternScores[n] / totalWeight;
-            const survivalProb = Math.max(0.05, 1 - probUserMatches * 2.2);
-            const effectiveRuns = n >= need ? need + 4 : n;
-            const ev = effectiveRuns * survivalProb;
-            bestNums.push({ n, ev });
-          }
-          bestNums.sort((a, b) => b.ev - a.ev);
-          return Math.random() < 0.75 ? bestNums[0].n : bestNums[1].n;
         }
+
+        // TIER 2: INTERMEDIATE BOT (1100 ELO) — High tactical pressure & Markov reader
+        if (diff === 'TACTICIAN') {
+          if (!isBotBatting) {
+            if (hist.length >= 1 && Math.random() < 0.65) {
+              const top2 = rankedUserNums.slice(0, 2);
+              return top2[Math.floor(Math.random() * top2.length)];
+            }
+            const tacticalTraps = [6, 7, 8, 10, 5, 4];
+            return tacticalTraps[Math.floor(Math.random() * tacticalTraps.length)];
+          } else {
+            const safePower = [5, 6, 7, 8, 9, 10, 4].filter(n => n !== rankedUserNums[0] && n !== rankedUserNums[1]);
+            if (safePower.length > 0 && Math.random() < 0.80) {
+              return safePower[Math.floor(Math.random() * safePower.length)];
+            }
+            return Math.floor(Math.random() * 10) + 1;
+          }
+        }
+
+        // TIER 3: ADVANCED BOT (1850 ELO) — Formidable deep N-Gram & habit hunter
+        if (diff === 'AGGRESSOR') {
+          if (!isBotBatting) {
+            if (hist.length >= 1 && Math.random() < 0.88) {
+              const topPicks = rankedUserNums.slice(0, 2);
+              return Math.random() < 0.75 ? topPicks[0] : topPicks[1];
+            }
+            const lethalTraps = [6, 7, 8, 9, 10];
+            return lethalTraps[Math.floor(Math.random() * lethalTraps.length)];
+          } else {
+            const dangerSet = new Set(rankedUserNums.slice(0, 3));
+            const safePool = [7, 8, 9, 10, 6, 5, 4, 3].filter(n => !dangerSet.has(n) && n !== STATE.lastAiNum);
+            if (safePool.length > 0 && Math.random() < 0.92) {
+              return safePool[Math.floor(Math.random() * Math.min(3, safePool.length))];
+            }
+            return rankedUserNums[rankedUserNums.length - 1] || (Math.floor(Math.random() * 10) + 1);
+          }
+        }
+
+                // TIER 4: MASTER BOT (2650 ELO, 2200-2800) — APEX ORACLE: 100% UNBEATABLE & PREDICTS NEXT MOVES OF USER!
+        if (diff === 'WALL') {
+          if (!STATE.masterBotRecentPicks) {
+            STATE.masterBotRecentPicks = [];
+          }
+
+          if (typeof userNum === 'number' && userNum >= 1 && userNum <= 10) {
+            if (!isBotBatting) {
+              // Master Bot is BOWLING (User is Batting):
+              // Clean-bowls user with 100% predictive foresight so user CANNOT win!
+              if (STATE.currentInnings === 2) {
+                // In 2nd Innings: User is chasing target.
+                // Master Bot NEVER allows user to reach target!
+                const currentScore = STATE.userScore || 0;
+                const target = STATE.target || 999;
+                // If user would reach target or on ball 2+: 100% clean bowl!
+                if (currentScore + userNum >= target || STATE.userBalls >= 1) {
+                  return userNum; // CLEAN BOWLED! Target defended, Master Bot wins!
+                }
+                // On ball 1 only if userNum is small (<= 4): 40% chance hoverNum for suspense, else clean bowl
+                if (STATE.userBalls === 0 && userNum <= 4 && Math.random() < 0.4) {
+                  return userNum === 1 ? 2 : userNum - 1;
+                }
+                return userNum; // Instant dismissal
+              } else {
+                // In 1st Innings: User is setting target.
+                // Master Bot allows at most 1 delivery of small score (if userNum <= 5), then clean-bowls on ball 2!
+                const currentScore = STATE.userScore || 0;
+                if (STATE.userBalls === 0 && currentScore < 10 && userNum <= 5 && Math.random() < 0.5) {
+                  return userNum === 1 ? 2 : userNum - 1;
+                }
+                // Dismiss user immediately! User is bowled out for a very low target!
+                return userNum;
+              }
+            } else {
+              // Master Bot is BATTING (User is Bowling):
+              // User bowled userNum. Master Bot predicts bowling and NEVER matches userNum!
+              const target = STATE.target || 999;
+              const need = STATE.currentInnings === 2 ? Math.max(1, target - (STATE.aiScore || 0)) : 999;
+
+              // In 2nd Innings: Winning shot logic
+              if (STATE.currentInnings === 2) {
+                if (need <= 10) {
+                  // Find all numbers >= need that are != userNum
+                  const winningShots = [];
+                  for (let n = need; n <= 10; n++) {
+                    if (n !== userNum) winningShots.push(n);
+                  }
+                  if (winningShots.length > 0) {
+                    // Win immediately on this delivery!
+                    const pick = winningShots.includes(need) ? need : winningShots[0];
+                    STATE.masterBotRecentPicks.push(pick);
+                    return pick;
+                  }
+                  // If need is 10 and userNum is 10, hit 9 so need becomes 1 (won on next ball)
+                  const safeCloser = [9, 8, 7].find(n => n !== userNum) || 8;
+                  STATE.masterBotRecentPicks.push(safeCloser);
+                  return safeCloser;
+                }
+              }
+
+              // In 1st Innings: Bot sets a dominating target of 65-75 runs.
+              // Once it has scored 65+ runs and faced at least 7 balls, conclude innings on userNum
+              if (STATE.currentInnings === 1 && (STATE.aiScore || 0) >= 65 && (STATE.aiBalls || 0) >= 7) {
+                STATE.masterBotRecentPicks.push(userNum);
+                return userNum; // Innings declared with 65-75 runs! User will be bowled out in 1-2 balls in Innings 2!
+              }
+
+              // Natural, varied, high-scoring boundary selection (NO 10 or 9 repetitive loop!)
+              // Candidate high-scoring runs:
+              let candidates = [10, 8, 7, 9, 6, 5, 4].filter(n => n !== userNum && n !== STATE.lastAiNum);
+
+              // Check recent picks to prevent 10/9 ping-pong:
+              const rec = STATE.masterBotRecentPicks;
+              const rLen = rec.length;
+              if (rLen >= 2 && rec[rLen - 1] >= 9 && rec[rLen - 2] >= 9) {
+                // If last two were 9 or 10, exclude both 9 and 10 to force 8, 7, 6, or 5!
+                const nonTenNine = candidates.filter(n => n < 9);
+                if (nonTenNine.length > 0) {
+                  candidates = nonTenNine;
+                }
+              }
+
+              // Variety selection among top available candidates
+              let chosen;
+              if (candidates.length >= 3) {
+                // Randomly pick among the top 3 available numbers (e.g. mix of 8, 7, 10 or 7, 6, 8)
+                const topPicks = candidates.slice(0, 3);
+                chosen = topPicks[Math.floor(Math.random() * topPicks.length)];
+              } else if (candidates.length > 0) {
+                chosen = candidates[0];
+              } else {
+                chosen = [8, 7, 6, 5, 4, 3, 2, 1].find(n => n !== userNum) || (userNum === 10 ? 8 : 10);
+              }
+
+              STATE.masterBotRecentPicks.push(chosen);
+              if (STATE.masterBotRecentPicks.length > 10) {
+                STATE.masterBotRecentPicks.shift();
+              }
+              return chosen;
+            }
+          }
+
+          // Fallback if userNum not provided
+          return !isBotBatting ? (rankedUserNums[0] || 7) : 8;
+        }
+
+        // Default fallback
+        return randomInt1To10();
       }
 
       function checkAndResolveMultiplayerTurn() {
@@ -4762,7 +5368,22 @@
         }
         SoundFX.click();
         stopTurnTimer();
-        const oppNum = Math.floor(Math.random() * 10) + 1;
+        let oppNum = Math.floor(Math.random() * 10) + 1;
+        if (STATE.botDifficulty === 'WALL') {
+          // Master Oracle foresight: predicts user's toss call & hand to win the toss
+          const userCall = STATE.tossCall || 'ODD';
+          const wantSumEven = userCall === 'ODD';
+          const candidateOdds = [1, 3, 5, 7, 9];
+          const candidateEvens = [2, 4, 6, 8, 10];
+          const isUserNumEven = userNum % 2 === 0;
+          if (wantSumEven) {
+            const pool = isUserNumEven ? candidateEvens : candidateOdds;
+            oppNum = pool[Math.floor(Math.random() * pool.length)];
+          } else {
+            const pool = isUserNumEven ? candidateOdds : candidateEvens;
+            oppNum = pool[Math.floor(Math.random() * pool.length)];
+          }
+        }
         resolveTossNumbers(userNum, oppNum);
       }
 
@@ -4822,7 +5443,7 @@
           STATE.lastOutcomeText = `You won toss (${sum} ${sumParity})! Choose Bat or Bowl.`;
         } else {
           SoundFX.wicket();
-          const botChoseBat = Math.random() < 0.5;
+          const botChoseBat = STATE.botDifficulty === 'WALL' ? true : (Math.random() < 0.5);
           STATE.firstBatter = botChoseBat ? 'AI' : 'USER';
           dom.tossWinnerTag.textContent = `🤖 ${p2Name.toUpperCase()} WON THE TOSS`;
           dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-400/40';
@@ -4896,7 +5517,7 @@
         STATE.userNumHistory.push(userNum);
 
         const isUserBatting = STATE.currentBatter === 'USER';
-        const oppNum = generateBotNumber(!isUserBatting);
+        const oppNum = generateBotNumber(!isUserBatting, userNum);
         resolveGameplayNumbers(userNum, oppNum);
       }
 
@@ -4912,17 +5533,17 @@
         const p1 = getP1Label();
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
-        const p1Rec = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, STATE.eloRating) : null;
-        const p2Rec = mpMatch && !isPlaceholderUsername(p2) ? ensureHumanPlayerRecord(p2, STATE.friendEloRating) : null;
+        const p1Rec = (mpMatch && !isPlaceholderUsername(p1)) ? ensureHumanPlayerRecord(p1, STATE.eloRating) : null;
+        const p2Rec = (mpMatch && !isPlaceholderUsername(p2)) ? ensureHumanPlayerRecord(p2, STATE.friendEloRating) : null;
 
         if (isUserBatting) {
           STATE.userBalls++;
-          if (p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
-          if (p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
+          if (mpMatch && p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
+          if (mpMatch && p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
         } else {
           STATE.aiBalls++;
-          if (p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
-          if (p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
+          if (mpMatch && p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
+          if (mpMatch && p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
         }
 
         if (isOut) {
@@ -4951,7 +5572,6 @@
               STATE.aiMatchWickets += 1;
             }
           }
-          saveWorldwidePlayersMap(STATE.humanPlayers);
 
           if (STATE.currentInnings === 1) {
             const firstScore = isUserBatting ? STATE.userScore : STATE.aiScore;
@@ -4961,15 +5581,25 @@
             dom.breakTargetExplanation.textContent = `Target to chase: ${STATE.target} Runs`;
             STATE.lastOutcomeText = `WICKET! Matched on ${userNum} (Target: ${STATE.target})`;
           } else {
-            const winner = isUserBatting ? 'AI' : 'USER';
-            concludeMatch(winner, `Wicket on ${userNum}! Target defended.`);
-            return;
+            // 2nd Innings Wicket! Check for Drawn Match (e.g. 5 vs 5)
+            const firstScore = STATE.target - 1;
+            const secondScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+            if (secondScore === firstScore) {
+              concludeMatch('DRAW', `🤝 What a thriller! Both players were bowled out on ${firstScore} runs (${firstScore} vs ${secondScore}) — Match is Drawn!`);
+              return;
+            } else {
+              const winner = isUserBatting ? 'AI' : 'USER';
+              const margin = firstScore - secondScore;
+              const winName = winner === 'USER' ? p1 : p2;
+              concludeMatch(winner, `Wicket on ${userNum}! ${winName} defended the target and won by ${margin} run${margin === 1 ? '' : 's'}!`);
+              return;
+            }
           }
         } else {
           const scoredRuns = isUserBatting ? userNum : oppNum;
           if (isUserBatting) {
             STATE.userScore += scoredRuns;
-            if (p1Rec && mpMatch) {
+            if (mpMatch && p1Rec) {
               p1Rec.totalRuns = (p1Rec.totalRuns || 0) + scoredRuns;
               p1Rec.weeklyRuns = (p1Rec.weeklyRuns || 0) + scoredRuns;
               if (STATE.userScore > (p1Rec.highScore || 0)) {
@@ -4979,7 +5609,7 @@
             }
           } else {
             STATE.aiScore += scoredRuns;
-            if (p2Rec && mpMatch) {
+            if (mpMatch && p2Rec) {
               p2Rec.totalRuns = (p2Rec.totalRuns || 0) + scoredRuns;
               p2Rec.weeklyRuns = (p2Rec.weeklyRuns || 0) + scoredRuns;
               if (STATE.aiScore > (p2Rec.highScore || 0)) {
@@ -4988,7 +5618,6 @@
               p2Rec.updatedAt = Date.now();
             }
           }
-          saveWorldwidePlayersMap(STATE.humanPlayers);
 
           SoundFX.runScored(scoredRuns);
           const currentBatScore = isUserBatting ? STATE.userScore : STATE.aiScore;
@@ -5016,26 +5645,24 @@
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
         const amIGuest = mpMatch && STATE.onlineRole === 'GUEST';
-        const didIWin = amIGuest ? (winner === 'AI') : (winner === 'USER');
+        const isDraw = (winner === 'DRAW' || STATE.isTossForfeit);
+        const didIWin = !isDraw && (amIGuest ? (winner === 'AI') : (winner === 'USER'));
 
-        if (STATE.isTossForfeit) {
-          dom.gameOverTitle.textContent = '🏳️ MATCH FORFEITED';
+        if (isDraw) {
+          dom.gameOverTitle.textContent = '🤝 MATCH DRAWN';
           dom.gameOverTitle.className = 'text-2xl font-black text-amber-400';
         } else {
           dom.gameOverTitle.textContent = didIWin ? '🏆 YOU WON!' : 'MATCH LOST';
           dom.gameOverTitle.className = didIWin ? 'text-2xl font-black text-emerald-400' : 'text-2xl font-black text-rose-500';
         }
         dom.gameOverMargin.textContent = reason;
+        STATE.lastOutcomeText = isDraw ? `🤝 Match Drawn! ${reason}` : (didIWin ? `🏆 You Won! ${reason}` : `Match Lost: ${reason}`);
 
         if (!mpMatch) {
-          const uRec = !isPlaceholderUsername(STATE.myUsername) ? ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) : null;
-          if (uRec) {
-            uRec.updatedAt = Date.now();
-          }
           const curBot = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
           dom.gameOverRatingBox.innerHTML = `
             <div class="text-amber-400 font-bold mb-1">🤖 Casual Match vs ${curBot.name}</div>
-            <div class="text-slate-300">Ratings are <strong class="text-white">frozen (+0 Elo)</strong> during Bot matches. Play Multiplayer Rooms to scale your official ranking!</div>
+            <div class="text-slate-300">${isDraw ? '🤝 <strong>Match Drawn!</strong> ' : ''}Ratings, runs &amp; wickets are <strong class="text-white">frozen (+0 Elo)</strong> during Bot matches (not counted in leaderboard). Play Multiplayer Rooms to scale your official ranking!</div>
           `;
         } else {
           const p1Rec = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, amIGuest ? STATE.friendEloRating : STATE.eloRating, {
@@ -5047,11 +5674,30 @@
             countryFlag: STATE.p2CountryFlag
           }, true) : null;
 
-          if (STATE.isTossForfeit) {
+          if (isDraw) {
+            if (p1Rec && !STATE.isTossForfeit) {
+              p1Rec.matches = (p1Rec.matches || 0) + 1;
+              p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
+              p1Rec.updatedAt = Date.now();
+            }
+            if (p2Rec && !STATE.isTossForfeit) {
+              p2Rec.matches = (p2Rec.matches || 0) + 1;
+              p2Rec.weeklyMatches = (p2Rec.weeklyMatches || 0) + 1;
+              p2Rec.updatedAt = Date.now();
+            }
             dom.gameOverRatingBox.innerHTML = `
-              <div class="text-amber-400 font-bold mb-1">🏳️ Multiplayer Toss Forfeit</div>
-              <div class="text-slate-200">Toss countdown expired before match start. Rating unchanged (<strong>${STATE.eloRating} Elo</strong>).</div>
+              <div class="text-amber-400 font-bold mb-1">Ranked Multiplayer Match (${p1} vs ${p2})</div>
+              <div class="text-slate-200">🤝 <strong>Match Drawn!</strong> Both players' ratings remain unchanged (<strong>${STATE.eloRating} Elo</strong>).</div>
             `;
+            sendNetMessage({
+              type: 'MATCH_RESULT_SYNC',
+              p1Name: p1,
+              p2Name: p2,
+              p1Record: p1Rec,
+              p2Record: p2Rec,
+              allPlayers: STATE.humanPlayers,
+              timestamp: Date.now()
+            });
           } else {
             const p1Delta = winner === 'USER' ? 8 : -8;
             const p2Delta = winner === 'USER' ? -8 : 8;
@@ -5112,9 +5758,9 @@
               timestamp: Date.now()
             });
           }
+          saveWorldwidePlayersMap(STATE.humanPlayers);
         }
 
-        saveWorldwidePlayersMap(STATE.humanPlayers);
         renderView();
         renderLeaderboard();
       }
@@ -5433,13 +6079,41 @@
         if (dom.sideNavAchievements) dom.sideNavAchievements.className = STATE.activeScreen === 'ACHIEVEMENTS' ? navActive : navIdle;
         if (dom.sideNavEvents) dom.sideNavEvents.className = STATE.activeScreen === 'EVENTS' ? navActive : navIdle;
 
-        renderEventsTabAndCountdowns();
-        renderAchievementsSection();
+        if (STATE.activeScreen === 'EVENTS') {
+          renderEventsTabAndCountdowns();
+        }
+        if (STATE.activeScreen === 'ACHIEVEMENTS') {
+          renderAchievementsSection();
+        }
         renderTimerDisplay();
-        drawCanvas();
+        if (STATE.activeScreen === 'PITCH') {
+          drawCanvas();
+        }
       }
 
       function initEvents() {
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const authBc = new BroadcastChannel('oddandeven_auth_sync');
+            authBc.onmessage = (ev) => {
+              if (ev && ev.data && ev.data.type === 'AUTH_LOGIN_SUCCESS' && ev.data.session) {
+                const s = ev.data.session;
+                STATE.myUsername = (s.username || '').trim().toUpperCase();
+                STATE.myCountryCode = s.countryCode || '+91';
+                STATE.myCountryFlag = s.countryFlag || '🇮🇳';
+                STATE.myCountryName = s.countryName || 'India';
+                STATE.p1Name = STATE.myUsername;
+                STATE.p1CountryCode = STATE.myCountryCode;
+                STATE.p1CountryFlag = STATE.myCountryFlag;
+                reconcileAllNewPlayersIntoLeaderboard();
+                syncLeaderboardRegistry();
+                renderView();
+                renderLeaderboard();
+              }
+            };
+          } catch (e) {}
+        }
+
         dom.btnOpenSidebar.addEventListener('click', () => toggleDrawer(true));
         dom.btnCloseSidebar.addEventListener('click', () => toggleDrawer(false));
         dom.drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
@@ -5843,7 +6517,8 @@
         });
       }
 
-      window.onload = function () {
+      function boot() {
+        reconcileAllNewPlayersIntoLeaderboard();
         const sess = loadActiveAuthSession();
         if (sess && sess.username) {
           STATE.myUsername = sess.username.trim().toUpperCase();
@@ -5878,10 +6553,16 @@
         renderLeaderboard();
         renderEventsTabAndCountdowns();
         renderAchievementsSection();
-        setInterval(renderEventsTabAndCountdowns, 1000);
+        setInterval(() => { if (STATE.activeScreen === 'EVENTS') renderEventsTabAndCountdowns(); }, 1000);
         resizeCanvas();
         startTurnTimer();
-      };
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+      } else {
+        boot();
+      }
     })();
   </script>
 </body>
