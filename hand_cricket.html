@@ -2198,9 +2198,10 @@
         } catch (e) {}
       }
 
+      window.__reconcileAllNewPlayersIntoLeaderboard = reconcileAllNewPlayersIntoLeaderboard;
       reconcileAllNewPlayersIntoLeaderboard();
       window.addEventListener('DOMContentLoaded', function () {
-        ['sideNavLeaderboard', 'btnHeaderElo', 'btnSyncGlobalLb', 'sideNavFriends', 'topInviteFriendsBanner', 'btnTopInviteFriendsCta'].forEach(function (id) {
+        ['sideNavLeaderboard', 'btnHeaderElo', 'btnSyncGlobalLb', 'sideNavFriends', 'sideNavPitch', 'sideNavMultiplayer', 'topInviteFriendsBanner', 'btnTopInviteFriendsCta'].forEach(function (id) {
           const elem = document.getElementById(id);
           if (elem) {
             elem.addEventListener('click', reconcileAllNewPlayersIntoLeaderboard, true);
