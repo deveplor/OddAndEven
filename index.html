@@ -604,6 +604,10 @@
       function saveWorldwidePlayersMap(map) {
         try {
           localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(map));
+          const rawDesktop = localStorage.getItem('hc_arena_elo_v2');
+          const desktopObj = rawDesktop ? JSON.parse(rawDesktop) : {};
+          desktopObj.humanPlayers = Object.assign({}, desktopObj.humanPlayers || {}, map);
+          localStorage.setItem('hc_arena_elo_v2', JSON.stringify(desktopObj));
         } catch (e) {}
       }
 
@@ -962,6 +966,16 @@
         return fbCorePromise;
       }
 
+      async function ensureFirebaseReady(timeoutMs = 5000) {
+        if (fbReady && fbDb) return true;
+        try {
+          await withTimeout(initFirebaseAuthBridge(), timeoutMs, 'bridge-timeout');
+          return Boolean(fbReady && fbDb);
+        } catch (e) {
+          return Boolean(fbReady && fbDb);
+        }
+      }
+
       // BRIDGE: core + best-effort anonymous session + cloud account sync. Every step is time-boxed
       // so a slow/blocked Firestore can never hang the UI.
       function initFirebaseAuthBridge() {
@@ -989,13 +1003,11 @@
           }
 
           fbUser = fbAuth.currentUser || null;
-          if (fbUser) {
-            try {
-              await withTimeout(migrateLocalAccountsToFirebase(), 10000, 'migrate-timeout');
-              await withTimeout(pullCloudAccountsIntoLocal(), 10000, 'pull-timeout');
-            } catch (e) {
-              console.warn('Cloud sync skipped', e);
-            }
+          try {
+            await withTimeout(migrateLocalAccountsToFirebase(), 10000, 'migrate-timeout');
+            await withTimeout(pullCloudAccountsIntoLocal(), 10000, 'pull-timeout');
+          } catch (e) {
+            console.warn('Cloud sync skipped', e);
           }
           return true;
         })();
@@ -1003,9 +1015,13 @@
       }
 
       async function pushAccountToFirebase(accountRecord) {
-        if (!fbReady || !fbDb || !accountRecord || !accountRecord.username) return;
+        if (!accountRecord || !accountRecord.username) return;
         const clean = String(accountRecord.username).trim().toUpperCase();
-        if (!clean || FAKE_SEED_NAMES.includes(clean)) return;
+        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
+
+        await ensureFirebaseReady(3500);
+        if (!fbDb) return;
+
         const payload = {
           username: clean,
           countryCode: accountRecord.countryCode || '+91',
@@ -1014,7 +1030,7 @@
           encryptedAuth: accountRecord.encryptedAuth || null,
           googleUid: accountRecord.googleUid || null,
           googleEmail: null, // never publish emails to a world-readable collection
-          authProvider: accountRecord.authProvider || 'pin',
+          authProvider: accountRecord.authProvider || (accountRecord.googleUid ? 'google' : 'pin'),
           createdAt: accountRecord.createdAt || new Date().toISOString(),
           migratedAt: Date.now()
         };
@@ -1023,35 +1039,45 @@
             fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean), payload, { merge: true }),
             fbSetDoc(fbDoc(fbDb, 'accounts', clean), payload, { merge: true })
           ]);
-        } catch (e) {}
+        } catch (e) {
+          console.warn('pushAccountToFirebase notice:', e);
+        }
       }
 
       async function pushLeaderboardSeedToFirebase(uname, profile) {
-        if (!fbReady || !fbDb || !uname) return;
+        if (!uname) return;
         const clean = String(uname).trim().toUpperCase();
+        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
+
+        await ensureFirebaseReady(3500);
+        if (!fbDb) return;
+
+        const worldMap = loadWorldwidePlayersMap();
+        const localRec = worldMap[clean] || {};
+
         const payload = {
           name: clean,
-          countryCode: (profile && profile.countryCode) || '+91',
-          countryFlag: (profile && profile.countryFlag) || '🇮🇳',
-          countryName: (profile && profile.countryName) || 'India',
+          countryCode: (profile && profile.countryCode) || localRec.countryCode || '+91',
+          countryFlag: (profile && profile.countryFlag) || localRec.countryFlag || '🇮🇳',
+          countryName: (profile && profile.countryName) || localRec.countryName || 'India',
           isRealRegisteredUser: true,
-          elo: 1500,
-          peak: 1500,
-          wins: 0,
-          losses: 0,
-          matches: 0,
-          totalRuns: 0,
-          totalBalls: 0,
-          highScore: 0,
-          wicketsTaken: 0,
-          wicketsLost: 0,
-          ballsBowled: 0,
-          weeklyEloGain: 0,
-          weeklyWins: 0,
-          weeklyLosses: 0,
-          weeklyMatches: 0,
-          weeklyRuns: 0,
-          weeklyWickets: 0,
+          elo: (typeof localRec.elo === 'number' && !isNaN(localRec.elo)) ? localRec.elo : 1500,
+          peak: Math.max(1500, Number(localRec.peak) || 1500),
+          wins: Number(localRec.wins) || 0,
+          losses: Number(localRec.losses) || 0,
+          matches: Math.max(Number(localRec.matches) || 0, (Number(localRec.wins) || 0) + (Number(localRec.losses) || 0)),
+          totalRuns: Number(localRec.totalRuns) || 0,
+          totalBalls: Number(localRec.totalBalls) || 0,
+          highScore: Number(localRec.highScore) || 0,
+          wicketsTaken: Number(localRec.wicketsTaken) || 0,
+          wicketsLost: Number(localRec.wicketsLost) || 0,
+          ballsBowled: Number(localRec.ballsBowled) || 0,
+          weeklyEloGain: Number(localRec.weeklyEloGain) || 0,
+          weeklyWins: Number(localRec.weeklyWins) || 0,
+          weeklyLosses: Number(localRec.weeklyLosses) || 0,
+          weeklyMatches: Number(localRec.weeklyMatches) || 0,
+          weeklyRuns: Number(localRec.weeklyRuns) || 0,
+          weeklyWickets: Number(localRec.weeklyWickets) || 0,
           updatedAt: Date.now()
         };
         try {
@@ -1059,46 +1085,56 @@
             fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean), payload, { merge: true }),
             fbSetDoc(fbDoc(fbDb, 'leaderboard', clean), payload, { merge: true })
           ]);
-        } catch (e) {}
+        } catch (e) {
+          console.warn('pushLeaderboardSeedToFirebase notice:', e);
+        }
       }
 
       async function migrateLocalAccountsToFirebase() {
         if (!fbReady || !fbDb) return;
         const usersMap = loadEncryptedUsersMap();
+        const worldMap = loadWorldwidePlayersMap();
         const keys = Object.keys(usersMap || {});
-        if (!keys.length) return;
         let migrated = 0;
         for (const k of keys) {
           const clean = (k || '').trim().toUpperCase();
-          if (!clean || FAKE_SEED_NAMES.includes(clean)) continue;
+          if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) continue;
           const rec = usersMap[k];
           if (!rec) continue;
           try {
-            const ref = fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean);
-            const snap = await fbGetDoc(ref);
-            if (!snap.exists()) {
-              await pushAccountToFirebase(Object.assign({}, rec, { username: clean }));
-              migrated++;
-            }
+            await pushAccountToFirebase(Object.assign({}, rec, { username: clean }));
+            await pushLeaderboardSeedToFirebase(clean, rec);
+            migrated++;
           } catch (e) {}
         }
+        for (const wk of Object.keys(worldMap || {})) {
+          const cleanWk = (wk || '').trim().toUpperCase();
+          if (!cleanWk || FAKE_SEED_NAMES.includes(cleanWk) || RESERVED_USERNAMES.includes(cleanWk)) continue;
+          const wRec = worldMap[wk];
+          if (wRec && wRec.isRealRegisteredUser) {
+            try {
+              await pushLeaderboardSeedToFirebase(cleanWk, wRec);
+            } catch (e) {}
+          }
+        }
         if (migrated > 0 && el.worldSyncText) {
-          el.worldSyncText.textContent = `Migrated ${migrated} account${migrated === 1 ? '' : 's'} → Cloud`;
+          el.worldSyncText.textContent = `Cloud Synced • ${migrated} Account${migrated === 1 ? '' : 's'}`;
         }
       }
 
       async function pullCloudAccountsIntoLocal() {
         if (!fbReady || !fbDb) return;
         try {
-          const colRef = fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts');
-          const snap = await fbGetDocs(colRef);
           const usersMap = loadEncryptedUsersMap();
+          const worldMap = loadWorldwidePlayersMap();
           let changed = false;
-          snap.forEach((d) => {
+
+          const ingestAccountDoc = (d) => {
             if (!d.exists()) return;
             const data = d.data();
             const clean = ((data && data.username) || d.id || '').trim().toUpperCase();
-            if (!clean || FAKE_SEED_NAMES.includes(clean) || clean.length < 3) return;
+            if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean) || clean.length < 3) return;
+
             if (!usersMap[clean]) {
               usersMap[clean] = {
                 username: clean,
@@ -1108,30 +1144,90 @@
                 encryptedAuth: data.encryptedAuth || null,
                 googleUid: data.googleUid || null,
                 googleEmail: data.googleEmail || null,
-                authProvider: data.authProvider || 'pin',
+                authProvider: data.authProvider || (data.googleUid ? 'google' : 'pin'),
                 createdAt: data.createdAt || new Date().toISOString()
               };
               changed = true;
             } else if (data.googleUid && !usersMap[clean].googleUid) {
               usersMap[clean].googleUid = data.googleUid;
-              usersMap[clean].googleEmail = data.googleEmail || null;
-              usersMap[clean].authProvider = data.authProvider || usersMap[clean].authProvider;
+              usersMap[clean].authProvider = data.authProvider || 'google';
               changed = true;
             }
-          });
-          if (changed) saveEncryptedUsersMap(usersMap);
+
+            if (!worldMap[clean]) {
+              worldMap[clean] = {
+                name: clean,
+                countryCode: data.countryCode || '+91',
+                countryFlag: data.countryFlag || '🇮🇳',
+                countryName: data.countryName || 'India',
+                isRealRegisteredUser: true,
+                elo: 1500,
+                peak: 1500,
+                wins: 0,
+                losses: 0,
+                matches: 0,
+                totalRuns: 0,
+                totalBalls: 0,
+                highScore: 0,
+                wicketsTaken: 0,
+                weeklyEloGain: 0,
+                weeklyRuns: 0,
+                weeklyWickets: 0,
+                updatedAt: Date.now()
+              };
+              changed = true;
+            }
+          };
+
+          try {
+            const snap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts'));
+            snap1.forEach(ingestAccountDoc);
+          } catch (e) {}
+          try {
+            const snap2 = await fbGetDocs(fbCollection(fbDb, 'accounts'));
+            snap2.forEach(ingestAccountDoc);
+          } catch (e) {}
+
+          const ingestLeaderboardDoc = (d) => {
+            if (!d.exists()) return;
+            const data = d.data();
+            const clean = ((data && (data.name || data.username)) || d.id || '').trim().toUpperCase();
+            if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean) || clean.length < 3) return;
+            if (!worldMap[clean] || (data.updatedAt || 0) > (worldMap[clean].updatedAt || 0)) {
+              worldMap[clean] = Object.assign({}, worldMap[clean] || {}, data, {
+                name: clean,
+                isRealRegisteredUser: true
+              });
+              changed = true;
+            }
+          };
+
+          try {
+            const lbSnap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard'));
+            lbSnap1.forEach(ingestLeaderboardDoc);
+          } catch (e) {}
+          try {
+            const lbSnap2 = await fbGetDocs(fbCollection(fbDb, 'leaderboard'));
+            lbSnap2.forEach(ingestLeaderboardDoc);
+          } catch (e) {}
+
+          if (changed) {
+            saveEncryptedUsersMap(usersMap);
+            saveWorldwidePlayersMap(worldMap);
+            broadcastWorldwideSync(false);
+          }
         } catch (e) {}
       }
 
       async function finalizePlayerSession(activeProf) {
-        const uname = activeProf.username;
+        const uname = String(activeProf.username || '').trim().toUpperCase();
         const sessObj = {
-          username: activeProf.username,
+          username: uname,
           countryCode: activeProf.countryCode || '+91',
           countryName: activeProf.countryName || 'India',
           countryFlag: activeProf.countryFlag || '🇮🇳',
           loggedInAt: new Date().toISOString(),
-          authProvider: activeProf.authProvider || 'pin',
+          authProvider: activeProf.authProvider || (activeProf.googleUid ? 'google' : 'pin'),
           googleUid: activeProf.googleUid || null
         };
 
@@ -1171,8 +1267,13 @@
             weeklyWickets: 0,
             updatedAt: Date.now()
           };
-          saveWorldwidePlayersMap(worldMap);
+        } else {
+          worldMap[uname].countryCode = activeProf.countryCode || worldMap[uname].countryCode || '+91';
+          worldMap[uname].countryFlag = activeProf.countryFlag || worldMap[uname].countryFlag || '🇮🇳';
+          worldMap[uname].countryName = activeProf.countryName || worldMap[uname].countryName || 'India';
+          worldMap[uname].isRealRegisteredUser = true;
         }
+        saveWorldwidePlayersMap(worldMap);
 
         if (typeof BroadcastChannel !== 'undefined') {
           try {
@@ -1184,17 +1285,24 @@
         broadcastWorldwideSync(true);
 
         updateUIState();
-        showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena...`, true);
+        showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Storing in Cloud Database & Leaderboard…`, true);
 
-        // Non-blocking background cloud sync
+        // Await writing to both Firestore collections (accounts & leaderboard) before navigating
         try {
-          pushAccountToFirebase(activeProf).catch(() => {});
-          pushLeaderboardSeedToFirebase(uname, activeProf).catch(() => {});
+          await withTimeout(
+            Promise.allSettled([
+              pushAccountToFirebase(activeProf),
+              pushLeaderboardSeedToFirebase(uname, activeProf)
+            ]),
+            3500,
+            'cloud-sync-timeout'
+          );
         } catch (e) {}
 
+        showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena…`, true);
         setTimeout(() => {
           navigateToHandCricketArena('?from=login');
-        }, 150);
+        }, 120);
       }
 
       function usernameFromGoogleProfile(user) {
@@ -1437,6 +1545,18 @@
         }
         const createdAt = new Date().toISOString();
         try {
+          const accountPayload = {
+            username: name,
+            countryCode: country.dial,
+            countryName: country.cName,
+            countryFlag: country.cFlag,
+            encryptedAuth: null,
+            googleUid: gUser.uid,
+            googleEmail: null,
+            authProvider: 'google',
+            createdAt: createdAt,
+            migratedAt: Date.now()
+          };
           const acctRef = fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', name);
           await fbRunTransaction(fbDb, async (tx) => {
             const snap = await tx.get(acctRef);
@@ -1448,18 +1568,7 @@
                 throw err;
               }
             }
-            tx.set(acctRef, {
-              username: name,
-              countryCode: country.dial,
-              countryName: country.cName,
-              countryFlag: country.cFlag,
-              encryptedAuth: null,
-              googleUid: gUser.uid,
-              googleEmail: null,
-              authProvider: 'google',
-              createdAt: createdAt,
-              migratedAt: Date.now()
-            });
+            tx.set(acctRef, accountPayload);
           });
 
           // Private profile: readable/writable only by this user (see Firestore rules).
@@ -1477,6 +1586,12 @@
             createdAt: createdAt,
             lastLoginAt: createdAt
           });
+
+          // Also write to root accounts and seed both leaderboard collections
+          await Promise.allSettled([
+            fbSetDoc(fbDoc(fbDb, 'accounts', name), accountPayload, { merge: true }),
+            pushLeaderboardSeedToFirebase(name, accountPayload)
+          ]);
           return { ok: true };
         } catch (e) {
           if (e && e.code === 'username-taken') return { ok: false, error: 'That username is already taken.' };
@@ -1666,18 +1781,29 @@
         }
 
         setAuthBusy(true);
+        showBanner('Checking player credentials in local vault & cloud…', true);
+
         try {
+          await ensureFirebaseReady(2500);
+
           let usersMap = loadEncryptedUsersMap();
           let rec = usersMap[uname];
 
-          // If not in local vault, fast check cloud with 1.5s timeout (non-blocking)
-          if (!rec && fbReady && fbDb) {
+          // If not in local vault, check cloud Firestore accounts (both artifacts and root collection)
+          if (!rec && fbDb) {
             try {
-              const snap = await withTimeout(
+              let snap = await withTimeout(
                 fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
-                1500,
+                2000,
                 'lookup-timeout'
               );
+              if (!snap || !snap.exists()) {
+                snap = await withTimeout(
+                  fbGetDoc(fbDoc(fbDb, 'accounts', uname)),
+                  2000,
+                  'lookup-timeout'
+                );
+              }
               if (snap && snap.exists()) {
                 const data = snap.data();
                 rec = {
@@ -1713,6 +1839,7 @@
               return;
             }
 
+            showBanner(`Creating account for ${cFlag} ${uname}…`, true);
             const profile = {
               username: uname,
               countryCode: dial,
@@ -1724,8 +1851,6 @@
             };
             usersMap[uname] = profile;
             saveEncryptedUsersMap(usersMap);
-            pushAccountToFirebase(profile).catch(() => {});
-            pushLeaderboardSeedToFirebase(uname, profile).catch(() => {});
             await finalizePlayerSession(profile);
             setAuthBusy(false);
             return;
@@ -1746,8 +1871,6 @@
             };
             usersMap[uname] = profile;
             saveEncryptedUsersMap(usersMap);
-            pushAccountToFirebase(profile).catch(() => {});
-            pushLeaderboardSeedToFirebase(uname, profile).catch(() => {});
             await finalizePlayerSession(profile);
             setAuthBusy(false);
             return;
@@ -1763,6 +1886,8 @@
             setAuthBusy(false);
             return;
           }
+
+          showBanner(`Signing in as ${cFlag} ${uname}…`, true);
           await finalizePlayerSession(rec);
           setAuthBusy(false);
 
