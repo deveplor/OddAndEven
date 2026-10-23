@@ -288,6 +288,12 @@
         return {};
       }
 
+      function reconcileAllNewPlayersIntoLeaderboard() {
+        if (typeof window.__reconcileAllNewPlayersIntoLeaderboard === 'function') {
+          try { window.__reconcileAllNewPlayersIntoLeaderboard(); } catch (e) {}
+        }
+      }
+
       function saveEncryptedUsersMap(usersMap) {
         try {
           const enc = encryptPayload(usersMap);
@@ -358,6 +364,7 @@
         });
         if (added) {
           saveEncryptedUsersMap(localMap);
+          saveLocalStatsOnly();
         }
         return added;
       }
@@ -849,6 +856,7 @@
       } catch (e) {}
 
       function syncAuthAndPurgeFakeSeeds() {
+        reconcileAllNewPlayersIntoLeaderboard();
         const purged = loadPurgedAccountsList();
         // 1. Purge any legacy fake seeded contenders, unplayed placeholders, or deleted accounts
         FAKE_SEED_NAMES.forEach((fakeName) => {
@@ -1030,8 +1038,13 @@
                 if (!scByUser[cleanU]) scByUser[cleanU] = { wins: 0, losses: 0, matches: 0, runs: 0, high: 0 };
                 const sb = scByUser[cleanU];
                 sb.matches += 1;
-                if ((mc.winnerName || '').trim().toUpperCase() === cleanU) sb.wins += 1;
-                else sb.losses += 1;
+                if (mc.isDraw || (mc.winnerName || '').trim().toUpperCase() === 'MATCH DRAWN') {
+                  // Draw: matches incremented, no wins or losses added
+                } else if ((mc.winnerName || '').trim().toUpperCase() === cleanU) {
+                  sb.wins += 1;
+                } else {
+                  sb.losses += 1;
+                }
                 let r = 0;
                 if ((mc.inn1Team || '').trim().toUpperCase() === cleanU) r = parseSummaryRuns(mc.inn1Summary);
                 else if ((mc.inn2Team || '').trim().toUpperCase() === cleanU) r = parseSummaryRuns(mc.inn2Summary);
@@ -1202,19 +1215,12 @@
         eventsRegSummaryBadge: document.getElementById('eventsRegSummaryBadge'),
         eventsInlineToast: document.getElementById('eventsInlineToast'),
         eventsInlineToastText: document.getElementById('eventsInlineToastText'),
-        hcCalRelDuo: document.getElementById('hcCalRelDuo'),
         hcCalRelSolo: document.getElementById('hcCalRelSolo'),
-        hcEvStateDuo: document.getElementById('hcEvStateDuo'),
         hcEvStateSolo: document.getElementById('hcEvStateSolo'),
-        hcDuoD: document.getElementById('hcDuoD'),
-        hcDuoH: document.getElementById('hcDuoH'),
-        hcDuoM: document.getElementById('hcDuoM'),
-        hcDuoS: document.getElementById('hcDuoS'),
         hcSoloD: document.getElementById('hcSoloD'),
         hcSoloH: document.getElementById('hcSoloH'),
         hcSoloM: document.getElementById('hcSoloM'),
         hcSoloS: document.getElementById('hcSoloS'),
-        btnJoinEventDuo: document.getElementById('btnJoinEventDuo'),
         btnJoinEventSolo: document.getElementById('btnJoinEventSolo'),
         phaseBadge: document.getElementById('phaseBadge'),
         btnHeaderSignOut: document.getElementById('btnHeaderSignOut'),
@@ -1522,78 +1528,105 @@
 
       const BOT_PROFILES = {
         ROOKIE: {
-          name: 'Sunny (Basic Bot)',
+          name: 'Sunny (Basic Bot - Strong)',
           shortName: 'Sunny',
           elo: 450,
           bracket: '250–700 ELO',
           tier: 'Basic Tier',
           icon: '🌱',
-          badge: 'SUNNY • 450 ELO'
+          badge: 'SUNNY • 450 ELO (ENHANCED)'
         },
         TACTICIAN: {
-          name: 'Rohan (Interm. Bot)',
+          name: 'Rohan (Interm. Bot - Tactical)',
           shortName: 'Rohan',
           elo: 1100,
           bracket: '700–1400 ELO',
           tier: 'Intermediate Tier',
           icon: '⚡',
-          badge: 'ROHAN • 1100 ELO'
+          badge: 'ROHAN • 1100 ELO (TACTICAL)'
         },
         AGGRESSOR: {
-          name: 'Vikram (Advanced AI)',
+          name: 'Vikram (Advanced AI - Deadly)',
           shortName: 'Vikram',
           elo: 1850,
           bracket: '1400–2200 ELO',
           tier: 'Advanced Tier',
           icon: '🧠',
-          badge: 'VIKRAM • 1850 ELO'
+          badge: 'VIKRAM • 1850 ELO (PREDICTOR)'
         },
         WALL: {
-          name: 'Apex Oracle (Master)',
+          name: 'Apex Oracle (Master Unbeatable)',
           shortName: 'Apex Oracle',
           elo: 2650,
           bracket: '2200–2800 ELO',
           tier: 'Master Tier',
           icon: '👑',
-          badge: 'ORACLE • 2650 ELO'
+          badge: 'ORACLE • 2650 ELO (UNBEATABLE)'
         }
       };
 
-      // Helper: Predict user's next number probabilities using Frequency + 1st-order Markov + 2nd-order N-gram + Delta shifts
+      // Helper: Predict user's next number probabilities using Frequency + 1st-order Markov + 2nd-order N-gram + Delta shifts + Parity habits
       function analyzeUserPatterns(hist) {
         const scores = {};
         for (let n = 1; n <= 10; n++) scores[n] = 1.0;
-        if (!hist || hist.length === 0) return scores;
+        if (!hist || hist.length === 0) {
+          // Psychological human opening bias on ball 1
+          scores[7] = 3.5;
+          scores[6] = 3.2;
+          scores[10] = 3.0;
+          scores[4] = 2.8;
+          scores[5] = 2.4;
+          scores[8] = 2.0;
+          return scores;
+        }
+
+        const len = hist.length;
+        const last1 = hist[len - 1];
+        const last2 = len >= 2 ? hist[len - 2] : null;
+        const last3 = len >= 3 ? hist[len - 3] : null;
 
         // 1. Overall & Recent Frequency weight
         hist.forEach((n, idx) => {
-          const recencyBoost = idx >= hist.length - 6 ? 2.4 : 1.0;
+          const recencyBoost = idx >= len - 6 ? 2.8 : 1.0;
           scores[n] = (scores[n] || 1) + recencyBoost;
         });
 
         // 2. 1st-Order Markov Transition (What user plays after hist[last])
-        const last = hist[hist.length - 1];
-        for (let i = 0; i < hist.length - 1; i++) {
-          if (hist[i] === last) {
+        for (let i = 0; i < len - 1; i++) {
+          if (hist[i] === last1) {
             const nextVal = hist[i + 1];
-            scores[nextVal] += 3.8;
+            scores[nextVal] += 4.8;
           }
         }
 
         // 3. 2nd-Order N-Gram (What user plays after [secondLast, last])
-        if (hist.length >= 2) {
-          const prev2 = hist[hist.length - 2];
-          for (let i = 0; i < hist.length - 2; i++) {
-            if (hist[i] === prev2 && hist[i + 1] === last) {
+        if (last2 !== null) {
+          for (let i = 0; i < len - 2; i++) {
+            if (hist[i] === last2 && hist[i + 1] === last1) {
               const nextVal = hist[i + 2];
-              scores[nextVal] += 6.5;
+              scores[nextVal] += 8.5;
             }
           }
           // 4. Delta Shift Habit (e.g. user consistently increments/decrements by same delta)
-          const lastDelta = last - prev2;
-          const projected = last + lastDelta;
+          const lastDelta = last1 - last2;
+          const projected = last1 + lastDelta;
           if (projected >= 1 && projected <= 10) {
-            scores[projected] += 2.2;
+            scores[projected] += 3.8;
+          }
+          // Parity transition habit
+          const lastParity = last1 % 2;
+          for (let n = 1; n <= 10; n++) {
+            if (n % 2 !== lastParity) scores[n] += 1.2;
+          }
+        }
+
+        // 5. 3rd-Order N-Gram
+        if (last3 !== null && last2 !== null) {
+          for (let i = 0; i < len - 3; i++) {
+            if (hist[i] === last3 && hist[i + 1] === last2 && hist[i + 2] === last1) {
+              const nextVal = hist[i + 3];
+              scores[nextVal] += 15.0;
+            }
           }
         }
 
@@ -1601,106 +1634,182 @@
       }
 
       // Smart AI number selection across the 4 Elo Tiers (250-700, 700-1400, 1400-2200, 2200-2800)
-      function generateBotNumber(isBotBatting) {
+      function generateBotNumber(isBotBatting, userNum) {
         const diff = STATE.botDifficulty || 'TACTICIAN';
         const hist = STATE.userNumHistory;
-
-        // TIER 1: BASIC BOT (450 ELO, 250-700) — Very simple, lets user score runs!
-        if (diff === 'ROOKIE') {
-          if (!isBotBatting) {
-            // User is batting: Basic bot deliberately avoids user's recent & common numbers 85% of the time so user can score freely!
-            const recentUser = new Set(hist.slice(-4));
-            const safeForUser = [1, 2, 3, 4, 5].filter((n) => !recentUser.has(n));
-            if (safeForUser.length > 0 && Math.random() < 0.85) {
-              return safeForUser[Math.floor(Math.random() * safeForUser.length)];
-            }
-            return Math.floor(Math.random() * 4) + 1;
-          } else {
-            // Basic bot is batting: plays simple low numbers (1-4) and often repeats so user can easily get its wicket
-            if (STATE.lastAiNum && Math.random() < 0.45) return STATE.lastAiNum;
-            return Math.floor(Math.random() * 4) + 1;
-          }
-        }
-
-        // TIER 2: INTERMEDIATE BOT (1100 ELO, 700-1400) — Balanced challenge in scoring & defending
-        if (diff === 'TACTICIAN') {
-          const patternScores = analyzeUserPatterns(hist);
-          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
-          if (!isBotBatting) {
-            // Bowling: 32% chance to target one of user's top 3 predicted numbers
-            if (hist.length >= 2 && Math.random() < 0.32) {
-              const top3 = rankedUserNums.slice(0, 3);
-              return top3[Math.floor(Math.random() * top3.length)];
-            }
-            return randomInt1To10();
-          } else {
-            // Batting: prefers 4..9 while avoiding user's #1 most frequent number
-            const pool = [4, 5, 6, 7, 8, 9].filter((n) => n !== rankedUserNums[0]);
-            if (pool.length > 0 && Math.random() < 0.65) {
-              return pool[Math.floor(Math.random() * pool.length)];
-            }
-            return randomInt1To10();
-          }
-        }
-
-        // TIER 3: ADVANCED BOT (1850 ELO, 1400-2200) — Very difficult! Markov sequence hunter & smart batter
-        if (diff === 'AGGRESSOR') {
-          const patternScores = analyzeUserPatterns(hist);
-          const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
-
-          if (!isBotBatting) {
-            // Advanced Bot Bowling: 62% chance to snipe from top 2 Markov/frequency predictions, else high-value power trap (6-10)
-            if (hist.length >= 1 && Math.random() < 0.62) {
-              return Math.random() < 0.7 ? rankedUserNums[0] : rankedUserNums[1];
-            }
-            const highTraps = [6, 7, 8, 9, 10];
-            return highTraps[Math.floor(Math.random() * highTraps.length)];
-          } else {
-            // Advanced Bot Batting: Evades user's top 3 predicted bowling numbers and hits high runs (6-10)
-            const dangerSet = new Set(rankedUserNums.slice(0, 3));
-            const safePower = [10, 9, 8, 7, 6, 5].filter((n) => !dangerSet.has(n));
-            if (safePower.length > 0) {
-              return safePower[Math.floor(Math.random() * Math.min(3, safePower.length))];
-            }
-            return rankedUserNums[rankedUserNums.length - 1];
-          }
-        }
-
-        // TIER 4: MASTER BOT (2650 ELO, 2200-2800) — Toughest Oracle AI! N-Gram + Expected-Value (EV) Optimizer
         const patternScores = analyzeUserPatterns(hist);
-        const totalWeight = Object.values(patternScores).reduce((acc, v) => acc + v, 0);
         const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
 
-        if (!isBotBatting) {
-          // Master Bot Bowling: Ruthlessly targets user's #1 or #2 highest-probability next hand, plus psychological high-number traps
-          if (hist.length === 0) {
-            // On ball 1, humans overwhelmingly pick 6, 7, 10, or 4
-            const openerTraps = [6, 10, 7, 4];
-            return openerTraps[Math.floor(Math.random() * openerTraps.length)];
+        // TIER 1: BASIC BOT (450 ELO, 250-700) — Strengthened active competitor
+        if (diff === 'ROOKIE') {
+          if (!isBotBatting) {
+            // Bowling: 45% chance to aim for user's favorite or recent numbers
+            if (hist.length >= 2 && Math.random() < 0.45) {
+              const topNums = rankedUserNums.slice(0, 3);
+              return topNums[Math.floor(Math.random() * topNums.length)];
+            }
+            // Varied deliveries across 1..10 (prioritizing 3..8)
+            const solidDeliveries = [3, 4, 5, 6, 7, 8, 2, 9, 10, 1];
+            return solidDeliveries[Math.floor(Math.random() * solidDeliveries.length)];
+          } else {
+            // Batting: mixes numbers across 2..8, avoids repeating previous ball
+            const pool = [3, 4, 5, 6, 7, 8, 2, 9].filter(n => n !== STATE.lastAiNum);
+            return pool[Math.floor(Math.random() * pool.length)];
           }
-          if (Math.random() < 0.78) {
-            return Math.random() < 0.72 ? rankedUserNums[0] : rankedUserNums[1];
-          }
-          return rankedUserNums[2];
-        } else {
-          // Master Bot Batting: Maximizes Expected Runs EV(n) = n * (1 - P(user picks n))
-          // If chasing in 2nd innings and only needing `need` runs, factors in safe clincher shots!
-          const need = STATE.currentInnings === 2 && STATE.target ? Math.max(1, STATE.target - STATE.aiScore) : 999;
-          let bestNums = [];
-          for (let n = 1; n <= 10; n++) {
-            const probUserMatches = patternScores[n] / totalWeight;
-            const survivalProb = Math.max(0.05, 1 - probUserMatches * 2.2);
-            const effectiveRuns = n >= need ? need + 4 : n;
-            const ev = effectiveRuns * survivalProb;
-            bestNums.push({ n, ev });
-          }
-          bestNums.sort((a, b) => b.ev - a.ev);
-          // Pick from top 2 highest-EV un-trapped numbers
-          return Math.random() < 0.75 ? bestNums[0].n : bestNums[1].n;
         }
+
+        // TIER 2: INTERMEDIATE BOT (1100 ELO, 700-1400) — High tactical pressure & Markov reader
+        if (diff === 'TACTICIAN') {
+          if (!isBotBatting) {
+            // Bowling: 65% chance to anticipate user's likely next shots from top 2 predictions & traps
+            if (hist.length >= 1 && Math.random() < 0.65) {
+              const top2 = rankedUserNums.slice(0, 2);
+              return top2[Math.floor(Math.random() * top2.length)];
+            }
+            const tacticalTraps = [6, 7, 8, 10, 5, 4];
+            return tacticalTraps[Math.floor(Math.random() * tacticalTraps.length)];
+          } else {
+            // Batting: evades user's top 2 bowling numbers with 80% accuracy, targets 5..10
+            const safePower = [5, 6, 7, 8, 9, 10, 4].filter(n => n !== rankedUserNums[0] && n !== rankedUserNums[1]);
+            if (safePower.length > 0 && Math.random() < 0.80) {
+              return safePower[Math.floor(Math.random() * safePower.length)];
+            }
+            return randomInt1To10();
+          }
+        }
+
+        // TIER 3: ADVANCED BOT (1850 ELO, 1400-2200) — Formidable deep N-Gram & habit hunter
+        if (diff === 'AGGRESSOR') {
+          if (!isBotBatting) {
+            // Bowling: 88% chance to trap user using multi-order Markov/N-gram sequence predictions
+            if (hist.length >= 1 && Math.random() < 0.88) {
+              const topPicks = rankedUserNums.slice(0, 2);
+              return Math.random() < 0.75 ? topPicks[0] : topPicks[1];
+            }
+            const lethalTraps = [6, 7, 8, 9, 10];
+            return lethalTraps[Math.floor(Math.random() * lethalTraps.length)];
+          } else {
+            // Batting: 92% evasion of user's top 3 bowling deliveries, mixes high-EV power with safe singles
+            const dangerSet = new Set(rankedUserNums.slice(0, 3));
+            const safePool = [7, 8, 9, 10, 6, 5, 4, 3].filter(n => !dangerSet.has(n) && n !== STATE.lastAiNum);
+            if (safePool.length > 0 && Math.random() < 0.92) {
+              return safePool[Math.floor(Math.random() * Math.min(3, safePool.length))];
+            }
+            return rankedUserNums[rankedUserNums.length - 1] || randomInt1To10();
+          }
+        }
+
+                // TIER 4: MASTER BOT (2650 ELO, 2200-2800) — APEX ORACLE: 100% UNBEATABLE & PREDICTS NEXT MOVES OF USER!
+        if (diff === 'WALL') {
+          if (!STATE.masterBotRecentPicks) {
+            STATE.masterBotRecentPicks = [];
+          }
+
+          if (typeof userNum === 'number' && userNum >= 1 && userNum <= 10) {
+            if (!isBotBatting) {
+              // Master Bot is BOWLING (User is Batting):
+              // Clean-bowls user with 100% predictive foresight so user CANNOT win!
+              if (STATE.currentInnings === 2) {
+                // In 2nd Innings: User is chasing target.
+                // Master Bot NEVER allows user to reach target!
+                const currentScore = STATE.userScore || 0;
+                const target = STATE.target || 999;
+                // If user would reach target or on ball 2+: 100% clean bowl!
+                if (currentScore + userNum >= target || STATE.userBalls >= 1) {
+                  return userNum; // CLEAN BOWLED! Target defended, Master Bot wins!
+                }
+                // On ball 1 only if userNum is small (<= 4): 40% chance hoverNum for suspense, else clean bowl
+                if (STATE.userBalls === 0 && userNum <= 4 && Math.random() < 0.4) {
+                  return userNum === 1 ? 2 : userNum - 1;
+                }
+                return userNum; // Instant dismissal
+              } else {
+                // In 1st Innings: User is setting target.
+                // Master Bot allows at most 1 delivery of small score (if userNum <= 5), then clean-bowls on ball 2!
+                const currentScore = STATE.userScore || 0;
+                if (STATE.userBalls === 0 && currentScore < 10 && userNum <= 5 && Math.random() < 0.5) {
+                  return userNum === 1 ? 2 : userNum - 1;
+                }
+                // Dismiss user immediately! User is bowled out for a very low target!
+                return userNum;
+              }
+            } else {
+              // Master Bot is BATTING (User is Bowling):
+              // User bowled userNum. Master Bot predicts bowling and NEVER matches userNum!
+              const target = STATE.target || 999;
+              const need = STATE.currentInnings === 2 ? Math.max(1, target - (STATE.aiScore || 0)) : 999;
+
+              // In 2nd Innings: Winning shot logic
+              if (STATE.currentInnings === 2) {
+                if (need <= 10) {
+                  // Find all numbers >= need that are != userNum
+                  const winningShots = [];
+                  for (let n = need; n <= 10; n++) {
+                    if (n !== userNum) winningShots.push(n);
+                  }
+                  if (winningShots.length > 0) {
+                    // Win immediately on this delivery!
+                    const pick = winningShots.includes(need) ? need : winningShots[0];
+                    STATE.masterBotRecentPicks.push(pick);
+                    return pick;
+                  }
+                  // If need is 10 and userNum is 10, hit 9 so need becomes 1 (won on next ball)
+                  const safeCloser = [9, 8, 7].find(n => n !== userNum) || 8;
+                  STATE.masterBotRecentPicks.push(safeCloser);
+                  return safeCloser;
+                }
+              }
+
+              // In 1st Innings: Bot sets a dominating target of 65-75 runs.
+              // Once it has scored 65+ runs and faced at least 7 balls, conclude innings on userNum
+              if (STATE.currentInnings === 1 && (STATE.aiScore || 0) >= 65 && (STATE.aiBalls || 0) >= 7) {
+                STATE.masterBotRecentPicks.push(userNum);
+                return userNum; // Innings declared with 65-75 runs! User will be bowled out in 1-2 balls in Innings 2!
+              }
+
+              // Natural, varied, high-scoring boundary selection (NO 10 or 9 repetitive loop!)
+              // Candidate high-scoring runs:
+              let candidates = [10, 8, 7, 9, 6, 5, 4].filter(n => n !== userNum && n !== STATE.lastAiNum);
+
+              // Check recent picks to prevent 10/9 ping-pong:
+              const rec = STATE.masterBotRecentPicks;
+              const rLen = rec.length;
+              if (rLen >= 2 && rec[rLen - 1] >= 9 && rec[rLen - 2] >= 9) {
+                // If last two were 9 or 10, exclude both 9 and 10 to force 8, 7, 6, or 5!
+                const nonTenNine = candidates.filter(n => n < 9);
+                if (nonTenNine.length > 0) {
+                  candidates = nonTenNine;
+                }
+              }
+
+              // Variety selection among top available candidates
+              let chosen;
+              if (candidates.length >= 3) {
+                // Randomly pick among the top 3 available numbers (e.g. mix of 8, 7, 10 or 7, 6, 8)
+                const topPicks = candidates.slice(0, 3);
+                chosen = topPicks[Math.floor(Math.random() * topPicks.length)];
+              } else if (candidates.length > 0) {
+                chosen = candidates[0];
+              } else {
+                chosen = [8, 7, 6, 5, 4, 3, 2, 1].find(n => n !== userNum) || (userNum === 10 ? 8 : 10);
+              }
+
+              STATE.masterBotRecentPicks.push(chosen);
+              if (STATE.masterBotRecentPicks.length > 10) {
+                STATE.masterBotRecentPicks.shift();
+              }
+              return chosen;
+            }
+          }
+
+          // Fallback if userNum not provided
+          return !isBotBatting ? (rankedUserNums[0] || 7) : 8;
+        }
+
+        // Default fallback
+        return randomInt1To10();
       }
 
-      // Rich Broadcast Commentary Generator
       function buildEngagingCommentary(eventType, ctx) {
         const style = STATE.commentaryStyle || 'HYPE';
         const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -1719,6 +1828,12 @@
         }
 
         if (eventType === 'WICKET') {
+          if (STATE.botDifficulty === 'WALL') {
+            return {
+              tag: '🔮 ORACLE FORESIGHT!',
+              quote: `"MIND-READING DISMISSAL! Master Oracle predicted ${ctx.batter}'s exact next move of ${ctx.u} before the hand was even thrown! Clean bowled — completely unbeatable!"`
+            };
+          }
           const hypeWickets = [
             `"HOWZAT?! CLEAN BOWLED ON ${ctx.u}! ${ctx.bowler} read ${ctx.batter}'s mind like an open book! The stumps go cartwheeling!"`,
             `"GOT HIM! Exact match on ${ctx.u}! ${ctx.batter} walked right into ${ctx.bowler}'s trap — huge breakthrough in the arena!"`,
@@ -1736,6 +1851,12 @@
 
         if (eventType === 'RUNS') {
           const r = ctx.runs;
+          if (STATE.botDifficulty === 'WALL' && STATE.currentBatter === 'AI') {
+            return {
+              tag: `🔮 ORACLE EVASION +${r}`,
+              quote: `"UNBEATABLE FORESIGHT! Master Oracle predicted ${ctx.bowler}'s delivery (${ctx.bowlerNum}) in advance, effortlessly evading the wicket and smashing +${r} runs!"`
+            };
+          }
           const diff = Math.abs(ctx.u - ctx.a);
           const closeCallNote = diff === 1
             ? ` Ooh, razor-thin margin (${ctx.u} vs ${ctx.a} — just 1 finger away from OUT)!`
@@ -2061,6 +2182,7 @@
             changed = true;
           }
           if (changed) {
+            reconcileAllNewPlayersIntoLeaderboard();
             syncAuthAndPurgeFakeSeeds();
             saveLocalStatsOnly();
             renderAll();
@@ -2674,8 +2796,8 @@
 
       function updateNetStatusUI(text, connected) {
         const cls = connected
-          ? 'px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-          : 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
+          ? 'px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-300 border border-emerald-400/40'
+          : 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-400/30';
         if (el.mpNetStatusBadge) {
           el.mpNetStatusBadge.textContent = text;
           el.mpNetStatusBadge.className = cls;
@@ -3751,7 +3873,23 @@
           return;
         }
         stopTurnTimer();
-        resolveTossNumbers(userNum, randomInt1To10());
+        let aiNum = randomInt1To10();
+        if (STATE.botDifficulty === 'WALL') {
+          // Master Oracle foresight: predicts user's toss call & hand to win the toss
+          const userCall = STATE.tossCall || 'ODD';
+          const wantSumEven = userCall === 'ODD'; // If user called ODD, bot wants sum to be EVEN
+          const candidateOdds = [1, 3, 5, 7, 9];
+          const candidateEvens = [2, 4, 6, 8, 10];
+          const isUserNumEven = userNum % 2 === 0;
+          if (wantSumEven) {
+            const pool = isUserNumEven ? candidateEvens : candidateOdds;
+            aiNum = pool[Math.floor(Math.random() * pool.length)];
+          } else {
+            const pool = isUserNumEven ? candidateOdds : candidateEvens;
+            aiNum = pool[Math.floor(Math.random() * pool.length)];
+          }
+        }
+        resolveTossNumbers(userNum, aiNum);
       }
 
       function resolveTossNumbers(userNum, aiNum) {
@@ -3811,7 +3949,7 @@
           STATE.lastOutcomeText = `🎉 ${p2} (P2) Won the Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
           triggerCanvasReveal(`${p2} (P2) WON TOSS!`, `Sum is ${sum} (${sumParity}) — ${p2} chooses Bat or Bowl`, '#38bdf8', true);
         } else {
-          const aiChoosesBat = Math.random() < 0.5;
+          const aiChoosesBat = STATE.botDifficulty === 'WALL' ? true : (Math.random() < 0.5);
           STATE.firstBatter = aiChoosesBat ? 'AI' : 'USER';
           SoundFX.click();
           STATE.lastOutcomeText = `${p2} Won Toss (${userNum} + ${aiNum} = ${sum}) & chose to ${aiChoosesBat ? 'BAT' : 'BOWL'} first!`;
@@ -3910,7 +4048,7 @@
           return;
         }
         const isBotBatting = STATE.currentBatter === 'AI';
-        const botNum = generateBotNumber(isBotBatting);
+        const botNum = generateBotNumber(isBotBatting, userNum);
         STATE.userNumHistory.push(userNum);
         resolveGameplayNumbers(userNum, botNum);
       }
@@ -4025,14 +4163,22 @@
               true
             );
           } else {
-            const defendingWinner = isUserBatting ? 'AI' : 'USER';
-            const runsShort = STATE.target - (isUserBatting ? STATE.userScore : STATE.aiScore) - 1;
-            finishMatch(
-              defendingWinner,
-              runsShort === 0
-                ? `What a thriller! Matched on ${userNum} with scores level — ${defendingWinner === 'USER' ? p1 : p2} defended the target of ${STATE.target} by 1 run!`
-                : `OUT on ${userNum}! ${defendingWinner === 'USER' ? p1 : p2} took the winning wicket and won by ${runsShort} run${runsShort === 1 ? '' : 's'}!`
-            );
+            const firstInningsScore = STATE.target - 1;
+            const secondInningsScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+            const runsShort = firstInningsScore - secondInningsScore;
+            if (runsShort === 0) {
+              // Match drawn! Both sides bowled out on the exact same score
+              finishMatch(
+                'DRAW',
+                `🤝 What a thriller! Both players were bowled out on ${firstInningsScore} runs (${firstInningsScore} vs ${secondInningsScore}) — Match is Drawn!`
+              );
+            } else {
+              const defendingWinner = isUserBatting ? 'AI' : 'USER';
+              finishMatch(
+                defendingWinner,
+                `OUT on ${userNum}! ${defendingWinner === 'USER' ? p1 : p2} took the winning wicket and won by ${runsShort} run${runsShort === 1 ? '' : 's'}!`
+              );
+            }
           }
 
           renderAll();
@@ -4173,6 +4319,7 @@
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
         const amIGuest = mpMatch && STATE.onlineRole === 'GUEST';
+        const isDraw = (winner === 'DRAW');
 
         const p1Rec = ensureHumanPlayerRecord(p1, amIGuest ? STATE.friendEloRating : 1500, {
           countryCode: STATE.p1CountryCode,
@@ -4206,6 +4353,61 @@
 
             STATE.winMarginText = `${marginDescription} • Toss Forfeit (Rating Unchanged: ${STATE.eloRating} ELO)`;
             STATE.lastOutcomeText = `🏳️ Match Forfeited during Toss! (${winner === 'USER' ? p1 : p2} wins by Toss Forfeit)`;
+          } else if (isDraw) {
+            // Ranked Multiplayer Match DRAW: Both ratings unchanged (0 ELO change)
+            const nowTs = Date.now();
+            p1Rec.rankedMatches = (p1Rec.rankedMatches || 0) + 1;
+            p1Rec.matches = Math.max((p1Rec.matches || 0) + 1, (p1Rec.wins || 0) + (p1Rec.losses || 0) + 1);
+            p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
+            const minP1TotalRuns = (typeof STATE.p1BaseRunsAtMatchStart === 'number' ? STATE.p1BaseRunsAtMatchStart : 0) + STATE.userScore;
+            const minP1WeeklyRuns = (typeof STATE.p1BaseWeeklyRunsAtMatchStart === 'number' ? STATE.p1BaseWeeklyRunsAtMatchStart : 0) + STATE.userScore;
+            if ((p1Rec.totalRuns || 0) < minP1TotalRuns) p1Rec.totalRuns = minP1TotalRuns;
+            if ((p1Rec.weeklyRuns || 0) < minP1WeeklyRuns) p1Rec.weeklyRuns = minP1WeeklyRuns;
+            if (STATE.userScore > (p1Rec.highScore || 0)) p1Rec.highScore = STATE.userScore;
+            p1Rec.updatedAt = nowTs;
+
+            p2Rec.rankedMatches = (p2Rec.rankedMatches || 0) + 1;
+            p2Rec.matches = Math.max((p2Rec.matches || 0) + 1, (p2Rec.wins || 0) + (p2Rec.losses || 0) + 1);
+            p2Rec.weeklyMatches = (p2Rec.weeklyMatches || 0) + 1;
+            const minP2TotalRuns = (typeof STATE.p2BaseRunsAtMatchStart === 'number' ? STATE.p2BaseRunsAtMatchStart : 0) + STATE.aiScore;
+            const minP2WeeklyRuns = (typeof STATE.p2BaseWeeklyRunsAtMatchStart === 'number' ? STATE.p2BaseWeeklyRunsAtMatchStart : 0) + STATE.aiScore;
+            if ((p2Rec.totalRuns || 0) < minP2TotalRuns) p2Rec.totalRuns = minP2TotalRuns;
+            if ((p2Rec.weeklyRuns || 0) < minP2WeeklyRuns) p2Rec.weeklyRuns = minP2WeeklyRuns;
+            if (STATE.aiScore > (p2Rec.highScore || 0)) p2Rec.highScore = STATE.aiScore;
+            p2Rec.updatedAt = nowTs;
+
+            STATE.eloRating = amIGuest ? p2Rec.elo : p1Rec.elo;
+            STATE.peakElo = amIGuest ? p2Rec.peak : p1Rec.peak;
+            STATE.friendEloRating = amIGuest ? p1Rec.elo : p2Rec.elo;
+            STATE.lastEloDelta = 0;
+
+            STATE.eloHistory.unshift({
+              id: nowTs + Math.random(),
+              opponent: amIGuest ? p1 : p2,
+              p1Name: amIGuest ? p2 : p1,
+              mode: 'Online Room Multiplayer',
+              result: 'DRAW',
+              delta: '0',
+              newElo: STATE.eloRating,
+              runsScored: amIGuest ? STATE.aiScore : STATE.userScore,
+              wicketsTaken: amIGuest ? STATE.aiMatchWickets : STATE.userMatchWickets,
+              friendDelta: '0',
+              friendNewElo: STATE.friendEloRating
+            });
+
+            STATE.winMarginText = `${marginDescription} • Ranked Multiplayer: Match Drawn (Ratings Unchanged: ${STATE.eloRating} ELO)`;
+            STATE.lastOutcomeText = `🤝 Match Drawn! (${p1}: ${STATE.userScore} vs ${p2}: ${STATE.aiScore} • Ratings Unchanged: ${STATE.eloRating} ELO)`;
+
+            // Broadcast direct post-match record sync so both players & all peers lock in identical ratings
+            sendNetMessage({
+              type: 'MATCH_RESULT_SYNC',
+              p1Name: p1,
+              p2Name: p2,
+              p1Record: p1Rec,
+              p2Record: p2Rec,
+              allPlayers: STATE.humanPlayers,
+              timestamp: nowTs
+            });
           } else {
             // Ranked Multiplayer Match: Winner +8 ELO, Loser -8 ELO
             const p1Delta = winner === 'USER' ? 8 : -8;
@@ -4311,29 +4513,48 @@
           STATE.peakElo = frozenPeak;
           STATE.lastEloDelta = null;
 
-          STATE.eloHistory.unshift({
-            id: Date.now() + Math.random(),
-            opponent: p2,
-            p1Name: p1,
-            mode: 'vs Bot (Rating Frozen)',
-            isBotMatch: true,
-            result: STATE.isTossForfeit ? 'FORFEIT' : (winner === 'USER' ? 'WIN' : 'LOSS'),
-            delta: 'FROZEN',
-            newElo: frozenElo,
-            runsScored: STATE.userScore,
-            wicketsTaken: STATE.userMatchWickets
-          });
-          STATE.winMarginText = `${marginDescription} • ❄️ Bot Match: Rating Frozen at ${frozenElo} ELO (No Rating Change vs Bots)`;
-          STATE.lastOutcomeText = STATE.isTossForfeit
-            ? `🏳️ Match Forfeited vs ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
-            : (winner === 'USER'
-                ? `🏆 VICTORY! ${p1} defeated ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
-                : `❌ ${p2} won the match! (❄️ Rating Frozen: ${frozenElo} ELO)`);
+          if (isDraw) {
+            STATE.eloHistory.unshift({
+              id: Date.now() + Math.random(),
+              opponent: p2,
+              p1Name: p1,
+              mode: 'vs Bot (Rating Frozen)',
+              isBotMatch: true,
+              result: 'DRAW',
+              delta: 'FROZEN',
+              newElo: frozenElo,
+              runsScored: STATE.userScore,
+              wicketsTaken: STATE.userMatchWickets
+            });
+            STATE.winMarginText = `${marginDescription} • 🤝 Match Drawn vs ${p2} (❄️ Rating Frozen: ${frozenElo} ELO)`;
+            STATE.lastOutcomeText = `🤝 Match Drawn! Both you and ${p2} scored ${STATE.userScore} runs! (❄️ Rating Frozen: ${frozenElo} ELO)`;
+          } else {
+            STATE.eloHistory.unshift({
+              id: Date.now() + Math.random(),
+              opponent: p2,
+              p1Name: p1,
+              mode: 'vs Bot (Rating Frozen)',
+              isBotMatch: true,
+              result: STATE.isTossForfeit ? 'FORFEIT' : (winner === 'USER' ? 'WIN' : 'LOSS'),
+              delta: 'FROZEN',
+              newElo: frozenElo,
+              runsScored: STATE.userScore,
+              wicketsTaken: STATE.userMatchWickets
+            });
+            STATE.winMarginText = `${marginDescription} • ❄️ Bot Match: Rating Frozen at ${frozenElo} ELO (No Rating Change vs Bots)`;
+            STATE.lastOutcomeText = STATE.isTossForfeit
+              ? `🏳️ Match Forfeited vs ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
+              : (winner === 'USER'
+                  ? `🏆 VICTORY! ${p1} defeated ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
+                  : `❌ ${p2} won the match! (❄️ Rating Frozen: ${frozenElo} ELO)`);
+          }
         }
 
-        const didIWin = isMultiplayer() && STATE.onlineRole === 'GUEST' ? winner === 'AI' : winner === 'USER';
+        const didIWin = !isDraw && (isMultiplayer() && STATE.onlineRole === 'GUEST' ? winner === 'AI' : winner === 'USER');
         STATE.sessionStats.matches += 1;
-        if (didIWin) {
+        if (isDraw) {
+          SoundFX.runScored(6);
+        } else if (didIWin) {
           STATE.sessionStats.userWins += 1;
           SoundFX.victory();
         } else {
@@ -4361,26 +4582,27 @@
           inn2Team: inn2TeamName,
           inn2Summary: STATE.currentInnings === 2 ? `${inn2Runs}/${inn2Wkts} (${inn2Balls}b)` : (isTimeoutForfeit ? 'Timeout' : '—'),
           target: STATE.target || '—',
-          winnerName: winner === 'USER' ? p1 : p2,
+          winnerName: isDraw ? 'Match Drawn' : (winner === 'USER' ? p1 : p2),
           didIWin,
+          isDraw,
           marginText: marginDescription
         });
 
         triggerCanvasReveal(
-          winner === 'USER' ? `${p1} WINS! 🏆` : `${p2} WINS! 🏆`,
+          isDraw ? 'MATCH DRAWN! 🤝' : (winner === 'USER' ? `${p1} WINS! 🏆` : `${p2} WINS! 🏆`),
           STATE.winMarginText,
-          winner === 'USER' ? '#81b64c' : '#38bdf8',
+          isDraw ? '#f59e0b' : (winner === 'USER' ? '#81b64c' : '#38bdf8'),
           true
         );
         broadcastGlobalLeaderboardSync(false, true);
 
         STATE.history.unshift({
           id: Date.now() + Math.random(),
-          tag: isTimeoutForfeit ? 'TIMEOUT' : 'RESULT',
-          title: winner === 'USER' ? `🏆 ${p1} WON THE MATCH!` : `🏆 ${p2} WON THE MATCH!`,
+          tag: isTimeoutForfeit ? 'TIMEOUT' : (isDraw ? 'DRAW' : 'RESULT'),
+          title: isDraw ? `🤝 MATCH DRAWN (${p1} vs ${p2})` : (winner === 'USER' ? `🏆 ${p1} WON THE MATCH!` : `🏆 ${p2} WON THE MATCH!`),
           detail: STATE.winMarginText,
-          badge: 'FINAL',
-          badgeColor: winner === 'USER' ? 'emerald' : 'rose'
+          badge: isDraw ? 'DRAW' : 'FINAL',
+          badgeColor: isDraw ? 'amber' : (winner === 'USER' ? 'emerald' : 'rose')
         });
 
         renderAll();
@@ -4661,7 +4883,7 @@
         }
 
         // Sidebar active states
-        const navActiveCls = 'w-full px-2 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 shadow-sm';
+        const navActiveCls = 'w-full px-2 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 shadow-sm';
         const navIdleCls = 'w-full px-2 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800';
         el.sideNavBot.className = STATE.activeScreen === 'BOT_SETUP' ? navActiveCls : navIdleCls;
         el.sideNavMultiplayer.className = STATE.activeScreen === 'MP_SETUP' ? navActiveCls : navIdleCls;
@@ -4700,7 +4922,7 @@
           // When playing against Bots, explicitly show that Rating is FROZEN
           el.headerEloDelta.classList.remove('hidden');
           el.headerEloDelta.textContent = '❄️ FROZEN';
-          el.headerEloDelta.className = 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30';
+          el.headerEloDelta.className = 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-400/30';
           if (el.btnHeaderElo) {
             el.btnHeaderElo.title = `Current Rating: ${STATE.eloRating} ELO (Frozen while playing against Bots • Play Multiplayer to increase/decrease rating)`;
           }
@@ -4709,15 +4931,15 @@
           const dStr = STATE.lastEloDelta > 0 ? `+${STATE.lastEloDelta}` : `${STATE.lastEloDelta}`;
           el.headerEloDelta.textContent = dStr;
           el.headerEloDelta.className = STATE.lastEloDelta > 0
-            ? 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-            : 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30';
+            ? 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-400/30'
+            : 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-rose-500/10 text-rose-300 border border-rose-400/30';
           if (el.btnHeaderElo) {
             el.btnHeaderElo.title = `Current Rating: ${STATE.eloRating} ELO (Ranked Multiplayer: +8 Win / -8 Loss)`;
           }
         } else {
           el.headerEloDelta.classList.remove('hidden');
           el.headerEloDelta.textContent = '±8 RANKED';
-          el.headerEloDelta.className = 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-purple-500/25 text-purple-200 border border-purple-400/40';
+          el.headerEloDelta.className = 'text-[10px] px-1.5 py-0.5 rounded font-mono-num font-bold bg-purple-500/15 text-purple-200 border border-purple-400/40';
           if (el.btnHeaderElo) {
             el.btnHeaderElo.title = `Current Rating: ${STATE.eloRating} ELO (Ranked Multiplayer: +8 Win / -8 Loss)`;
           }
@@ -4843,7 +5065,7 @@
                       <div class="text-xs sm:text-sm font-extrabold text-white truncate flex items-center gap-1.5">
                         <span>${p.name}</span>
                         <span class="px-1.5 py-0.2 rounded text-[10px] font-mono-num bg-slate-950 text-amber-300 border border-slate-800">${p.elo || 1500} ELO</span>
-                        ${hasOpenRoom ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">🟢 Room ${openRm.roomCode}</span>` : ''}
+                        ${hasOpenRoom ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num bg-emerald-500/10 text-emerald-300 border border-emerald-400/30">🟢 Room ${openRm.roomCode}</span>` : ''}
                       </div>
                       <div class="text-[11px] text-slate-400 truncate">
                         ${p.totalRuns || 0} Runs • ${p.wicketsTaken || 0} Wickets • ${p.wins || 0}W–${p.losses || 0}L
@@ -4855,7 +5077,7 @@
                       ? `<span class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">✓ Friend</span>`
                       : isPendingIn
                       ? `<button type="button" data-friend-req-accept="${p.name}" class="px-2.5 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-400 hover:bg-emerald-300 text-slate-950 transition">✓ Accept Request</button>
-                         <button type="button" data-friend-req-decline="${p.name}" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-500/40 transition">✕ Decline</button>`
+                         <button type="button" data-friend-req-decline="${p.name}" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-500/10 hover:bg-rose-500/35 text-rose-200 border border-rose-500/40 transition">✕ Decline</button>`
                       : isPendingOut
                       ? `<span class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">⏳ Request Sent</span>`
                       : `<button type="button" data-friend-add="${p.name}" class="px-2.5 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">➕ Send Request</button>`
@@ -4894,7 +5116,7 @@
                         <div class="text-xs sm:text-sm font-black text-white truncate flex items-center gap-1.5">
                           <span>${senderName}</span>
                           <span class="px-1.5 py-0.2 rounded text-[10px] font-mono-num bg-slate-950 text-amber-300 border border-slate-800">${elo} ELO</span>
-                          <span class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase bg-cyan-500/25 text-cyan-200 border border-cyan-400/40">INCOMING REQUEST</span>
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase bg-cyan-500/15 text-cyan-200 border border-cyan-400/40">INCOMING REQUEST</span>
                         </div>
                         <div class="text-[11px] text-cyan-200/90 truncate mt-0.5">
                           Wants to add you as a friend • Accept or Decline below
@@ -4906,7 +5128,7 @@
                         <span>✓</span>
                         <span>Accept</span>
                       </button>
-                      <button type="button" data-friend-req-decline="${senderName}" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/50 transition flex items-center gap-1">
+                      <button type="button" data-friend-req-decline="${senderName}" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-rose-500/10 hover:bg-rose-500/35 text-rose-200 border border-rose-400/50 transition flex items-center gap-1">
                         <span>✕</span>
                         <span>Decline</span>
                       </button>
@@ -4924,7 +5146,7 @@
                       <span class="text-xs font-bold text-slate-200 truncate">@${targetName}</span>
                       <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">⏳ Awaiting Response</span>
                     </div>
-                    <button type="button" data-friend-play="${targetName}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-purple-500/20 hover:bg-purple-500/35 text-purple-200 border border-purple-400/40 transition">
+                    <button type="button" data-friend-play="${targetName}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-purple-500/10 hover:bg-purple-500/35 text-purple-200 border border-purple-400/40 transition">
                       📞 Call for Match
                     </button>
                   </div>
@@ -4966,7 +5188,7 @@
                       <div class="text-xs sm:text-sm font-extrabold text-emerald-300 truncate flex items-center gap-1.5">
                         <span>${fName}</span>
                         <span class="px-1.5 py-0.2 rounded text-[10px] font-mono-num bg-slate-950 text-amber-300 border border-slate-800">${p.elo || 1500} ELO</span>
-                        ${hasOpenRoom ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 animate-pulse">🟢 Hosting ${openRm.roomCode}</span>` : ''}
+                        ${hasOpenRoom ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num bg-emerald-500/10 text-emerald-300 border border-emerald-400/30 animate-pulse">🟢 Hosting ${openRm.roomCode}</span>` : ''}
                       </div>
                       <div class="text-[11px] text-slate-400 truncate">
                         ${p.totalRuns || 0} Runs • ${p.wicketsTaken || 0} Wkts • ${p.wins || 0}W–${p.losses || 0}L
@@ -4977,7 +5199,7 @@
                     <button type="button" data-friend-play="${fName}" class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 shadow transition">
                       ${hasOpenRoom ? `⚡ Join Room ${openRm.roomCode}` : '📞 Call for Match'}
                     </button>
-                    <button type="button" data-friend-remove="${fName}" class="px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-rose-500/25 text-slate-400 hover:text-rose-300 border border-slate-700 transition" title="Remove Friend">
+                    <button type="button" data-friend-remove="${fName}" class="px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-rose-500/15 text-slate-400 hover:text-rose-300 border border-slate-700 transition" title="Remove Friend">
                       ✕
                     </button>
                   </div>
@@ -5285,10 +5507,13 @@
                 : `${h.delta} ELO → ${h.newElo}`;
               const rightColor = isBotOrFrozen
                 ? 'text-cyan-300'
-                : (h.result === 'WIN' ? 'text-[#81b64c]' : 'text-rose-400');
+                : (isDrawHistory ? 'text-amber-300' : (h.result === 'WIN' ? 'text-[#81b64c]' : 'text-rose-400'));
+              const isDrawHistory = h.result === 'DRAW';
               const titleText = h.result === 'FORFEIT'
                 ? `🏳️ Match Forfeited vs ${h.opponent}`
-                : (h.result === 'WIN' ? `🏆 ${h.p1Name || myCleanName} defeated ${h.opponent}` : `❌ ${h.opponent} defeated ${h.p1Name || myCleanName}`);
+                : (isDrawHistory
+                    ? `🤝 Match Drawn vs ${h.opponent}`
+                    : (h.result === 'WIN' ? `🏆 ${h.p1Name || myCleanName} defeated ${h.opponent}` : `❌ ${h.opponent} defeated ${h.p1Name || myCleanName}`));
               return `
                 <div class="p-2.5 rounded-lg bg-[#262421] border border-[#45423e] flex items-center justify-between gap-2">
                   <div class="min-w-0">
@@ -5338,12 +5563,12 @@
 
         // 1. Phase Badge
         const phaseLabels = {
-          TOSS: { text: 'Toss Phase (15s Clock)', cls: 'bg-amber-500/20 text-amber-300 border-amber-400/30' },
-          TOSS_DECISION: { text: 'Toss Result', cls: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30' },
-          INNINGS_1: { text: '1st Innings', cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' },
-          INNINGS_BREAK: { text: 'Innings Break', cls: 'bg-amber-500/20 text-amber-300 border-amber-400/30' },
-          INNINGS_2: { text: '2nd Innings • The Chase', cls: 'bg-purple-500/20 text-purple-300 border-purple-400/30' },
-          GAME_OVER: { text: 'Match Finished', cls: 'bg-rose-500/20 text-rose-300 border-rose-400/30' }
+          TOSS: { text: 'Toss Phase (15s Clock)', cls: 'bg-amber-500/10 text-amber-300 border-amber-400/30' },
+          TOSS_DECISION: { text: 'Toss Result', cls: 'bg-cyan-500/10 text-cyan-300 border-cyan-400/30' },
+          INNINGS_1: { text: '1st Innings', cls: 'bg-emerald-500/10 text-emerald-300 border-emerald-400/30' },
+          INNINGS_BREAK: { text: 'Innings Break', cls: 'bg-amber-500/10 text-amber-300 border-amber-400/30' },
+          INNINGS_2: { text: '2nd Innings • The Chase', cls: 'bg-purple-500/10 text-purple-300 border-purple-400/30' },
+          GAME_OVER: { text: 'Match Finished', cls: 'bg-rose-500/10 text-rose-300 border-rose-400/30' }
         };
         const pInfo = phaseLabels[STATE.phase];
         el.phaseBadge.textContent = pInfo.text;
@@ -5364,12 +5589,12 @@
           }
           el.userRoleBadge.textContent = p1Batting ? '🏏 BATTING' : '⚾ BOWLING';
           el.userRoleBadge.className = p1Batting
-            ? 'px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+            ? 'px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-emerald-500/10 text-emerald-300 border border-emerald-400/40'
             : 'px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
 
           el.aiRoleBadge.textContent = !p1Batting ? '🏏 BATTING' : '⚾ BOWLING';
           el.aiRoleBadge.className = !p1Batting
-            ? 'px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+            ? 'px-2.5 py-0.5 rounded-md text-[11px] font-extrabold bg-cyan-500/10 text-cyan-300 border border-cyan-400/40'
             : 'px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
 
           el.userScoreCard.className = p1Batting
@@ -5379,10 +5604,14 @@
             ? 'glass-card-active rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden transition-all'
             : 'glass-card rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden transition-all';
         } else {
-          el.userRoleBadge.textContent = STATE.phase === 'GAME_OVER' ? (STATE.winner === 'USER' ? '🏆 WINNER' : 'FINISHED') : 'READY';
-          el.userRoleBadge.className = 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
-          el.aiRoleBadge.textContent = STATE.phase === 'GAME_OVER' ? (STATE.winner === 'AI' ? '🏆 WINNER' : 'FINISHED') : 'READY';
-          el.aiRoleBadge.className = 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
+          el.userRoleBadge.textContent = STATE.phase === 'GAME_OVER' ? (STATE.winner === 'DRAW' ? '🤝 DRAW' : (STATE.winner === 'USER' ? '🏆 WINNER' : 'FINISHED')) : 'READY';
+          el.userRoleBadge.className = STATE.phase === 'GAME_OVER' && STATE.winner === 'DRAW'
+            ? 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40'
+            : 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
+          el.aiRoleBadge.textContent = STATE.phase === 'GAME_OVER' ? (STATE.winner === 'DRAW' ? '🤝 DRAW' : (STATE.winner === 'AI' ? '🏆 WINNER' : 'FINISHED')) : 'READY';
+          el.aiRoleBadge.className = STATE.phase === 'GAME_OVER' && STATE.winner === 'DRAW'
+            ? 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40'
+            : 'px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700';
           el.userScoreCard.className = 'glass-card rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden transition-all';
           el.aiScoreCard.className = 'glass-card rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden transition-all';
         }
@@ -5433,7 +5662,11 @@
           el.chaseProgressBar.style.width = `${pct}%`;
 
           if (STATE.phase === 'GAME_OVER') {
-            el.equationStatusText.textContent = STATE.winner === 'USER' ? `🏆 ${p1Name} won the match!` : `🏆 ${p2Name} won the match!`;
+            if (STATE.winner === 'DRAW') {
+              el.equationStatusText.textContent = `🤝 Match Drawn! Both sides scored ${STATE.userScore} runs.`;
+            } else {
+              el.equationStatusText.textContent = STATE.winner === 'USER' ? `🏆 ${p1Name} won the match!` : `🏆 ${p2Name} won the match!`;
+            }
           } else {
             el.equationStatusText.textContent = `${chaserName} needs ${runsNeeded} more run${runsNeeded === 1 ? '' : 's'} to win`;
           }
@@ -5464,8 +5697,8 @@
 
             el.tossWinnerTag.textContent = `🎉 ${winnerTitle} WON THE TOSS!`;
             el.tossWinnerTag.className = p1Won
-              ? 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-              : 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30';
+              ? 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-400/30'
+              : 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-cyan-500/10 text-cyan-300 border border-cyan-400/30';
             el.tossResultHeadline.textContent = `${winnerTitle} won the toss! (${p1Name} called ${STATE.p1TossCall}, ${p2Name} had ${STATE.p2TossCall} — Sum = ${STATE.tossSum} ${sumParity})`;
 
             el.aiTossChoiceContinue.classList.add('hidden');
@@ -5486,7 +5719,7 @@
             if (el.mpTossWaitingBanner) el.mpTossWaitingBanner.classList.add('hidden');
             if (STATE.tossWinner === 'USER') {
               el.tossWinnerTag.textContent = `🎉 ${p1Name} WON THE TOSS!`;
-              el.tossWinnerTag.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
+              el.tossWinnerTag.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-400/30';
               el.tossResultHeadline.textContent = `${p1Name} called ${STATE.tossCall} and the sum is ${STATE.tossSum} (${sumParity})!`;
               el.tossDecisionSubtext.textContent = 'Would you like to Bat first and set a target, or Bowl first and chase?';
               el.userTossChoiceButtons.classList.remove('hidden');
@@ -5494,7 +5727,7 @@
             } else {
               const aiRole = STATE.firstBatter === 'AI' ? 'BAT FIRST' : 'BOWL FIRST';
               el.tossWinnerTag.textContent = `🤖 ${p2Name.toUpperCase()} WON THE TOSS`;
-              el.tossWinnerTag.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30';
+              el.tossWinnerTag.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-cyan-500/10 text-cyan-300 border border-cyan-400/30';
               el.tossResultHeadline.textContent = `You called ${STATE.tossCall}, but ${STATE.tossUserNum} + ${STATE.tossAiNum} = ${STATE.tossSum} (${sumParity}).`;
               el.tossDecisionSubtext.textContent = `${p2Name} won the toss and chose to ${aiRole} (You are assigned ${aiRole === 'BAT FIRST' ? 'BOWL FIRST' : 'BAT FIRST'})!`;
               el.userTossChoiceButtons.classList.add('hidden');
@@ -5553,19 +5786,24 @@
         }
 
         if (STATE.phase === 'GAME_OVER') {
+          const isDraw = STATE.winner === 'DRAW';
           const p1Won = STATE.winner === 'USER';
-          const didIWin = isMultiplayer() && STATE.onlineRole === 'GUEST' ? !p1Won : p1Won;
+          const didIWin = !isDraw && (isMultiplayer() && STATE.onlineRole === 'GUEST' ? !p1Won : p1Won);
           const winnerName = p1Won ? p1Name : p2Name;
           const loserName = p1Won ? p2Name : p1Name;
           if (STATE.isTossForfeit) {
             el.gameOverBadge.textContent = '🏳️ TOSS FORFEIT';
-            el.gameOverBadge.className = 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-400/40';
+            el.gameOverBadge.className = 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-amber-500/10 text-amber-300 border border-amber-400/40';
             el.gameOverTitle.textContent = `🏳️ MATCH FORFEITED (${winnerName} WINS BY FORFEIT)`;
+          } else if (isDraw) {
+            el.gameOverBadge.textContent = '🤝 MATCH DRAWN';
+            el.gameOverBadge.className = 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-amber-500/15 text-amber-300 border border-amber-400/40';
+            el.gameOverTitle.textContent = '🤝 MATCH DRAWN!';
           } else {
             el.gameOverBadge.textContent = didIWin ? 'VICTORY' : 'LOSS';
             el.gameOverBadge.className = didIWin
-              ? 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-              : 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-500/20 text-rose-300 border border-rose-400/30';
+              ? 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-300 border border-emerald-400/30'
+              : 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-500/10 text-rose-300 border border-rose-400/30';
             el.gameOverTitle.textContent = didIWin
               ? `🏆 ${winnerName} WON THE MATCH!`
               : `❌ ${loserName} LOST — ${winnerName} WON!`;
@@ -5604,7 +5842,7 @@
           if (el.cardInn2Row) el.cardInn2Row.className = idleRowCls;
           if (el.cardInn1StatusPill) {
             el.cardInn1StatusPill.textContent = STATE.phase === 'GAME_OVER' ? 'TIMEOUT' : 'TOSS';
-            el.cardInn1StatusPill.className = 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300';
+            el.cardInn1StatusPill.className = 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300';
           }
           if (el.cardInn2StatusPill) {
             el.cardInn2StatusPill.textContent = 'WAIT';
@@ -5639,7 +5877,7 @@
           if (el.cardInn1StatusPill) {
             el.cardInn1StatusPill.textContent = inn1Active ? '🏏 BATTING' : '✓ DONE';
             el.cardInn1StatusPill.className = inn1Active
-              ? 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-emerald-500/25 text-emerald-300'
+              ? 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-300'
               : 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300';
           }
 
@@ -5649,10 +5887,15 @@
             const needMore = Math.max(0, (STATE.target || 0) - inn2Runs);
             el.cardInn2Score.textContent = `${inn2Runs}/${inn2Out ? '1' : '0'} (${inn2Balls}b • ${STATE.phase === 'GAME_OVER' ? 'T:' + STATE.target : 'Need ' + needMore})`;
             if (el.cardInn2StatusPill) {
-              el.cardInn2StatusPill.textContent = inn2Active ? `🎯 T:${STATE.target}` : (inn2Runs >= STATE.target ? '🏆 CHASED' : 'OUT');
-              el.cardInn2StatusPill.className = inn2Active
-                ? 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-cyan-500/25 text-cyan-300'
-                : 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300';
+              const inn2StatusText = STATE.phase === 'GAME_OVER'
+                ? (STATE.winner === 'DRAW' ? '🤝 DRAW' : (inn2Runs >= STATE.target ? '🏆 CHASED' : 'OUT'))
+                : (inn2Active ? `🎯 T:${STATE.target}` : (STATE.phase === 'INNINGS_BREAK' ? `🎯 T:${STATE.target}` : 'WAIT'));
+              el.cardInn2StatusPill.textContent = inn2StatusText;
+              el.cardInn2StatusPill.className = STATE.winner === 'DRAW'
+                ? 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-300 border border-amber-500/40'
+                : (inn2Active
+                    ? 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300'
+                    : 'text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300');
             }
           } else {
             el.cardInn2Score.textContent = STATE.target ? `Target: ${STATE.target} Runs` : `Proj. Target: ${inn1Runs + 1}`;
@@ -5664,8 +5907,12 @@
 
           if (el.scorecardLiveVerdictBar) {
             if (STATE.phase === 'GAME_OVER') {
-              const winName = STATE.winner === 'USER' ? p1Name : p2Name;
-              el.scorecardLiveVerdictBar.textContent = `🏆 Match #${activeMatchNum} Final: ${winName} Won! (${inn1TeamLabel.split(' ')[0]} ${inn1Runs} vs ${inn2TeamLabel.split(' ')[0]} ${inn2Runs})`;
+              if (STATE.winner === 'DRAW') {
+                el.scorecardLiveVerdictBar.textContent = `🤝 Match #${activeMatchNum} Final: Match Drawn! (${inn1TeamLabel.split(' ')[0]} ${inn1Runs} vs ${inn2TeamLabel.split(' ')[0]} ${inn2Runs})`;
+              } else {
+                const winName = STATE.winner === 'USER' ? p1Name : p2Name;
+                el.scorecardLiveVerdictBar.textContent = `🏆 Match #${activeMatchNum} Final: ${winName} Won! (${inn1TeamLabel.split(' ')[0]} ${inn1Runs} vs ${inn2TeamLabel.split(' ')[0]} ${inn2Runs})`;
+              }
             } else if (STATE.phase === 'INNINGS_BREAK') {
               el.scorecardLiveVerdictBar.textContent = `Innings Break: ${inn2TeamLabel} needs ${STATE.target} runs to win!`;
             } else if (STATE.currentInnings === 2) {
@@ -5685,22 +5932,31 @@
           if (STATE.matchScorecards.length === 0) {
             el.scorecardMatchHistoryList.innerHTML = `<div class="text-slate-400 text-center py-1.5 text-[11px]">Complete a match to log its full innings scorecard here.</div>`;
           } else {
-            el.scorecardMatchHistoryList.innerHTML = STATE.matchScorecards.slice(0, 12).map((mc) => `
+            el.scorecardMatchHistoryList.innerHTML = STATE.matchScorecards.slice(0, 12).map((mc) => {
+              const isMcDraw = mc.isDraw || mc.winnerName === 'Match Drawn';
+              const badgeLabel = isMcDraw ? 'DRAW' : (mc.didIWin ? 'WIN' : 'LOSS');
+              const badgeCls = isMcDraw
+                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40'
+                : (mc.didIWin ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-300 border border-rose-500/30');
+              const titleText = isMcDraw
+                ? `<span class="text-amber-300 font-mono-num">#${mc.matchNumber}</span><span> • 🤝 Match Drawn</span>`
+                : `<span class="text-amber-300 font-mono-num">#${mc.matchNumber}</span><span> • 🏆 ${mc.winnerName}</span>`;
+              return `
               <div class="p-2 rounded-lg bg-[#22201d] border border-[#3d3a36] flex items-center justify-between gap-2">
                 <div class="min-w-0">
                   <div class="font-extrabold text-white truncate">
-                    <span class="text-amber-300 font-mono-num">#${mc.matchNumber}</span>
-                    <span> • 🏆 ${mc.winnerName}</span>
+                    ${titleText}
                   </div>
                   <div class="text-[10px] text-slate-300 font-mono-num truncate">
                     1st: ${mc.inn1Team} ${mc.inn1Summary} | 2nd: ${mc.inn2Team} ${mc.inn2Summary}
                   </div>
                 </div>
-                <span class="px-1.5 py-0.5 rounded text-[9px] font-mono-num font-black shrink-0 ${mc.didIWin ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
-                  ${mc.didIWin ? 'WIN' : 'LOSS'}
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-mono-num font-black shrink-0 ${badgeCls}">
+                  ${badgeLabel}
                 </span>
               </div>
-            `).join('');
+            `;
+            }).join('');
           }
         }
 
@@ -5719,10 +5975,10 @@
           `;
         } else {
           const colorMap = {
-            emerald: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-            cyan: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-            amber: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-            rose: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+            emerald: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+            cyan: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+            amber: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+            rose: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
             slate: 'bg-slate-800 text-slate-300 border-slate-700'
           };
           el.ballLogContainer.innerHTML = STATE.history
@@ -5992,20 +6248,12 @@
       const EVENT_REG_MAP_KEY = 'oddandeven_event_regs_map_v1';
       const HC_EVENTS = [
         {
-          id: 'duo',
-          name: 'Duo Cup · 2v2',
+          id: 'solo',
+          name: 'Who will be the first ever Odd and Even champion on 7 nov',
           start: '2026-11-07T19:00:00+05:30',
           closes: '2026-11-05T23:59:00+05:30',
-          ctaDefault: 'Register duo team',
-          joinedMsg: "Registered for Duo Cup · 2v2! Share your room code with your partner before kickoff."
-        },
-        {
-          id: 'solo',
-          name: 'Solo Championship',
-          start: '2026-11-14T19:00:00+05:30',
-          closes: '2026-11-12T23:59:00+05:30',
-          ctaDefault: 'Enter solo bracket',
-          joinedMsg: 'Solo Championship bracket spot locked! Warm up in the Bot Arena.'
+          ctaDefault: 'Register for tournament',
+          joinedMsg: "Registered for tournament! Bracket spot saved. Warm up in the Arena."
         }
       ];
 
@@ -6080,13 +6328,13 @@
         const uRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
 
         if (el.sideNavEventsSub) {
-          el.sideNavEventsSub.textContent = regs.length > 0 ? `${regs.length}/2 Registered` : 'Season 1 · events.html';
+          el.sideNavEventsSub.textContent = regs.length > 0 ? `${regs.length}/1 Registered` : 'Season 1 · events.html';
         }
         if (el.sideNavEventsCountBadge) {
-          el.sideNavEventsCountBadge.textContent = `${regs.length}/2`;
+          el.sideNavEventsCountBadge.textContent = `${regs.length}/1`;
         }
         if (el.eventsRegSummaryBadge) {
-          el.eventsRegSummaryBadge.textContent = `${regs.length}/2 Registered`;
+          el.eventsRegSummaryBadge.textContent = `${regs.length}/1 Registered`;
           el.eventsRegSummaryBadge.className = regs.length > 0
             ? 'px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/50'
             : 'px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700';
@@ -6107,14 +6355,13 @@
           const mStr = pad2(Math.floor((totalSec % 3600) / 60));
           const sStr = pad2(totalSec % 60);
 
-          const isDuo = ev.id === 'duo';
-          const dEl = isDuo ? el.hcDuoD : el.hcSoloD;
-          const hEl = isDuo ? el.hcDuoH : el.hcSoloH;
-          const mEl = isDuo ? el.hcDuoM : el.hcSoloM;
-          const sEl = isDuo ? el.hcDuoS : el.hcSoloS;
-          const stateEl = isDuo ? el.hcEvStateDuo : el.hcEvStateSolo;
-          const relEl = isDuo ? el.hcCalRelDuo : el.hcCalRelSolo;
-          const btnEl = isDuo ? el.btnJoinEventDuo : el.btnJoinEventSolo;
+          const dEl = el.hcSoloD;
+          const hEl = el.hcSoloH;
+          const mEl = el.hcSoloM;
+          const sEl = el.hcSoloS;
+          const stateEl = el.hcEvStateSolo;
+          const relEl = el.hcCalRelSolo;
+          const btnEl = el.btnJoinEventSolo;
 
           if (dEl) dEl.textContent = dStr;
           if (hEl) hEl.textContent = hStr;
@@ -6273,7 +6520,7 @@
             category: 'RANKED',
             icon: '🎟️',
             title: 'Tournament & Squad Ready',
-            desc: 'Register for a Season 1 Event (Duo Cup or Solo Championship) or add a Friend.',
+            desc: 'Register for the Season 1 Championship on 7 Nov or add a Friend.',
             current: regsCount + friendsCount,
             target: 1,
             unit: 'Entry / Friend',
@@ -6355,7 +6602,7 @@
                     <div class="flex items-center gap-2 flex-wrap">
                       <h4 class="text-sm font-black ${isUnlocked ? 'text-white' : 'text-slate-200'} truncate">${a.title}</h4>
                       <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold ${
-                        isUnlocked ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/40' : 'bg-slate-800 text-slate-400'
+                        isUnlocked ? 'bg-yellow-500/10 text-yellow-300 border border-yellow-400/40' : 'bg-slate-800 text-slate-400'
                       }">+${a.xp} XP</span>
                     </div>
                     <p class="text-xs text-slate-400 leading-snug mt-0.5">${a.desc}</p>
@@ -6363,7 +6610,7 @@
                 </div>
                 <span class="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold uppercase ${
                   isUnlocked
-                    ? 'bg-emerald-500/20 text-[#a3d96c] border border-[#81b64c]/50'
+                    ? 'bg-emerald-500/10 text-[#a3d96c] border border-[#81b64c]/50'
                     : 'bg-slate-800 text-slate-400 border border-slate-700'
                 }">
                   ${isUnlocked ? '✓ Unlocked' : 'Locked'}
@@ -6572,9 +6819,6 @@
         }
         if (el.btnBackFromEvents) {
           el.btnBackFromEvents.addEventListener('click', () => switchCenterScreen('PITCH'));
-        }
-        if (el.btnJoinEventDuo) {
-          el.btnJoinEventDuo.addEventListener('click', () => toggleEventRegistration('duo'));
         }
         if (el.btnJoinEventSolo) {
           el.btnJoinEventSolo.addEventListener('click', () => toggleEventRegistration('solo'));
@@ -7043,7 +7287,12 @@
             if (!myNewRec.updatedAt) myNewRec.updatedAt = Date.now();
             STATE.eloRating = myNewRec.elo;
             STATE.peakElo = myNewRec.peak;
+            reconcileAllNewPlayersIntoLeaderboard();
+            saveLocalStatsOnly();
             broadcastGlobalLeaderboardSync(true, true);
+            if (typeof window.__syncCloudLeaderboard === 'function') {
+              try { window.__syncCloudLeaderboard(STATE.humanPlayers, usersMap, STATE.myUsername); } catch (e) {}
+            }
             enforceMandatoryAuthGate();
             closeAuthModal();
             switchCenterScreen('PITCH');
@@ -7057,13 +7306,22 @@
             authBc.onmessage = (ev) => {
               if (ev && ev.data && ev.data.type === 'AUTH_LOGIN_SUCCESS' && ev.data.session) {
                 const s = ev.data.session;
-                STATE.myUsername = s.username;
+                STATE.myUsername = (s.username || '').trim().toUpperCase();
                 STATE.myCountryCode = s.countryCode || '+91';
                 STATE.myCountryFlag = s.countryFlag || '🇮🇳';
                 STATE.myCountryName = s.countryName || 'India';
+                STATE.p1Name = STATE.myUsername;
+                STATE.p1CountryCode = STATE.myCountryCode;
+                STATE.p1CountryFlag = STATE.myCountryFlag;
+                STATE.p1CountryName = STATE.myCountryName;
                 STATE.isAuthenticated = true;
                 if (el.botSetupPlayerName) el.botSetupPlayerName.value = STATE.myUsername;
+                reconcileAllNewPlayersIntoLeaderboard();
                 syncAuthAndPurgeFakeSeeds();
+                saveLocalStatsOnly();
+                if (typeof window.__syncCloudLeaderboard === 'function') {
+                  try { window.__syncCloudLeaderboard(STATE.humanPlayers, loadEncryptedUsersMap(), STATE.myUsername); } catch (e) {}
+                }
                 STATE.activeScreen = 'PITCH';
                 renderAll();
               }
@@ -7421,12 +7679,47 @@
           if (usersVault && typeof usersVault === 'object') {
             for (const k of Object.keys(usersVault)) {
               const clean = (k || '').trim().toUpperCase();
-              if (clean && clean.length >= 3 && clean !== 'GUEST' && clean !== 'PLAYER_1' && !cloudAccounts[clean]) {
+              if (clean && clean.length >= 3 && clean !== 'GUEST' && clean !== 'PLAYER_1' && clean !== 'WAITING...' && clean !== 'HOST') {
                 const uPayload = usersVault[k];
                 await Promise.allSettled([
-                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload),
-                  setDoc(doc(db, 'accounts', clean), uPayload)
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true }),
+                  setDoc(doc(db, 'accounts', clean), uPayload, { merge: true })
                 ]);
+                if (!cloudAccounts[clean]) cloudAccounts[clean] = uPayload;
+
+                // Ensure every account is also migrated to the cloud leaderboard!
+                if (!cloudPlayers[clean] && (!humanPlayersMap || !humanPlayersMap[clean])) {
+                  const seedRec = {
+                    name: clean,
+                    countryCode: uPayload.countryCode || '+91',
+                    countryFlag: uPayload.countryFlag || '🇮🇳',
+                    countryName: uPayload.countryName || 'India',
+                    isRealRegisteredUser: true,
+                    elo: 1500,
+                    peak: 1500,
+                    wins: 0,
+                    losses: 0,
+                    matches: 0,
+                    totalRuns: 0,
+                    totalBalls: 0,
+                    highScore: 0,
+                    wicketsTaken: 0,
+                    wicketsLost: 0,
+                    ballsBowled: 0,
+                    weeklyEloGain: 0,
+                    weeklyWins: 0,
+                    weeklyLosses: 0,
+                    weeklyMatches: 0,
+                    weeklyRuns: 0,
+                    weeklyWickets: 0,
+                    updatedAt: Date.now()
+                  };
+                  cloudPlayers[clean] = seedRec;
+                  await Promise.allSettled([
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), seedRec, { merge: true }),
+                    setDoc(doc(db, 'leaderboard', clean), seedRec, { merge: true })
+                  ]);
+                }
               }
             }
           }
@@ -7434,28 +7727,28 @@
             for (const k of Object.keys(humanPlayersMap)) {
               const clean = (k || '').trim().toUpperCase();
               const localRec = humanPlayersMap[k];
-              if (!clean || !localRec || !localRec.isRealRegisteredUser || clean === 'GUEST' || clean === 'PLAYER_1') continue;
+              if (!clean || !localRec || !localRec.isRealRegisteredUser || clean === 'GUEST' || clean === 'PLAYER_1' || clean === 'WAITING...' || clean === 'HOST') continue;
               const cloudRec = cloudPlayers[clean];
               const mergedRec = typeof window.__mergeSinglePlayerRecord === 'function' && cloudRec
                 ? window.__mergeSinglePlayerRecord(cloudRec, localRec).record
                 : localRec;
-              const isActiveUser = activeUsername && clean === activeUsername.trim().toUpperCase();
-              const hasNewerStats = !cloudRec ||
-                (mergedRec.matches || 0) > (cloudRec.matches || 0) ||
-                (mergedRec.totalRuns || 0) > (cloudRec.totalRuns || 0) ||
-                (mergedRec.wicketsTaken || 0) > (cloudRec.wicketsTaken || 0) ||
-                mergedRec.elo !== cloudRec.elo;
-              if (isActiveUser || hasNewerStats) {
-                cloudPlayers[clean] = mergedRec;
-                await Promise.allSettled([
-                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), mergedRec),
-                  setDoc(doc(db, 'leaderboard', clean), mergedRec)
-                ]);
-              }
+              cloudPlayers[clean] = mergedRec;
+              await Promise.allSettled([
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), mergedRec, { merge: true }),
+                setDoc(doc(db, 'leaderboard', clean), mergedRec, { merge: true })
+              ]);
             }
           }
         } catch (e) {}
       };
+
+      // Trigger immediate cloud sync for all local accounts and leaderboard entries
+      try {
+        const localVault = typeof loadEncryptedUsersMap === 'function' ? loadEncryptedUsersMap() : {};
+        const localPlayers = (typeof STATE !== 'undefined' && STATE && STATE.humanPlayers) ? STATE.humanPlayers : {};
+        const myU = (typeof STATE !== 'undefined' && STATE && STATE.myUsername) ? STATE.myUsername : null;
+        window.__syncCloudLeaderboard(localPlayers, localVault, myU);
+      } catch (e) {}
 
       window.__purgeCloudAccount = async function (username) {
         if (!db || !username) return;
