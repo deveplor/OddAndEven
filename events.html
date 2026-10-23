@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OddAndEven.in — Events &amp; Tournaments</title>
+  <title>OddAndEven.in — Who will be the first ever Odd and Even champion on 7 nov</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0d0c12;
@@ -87,10 +87,10 @@
   <section class="outfield">
     <div class="max-w-5xl mx-auto px-4 sm:px-8 pt-12 pb-14 grid lg:grid-cols-[1.2fr_1fr] gap-10 items-end">
       <div class="space-y-4">
-        <p class="font-mono-num text-xs font-bold text-[#a3d96c]">Season 1 · Hand Cricket</p>
+        <p class="font-mono-num text-xs font-bold text-[#a3d96c]">Season 1 · Hand Cricket Championship</p>
         <h1 class="font-brand text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">The fixtures are up.</h1>
         <p class="text-sm sm:text-base text-zinc-400 max-w-lg">
-          Official leagues with real brackets and real rankings. Pick your format, lock your spot, and play your way onto the Hall of Fame.
+          Official championship with real brackets and real rankings. Lock your spot in the solo elimination bracket and play your way onto the Hall of Fame.
         </p>
       </div>
 
@@ -107,22 +107,22 @@
   <!-- EVENTS -->
   <main class="max-w-5xl mx-auto w-full flex-1 px-4 sm:px-8 py-10 space-y-8">
 
-    <article id="duo" class="ticket" style="--c: var(--amber)" data-event="duo">
+    <article id="solo" class="ticket" style="--c: var(--amber)" data-event="solo">
       <div class="ticket-main">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="font-mono-num text-xs font-bold" style="color:var(--c)">Duo Cup · 2v2 league</span>
+          <span class="font-mono-num text-xs font-bold" style="color:var(--c)">Championship · Solo Bracket Elimination</span>
           <span class="js-state px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border"></span>
         </div>
         <div class="space-y-2">
-          <h2 class="font-brand text-2xl sm:text-3xl font-bold tracking-tight">First Ever Duo Event for Odd &amp; Even</h2>
+          <h2 class="font-brand text-2xl sm:text-3xl font-bold tracking-tight">Who will be the first ever Odd and Even champion on 7 nov</h2>
           <p class="text-sm text-zinc-400 max-w-xl">
-            Partner up with your trusted rival for the ultimate 2v2 Hand Cricket championship. Coordinate your batting rotations, lock in defensive strategies, and claim the inaugural Duo Cup trophy.
+            Step up to the inaugural championship on 7 November! Face the world's finest solo strikers in a high-stakes solo bracket elimination. Outwit your opponents, raise the special champion crown, and claim your place in the Hall of Fame with 2000 XPs.
           </p>
         </div>
         <div class="grid sm:grid-cols-3 gap-3 mt-auto">
-          <div class="chip"><small>Format</small><strong>2v2 Hand Cricket</strong></div>
-          <div class="chip"><small>Team</small><strong>You + one partner</strong></div>
-          <div class="chip"><small>Prize</small><strong style="color:var(--c)">5,000 Elo pool + badge</strong></div>
+          <div class="chip"><small>Format</small><strong>Solo bracket elimination</strong></div>
+          <div class="chip"><small>Tournament Date</small><strong>7 November 2026 · 7:00 PM IST</strong></div>
+          <div class="chip"><small>Prize</small><strong style="color:var(--c)">Special champion crown and hall of frame with 2000 XPs</strong></div>
         </div>
       </div>
       <div class="stub">
@@ -131,35 +131,7 @@
           <div class="font-brand text-5xl font-bold leading-none mt-1"><span class="js-day"></span> <span class="js-mon text-3xl"></span></div>
         </div>
         <div class="cd" role="timer" aria-label="Time until kickoff"><div><b class="js-d">--</b><span>DAYS</span></div><div><b class="js-h">--</b><span>HRS</span></div><div><b class="js-m">--</b><span>MIN</span></div><div><b class="js-s">--</b><span>SEC</span></div></div>
-        <button type="button" class="cta js-join">Register duo team</button>
-      </div>
-    </article>
-
-    <article id="solo" class="ticket" style="--c: var(--cyan)" data-event="solo">
-      <div class="ticket-main">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="font-mono-num text-xs font-bold" style="color:var(--c)">Solo Championship · Grandmaster bracket</span>
-          <span class="js-state px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border"></span>
-        </div>
-        <div class="space-y-2">
-          <h2 class="font-brand text-2xl sm:text-3xl font-bold tracking-tight">Who Will Become the First Champion of the Single Player Tournament?</h2>
-          <p class="text-sm text-zinc-400 max-w-xl">
-            Face the world's finest solo strikers and outwit the 2650 Elo Apex Oracle in the knockout brackets. Only one competitor raises the golden shield and takes the #1 solo crown.
-          </p>
-        </div>
-        <div class="grid sm:grid-cols-3 gap-3 mt-auto">
-          <div class="chip"><small>Format</small><strong>Solo knockout bracket</strong></div>
-          <div class="chip"><small>Final boss</small><strong>Apex Oracle · 2650 Elo</strong></div>
-          <div class="chip"><small>Prize</small><strong style="color:var(--c)">#1 crown + Hall of Fame</strong></div>
-        </div>
-      </div>
-      <div class="stub">
-        <div>
-          <div class="font-mono-num text-xs font-bold opacity-70"><span class="js-wd"></span> · <span class="js-time"></span></div>
-          <div class="font-brand text-5xl font-bold leading-none mt-1"><span class="js-day"></span> <span class="js-mon text-3xl"></span></div>
-        </div>
-        <div class="cd" role="timer" aria-label="Time until kickoff"><div><b class="js-d">--</b><span>DAYS</span></div><div><b class="js-h">--</b><span>HRS</span></div><div><b class="js-m">--</b><span>MIN</span></div><div><b class="js-s">--</b><span>SEC</span></div></div>
-        <button type="button" class="cta js-join">Enter solo bracket</button>
+        <button type="button" class="cta js-join">Register for tournament</button>
       </div>
     </article>
 
@@ -180,8 +152,15 @@
 
       // ---- EDIT HERE: one place to change dates (ISO 8601, IST = +05:30) ----
       const EVENTS = [
-        { id: 'duo',  name: 'Duo Cup · 2v2',        color: 'var(--amber)', start: '2026-11-07T19:00:00+05:30', closes: '2026-11-05T23:59:00+05:30', joined: "You're in! Share your room code with your partner before kickoff." },
-        { id: 'solo', name: 'Solo Championship',    color: 'var(--cyan)',  start: '2026-11-14T19:00:00+05:30', closes: '2026-11-12T23:59:00+05:30', joined: 'Bracket spot saved. Warm up in the Bot Arena.' }
+        {
+          id: 'solo',
+          name: 'Who will be the first ever Odd and Even champion on 7 nov',
+          color: 'var(--amber)',
+          start: '2026-11-07T19:00:00+05:30',
+          closes: '2026-11-05T23:59:00+05:30',
+          ctaDefault: 'Register for tournament',
+          joined: "You're registered for the tournament! Bracket spot saved. Warm up in the Arena."
+        }
       ];
 
       const SESSION_KEY = 'oddandeven_active_session_v1';
@@ -280,10 +259,12 @@
       EVENTS.forEach((ev) => {
         const start = new Date(ev.start);
         const card = $('[data-event="' + ev.id + '"]');
-        $('.js-wd', card).textContent = fmt(start, { weekday: 'short' });
-        $('.js-day', card).textContent = fmt(start, { day: 'numeric' });
-        $('.js-mon', card).textContent = fmt(start, { month: 'short' });
-        $('.js-time', card).textContent = fmt(start, { hour: 'numeric', minute: '2-digit', hour12: true });
+        if (card) {
+          $('.js-wd', card).textContent = fmt(start, { weekday: 'short' });
+          $('.js-day', card).textContent = fmt(start, { day: 'numeric' });
+          $('.js-mon', card).textContent = fmt(start, { month: 'short' });
+          $('.js-time', card).textContent = fmt(start, { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
 
         const li = document.createElement('li');
         li.innerHTML =
@@ -303,7 +284,8 @@
         const badge = $('#navPlayerBadge');
         if (badge) {
           if (player && player.username) {
-            badge.textContent = (player.countryFlag || '🇮🇳') + ' ' + player.username + ' · ' + regs.length + '/2 Registered';
+            const isRegistered = regs.includes('solo');
+            badge.textContent = (player.countryFlag || '🇮🇳') + ' ' + player.username + ' · ' + (isRegistered ? '1/1 Registered' : '0/1 Registered');
             badge.classList.remove('hidden');
           } else {
             badge.classList.add('hidden');
@@ -312,6 +294,7 @@
 
         EVENTS.forEach((ev) => {
           const card = $('[data-event="' + ev.id + '"]');
+          if (!card) return;
           const start = new Date(ev.start).getTime();
           const closes = new Date(ev.closes).getTime();
           const left = Math.max(0, start - now);
@@ -335,18 +318,21 @@
           btn.disabled = !open && !joined;
           btn.dataset.joined = joined ? '1' : '0';
           if (joined) btn.textContent = open ? "You're registered ✓ (tap to withdraw)" : "You're registered ✓";
-          else btn.textContent = open ? (ev.id === 'duo' ? 'Register duo team' : 'Enter solo bracket') : label;
+          else btn.textContent = open ? (ev.ctaDefault || 'Register for tournament') : label;
 
           const rel = $('[data-cal="' + ev.id + '"] .js-rel');
-          const days = Math.ceil(left / 86400000);
-          rel.textContent = now >= start ? 'started' : (days <= 1 ? 'today/tomorrow' : 'in ' + days + ' days');
+          if (rel) {
+            const days = Math.ceil(left / 86400000);
+            rel.textContent = now >= start ? 'started' : (days <= 1 ? 'today/tomorrow' : 'in ' + days + ' days');
+          }
         });
       }
 
       document.querySelectorAll('.js-join').forEach((btn) => {
         btn.addEventListener('click', () => {
-          const id = btn.closest('[data-event]').dataset.event;
-          const ev = EVENTS.find((e) => e.id === id);
+          const card = btn.closest('[data-event]');
+          const id = card ? card.dataset.event : 'solo';
+          const ev = EVENTS.find((e) => e.id === id) || EVENTS[0];
           if (!signedIn()) {
             toast('Sign in to register. <a class="underline font-bold text-[#a3d96c]" href="index.html?stay=1">Go to Portal →</a>');
             return;
@@ -358,7 +344,7 @@
             toast('Registration withdrawn.');
           } else {
             regs.push(id);
-            toast(ev.joined);
+            toast(ev.joined || "You're registered for the tournament! Bracket spot saved.");
           }
           saveRegs(regs);
           render();
