@@ -102,7 +102,7 @@
   <div id="friendInviteBanner" class="fixed top-3 inset-x-3 z-50 hidden animate-slide-down">
     <div class="glass-card rounded-2xl p-3.5 border-2 border-purple-500 shadow-2xl bg-[#1c1824] flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-400/40 flex items-center justify-center text-lg shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-300 border border-purple-400/40 flex items-center justify-center text-lg shrink-0">
           ⚔️
         </div>
         <div class="min-w-0">
@@ -142,7 +142,7 @@
 
     <!-- Active Mode & Header Quick Toggles -->
     <div class="flex items-center gap-1.5">
-      <span id="phaseBadge" class="px-2 py-0.5 text-[10px] font-mono-num font-extrabold uppercase rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+      <span id="phaseBadge" class="px-2 py-0.5 text-[10px] font-mono-num font-extrabold uppercase rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/30">
         Toss Phase
       </span>
 
@@ -175,7 +175,7 @@
       >
         <!-- Glowing Animated Rocket Icon -->
         <div class="relative shrink-0">
-          <span class="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#81b64c]/30 via-emerald-500/20 to-cyan-500/15 border border-[#a3d96c]/50 flex items-center justify-center text-sm shadow-md shadow-[#81b64c]/20 group-hover:scale-105 group-hover:border-[#a3d96c] transition-all duration-200">
+          <span class="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#81b64c]/30 via-emerald-500/10 to-cyan-500/15 border border-[#a3d96c]/50 flex items-center justify-center text-sm shadow-md shadow-[#81b64c]/20 group-hover:scale-105 group-hover:border-[#a3d96c] transition-all duration-200">
             🚀
           </span>
           <span class="w-1.5 h-1.5 rounded-full bg-[#a3d96c] animate-ping absolute -top-0.5 -right-0.5"></span>
@@ -205,7 +205,7 @@
         aria-label="Close New Update banner"
         title="Dismiss banner"
         onclick="event.stopPropagation();var b=document.getElementById('newUpdateBanner');if(b)b.classList.add('hidden');"
-        class="w-7 h-7 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-xs font-bold shrink-0 active:scale-90 transition-all"
+        class="w-7 h-7 rounded-xl bg-white/[0.06] hover:bg-rose-500/10 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-xs font-bold shrink-0 active:scale-90 transition-all"
       >
         ✕
       </button>
@@ -236,8 +236,8 @@
 
       <!-- Navigation Mode Buttons -->
       <div class="space-y-1.5">
-        <button id="sideNavPitch" type="button" class="w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40">
-          <span class="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-sm">🏏</span>
+        <button id="sideNavPitch" type="button" class="w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 text-emerald-300 border border-emerald-400/40">
+          <span class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">🏏</span>
           <div>
             <div>Active Pitch</div>
             <div class="text-[9px] text-emerald-400 font-normal">Scorecard, Toss &amp; Keypad</div>
@@ -275,29 +275,29 @@
               <div class="font-extrabold text-white">Friends &amp; Rivals</div>
               <div class="text-[9px] text-blue-300 font-normal">Find &amp; Add Players</div>
             </div>
-            <span id="sideNavFriendsCountBadge" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30">0</span>
+            <span id="sideNavFriendsCountBadge" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-blue-500/10 text-blue-300 border border-blue-400/30">0</span>
           </div>
         </button>
 
         <button id="sideNavAchievements" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
-          <span class="w-7 h-7 rounded-lg bg-yellow-500/20 border border-yellow-400/30 flex items-center justify-center text-sm">🎖️</span>
+          <span class="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-400/30 flex items-center justify-center text-sm">🎖️</span>
           <div class="min-w-0 flex-1 flex items-center justify-between">
             <div>
               <div class="font-extrabold text-white">Achievements</div>
               <div class="text-[9px] text-yellow-300 font-mono-num font-normal" id="sideNavAchievementsSub">0/10 Unlocked</div>
             </div>
-            <span id="sideNavAchievementsXpPill" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-yellow-500/20 text-yellow-300 border border-yellow-400/30">0 XP</span>
+            <span id="sideNavAchievementsXpPill" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-yellow-500/10 text-yellow-300 border border-yellow-400/30">0 XP</span>
           </div>
         </button>
 
         <button id="sideNavEvents" type="button" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition">
-          <span class="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-sm">🎟️</span>
+          <span class="w-7 h-7 rounded-lg bg-pink-500/10 border border-pink-400/30 flex items-center justify-center text-sm">🎟️</span>
           <div class="min-w-0 flex-1 flex items-center justify-between">
             <div>
               <div class="font-extrabold text-white">Events &amp; Cups</div>
               <div class="text-[9px] text-pink-300 font-normal" id="sideNavEventsSub">Season 1 · events.html</div>
             </div>
-            <span id="sideNavEventsCountBadge" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-pink-500/20 text-pink-300 border border-pink-400/30">0/2</span>
+            <span id="sideNavEventsCountBadge" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-pink-500/10 text-pink-300 border border-pink-400/30">0/1</span>
           </div>
         </button>
 
@@ -366,7 +366,7 @@
         <button id="btnOpenAuthModal" type="button" class="flex-1 py-1.5 rounded-lg text-[10px] font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
           Account
         </button>
-        <button id="btnHeaderSignOut" type="button" class="py-1.5 px-3 rounded-lg text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/35">
+        <button id="btnHeaderSignOut" type="button" class="py-1.5 px-3 rounded-lg text-[10px] font-extrabold bg-amber-500/10 text-amber-300 border border-amber-500/35">
           Sign Out
         </button>
       </div>
@@ -416,10 +416,10 @@
         <!-- 1. BASIC BOT (250–700 Elo) -->
         <button id="btnBotRookie" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
           <div class="flex items-center justify-between">
-            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
               BASIC TIER • 250–700 ELO
             </span>
-            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">450</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300">450</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">🌱</span>
@@ -434,10 +434,10 @@
         <!-- 2. INTERMEDIATE BOT (700–1400 Elo) -->
         <button id="btnBotTactician" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border-2 border-cyan-400 shadow-md transition space-y-1">
           <div class="flex items-center justify-between">
-            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-400/30">
               INTERMEDIATE • 700–1400 ELO
             </span>
-            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">1100</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300">1100</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">⚡</span>
@@ -452,10 +452,10 @@
         <!-- 3. ADVANCED BOT (1400–2200 Elo) -->
         <button id="btnBotAggressor" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
           <div class="flex items-center justify-between">
-            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-400/30">
               ADVANCED • 1400–2200 ELO
             </span>
-            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">1850</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">1850</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">🧠</span>
@@ -470,10 +470,10 @@
         <!-- 4. MASTER BOT (2200–2800 Elo) -->
         <button id="btnBotWall" type="button" class="w-full p-2.5 rounded-xl text-left bg-[#1b1a17] border border-[#383530] transition space-y-1">
           <div class="flex items-center justify-between">
-            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-300 border border-rose-400/30">
               MASTER TIER • 2200–2800 ELO
             </span>
-            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">2650</span>
+            <span class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded bg-rose-500/10 text-rose-300">2650</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xl">👑</span>
@@ -531,7 +531,7 @@
           <div id="inlineLobbyWaitHint" class="text-[10px] font-semibold text-amber-300/90 leading-snug">
             Generate a Room Code or enter a friend's code to lock the room (2/2 players)!
           </div>
-          <button id="btnInlineLeaveRoom" type="button" class="hidden shrink-0 px-2 py-1 rounded-lg text-[10px] font-extrabold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/35 transition">
+          <button id="btnInlineLeaveRoom" type="button" class="hidden shrink-0 px-2 py-1 rounded-lg text-[10px] font-extrabold bg-rose-500/15 hover:bg-rose-500/15 text-rose-300 border border-rose-500/35 transition">
             🔓 Leave
           </button>
         </div>
@@ -670,7 +670,7 @@
           <span>⭐</span>
           <span>My Friends Roster</span>
         </span>
-        <span id="myFriendsCountPill" class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+        <span id="myFriendsCountPill" class="text-[10px] font-mono-num font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-400/30">
           0 Friends
         </span>
       </div>
@@ -704,7 +704,7 @@
         <div class="flex items-center justify-between">
           <span class="font-mono-num text-[10px] font-bold text-[#a3d96c] uppercase tracking-wider">⚡ Contender Pass</span>
           <span id="eventsRegSummaryBadge" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-slate-800 text-slate-300 border border-slate-700">
-            0/2 Registered
+            0/1 Registered
           </span>
         </div>
         <div class="flex items-center gap-2.5">
@@ -717,12 +717,7 @@
         <div class="pt-2 border-t border-white/10 space-y-1 text-[11px]">
           <div class="flex items-center justify-between">
             <span class="font-mono-num text-[10px] font-bold text-[#f5b83d] w-12">7 Nov</span>
-            <a href="events.html#duo" class="flex-1 font-semibold text-white hover:underline truncate">Duo Cup · 2v2</a>
-            <span id="hcCalRelDuo" class="font-mono-num text-[10px] text-zinc-400">upcoming</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="font-mono-num text-[10px] font-bold text-[#5ad1e6] w-12">14 Nov</span>
-            <a href="events.html#solo" class="flex-1 font-semibold text-white hover:underline truncate">Solo Championship</a>
+            <a href="events.html" class="flex-1 font-semibold text-white hover:underline truncate">Who will be the first ever Odd and Even champion on 7 nov</a>
             <span id="hcCalRelSolo" class="font-mono-num text-[10px] text-zinc-400">upcoming</span>
           </div>
         </div>
@@ -734,29 +729,29 @@
         <a href="events.html" class="text-[10px] font-mono-num underline text-white shrink-0">events.html →</a>
       </div>
 
-      <!-- EVENT TICKET 1: DUO CUP · 2V2 -->
+      <!-- EVENT TICKET: ODD AND EVEN CHAMPIONSHIP -->
       <article class="rounded-2xl bg-[#16151c] border border-white/10 overflow-hidden shadow-lg">
         <div class="p-3.5 space-y-2.5">
           <div class="flex items-center justify-between gap-2">
-            <span class="font-mono-num text-[10px] font-bold text-[#f5b83d]">Duo Cup · 2v2 league</span>
-            <span id="hcEvStateDuo" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
+            <span class="font-mono-num text-[10px] font-bold text-[#f5b83d]">Championship · Solo Bracket Elimination</span>
+            <span id="hcEvStateSolo" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
           </div>
-          <h4 class="font-brand text-base font-bold text-white leading-snug">First Ever Duo Event for Odd &amp; Even</h4>
+          <h4 class="font-brand text-base font-bold text-white leading-snug">Who will be the first ever Odd and Even champion on 7 nov</h4>
           <p class="text-[11px] text-zinc-400 leading-relaxed">
-            Partner up with your trusted rival for the ultimate 2v2 Hand Cricket championship. Coordinate batting rotations and claim the inaugural Duo Cup trophy.
+            Step up to the inaugural championship on 7 November! Face the world's finest solo strikers in a high-stakes solo bracket elimination. Outwit your opponents, raise the special champion crown, and claim your place in the Hall of Fame with 2000 XPs.
           </p>
           <div class="grid grid-cols-3 gap-1.5 text-[10px]">
             <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
               <span class="text-zinc-400 block text-[9px]">Format</span>
-              <strong class="text-white">2v2 League</strong>
+              <strong class="text-white">Solo bracket elimination</strong>
             </div>
             <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
-              <span class="text-zinc-400 block text-[9px]">Team</span>
-              <strong class="text-white">You + Partner</strong>
+              <span class="text-zinc-400 block text-[9px]">Tournament date</span>
+              <strong class="text-white">7 Nov · 7 PM IST</strong>
             </div>
             <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
               <span class="text-zinc-400 block text-[9px]">Prize</span>
-              <strong class="text-[#f5b83d]">5,000 Elo Pool</strong>
+              <strong class="text-[#f5b83d]">Special champion crown and hall of frame with 2000 XPs</strong>
             </div>
           </div>
         </div>
@@ -767,79 +762,24 @@
           </div>
           <div class="grid grid-cols-4 gap-1.5 text-center">
             <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
-              <b id="hcDuoD" class="block font-mono-num text-sm font-extrabold">--</b>
-              <span class="text-[8px] text-zinc-400">DAYS</span>
-            </div>
-            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
-              <b id="hcDuoH" class="block font-mono-num text-sm font-extrabold">--</b>
-              <span class="text-[8px] text-zinc-400">HRS</span>
-            </div>
-            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
-              <b id="hcDuoM" class="block font-mono-num text-sm font-extrabold">--</b>
-              <span class="text-[8px] text-zinc-400">MIN</span>
-            </div>
-            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
-              <b id="hcDuoS" class="block font-mono-num text-sm font-extrabold">--</b>
-              <span class="text-[8px] text-zinc-400">SEC</span>
-            </div>
-          </div>
-          <button id="btnJoinEventDuo" type="button" class="w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#0d0c12] text-white transition shadow">
-            Register duo team
-          </button>
-        </div>
-      </article>
-
-      <!-- EVENT TICKET 2: SOLO CHAMPIONSHIP -->
-      <article class="rounded-2xl bg-[#16151c] border border-white/10 overflow-hidden shadow-lg">
-        <div class="p-3.5 space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <span class="font-mono-num text-[10px] font-bold text-[#5ad1e6]">Solo Championship · Grandmaster</span>
-            <span id="hcEvStateSolo" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">Registration open</span>
-          </div>
-          <h4 class="font-brand text-base font-bold text-white leading-snug">Who Will Become the First Champion of the Single Player Tournament?</h4>
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
-            Face the world's finest solo strikers and outwit the 2650 Elo Apex Oracle in the knockout brackets to claim the #1 solo crown.
-          </p>
-          <div class="grid grid-cols-3 gap-1.5 text-[10px]">
-            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
-              <span class="text-zinc-400 block text-[9px]">Format</span>
-              <strong class="text-white">Solo Knockout</strong>
-            </div>
-            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
-              <span class="text-zinc-400 block text-[9px]">Final Boss</span>
-              <strong class="text-white">Oracle · 2650</strong>
-            </div>
-            <div class="p-2 rounded-lg bg-white/[0.02] border border-white/10">
-              <span class="text-zinc-400 block text-[9px]">Prize</span>
-              <strong class="text-[#5ad1e6]">#1 Crown + HoF</strong>
-            </div>
-          </div>
-        </div>
-        <div class="bg-[#5ad1e6] text-[#0d0c12] p-3.5 space-y-2.5 border-t-2 border-dashed border-[#0d0c12]/35">
-          <div class="flex items-baseline justify-between">
-            <span class="font-brand text-2xl font-black">14 Nov</span>
-            <span class="font-mono-num text-[10px] font-bold opacity-80">Sat · 7:00 pm IST</span>
-          </div>
-          <div class="grid grid-cols-4 gap-1.5 text-center">
-            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
               <b id="hcSoloD" class="block font-mono-num text-sm font-extrabold">--</b>
               <span class="text-[8px] text-zinc-400">DAYS</span>
             </div>
-            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
               <b id="hcSoloH" class="block font-mono-num text-sm font-extrabold">--</b>
               <span class="text-[8px] text-zinc-400">HRS</span>
             </div>
-            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
               <b id="hcSoloM" class="block font-mono-num text-sm font-extrabold">--</b>
               <span class="text-[8px] text-zinc-400">MIN</span>
             </div>
-            <div class="bg-[#0d0c12]/90 text-[#5ad1e6] rounded-lg py-1.5">
+            <div class="bg-[#0d0c12]/90 text-[#f5b83d] rounded-lg py-1.5">
               <b id="hcSoloS" class="block font-mono-num text-sm font-extrabold">--</b>
               <span class="text-[8px] text-zinc-400">SEC</span>
             </div>
           </div>
           <button id="btnJoinEventSolo" type="button" class="w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#0d0c12] text-white transition shadow">
-            Enter solo bracket
+            Register for tournament
           </button>
         </div>
       </article>
@@ -851,7 +791,7 @@
         <div class="min-w-0">
           <div class="flex items-center gap-1.5">
             <h3 class="font-extrabold text-sm text-white font-brand truncate">🎖️ Achievements</h3>
-            <span id="achRankTierBadge" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-yellow-500/20 text-yellow-300 border border-yellow-400/35 shrink-0">
+            <span id="achRankTierBadge" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-yellow-500/10 text-yellow-300 border border-yellow-400/35 shrink-0">
               Rookie Striker
             </span>
           </div>
@@ -899,7 +839,7 @@
       <section class="glass-card rounded-2xl p-3 space-y-2 shrink-0">
         <!-- Status & Target Equation -->
         <div class="flex items-center justify-between text-[11px] font-mono-num">
-          <span id="inningsLabel" class="px-2 py-0.5 rounded-md font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+          <span id="inningsLabel" class="px-2 py-0.5 rounded-md font-bold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/30">
             TOSS PHASE
           </span>
           <div class="text-right">
@@ -1002,7 +942,7 @@
               <span>🪙</span>
               <span>Toss Decider</span>
             </span>
-            <span id="tossCallIndicator" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
+            <span id="tossCallIndicator" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/35">
               Selected Call: ODD
             </span>
           </div>
@@ -1027,7 +967,7 @@
 
         <!-- VIEW 2: TOSS DECISION (Bat or Bowl Selection) -->
         <div id="viewTossDecision" class="hidden glass-card rounded-2xl p-3.5 space-y-2.5 text-center">
-          <span id="tossWinnerTag" class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+          <span id="tossWinnerTag" class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
             YOU WON THE TOSS!
           </span>
           <div id="tossMathSummary" class="text-xs font-mono-num text-slate-300">
@@ -1077,7 +1017,7 @@
 
         <!-- VIEW 4: INNINGS BREAK -->
         <div id="viewInningsBreak" class="hidden glass-card rounded-2xl p-4 space-y-2 text-center">
-          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/35">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/10 text-amber-300 border border-amber-500/35">
             End of 1st Innings
           </span>
           <h3 id="breakHeadline" class="text-lg font-black text-white">Total: 42 Runs</h3>
@@ -1124,7 +1064,8 @@
         <p><strong>1. Toss:</strong> Call Odd or Even and pick a number (1–10). If the sum matches your call, you choose to Bat or Bowl first.</p>
         <p><strong>2. Scoring:</strong> Both players pick numbers (1–10). If numbers are different, the batter scores their runs. If numbers match exactly, the batter is <strong>OUT!</strong></p>
         <p><strong>3. The Chase:</strong> In Innings 2, roles swap. If the chasing team reaches the target, they win!</p>
-        <p><strong>4. Ratings:</strong> Multiplayer matches earn or lose ±8 Elo. Matches against bots are <strong>Casual Practice (Ratings Frozen)</strong>!</p>
+        <p><strong>4. Match Drawn (Tie):</strong> If the chasing team is bowled OUT when their score is <strong>exactly equal</strong> to the 1st Innings score (e.g. 5 vs 5, 1 run away from target 6), the match is an official <strong>MATCH DRAWN</strong>! In Multiplayer, both players' ratings remain unchanged (0 Elo change). In Bot matches, the match is drawn with ratings frozen.</p>
+        <p><strong>5. Ratings:</strong> Multiplayer wins/losses earn or lose ±8 Elo. Matches against bots are <strong>Casual Practice (Ratings Frozen)</strong>!</p>
       </div>
       <button id="btnGotItRules" class="w-full py-2.5 rounded-xl font-bold text-xs chess-green-btn">Got It!</button>
     </div>
@@ -1685,57 +1626,22 @@
         }
       }
 
-      async function saveEncryptedUsersMap(usersMap) {
+      function saveEncryptedUsersMap(usersMap) {
         try {
           localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
         } catch (e) {}
+      }
 
-        if (db) {
-          try {
-            const keys = Object.keys(usersMap);
-            for (const k of keys) {
-              const clean = k.trim().toUpperCase();
-              if (!isPlaceholderUsername(clean)) {
-                await Promise.allSettled([
-                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), usersMap[k], { merge: true }),
-                  setDoc(doc(db, 'accounts', clean), usersMap[k], { merge: true })
-                ]);
-                if (!cloudLeaderboard[clean] && (!STATE.humanPlayers || !STATE.humanPlayers[clean])) {
-                  const seedRec = {
-                    name: clean,
-                    countryCode: usersMap[k].countryCode || '+91',
-                    countryFlag: usersMap[k].countryFlag || '🇮🇳',
-                    countryName: usersMap[k].countryName || 'India',
-                    isRealRegisteredUser: true,
-                    elo: 1500,
-                    peak: 1500,
-                    wins: 0,
-                    losses: 0,
-                    matches: 0,
-                    totalRuns: 0,
-                    totalBalls: 0,
-                    highScore: 0,
-                    wicketsTaken: 0,
-                    wicketsLost: 0,
-                    ballsBowled: 0,
-                    weeklyEloGain: 0,
-                    weeklyWins: 0,
-                    weeklyLosses: 0,
-                    weeklyMatches: 0,
-                    weeklyRuns: 0,
-                    weeklyWickets: 0,
-                    updatedAt: Date.now()
-                  };
-                  cloudLeaderboard[clean] = seedRec;
-                  await Promise.allSettled([
-                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), seedRec, { merge: true }),
-                    setDoc(doc(db, 'leaderboard', clean), seedRec, { merge: true })
-                  ]);
-                }
-              }
-            }
-          } catch (e) {}
-        }
+      async function pushUserAccountToCloud(cleanName, uRecord) {
+        if (!db || !cleanName || !uRecord) return;
+        const clean = cleanName.trim().toUpperCase();
+        if (isPlaceholderUsername(clean)) return;
+        try {
+          await Promise.allSettled([
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uRecord, { merge: true }),
+            setDoc(doc(db, 'accounts', clean), uRecord, { merge: true })
+          ]);
+        } catch (e) {}
       }
 
       function loadActiveAuthSession() {
@@ -2350,81 +2256,60 @@
 
           initInviteListener();
 
+          let _cloudSyncDebounceTimer = null;
+          function scheduleDebouncedCloudSync() {
+            if (_cloudSyncDebounceTimer) return;
+            _cloudSyncDebounceTimer = setTimeout(() => {
+              _cloudSyncDebounceTimer = null;
+              syncLeaderboardRegistry();
+              renderLeaderboard();
+              renderView();
+            }, 120);
+          }
+
           const updateFromAccountsSnapshot = (snapshot) => {
+            let changed = false;
             snapshot.forEach((docSnap) => {
               if (docSnap.exists()) {
                 const uData = docSnap.data();
                 const uClean = String((uData && uData.username) || docSnap.id).trim().toUpperCase();
                 if (uClean && !isPlaceholderUsername(uClean)) {
                   cloudAccounts[uClean] = uData;
-                  if (!cloudLeaderboard[uClean]) {
-                    cloudLeaderboard[uClean] = {
-                      name: uClean,
-                      countryCode: uData.countryCode || '+91',
-                      countryFlag: uData.countryFlag || '🇮🇳',
-                      countryName: uData.countryName || 'India',
-                      isRealRegisteredUser: true,
-                      elo: 1500,
-                      peak: 1500,
-                      wins: 0,
-                      losses: 0,
-                      matches: 0,
-                      totalRuns: 0,
-                      totalBalls: 0,
-                      highScore: 0,
-                      wicketsTaken: 0,
-                      wicketsLost: 0,
-                      ballsBowled: 0,
-                      weeklyEloGain: 0,
-                      weeklyWins: 0,
-                      weeklyLosses: 0,
-                      weeklyMatches: 0,
-                      weeklyRuns: 0,
-                      weeklyWickets: 0,
-                      updatedAt: uData.migratedAt || Date.now()
-                    };
-                    if (db) {
-                      Promise.allSettled([
-                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', uClean), cloudLeaderboard[uClean], { merge: true }),
-                        setDoc(doc(db, 'leaderboard', uClean), cloudLeaderboard[uClean], { merge: true })
-                      ]).catch(() => {});
-                    }
-                  }
+                  changed = true;
                 }
               }
             });
-            window.__cloudAccounts = cloudAccounts;
-            window.__cloudLeaderboard = cloudLeaderboard;
-            reconcileAllNewPlayersIntoLeaderboard();
-            syncLeaderboardRegistry();
-            renderLeaderboard();
-            renderView();
+            if (changed) {
+              window.__cloudAccounts = cloudAccounts;
+              scheduleDebouncedCloudSync();
+            }
           };
 
           const updateFromLbSnapshot = (snapshot) => {
+            let changed = false;
             snapshot.forEach((docSnap) => {
               if (docSnap.exists()) {
                 const pData = docSnap.data();
                 const pClean = String((pData && (pData.name || pData.username)) || docSnap.id).trim().toUpperCase();
                 if (pClean && !isPlaceholderUsername(pClean)) {
                   cloudLeaderboard[pClean] = pData;
+                  changed = true;
                 }
               }
             });
-            window.__cloudLeaderboard = cloudLeaderboard;
-            reconcileAllNewPlayersIntoLeaderboard();
-            syncLeaderboardRegistry();
-            renderLeaderboard();
-            renderView();
+            if (changed) {
+              window.__cloudLeaderboard = cloudLeaderboard;
+              scheduleDebouncedCloudSync();
+            }
           };
 
-          // Primary collections under artifacts path
-          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'accounts'), updateFromAccountsSnapshot, (err) => console.warn('Mobile accounts snapshot error', err));
-          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), updateFromLbSnapshot, (err) => console.warn('Mobile leaderboard snapshot error', err));
-
-          // Root collection fallbacks (used by index.html and hand_cricket.js)
-          onSnapshot(collection(db, 'accounts'), updateFromAccountsSnapshot, () => {});
-          onSnapshot(collection(db, 'leaderboard'), updateFromLbSnapshot, () => {});
+          // Attach snapshot listeners with clean fallback (no duplicate simultaneous listeners)
+          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'accounts'), updateFromAccountsSnapshot, () => {
+            onSnapshot(collection(db, 'accounts'), updateFromAccountsSnapshot, () => {});
+          });
+          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), updateFromLbSnapshot, () => {
+            onSnapshot(collection(db, 'leaderboard'), updateFromLbSnapshot, () => {});
+          });
 
           const handlePurgedSnapshot = (snapshot) => {
             snapshot.forEach((docSnap) => {
@@ -2435,18 +2320,22 @@
             });
 
             const myCurrent = (STATE.myUsername || '').trim().toUpperCase();
-            if (cloudPurgedList.includes(myCurrent)) {
+            const sess = loadActiveAuthSession();
+            const sessUser = sess && sess.username ? sess.username.trim().toUpperCase() : '';
+            if (sessUser) {
+              cloudPurgedList = cloudPurgedList.filter(u => u !== sessUser);
+            }
+            if (myCurrent && myCurrent !== sessUser && cloudPurgedList.includes(myCurrent)) {
               handleAdminAccountEradication(myCurrent, cloudPurgedList);
               return;
             }
 
-            syncLeaderboardRegistry();
-            renderLeaderboard();
-            renderView();
+            scheduleDebouncedCloudSync();
           };
 
-          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts'), handlePurgedSnapshot, (err) => console.warn('Mobile purged snapshot error', err));
-          onSnapshot(collection(db, 'purged_accounts'), handlePurgedSnapshot, () => {});
+          onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts'), handlePurgedSnapshot, () => {
+            onSnapshot(collection(db, 'purged_accounts'), handlePurgedSnapshot, () => {});
+          });
 
           if (boundRoomCode) {
             bindCloudRoom(boundRoomCode);
@@ -2456,11 +2345,6 @@
             pendingRoomOutboundQueue = [];
             q.forEach((item) => sendCloudRoomMessage(item.roomCode, item.msgObj));
           }
-
-          try {
-            saveEncryptedUsersMap(loadEncryptedUsersMap());
-            saveWorldwidePlayersMap(STATE.humanPlayers, true);
-          } catch (e) {}
 
         } catch (e) {
           console.warn('Mobile cloud sync notice:', e);
@@ -2608,19 +2492,12 @@
         eventsUserStatsLine: document.getElementById('eventsUserStatsLine'),
         eventsInlineToast: document.getElementById('eventsInlineToast'),
         eventsInlineToastText: document.getElementById('eventsInlineToastText'),
-        hcCalRelDuo: document.getElementById('hcCalRelDuo'),
         hcCalRelSolo: document.getElementById('hcCalRelSolo'),
-        hcEvStateDuo: document.getElementById('hcEvStateDuo'),
         hcEvStateSolo: document.getElementById('hcEvStateSolo'),
-        hcDuoD: document.getElementById('hcDuoD'),
-        hcDuoH: document.getElementById('hcDuoH'),
-        hcDuoM: document.getElementById('hcDuoM'),
-        hcDuoS: document.getElementById('hcDuoS'),
         hcSoloD: document.getElementById('hcSoloD'),
         hcSoloH: document.getElementById('hcSoloH'),
         hcSoloM: document.getElementById('hcSoloM'),
         hcSoloS: document.getElementById('hcSoloS'),
-        btnJoinEventDuo: document.getElementById('btnJoinEventDuo'),
         btnJoinEventSolo: document.getElementById('btnJoinEventSolo'),
         lbWorldSyncText: document.getElementById('lbWorldSyncText'),
         btnSyncGlobalLb: document.getElementById('btnSyncGlobalLb'),
@@ -2978,7 +2855,12 @@
           }, true);
         });
 
-        if (!isPlaceholderUsername(STATE.myUsername) && purged.includes(STATE.myUsername.toUpperCase())) {
+        const activeAuthSess = loadActiveAuthSession();
+        const activeSessUname = activeAuthSess && activeAuthSess.username ? activeAuthSess.username.trim().toUpperCase() : '';
+        if (activeSessUname) {
+          cloudPurgedList = cloudPurgedList.filter(u => u !== activeSessUname);
+        }
+        if (!isPlaceholderUsername(STATE.myUsername) && purged.includes(STATE.myUsername.toUpperCase()) && STATE.myUsername !== activeSessUname) {
           sessionStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
@@ -3023,7 +2905,6 @@
       function renderLeaderboard() {
         if (!dom.leaderboardStandingsList) return;
 
-        syncLeaderboardRegistry();
         const activeRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
           countryCode: STATE.myCountryCode,
           countryFlag: STATE.myCountryFlag
@@ -3290,8 +3171,8 @@
         if (!dom.inlineNetStatusBadge) return;
         dom.inlineNetStatusBadge.textContent = text;
         dom.inlineNetStatusBadge.className = connected
-          ? 'text-[10px] font-mono-num font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-          : 'text-[10px] font-mono-num font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30';
+          ? 'text-[10px] font-mono-num font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/40'
+          : 'text-[10px] font-mono-num font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/30';
       }
 
       function setTossCall(callType) {
@@ -3358,106 +3239,8 @@
           };
         }
 
-        if (typeof Peer === 'undefined') return;
-
-        function cleanupDeadHubConns() {
-          STATE.globalHubConns = STATE.globalHubConns.filter((c) => c && c.open);
-        }
-
-        function attachGlobalConn(conn) {
-          if (!conn) return;
-          if (!STATE.globalHubConns.includes(conn)) STATE.globalHubConns.push(conn);
-          const sendInitial = () => {
-            try {
-              conn.send({
-                type: 'GLOBAL_LEADERBOARD_SYNC',
-                allPlayers: STATE.humanPlayers,
-                encryptedUsers: loadEncryptedUsersMap(),
-                requestReply: true,
-                timestamp: Date.now()
-              });
-            } catch (e) {}
-          };
-          if (conn.open) sendInitial();
-          else conn.on('open', sendInitial);
-          conn.on('close', cleanupDeadHubConns);
-          conn.on('error', cleanupDeadHubConns);
-          conn.on('data', (data) => {
-            if (!data || typeof data !== 'object') return;
-            if (data.type === 'GLOBAL_ACCOUNT_REMOVED' && data.username) {
-              handleAdminAccountEradication(data.username, data.purgedAccounts);
-              return;
-            }
-            if (data.type === 'FRIEND_MATCH_INVITE' && data.toUser) {
-              const myClean = (STATE.myUsername || '').trim().toUpperCase();
-              if (data.toUser.trim().toUpperCase() === myClean && data.fromUser !== myClean) {
-                showIncomingInviteBanner(data);
-              }
-              return;
-            }
-            if (data.type === 'FRIEND_ROOM_OPENED' && data.hostUser && data.roomCode) {
-              STATE.activeOpenRooms[data.hostUser.trim().toUpperCase()] = {
-                roomCode: data.roomCode,
-                hostUser: data.hostUser.trim().toUpperCase(),
-                timestamp: data.timestamp || Date.now()
-              };
-              if (STATE.activeScreen === 'FRIENDS') renderFriendsRoster();
-              return;
-            }
-            handleNetMessage(data);
-          });
-        }
-
-        function connectToOtherHubSlots(activePeer, myClaimedId) {
-          if (!activePeer || activePeer.destroyed) return;
-          cleanupDeadHubConns();
-          GLOBAL_HUB_IDS.forEach((hubId) => {
-            if (hubId === myClaimedId) return;
-            const alreadyOpen = STATE.globalHubConns.some((c) => c && c.peer === hubId && c.open);
-            if (alreadyOpen) return;
-            try {
-              const c = activePeer.connect(hubId);
-              attachGlobalConn(c);
-            } catch (e) {}
-          });
-        }
-
-        function tryClaimHubSlot(slotIdx) {
-          if (slotIdx >= GLOBAL_HUB_IDS.length) {
-            try {
-              const clientPeer = new Peer();
-              STATE.globalHubPeer = clientPeer;
-              clientPeer.on('open', (id) => {
-                connectToOtherHubSlots(clientPeer, id);
-                setInterval(() => connectToOtherHubSlots(clientPeer, id), 18000);
-              });
-              clientPeer.on('connection', (conn) => attachGlobalConn(conn));
-            } catch (e) {}
-            return;
-          }
-          const targetHubId = GLOBAL_HUB_IDS[slotIdx];
-          try {
-            const candidate = new Peer(targetHubId);
-            let opened = false;
-            candidate.on('open', (id) => {
-              opened = true;
-              STATE.globalHubPeer = candidate;
-              connectToOtherHubSlots(candidate, id);
-              setInterval(() => connectToOtherHubSlots(candidate, id), 18000);
-            });
-            candidate.on('connection', (conn) => attachGlobalConn(conn));
-            candidate.on('error', () => {
-              if (!opened) {
-                try { candidate.destroy(); } catch (e) {}
-                tryClaimHubSlot(slotIdx + 1);
-              }
-            });
-          } catch (e) {
-            tryClaimHubSlot(slotIdx + 1);
-          }
-        }
-
-        tryClaimHubSlot(0);
+        // On mobile, Firebase Firestore handles real-time cross-device sync.
+        // PeerJS is kept lightweight and activated specifically when user creates/joins a 1v1 multiplayer room.
       }
 
       function sendNetMessage(payload) {
@@ -4198,20 +3981,12 @@
       const EVENT_REG_MAP_KEY = 'oddandeven_event_regs_map_v1';
       const HC_EVENTS = [
         {
-          id: 'duo',
-          name: 'Duo Cup · 2v2',
+          id: 'solo',
+          name: 'Who will be the first ever Odd and Even champion on 7 nov',
           start: '2026-11-07T19:00:00+05:30',
           closes: '2026-11-05T23:59:00+05:30',
-          ctaDefault: 'Register duo team',
-          joinedMsg: "Registered for Duo Cup · 2v2! Share your room code with your partner before kickoff."
-        },
-        {
-          id: 'solo',
-          name: 'Solo Championship',
-          start: '2026-11-14T19:00:00+05:30',
-          closes: '2026-11-12T23:59:00+05:30',
-          ctaDefault: 'Enter solo bracket',
-          joinedMsg: 'Solo Championship bracket spot locked! Warm up in the Bot Arena.'
+          ctaDefault: 'Register for tournament',
+          joinedMsg: "Registered for tournament! Bracket spot saved. Warm up in the Arena."
         }
       ];
 
@@ -4290,13 +4065,13 @@
         const uRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
 
         if (dom.sideNavEventsSub) {
-          dom.sideNavEventsSub.textContent = regs.length > 0 ? `${regs.length}/2 Registered` : 'Season 1 · events.html';
+          dom.sideNavEventsSub.textContent = regs.length > 0 ? `${regs.length}/1 Registered` : 'Season 1 · events.html';
         }
         if (dom.sideNavEventsCountBadge) {
-          dom.sideNavEventsCountBadge.textContent = `${regs.length}/2`;
+          dom.sideNavEventsCountBadge.textContent = `${regs.length}/1`;
         }
         if (dom.eventsRegSummaryBadge) {
-          dom.eventsRegSummaryBadge.textContent = `${regs.length}/2 Registered`;
+          dom.eventsRegSummaryBadge.textContent = `${regs.length}/1 Registered`;
           dom.eventsRegSummaryBadge.className = regs.length > 0
             ? 'px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/50'
             : 'px-2 py-0.5 rounded-full text-[9px] font-mono-num font-extrabold bg-slate-800 text-slate-300 border border-slate-700';
@@ -4317,14 +4092,13 @@
           const mStr = pad2(Math.floor((totalSec % 3600) / 60));
           const sStr = pad2(totalSec % 60);
 
-          const isDuo = ev.id === 'duo';
-          const dEl = isDuo ? dom.hcDuoD : dom.hcSoloD;
-          const hEl = isDuo ? dom.hcDuoH : dom.hcSoloH;
-          const mEl = isDuo ? dom.hcDuoM : dom.hcSoloM;
-          const sEl = isDuo ? dom.hcDuoS : dom.hcSoloS;
-          const stateEl = isDuo ? dom.hcEvStateDuo : dom.hcEvStateSolo;
-          const relEl = isDuo ? dom.hcCalRelDuo : dom.hcCalRelSolo;
-          const btnEl = isDuo ? dom.btnJoinEventDuo : dom.btnJoinEventSolo;
+          const dEl = dom.hcSoloD;
+          const hEl = dom.hcSoloH;
+          const mEl = dom.hcSoloM;
+          const sEl = dom.hcSoloS;
+          const stateEl = dom.hcEvStateSolo;
+          const relEl = dom.hcCalRelSolo;
+          const btnEl = dom.btnJoinEventSolo;
 
           if (dEl) dEl.textContent = dStr;
           if (hEl) hEl.textContent = hStr;
@@ -4483,7 +4257,7 @@
             category: 'RANKED',
             icon: '🎟️',
             title: 'Tournament & Squad Ready',
-            desc: 'Register for a Season 1 Event (Duo Cup or Solo Championship) or add a Friend.',
+            desc: 'Register for the Season 1 Championship on 7 Nov or add a Friend.',
             current: regsCount + friendsCount,
             target: 1,
             unit: 'Entry / Friend',
@@ -4568,7 +4342,7 @@
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <h4 class="text-xs font-black ${isUnlocked ? 'text-white' : 'text-slate-200'} truncate">${a.title}</h4>
                       <span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold ${
-                        isUnlocked ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/40' : 'bg-slate-800 text-slate-400'
+                        isUnlocked ? 'bg-yellow-500/10 text-yellow-300 border border-yellow-400/40' : 'bg-slate-800 text-slate-400'
                       }">+${a.xp} XP</span>
                     </div>
                     <p class="text-[10px] text-slate-400 leading-snug mt-0.5">${a.desc}</p>
@@ -4576,7 +4350,7 @@
                 </div>
                 <span class="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-mono-num font-extrabold uppercase ${
                   isUnlocked
-                    ? 'bg-emerald-500/20 text-[#a3d96c] border border-[#81b64c]/50'
+                    ? 'bg-emerald-500/10 text-[#a3d96c] border border-[#81b64c]/50'
                     : 'bg-slate-800 text-slate-400 border border-slate-700'
                 }">
                   ${isUnlocked ? '✓ Unlocked' : 'Locked'}
@@ -4836,10 +4610,10 @@
               </div>
 
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" data-challenge-username="${fname}" class="btn-action-challenge-friend px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-purple-500/20 text-purple-300 border border-purple-500/35 hover:bg-purple-500/30 transition">
+                <button type="button" data-challenge-username="${fname}" class="btn-action-challenge-friend px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-purple-500/10 text-purple-300 border border-purple-500/35 hover:bg-purple-500/30 transition">
                   ⚔️ Play
                 </button>
-                <button type="button" data-remove-username="${fname}" class="btn-action-remove-friend w-7 h-7 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center justify-center text-xs hover:bg-rose-500/25 transition" title="Remove from friends">
+                <button type="button" data-remove-username="${fname}" class="btn-action-remove-friend w-7 h-7 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center justify-center text-xs hover:bg-rose-500/15 transition" title="Remove from friends">
                   ✕
                 </button>
               </div>
@@ -5421,8 +5195,8 @@
           SoundFX.runScored(6);
           dom.tossWinnerTag.textContent = `🎉 ${winnerTitle} WON THE TOSS!`;
           dom.tossWinnerTag.className = p1Won
-            ? 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-            : 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-400/40';
+            ? 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/10 text-emerald-300 border border-emerald-500/40'
+            : 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/10 text-cyan-300 border border-cyan-400/40';
           dom.aiTossChoiceContinue.classList.add('hidden');
 
           if (didIWinToss) {
@@ -5436,7 +5210,7 @@
         } else if (p1Won) {
           SoundFX.runScored(6);
           dom.tossWinnerTag.textContent = '🎉 YOU WON THE TOSS!';
-          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-500/10 text-emerald-300 border border-emerald-500/40';
           dom.tossDecisionSubtext.textContent = 'Choose whether to Bat or Bowl first:';
           dom.userTossChoiceButtons.classList.remove('hidden');
           dom.aiTossChoiceContinue.classList.add('hidden');
@@ -5446,7 +5220,7 @@
           const botChoseBat = STATE.botDifficulty === 'WALL' ? true : (Math.random() < 0.5);
           STATE.firstBatter = botChoseBat ? 'AI' : 'USER';
           dom.tossWinnerTag.textContent = `🤖 ${p2Name.toUpperCase()} WON THE TOSS`;
-          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-400/40';
+          dom.tossWinnerTag.className = 'inline-block px-3 py-1 rounded-full text-xs font-black uppercase bg-cyan-500/10 text-cyan-300 border border-cyan-400/40';
           dom.tossDecisionSubtext.textContent = `${p2Name} chose to ${botChoseBat ? 'BAT' : 'BOWL'} first!`;
           dom.userTossChoiceButtons.classList.add('hidden');
           dom.aiTossChoiceContinue.classList.remove('hidden');
@@ -5645,15 +5419,21 @@
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
         const amIGuest = mpMatch && STATE.onlineRole === 'GUEST';
-        const isDraw = (winner === 'DRAW' || STATE.isTossForfeit);
-        const didIWin = !isDraw && (amIGuest ? (winner === 'AI') : (winner === 'USER'));
+        const isDraw = (winner === 'DRAW');
+        const didIWin = !isDraw && !STATE.isTossForfeit && (amIGuest ? (winner === 'AI') : (winner === 'USER'));
 
-        if (isDraw) {
+        if (STATE.isTossForfeit) {
+          dom.gameOverTitle.textContent = '🏳️ TOSS FORFEIT';
+          dom.gameOverTitle.className = 'text-2xl font-black text-amber-400';
+        } else if (isDraw) {
           dom.gameOverTitle.textContent = '🤝 MATCH DRAWN';
           dom.gameOverTitle.className = 'text-2xl font-black text-amber-400';
+          SoundFX.runScored(6);
         } else {
           dom.gameOverTitle.textContent = didIWin ? '🏆 YOU WON!' : 'MATCH LOST';
           dom.gameOverTitle.className = didIWin ? 'text-2xl font-black text-emerald-400' : 'text-2xl font-black text-rose-500';
+          if (didIWin) SoundFX.victory();
+          else SoundFX.defeat();
         }
         dom.gameOverMargin.textContent = reason;
         STATE.lastOutcomeText = isDraw ? `🤝 Match Drawn! ${reason}` : (didIWin ? `🏆 You Won! ${reason}` : `Match Lost: ${reason}`);
@@ -6053,8 +5833,18 @@
         }
 
         const isUserBat = STATE.currentBatter === 'USER';
-        dom.userRoleBadge.textContent = isUserBat ? 'BAT' : 'BOWL';
-        dom.aiRoleBadge.textContent = !isUserBat ? 'BAT' : 'BOWL';
+        if (STATE.phase === 'GAME_OVER') {
+          if (STATE.winner === 'DRAW') {
+            dom.userRoleBadge.textContent = '🤝 DRAW';
+            dom.aiRoleBadge.textContent = '🤝 DRAW';
+          } else {
+            dom.userRoleBadge.textContent = STATE.winner === 'USER' ? '🏆 WINNER' : 'FINISHED';
+            dom.aiRoleBadge.textContent = STATE.winner === 'AI' ? '🏆 WINNER' : 'FINISHED';
+          }
+        } else {
+          dom.userRoleBadge.textContent = isUserBat ? 'BAT' : 'BOWL';
+          dom.aiRoleBadge.textContent = !isUserBat ? 'BAT' : 'BOWL';
+        }
 
         dom.viewToss.classList.toggle('hidden', STATE.phase !== 'TOSS');
         dom.viewTossDecision.classList.toggle('hidden', STATE.phase !== 'TOSS_DECISION');
@@ -6069,7 +5859,7 @@
           : (STATE.phase === 'INNINGS_1' ? '1ST INNINGS' : (STATE.phase === 'INNINGS_2' ? '2ND INNINGS' : 'GAME OVER'));
         dom.phaseBadge.textContent = dom.inningsLabel.textContent;
 
-        const navActive = 'w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/25 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 transition';
+        const navActive = 'w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 transition';
         const navIdle = 'w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition';
         if (dom.sideNavPitch) dom.sideNavPitch.className = STATE.activeScreen === 'PITCH' ? navActive : navIdle;
         if (dom.sideNavBot) dom.sideNavBot.className = STATE.activeScreen === 'BOT_SETUP' ? navActive : navIdle;
@@ -6157,9 +5947,6 @@
           renderEventsTabAndCountdowns();
           switchScreen('EVENTS');
         });
-        if (dom.btnJoinEventDuo) {
-          dom.btnJoinEventDuo.addEventListener('click', () => toggleEventRegistration('duo'));
-        }
         if (dom.btnJoinEventSolo) {
           dom.btnJoinEventSolo.addEventListener('click', () => toggleEventRegistration('solo'));
         }
@@ -6399,7 +6186,7 @@
               }
             }
 
-            usersMap[uname] = {
+            const newAccRecord = {
               username: uname,
               countryCode: dial,
               countryFlag: flag,
@@ -6407,7 +6194,9 @@
               encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
               createdAt: usersMap[uname]?.createdAt || new Date().toISOString()
             };
-            await saveEncryptedUsersMap(usersMap);
+            usersMap[uname] = newAccRecord;
+            saveEncryptedUsersMap(usersMap);
+            pushUserAccountToCloud(uname, newAccRecord);
 
             const sess = {
               username: uname,
@@ -6489,7 +6278,6 @@
         window.addEventListener('storage', (ev) => {
           if (!ev || !ev.key) return;
           if (ev.key === WORLDWIDE_PLAYERS_KEY || ev.key === DESKTOP_ELO_STORAGE_KEY || ev.key === AUTH_STORAGE_KEY || ev.key === EVENT_REG_KEY || ev.key === EVENT_REG_MAP_KEY) {
-            syncLeaderboardRegistry();
             renderLeaderboard();
             renderEventsTabAndCountdowns();
             renderAchievementsSection();
@@ -6518,6 +6306,13 @@
       }
 
       function boot() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('from') === 'login') {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        } catch (e) {}
+
         reconcileAllNewPlayersIntoLeaderboard();
         const sess = loadActiveAuthSession();
         if (sess && sess.username) {
