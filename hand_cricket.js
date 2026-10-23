@@ -5505,10 +5505,11 @@
               const rightLabel = isBotOrFrozen
                 ? `❄️ FROZEN (${h.newElo} ELO)`
                 : `${h.delta} ELO → ${h.newElo}`;
+              if (!h) return '';
+              const isDrawHistory = h.result === 'DRAW';
               const rightColor = isBotOrFrozen
                 ? 'text-cyan-300'
                 : (isDrawHistory ? 'text-amber-300' : (h.result === 'WIN' ? 'text-[#81b64c]' : 'text-rose-400'));
-              const isDrawHistory = h.result === 'DRAW';
               const titleText = h.result === 'FORFEIT'
                 ? `🏳️ Match Forfeited vs ${h.opponent}`
                 : (isDrawHistory
@@ -5645,7 +5646,15 @@
           el.targetHeaderLabel.textContent = 'PROJECTED TARGET';
           el.targetValueDisplay.textContent = score + 1;
           el.chaseProgressWrap.classList.add('hidden');
-          el.equationStatusText.textContent = `🏏 ${batterLabel} setting target • ⚾ ${bowlerLabel} bowling`;
+          if (STATE.phase === 'GAME_OVER') {
+            if (STATE.winner === 'DRAW') {
+              el.equationStatusText.textContent = '🤝 Match Drawn!';
+            } else {
+              el.equationStatusText.textContent = STATE.winner === 'USER' ? `🏆 ${p1Name} won the match!` : `🏆 ${p2Name} won the match!`;
+            }
+          } else {
+            el.equationStatusText.textContent = `🏏 ${batterLabel} setting target • ⚾ ${bowlerLabel} bowling`;
+          }
         } else {
           const p1Chasing = STATE.currentBatter === 'USER';
           const chaserName = p1Chasing ? p1Name : p2Name;
@@ -5806,7 +5815,16 @@
               : 'inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-500/10 text-rose-300 border border-rose-400/30';
             el.gameOverTitle.textContent = didIWin
               ? `🏆 ${winnerName} WON THE MATCH!`
-              : `❌ ${loserName} LOST — ${winnerName} WON!`;
+              : (isMultiplayer()
+                  ? `❌ ${loserName} LOST — ${winnerName} WON!`
+                  : `❌ You Lost — ${winnerName} Won!`);
+          }
+          if (el.gameOverBannerBox) {
+            el.gameOverBannerBox.className = isDraw
+              ? 'p-5 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 border border-amber-500/40 space-y-3 text-center'
+              : (didIWin
+                  ? 'p-5 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 border border-emerald-500/40 space-y-3 text-center'
+                  : 'p-5 rounded-2xl bg-gradient-to-br from-rose-950/90 via-slate-900 to-slate-950 border border-rose-500/40 space-y-3 text-center');
           }
           el.gameOverMargin.textContent = STATE.winMarginText;
           el.summaryUserScore.textContent = `${p1Name}: ${STATE.userScore} (${STATE.userBalls}b)`;
