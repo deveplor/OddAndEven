@@ -255,6 +255,37 @@
         } catch (e) {}
       }
 
+      function isRecentSignup(username) {
+        const clean = String(username || '').trim().toUpperCase();
+        if (!clean) return false;
+        try {
+          const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
+          return ts > 0 && (Date.now() - ts) < 25000;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function stampRecentSignup(username) {
+        const clean = String(username || '').trim().toUpperCase();
+        if (!clean) return;
+        try {
+          localStorage.setItem('oddandeven_recent_signup_' + clean, String(Date.now()));
+        } catch (e) {}
+      }
+
+      function isAccountAllowedByCloud(username) {
+        const clean = String(username || '').trim().toUpperCase();
+        if (!clean || isPlaceholderUsername(clean)) return false;
+        if (isRecentSignup(clean)) return true;
+        const purged = loadPurgedAccountsList();
+        if (purged.includes(clean)) return false;
+        if (window.__cloudAccountsLoaded && window.__cloudAuthoritativeAccounts && !window.__cloudAuthoritativeAccounts[clean]) {
+          return false;
+        }
+        return true;
+      }
+
       function unmarkAccountPurgedLocal(username) {
         const clean = (username || '').trim().toUpperCase();
         if (!clean) return;
@@ -345,7 +376,7 @@
         Object.keys(incomingUsers).forEach((k) => {
           const u = incomingUsers[k];
           const clean = ((u && u.username) ? u.username : k || '').trim().toUpperCase();
-          if (!clean || clean.length < 3 || FAKE_SEED_NAMES.includes(clean) || purged.includes(clean)) return;
+          if (!clean || clean.length < 3 || FAKE_SEED_NAMES.includes(clean) || !isAccountAllowedByCloud(clean)) return;
           if (u && typeof u === 'object') {
             const normalizedUser = Object.assign({}, u, { username: clean });
             if (!localMap[clean]) {
@@ -825,7 +856,7 @@
         let anyChanged = false;
         Object.keys(incomingMap).forEach((rawKey) => {
           const clean = (rawKey || '').trim().toUpperCase();
-          if (!clean || isPlaceholderUsername(clean) || purged.includes(clean)) return;
+          if (!clean || isPlaceholderUsername(clean) || !isAccountAllowedByCloud(clean)) return;
           const inc = incomingMap[rawKey];
           if (!inc || typeof inc !== 'object') return;
           const existing = STATE.humanPlayers[clean];
@@ -893,8 +924,8 @@
           try { return localStorage.getItem(SIGNED_OUT_FLAG_KEY) === '1'; } catch (e) { return false; }
         })();
         const sessUser = sess && sess.username ? sess.username.trim().toUpperCase() : '';
-        // If user just signed up or logged in via index.html/login.html, ensure they are never blocked by a stale purge entry
-        if (!signedOutExplicitly && sessUser && !isPlaceholderUsername(sessUser)) {
+        // Only unmark a purged account if it was freshly signed up within the last 25 seconds
+        if (!signedOutExplicitly && sessUser && !isPlaceholderUsername(sessUser) && isRecentSignup(sessUser)) {
           unmarkAccountPurgedLocal(sessUser);
         }
         const activePurged = loadPurgedAccountsList();
@@ -936,7 +967,7 @@
           });
         } catch (e) {}
 
-        if (!signedOutExplicitly && sessUser && !isPlaceholderUsername(sessUser) && !activePurged.includes(sessUser) && ((encryptedUsers[sessUser] && encryptedUsers[sessUser].encryptedAuth) || sess.loggedInAt)) {
+        if (!signedOutExplicitly && sessUser && !isPlaceholderUsername(sessUser) && isAccountAllowedByCloud(sessUser) && ((encryptedUsers[sessUser] && encryptedUsers[sessUser].encryptedAuth) || (sess.loggedInAt && (!window.__cloudAccountsLoaded || encryptedUsers[sessUser])))) {
           const verifiedAccount = encryptedUsers[sessUser];
           STATE.myUsername = sessUser;
           STATE.myCountryCode = verifiedAccount.countryCode || sess.countryCode || '+91';
@@ -1091,7 +1122,7 @@
         Object.keys(STATE.humanPlayers).forEach((k) => {
           const clean = (k || '').trim().toUpperCase();
           const rec = STATE.humanPlayers[k];
-          if (!rec || isPlaceholderUsername(clean) || activePurged.includes(clean)) {
+          if (!rec || isPlaceholderUsername(clean) || !isAccountAllowedByCloud(clean)) {
             delete STATE.humanPlayers[k];
             return;
           }
@@ -1347,6 +1378,7 @@
         btnCommOptHype: document.getElementById('btnCommOptHype'),
         btnCommOptTactical: document.getElementById('btnCommOptTactical'),
         btnCommOptClassic: document.getElementById('btnCommOptClassic'),
+        btnCommOptRoast: document.getElementById('btnCommOptRoast'),
         rightCommActiveTag: document.getElementById('rightCommActiveTag'),
         mpTossLockNotice: document.getElementById('mpTossLockNotice'),
         mpTossLockText: document.getElementById('mpTossLockText'),
@@ -1555,13 +1587,13 @@
           badge: 'VIKRAM • 1850 ELO (PREDICTOR)'
         },
         WALL: {
-          name: 'Apex Oracle (Master Unbeatable)',
+          name: 'Apex Grandmaster (Predictive AI)',
           shortName: 'Apex Oracle',
           elo: 2650,
           bracket: '2200–2800 ELO',
           tier: 'Master Tier',
           icon: '👑',
-          badge: 'ORACLE • 2650 ELO (UNBEATABLE)'
+          badge: 'GRANDMASTER • 2650 ELO'
         }
       };
 
@@ -1705,105 +1737,121 @@
             STATE.masterBotRecentPicks = [];
           }
 
-          if (typeof userNum === 'number' && userNum >= 1 && userNum <= 10) {
-            if (!isBotBatting) {
-              // Master Bot is BOWLING (User is Batting):
-              // Clean-bowls user with 100% predictive foresight so user CANNOT win!
-              if (STATE.currentInnings === 2) {
-                // In 2nd Innings: User is chasing target.
-                // Master Bot NEVER allows user to reach target!
-                const currentScore = STATE.userScore || 0;
-                const target = STATE.target || 999;
-                // If user would reach target or on ball 2+: 100% clean bowl!
-                if (currentScore + userNum >= target || STATE.userBalls >= 1) {
-                  return userNum; // CLEAN BOWLED! Target defended, Master Bot wins!
-                }
-                // On ball 1 only if userNum is small (<= 4): 40% chance hoverNum for suspense, else clean bowl
-                if (STATE.userBalls === 0 && userNum <= 4 && Math.random() < 0.4) {
-                  return userNum === 1 ? 2 : userNum - 1;
-                }
-                return userNum; // Instant dismissal
-              } else {
-                // In 1st Innings: User is setting target.
-                // Master Bot allows at most 1 delivery of small score (if userNum <= 5), then clean-bowls on ball 2!
-                const currentScore = STATE.userScore || 0;
-                if (STATE.userBalls === 0 && currentScore < 10 && userNum <= 5 && Math.random() < 0.5) {
-                  return userNum === 1 ? 2 : userNum - 1;
-                }
-                // Dismiss user immediately! User is bowled out for a very low target!
-                return userNum;
-              }
-            } else {
-              // Master Bot is BATTING (User is Bowling):
-              // User bowled userNum. Master Bot predicts bowling and NEVER matches userNum!
+          if (!isBotBatting) {
+            // Master Bot is BOWLING (User is Batting):
+            // Pure predictive bowling based on user history, Markov patterns, and psychology — NO finger tracking!
+            const wallScores = { ...patternScores };
+            const len = hist ? hist.length : 0;
+
+            // Situational adjustments for 2nd innings chase
+            if (STATE.currentInnings === 2) {
               const target = STATE.target || 999;
-              const need = STATE.currentInnings === 2 ? Math.max(1, target - (STATE.aiScore || 0)) : 999;
-
-              // In 2nd Innings: Winning shot logic
-              if (STATE.currentInnings === 2) {
-                if (need <= 10) {
-                  // Find all numbers >= need that are != userNum
-                  const winningShots = [];
-                  for (let n = need; n <= 10; n++) {
-                    if (n !== userNum) winningShots.push(n);
-                  }
-                  if (winningShots.length > 0) {
-                    // Win immediately on this delivery!
-                    const pick = winningShots.includes(need) ? need : winningShots[0];
-                    STATE.masterBotRecentPicks.push(pick);
-                    return pick;
-                  }
-                  // If need is 10 and userNum is 10, hit 9 so need becomes 1 (won on next ball)
-                  const safeCloser = [9, 8, 7].find(n => n !== userNum) || 8;
-                  STATE.masterBotRecentPicks.push(safeCloser);
-                  return safeCloser;
-                }
+              const currentScore = STATE.userScore || 0;
+              const need = target - currentScore;
+              if (need >= 1 && need <= 10) {
+                // User is under pressure and very likely to attempt a winning shot
+                wallScores[need] = (wallScores[need] || 1) + 4.5;
               }
-
-              // In 1st Innings: Bot sets a dominating target of 65-75 runs.
-              // Once it has scored 65+ runs and faced at least 7 balls, conclude innings on userNum
-              if (STATE.currentInnings === 1 && (STATE.aiScore || 0) >= 65 && (STATE.aiBalls || 0) >= 7) {
-                STATE.masterBotRecentPicks.push(userNum);
-                return userNum; // Innings declared with 65-75 runs! User will be bowled out in 1-2 balls in Innings 2!
-              }
-
-              // Natural, varied, high-scoring boundary selection (NO 10 or 9 repetitive loop!)
-              // Candidate high-scoring runs:
-              let candidates = [10, 8, 7, 9, 6, 5, 4].filter(n => n !== userNum && n !== STATE.lastAiNum);
-
-              // Check recent picks to prevent 10/9 ping-pong:
-              const rec = STATE.masterBotRecentPicks;
-              const rLen = rec.length;
-              if (rLen >= 2 && rec[rLen - 1] >= 9 && rec[rLen - 2] >= 9) {
-                // If last two were 9 or 10, exclude both 9 and 10 to force 8, 7, 6, or 5!
-                const nonTenNine = candidates.filter(n => n < 9);
-                if (nonTenNine.length > 0) {
-                  candidates = nonTenNine;
-                }
-              }
-
-              // Variety selection among top available candidates
-              let chosen;
-              if (candidates.length >= 3) {
-                // Randomly pick among the top 3 available numbers (e.g. mix of 8, 7, 10 or 7, 6, 8)
-                const topPicks = candidates.slice(0, 3);
-                chosen = topPicks[Math.floor(Math.random() * topPicks.length)];
-              } else if (candidates.length > 0) {
-                chosen = candidates[0];
-              } else {
-                chosen = [8, 7, 6, 5, 4, 3, 2, 1].find(n => n !== userNum) || (userNum === 10 ? 8 : 10);
-              }
-
-              STATE.masterBotRecentPicks.push(chosen);
-              if (STATE.masterBotRecentPicks.length > 10) {
-                STATE.masterBotRecentPicks.shift();
-              }
-              return chosen;
             }
-          }
 
-          // Fallback if userNum not provided
-          return !isBotBatting ? (rankedUserNums[0] || 7) : 8;
+            // Repetition habit adjustment: humans rarely repeat the same number 3+ times
+            if (len >= 2 && hist[len - 1] === hist[len - 2]) {
+              const repNum = hist[len - 1];
+              wallScores[repNum] = Math.max(0.5, (wallScores[repNum] || 1) * 0.4);
+            }
+
+            const wallRanked = Object.keys(wallScores).map(Number).sort((a, b) => wallScores[b] - wallScores[a]);
+
+            // Opening delivery when user history is empty
+            if (len === 0) {
+              const openingPicks = [
+                { num: 7, weight: 30 },
+                { num: 6, weight: 25 },
+                { num: 4, weight: 15 },
+                { num: 10, weight: 15 },
+                { num: 8, weight: 10 },
+                { num: 5, weight: 5 }
+              ];
+              const rand = Math.random() * 100;
+              let acc = 0;
+              for (const item of openingPicks) {
+                acc += item.weight;
+                if (rand < acc) return item.num;
+              }
+              return 7;
+            }
+
+            // Weighted probabilistic selection:
+            // 55% top predicted shot, 25% 2nd predicted, 12% 3rd predicted, 8% tactical variation
+            const roll = Math.random();
+            if (roll < 0.55 && wallRanked[0]) {
+              return wallRanked[0];
+            } else if (roll < 0.80 && wallRanked[1]) {
+              return wallRanked[1];
+            } else if (roll < 0.92 && wallRanked[2]) {
+              return wallRanked[2];
+            } else {
+              const tacticalTraps = [4, 5, 6, 7, 8, 10];
+              return tacticalTraps[Math.floor(Math.random() * tacticalTraps.length)];
+            }
+          } else {
+            // Master Bot is BATTING (User is Bowling):
+            // Plays fair strategic shots without inspecting bowler's current number.
+            // Avoids predicted bowler danger traps and selects high-scoring boundary runs.
+            const dangerDeliveries = rankedUserNums.slice(0, 2);
+
+            // In 2nd Innings: Smart chase calculation
+            if (STATE.currentInnings === 2) {
+              const target = STATE.target || 999;
+              const currentScore = STATE.aiScore || 0;
+              const need = Math.max(1, target - currentScore);
+              if (need <= 10) {
+                const winningShots = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1].filter(n => n >= need && n !== STATE.lastAiNum);
+                const safeWinning = winningShots.filter(n => !dangerDeliveries.includes(n));
+                const candidates = safeWinning.length > 0 ? safeWinning : winningShots;
+                if (candidates.length > 0) {
+                  const pick = candidates.includes(need) ? need : candidates[0];
+                  STATE.masterBotRecentPicks.push(pick);
+                  return pick;
+                }
+              }
+            }
+
+            // High-scoring candidates (10, 8, 7, 9, 6, 5, 4) avoiding consecutive repetition
+            let candidates = [10, 8, 7, 9, 6, 5, 4].filter(n => n !== STATE.lastAiNum);
+
+            // Prevent repetitive 9/10 ping-pong
+            const rec = STATE.masterBotRecentPicks;
+            const rLen = rec.length;
+            if (rLen >= 2 && rec[rLen - 1] >= 9 && rec[rLen - 2] >= 9) {
+              const sub = candidates.filter(n => n < 9);
+              if (sub.length > 0) candidates = sub;
+            }
+
+            // 85% probability of dodging the bowler's top anticipated delivery
+            if (dangerDeliveries.length > 0 && Math.random() < 0.85) {
+              const safeCandidates = candidates.filter(n => !dangerDeliveries.includes(n));
+              if (safeCandidates.length > 0) {
+                candidates = safeCandidates;
+              }
+            }
+
+            let chosen;
+            if (candidates.length >= 3) {
+              const topPicks = candidates.slice(0, 3);
+              chosen = topPicks[Math.floor(Math.random() * topPicks.length)];
+            } else if (candidates.length > 0) {
+              chosen = candidates[0];
+            } else {
+              chosen = randomInt1To10();
+            }
+
+            STATE.masterBotRecentPicks.push(chosen);
+            if (STATE.masterBotRecentPicks.length > 10) {
+              STATE.masterBotRecentPicks.shift();
+            }
+            return chosen;
+          }
         }
 
         // Default fallback
@@ -1815,6 +1863,12 @@
         const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
         if (eventType === 'TOSS') {
+          if (style === 'ROAST') {
+            return {
+              tag: '💀 ROAST TOSS',
+              quote: `"${ctx.p1} threw ${ctx.u} and ${ctx.p2} threw ${ctx.a} (Sum: ${ctx.sum}). ${ctx.winner} wins the toss — let's see who embarrasses themselves first at the crease!"`
+            };
+          }
           if (style === 'TACTICAL') {
             return {
               tag: 'TOSS ANALYSIS',
@@ -1828,11 +1882,43 @@
         }
 
         if (eventType === 'WICKET') {
-          if (STATE.botDifficulty === 'WALL') {
+          if (style === 'ROAST') {
+            const duckRoasts = [
+              `"🦆 GOLDEN DUCK HUMILIATION! ${ctx.batter} walked in, threw ${ctx.u}, and speedran straight back to the pavilion for ZERO runs! Even the scoreboard operator is laughing!"`,
+              `"💀 0 RUNS?! ${ctx.batter} spent more time walking to the crease than actually batting! Read like a toddler's picture book by ${ctx.bowler} on ${ctx.u}!"`,
+              `"🤡 CERTIFIED DUCK! ${ctx.batter} really thought ${ctx.u} was a 200-IQ opening move and got deleted for 0! Pack your bags and don't look back!"`
+            ];
+            const lowScoreRoasts = [
+              `"💀 ABSOLUTE EMBARRASSMENT ON ${ctx.u}! ${ctx.batter} scraped together a pitiful ${ctx.score} runs before ${ctx.bowler} exposed that predictable pattern!"`,
+              `"😂 BLINK AND YOU MISSED IT! ${ctx.batter} lasted ${ctx.balls} ball${ctx.balls === 1 ? '' : 's'} for a measly ${ctx.score} runs! ${ctx.bowler} didn't even break a sweat on ${ctx.u}!"`,
+              `"🤡 CAUGHT IN 4K ON ${ctx.u}! ${ctx.batter} telegraphed that shot from a mile away! Dismissed for ${ctx.score} — walk of shame back to the dugout!"`
+            ];
+            const generalRoasts = [
+              `"💀 SAVAGE HUMILIATION ON ${ctx.u}! ${ctx.bowler} lived rent-free inside ${ctx.batter}'s head and sent them packing for ${ctx.score}! That dismissal goes straight to the blooper reel!"`,
+              `"🪦 RIP INNINGS! ${ctx.batter} really flashed ${ctx.u} right into ${ctx.bowler}'s obvious trap! Out for ${ctx.score} — somebody check if their controller disconnected!"`,
+              `"💀 COOKED AT THE CREASE! ${ctx.bowler} read ${ctx.batter}'s ${ctx.u} like morning newspaper! Out for ${ctx.score} in ${ctx.balls} balls — pure humiliation!"`,
+              `"🤡 FREE WICKET DELIVERY! ${ctx.batter} gift-wrapped ${ctx.u} with a ribbon on top for ${ctx.bowler}! Sent back to the pavilion on ${ctx.score}!"`
+            ];
+            const roastQuote = ctx.score === 0
+              ? pick(duckRoasts)
+              : (ctx.score < 15 ? pick(lowScoreRoasts) : pick(generalRoasts));
             return {
-              tag: '🔮 ORACLE FORESIGHT!',
-              quote: `"MIND-READING DISMISSAL! Master Oracle predicted ${ctx.batter}'s exact next move of ${ctx.u} before the hand was even thrown! Clean bowled — completely unbeatable!"`
+              tag: ctx.score === 0 ? '🦆 DUCK ROAST!' : '💀 ROASTED & HUMILIATED!',
+              quote: roastQuote
             };
+          }
+          if (STATE.botDifficulty === 'WALL') {
+            if (ctx.bowler === 'AI' || ctx.bowler === 'Apex Oracle' || ctx.bowler === 'Apex Grandmaster' || ctx.batter === 'YOU' || (typeof getP1Label === 'function' && ctx.batter === getP1Label())) {
+              return {
+                tag: '🔮 GRANDMASTER READ!',
+                quote: `"TACTICAL MASTERCLASS! Master Bot anticipated ${ctx.batter}'s shot pattern and delivered ${ctx.u}! Clean bowled by pure prediction!"`
+              };
+            } else {
+              return {
+                tag: '💥 MASSIVE BREAKTHROUGH!',
+                quote: `"UNBELIEVABLE BOWLING! ${ctx.bowler} outsmarted Master Bot on ${ctx.u}! The Grandmaster is clean bowled for ${ctx.score}!"`
+              };
+            }
           }
           const hypeWickets = [
             `"HOWZAT?! CLEAN BOWLED ON ${ctx.u}! ${ctx.bowler} read ${ctx.batter}'s mind like an open book! The stumps go cartwheeling!"`,
@@ -1853,8 +1939,8 @@
           const r = ctx.runs;
           if (STATE.botDifficulty === 'WALL' && STATE.currentBatter === 'AI') {
             return {
-              tag: `🔮 ORACLE EVASION +${r}`,
-              quote: `"UNBEATABLE FORESIGHT! Master Oracle predicted ${ctx.bowler}'s delivery (${ctx.bowlerNum}) in advance, effortlessly evading the wicket and smashing +${r} runs!"`
+              tag: `⚡ MASTER STROKE +${r}`,
+              quote: `"SUPERB TIMING! Master Bot reads the field, avoids the trap, and crunches +${r} runs through the gap!"`
             };
           }
           const diff = Math.abs(ctx.u - ctx.a);
@@ -2147,19 +2233,173 @@
           handleNetMessage(msg);
         };
 
-        // Expose hook for Firebase Cloud Sync module so cloud updates merge seamlessly without lag
-        window.__onCloudLeaderboardUpdate = function (cloudPlayersMap, cloudAccountsMap, cloudPurgedArr) {
+        function scrubAccountCompletelyFromWebsite(uname, notifyIfCurrentUser = true) {
+          const clean = String(uname || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean) || isRecentSignup(clean)) return false;
+          let changed = false;
+
+          const uMap = loadEncryptedUsersMap();
+          if (uMap[clean]) {
+            delete uMap[clean];
+            saveEncryptedUsersMap(uMap);
+            changed = true;
+          }
+
+          if (STATE.humanPlayers && STATE.humanPlayers[clean]) {
+            delete STATE.humanPlayers[clean];
+            changed = true;
+          }
+
+          if (Array.isArray(STATE.eloHistory)) {
+            const prevLen = STATE.eloHistory.length;
+            STATE.eloHistory = STATE.eloHistory.filter(
+              (h) => h && String(h.p1Name || '').trim().toUpperCase() !== clean && String(h.opponent || '').trim().toUpperCase() !== clean
+            );
+            if (STATE.eloHistory.length !== prevLen) changed = true;
+          }
+
+          if (Array.isArray(STATE.matchScorecards)) {
+            const prevSc = STATE.matchScorecards.length;
+            STATE.matchScorecards = STATE.matchScorecards.filter(
+              (m) => m && String(m.p1Name || '').trim().toUpperCase() !== clean && String(m.p2Name || '').trim().toUpperCase() !== clean
+            );
+            if (STATE.matchScorecards.length !== prevSc) changed = true;
+          }
+
+          try {
+            const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+            if (wRaw) {
+              const wMap = JSON.parse(wRaw) || {};
+              if (wMap[clean]) {
+                delete wMap[clean];
+                localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(wMap));
+                changed = true;
+              }
+            }
+          } catch (e) {}
+
+          try {
+            localStorage.removeItem('oddandeven_friends_' + clean);
+            if (STATE.friendsMap) {
+              delete STATE.friendsMap[clean];
+              Object.keys(STATE.friendsMap).forEach((owner) => {
+                if (Array.isArray(STATE.friendsMap[owner])) {
+                  STATE.friendsMap[owner] = STATE.friendsMap[owner].filter((fn) => String(fn || '').trim().toUpperCase() !== clean);
+                }
+              });
+              saveFriendsMap();
+            }
+            if (STATE.friendRequestsMap) {
+              delete STATE.friendRequestsMap[clean];
+              Object.keys(STATE.friendRequestsMap).forEach((target) => {
+                if (Array.isArray(STATE.friendRequestsMap[target])) {
+                  STATE.friendRequestsMap[target] = STATE.friendRequestsMap[target].filter((r) => r && String(r.from || '').trim().toUpperCase() !== clean);
+                }
+              });
+              saveFriendRequestsMap();
+            }
+          } catch (e) {}
+
+          try {
+            const rawEv = localStorage.getItem('oddandeven_event_regs_map_v1');
+            if (rawEv) {
+              const evMap = JSON.parse(rawEv) || {};
+              if (evMap[clean]) {
+                delete evMap[clean];
+                localStorage.setItem('oddandeven_event_regs_map_v1', JSON.stringify(evMap));
+              }
+            }
+            if (localStorage.getItem('oddandeven_last_user_v1') === clean) {
+              localStorage.removeItem('oddandeven_last_user_v1');
+            }
+          } catch (e) {}
+
+          const activeSess = loadActiveAuthSession();
+          const sessUser = activeSess && activeSess.username ? String(activeSess.username).trim().toUpperCase() : '';
+          const isCurrent = (String(STATE.myUsername || '').trim().toUpperCase() === clean) || (sessUser === clean);
+
+          if (isCurrent) {
+            try {
+              sessionStorage.removeItem(SESSION_STORAGE_KEY);
+              localStorage.removeItem(SESSION_STORAGE_KEY);
+              localStorage.removeItem('oddandeven_just_logged_in');
+              localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+            } catch (e) {}
+            if (STATE.roomCode) {
+              try { leaveMultiplayerRoom(); } catch (e) {}
+            }
+            stopTurnTimer();
+            STATE.mode = 'AI';
+            STATE.isAuthenticated = false;
+            STATE.myUsername = 'GUEST';
+            STATE.p1Name = 'GUEST';
+            STATE.eloRating = 1500;
+            STATE.peakElo = 1500;
+            STATE.lastEloDelta = null;
+            changed = true;
+
+            if (notifyIfCurrentUser) {
+              STATE.modalAuthMode = 'LOGIN';
+              if (el.modalTabLogin && el.modalTabSignup) {
+                el.modalTabLogin.className = 'py-2 px-3 rounded-lg text-xs font-extrabold bg-[#81b64c] text-white';
+                el.modalTabSignup.className = 'py-2 px-3 rounded-lg text-xs font-extrabold text-slate-300 hover:text-white';
+              }
+              if (el.authModal) {
+                el.authModal.classList.remove('hidden');
+                el.authModal.classList.add('flex');
+              }
+              if (el.modalInputUsername) el.modalInputUsername.value = clean;
+              if (el.modalInputPin5) el.modalInputPin5.value = '';
+              if (el.modalAuthAlert) {
+                el.modalAuthAlert.classList.remove('hidden');
+                el.modalAuthAlert.className = 'p-2.5 rounded-xl text-xs font-bold border bg-rose-500/15 border-rose-400/40 text-rose-200';
+                el.modalAuthAlert.textContent = `Username "${clean}" not found! This account was removed. You can create it again in the Sign Up option.`;
+              }
+              enforceMandatoryAuthGate(`Username "${clean}" not found! You can create this account again in the Sign Up option.`);
+            }
+          }
+
+          if (changed) {
+            saveLocalStatsOnly();
+          }
+          return changed;
+        }
+        window.__scrubAccountCompletelyFromWebsite = scrubAccountCompletelyFromWebsite;
+
+        // Expose hook for Firebase Cloud Sync module so cloud updates & deletions reconcile seamlessly
+        window.__onCloudLeaderboardUpdate = function (cloudPlayersMap, cloudAccountsMap, cloudPurgedArr, isAuthoritative) {
           let changed = false;
           if (Array.isArray(cloudPurgedArr)) {
             cloudPurgedArr.forEach((pName) => {
               const clean = (pName || '').trim().toUpperCase();
-              if (clean && clean !== STATE.myUsername && STATE.humanPlayers[clean]) {
+              if (clean && !isRecentSignup(clean)) {
                 markAccountPurgedLocal(clean);
-                delete STATE.humanPlayers[clean];
-                changed = true;
+                if (scrubAccountCompletelyFromWebsite(clean, true)) {
+                  changed = true;
+                }
               }
             });
           }
+
+          if (isAuthoritative && cloudAccountsMap && typeof cloudAccountsMap === 'object') {
+            const localVault = loadEncryptedUsersMap();
+            const allLocalCandidates = new Set([
+              ...Object.keys(localVault || {}),
+              ...Object.keys(STATE.humanPlayers || {})
+            ]);
+            if (STATE.isAuthenticated && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+              allLocalCandidates.add(String(STATE.myUsername).trim().toUpperCase());
+            }
+            allLocalCandidates.forEach((u) => {
+              const clean = String(u || '').trim().toUpperCase();
+              if (clean && !isPlaceholderUsername(clean) && !cloudAccountsMap[clean] && !isRecentSignup(clean)) {
+                if (scrubAccountCompletelyFromWebsite(clean, true)) {
+                  changed = true;
+                }
+              }
+            });
+          }
+
           if (cloudAccountsMap && typeof cloudAccountsMap === 'object') {
             if (mergeEncryptedUsersMap(cloudAccountsMap)) changed = true;
             const purgedNow = loadPurgedAccountsList();
@@ -3874,21 +4114,6 @@
         }
         stopTurnTimer();
         let aiNum = randomInt1To10();
-        if (STATE.botDifficulty === 'WALL') {
-          // Master Oracle foresight: predicts user's toss call & hand to win the toss
-          const userCall = STATE.tossCall || 'ODD';
-          const wantSumEven = userCall === 'ODD'; // If user called ODD, bot wants sum to be EVEN
-          const candidateOdds = [1, 3, 5, 7, 9];
-          const candidateEvens = [2, 4, 6, 8, 10];
-          const isUserNumEven = userNum % 2 === 0;
-          if (wantSumEven) {
-            const pool = isUserNumEven ? candidateEvens : candidateOdds;
-            aiNum = pool[Math.floor(Math.random() * pool.length)];
-          } else {
-            const pool = isUserNumEven ? candidateOdds : candidateEvens;
-            aiNum = pool[Math.floor(Math.random() * pool.length)];
-          }
-        }
         resolveTossNumbers(userNum, aiNum);
       }
 
@@ -3949,7 +4174,7 @@
           STATE.lastOutcomeText = `🎉 ${p2} (P2) Won the Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
           triggerCanvasReveal(`${p2} (P2) WON TOSS!`, `Sum is ${sum} (${sumParity}) — ${p2} chooses Bat or Bowl`, '#38bdf8', true);
         } else {
-          const aiChoosesBat = STATE.botDifficulty === 'WALL' ? true : (Math.random() < 0.5);
+          const aiChoosesBat = Math.random() < 0.6;
           STATE.firstBatter = aiChoosesBat ? 'AI' : 'USER';
           SoundFX.click();
           STATE.lastOutcomeText = `${p2} Won Toss (${userNum} + ${aiNum} = ${sum}) & chose to ${aiChoosesBat ? 'BAT' : 'BOWL'} first!`;
@@ -4155,7 +4380,7 @@
             const firstInningsScore = isUserBatting ? STATE.userScore : STATE.aiScore;
             STATE.target = firstInningsScore + 1;
             STATE.phase = 'INNINGS_BREAK';
-            STATE.lastOutcomeText = `OUT! Both played ${userNum}! (${bowlerName} takes wicket) • Target: ${STATE.target}.`;
+            STATE.lastOutcomeText = STATE.commentaryStyle === 'ROAST' ? `${wComm.quote.replace(/^"|"$/g, '')} • Target: ${STATE.target}` : `OUT! Both played ${userNum}! (${bowlerName} takes wicket) • Target: ${STATE.target}.`;
             triggerCanvasReveal(
               `OUT ON ${userNum}!`,
               `Wicket by ${bowlerName} • Target: ${STATE.target} Runs`,
@@ -4906,7 +5131,7 @@
           ? `<span>🌐</span><span>${p1Name} vs ${p2Name}</span>`
           : `<span>${botProf.icon}</span><span>${botProf.name}</span>`;
 
-        const styleNames = { HYPE: '🎙️ Hype Broadcast', TACTICAL: '🧠 Tactical Analyst', CLASSIC: '📻 Classic Feed' };
+        const styleNames = { HYPE: '🎙️ Hype Broadcast', TACTICAL: '🧠 Tactical Analyst', CLASSIC: '📻 Classic Feed', ROAST: '💀 Roast Broadcast' };
         el.sidebarCommentaryStyleBadge.textContent = styleNames[STATE.commentaryStyle] || styleNames.HYPE;
         el.commentaryMoodChip.textContent = STATE.commentaryStyle + ' MODE';
 
@@ -5214,11 +5439,15 @@
 
         // Update Right Sidebar Commentary Options active button state
         if (el.btnCommOptHype && el.btnCommOptTactical && el.btnCommOptClassic) {
-          const commActiveCls = 'py-2 px-2 rounded-lg text-[11px] font-extrabold transition bg-[#81b64c] text-white shadow';
-          const commIdleCls = 'py-2 px-2 rounded-lg text-[11px] font-bold transition text-slate-300 hover:text-white bg-transparent';
+          const commActiveCls = 'py-2 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-[#81b64c] text-white shadow';
+          const commRoastActiveCls = 'py-2 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-rose-600 text-white shadow';
+          const commIdleCls = 'py-2 px-1.5 rounded-lg text-[11px] font-bold transition text-slate-300 hover:text-white bg-transparent';
           el.btnCommOptHype.className = STATE.commentaryStyle === 'HYPE' ? commActiveCls : commIdleCls;
           el.btnCommOptTactical.className = STATE.commentaryStyle === 'TACTICAL' ? commActiveCls : commIdleCls;
           el.btnCommOptClassic.className = STATE.commentaryStyle === 'CLASSIC' ? commActiveCls : commIdleCls;
+          if (el.btnCommOptRoast) {
+            el.btnCommOptRoast.className = STATE.commentaryStyle === 'ROAST' ? commRoastActiveCls : commIdleCls;
+          }
         }
         if (el.rightCommActiveTag) {
           el.rightCommActiveTag.textContent = `${STATE.commentaryStyle} MODE`;
@@ -7086,26 +7315,41 @@
           openAuthModal(true);
         };
 
-        const executeRemoveCurrentAccount = () => {
+        const executeRemoveCurrentAccount = async () => {
           SoundFX.click();
           const unameToRemove = (STATE.myUsername || '').trim().toUpperCase();
           if (!unameToRemove || isPlaceholderUsername(unameToRemove)) return;
 
-          // 1. Delete from Encrypted Users Vault
+          if (el.btnConfirmRemoveAccount) {
+            el.btnConfirmRemoveAccount.disabled = true;
+            el.btnConfirmRemoveAccount.textContent = '🗑️ Removing Account…';
+          }
+
           const usersMap = loadEncryptedUsersMap();
+          const activeSess = loadActiveAuthSession();
+          const targetGoogleUid = (usersMap[unameToRemove] && usersMap[unameToRemove].googleUid) || (activeSess && activeSess.googleUid) || null;
+
+          // Clear recent signup timestamp so cloud & local deletion is never skipped
+          try {
+            localStorage.removeItem('oddandeven_recent_signup_' + unameToRemove);
+          } catch (e) {}
+
+          // 1. Delete from Encrypted Users Vault & all website storage
           if (usersMap[unameToRemove]) {
             delete usersMap[unameToRemove];
             saveEncryptedUsersMap(usersMap);
           }
-
-          // 2. Delete from Leaderboard & Worldwide Players Registry
-          markAccountPurgedLocal(unameToRemove);
-          delete STATE.humanPlayers[unameToRemove];
-          if (typeof window.__purgeCloudAccount === 'function') {
-            try { window.__purgeCloudAccount(unameToRemove); } catch (e) {}
+          if (window.__cloudAuthoritativeAccounts) {
+            delete window.__cloudAuthoritativeAccounts[unameToRemove];
           }
-          STATE.eloHistory = STATE.eloHistory.filter((h) => h.p1Name !== unameToRemove && h.opponent !== unameToRemove);
-          STATE.matchScorecards = STATE.matchScorecards.filter((m) => m.p1Name !== unameToRemove && m.p2Name !== unameToRemove);
+
+          markAccountPurgedLocal(unameToRemove);
+          if (typeof window.__scrubAccountCompletelyFromWebsite === 'function') {
+            try { window.__scrubAccountCompletelyFromWebsite(unameToRemove, false); } catch (e) {}
+          }
+          delete STATE.humanPlayers[unameToRemove];
+          STATE.eloHistory = STATE.eloHistory.filter((h) => h && h.p1Name !== unameToRemove && h.opponent !== unameToRemove);
+          STATE.matchScorecards = STATE.matchScorecards.filter((m) => m && m.p1Name !== unameToRemove && m.p2Name !== unameToRemove);
 
           try {
             localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(STATE.humanPlayers));
@@ -7120,15 +7364,20 @@
             sessionStorage.removeItem(SESSION_STORAGE_KEY);
             localStorage.removeItem(SESSION_STORAGE_KEY);
             localStorage.removeItem('oddandeven_just_logged_in');
+            localStorage.removeItem('oddandeven_last_user_v1');
             localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
           } catch (e) {}
 
-          // 3. Broadcast removal across BroadcastChannel and PeerJS Hub
+          // 2. Broadcast removal across BroadcastChannel, storage bus, and PeerJS Hub
           const removalPacket = {
             type: 'GLOBAL_ACCOUNT_REMOVED',
             username: unameToRemove,
+            purgedAccounts: loadPurgedAccountsList(),
             timestamp: Date.now()
           };
+          try {
+            localStorage.setItem('oddandeven_account_eradicated_bus', JSON.stringify(removalPacket));
+          } catch (e) {}
           const gbc = getSharedGlobalBc();
           if (gbc) {
             try { gbc.postMessage(removalPacket); } catch (e) {}
@@ -7156,13 +7405,28 @@
           STATE.eloRating = 1500;
           STATE.peakElo = 1500;
           STATE.lastEloDelta = null;
+
+          // 3. Permanently delete from Firestore Database AND Firebase Authentication before redirecting
+          if (typeof window.__purgeCloudAccount === 'function') {
+            try {
+              await Promise.race([
+                window.__purgeCloudAccount(unameToRemove, targetGoogleUid),
+                new Promise((resolve) => setTimeout(resolve, 4000))
+              ]);
+            } catch (e) {}
+          }
+
+          if (el.btnConfirmRemoveAccount) {
+            el.btnConfirmRemoveAccount.disabled = false;
+            el.btnConfirmRemoveAccount.textContent = '🗑️ Yes, Remove Account';
+          }
           if (el.modalRemoveConfirmBox) el.modalRemoveConfirmBox.classList.add('hidden');
           setModalAuthTab('SIGNUP');
           renderAll();
 
           // Redirect to index.html after account removal
           if (!redirectToMainPage('?removed=1')) {
-            enforceMandatoryAuthGate(`🗑️ Account "${unameToRemove}" removed! Redirecting to index.html (on live site) — create a new account below to play.`);
+            enforceMandatoryAuthGate(`🗑️ Account "${unameToRemove}" permanently removed from website, Firestore & Authentication! You can create it again in the Sign Up option.`);
           }
         };
 
@@ -7208,7 +7472,7 @@
           el.modalSelectCountry.addEventListener('change', updateModalKeyPreview);
         }
         if (el.btnModalSubmitAuth) {
-          el.btnModalSubmitAuth.addEventListener('click', () => {
+          el.btnModalSubmitAuth.addEventListener('click', async () => {
             const uname = (el.modalInputUsername.value || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
             const pin5 = (el.modalInputPin5.value || '').trim();
             const opt = el.modalSelectCountry.options[el.modalSelectCountry.selectedIndex];
@@ -7237,28 +7501,67 @@
               return;
             }
 
-            const usersMap = loadEncryptedUsersMap();
-            if (STATE.modalAuthMode === 'SIGNUP' || !usersMap[uname]) {
-              if (usersMap[uname] && STATE.modalAuthMode === 'SIGNUP') {
-                if (!verifyUserCredentials(usersMap[uname], dial, pin5)) {
-                  showModalMsg(`Username ${uname} already exists! Enter its matching country code & 5-digit password.`, false);
-                  return;
+            let usersMap = loadEncryptedUsersMap();
+            // Verify with Firebase in real time if cloud bridge is ready
+            if (typeof window.__verifyCloudAccount === 'function') {
+              try {
+                const cloudCheck = await window.__verifyCloudAccount(uname);
+                if (cloudCheck && cloudCheck.checked) {
+                  if (cloudCheck.exists && cloudCheck.data) {
+                    usersMap[uname] = Object.assign({}, usersMap[uname] || {}, cloudCheck.data, { username: uname });
+                    saveEncryptedUsersMap(usersMap);
+                  } else {
+                    if (typeof window.__scrubAccountCompletelyFromWebsite === 'function') {
+                      window.__scrubAccountCompletelyFromWebsite(uname, false);
+                    }
+                    usersMap = loadEncryptedUsersMap();
+                    delete usersMap[uname];
+                    saveEncryptedUsersMap(usersMap);
+                  }
                 }
-              } else {
-                usersMap[uname] = {
-                  username: uname,
-                  countryCode: dial,
-                  countryName: cName,
-                  countryFlag: cFlag,
-                  encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
-                  createdAt: new Date().toISOString()
-                };
-                saveEncryptedUsersMap(usersMap);
+              } catch (e) {}
+            } else if (!isAccountAllowedByCloud(uname)) {
+              if (typeof window.__scrubAccountCompletelyFromWebsite === 'function') {
+                window.__scrubAccountCompletelyFromWebsite(uname, false);
               }
-            } else {
+              usersMap = loadEncryptedUsersMap();
+              delete usersMap[uname];
+              saveEncryptedUsersMap(usersMap);
+            }
+
+            if (STATE.modalAuthMode === 'LOGIN') {
+              if (!usersMap[uname]) {
+                showModalMsg(`Username "${uname}" not found! You can create this account again in the Sign Up option.`, false);
+                return;
+              }
               if (!verifyUserCredentials(usersMap[uname], dial, pin5)) {
                 showModalMsg(`Incorrect country code (${dial}) or 5-digit password for ${uname}!`, false);
                 return;
+              }
+            } else {
+              // SIGNUP MODE
+              if (usersMap[uname]) {
+                showModalMsg(`Username "${uname}" is already registered! Switch to Login to sign in.`, false);
+                return;
+              }
+              stampRecentSignup(uname);
+              unmarkAccountPurgedLocal(uname);
+              if (typeof window.__unpurgeCloudAccount === 'function') {
+                try { await window.__unpurgeCloudAccount(uname); } catch (e) {}
+              }
+              // Reset any old cached stats so re-created account starts fresh at 1500 ELO
+              delete STATE.humanPlayers[uname];
+              usersMap[uname] = {
+                username: uname,
+                countryCode: dial,
+                countryName: cName,
+                countryFlag: cFlag,
+                encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
+                createdAt: new Date().toISOString()
+              };
+              saveEncryptedUsersMap(usersMap);
+              if (window.__cloudAuthoritativeAccounts) {
+                window.__cloudAuthoritativeAccounts[uname] = usersMap[uname];
               }
             }
 
@@ -7395,12 +7698,15 @@
         if (el.btnCommOptClassic) {
           el.btnCommOptClassic.addEventListener('click', () => setCommentaryModeDirect('CLASSIC'));
         }
+        if (el.btnCommOptRoast) {
+          el.btnCommOptRoast.addEventListener('click', () => setCommentaryModeDirect('ROAST'));
+        }
 
         el.cardQuickBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
         el.cardQuickMp.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
         el.cardQuickCommentary.addEventListener('click', () => {
           SoundFX.click();
-          const order = ['HYPE', 'TACTICAL', 'CLASSIC'];
+          const order = ['HYPE', 'TACTICAL', 'CLASSIC', 'ROAST'];
           const next = order[(order.indexOf(STATE.commentaryStyle) + 1) % order.length];
           STATE.commentaryStyle = next;
           el.botSetupCommentaryStyle.value = next;
@@ -7571,7 +7877,7 @@
   }
   if (!firebaseConfig) {
     firebaseConfig = {
-      apiKey: "AIzaSyDW9c3rkUo5kvXTyAVFjvcuGsi3D0SimLk",
+      apiKey: "AIzaSyDDeP-6rWqo0WFuMHv5jKtBVBuLnCz5Id0",
       authDomain: "oddeven-1c742.firebaseapp.com",
       projectId: "oddeven-1c742",
       storageBucket: "oddeven-1c742.firebasestorage.app",
@@ -7590,17 +7896,152 @@
   ])
     .then(async ([appMod, authMod, firestoreMod]) => {
       const { initializeApp, getApps, getApp } = appMod;
-      const { getAuth, signInAnonymously, signInWithCustomToken } = authMod;
-      const { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } = firestoreMod;
+      const { getAuth, signInAnonymously, signInWithCustomToken, deleteUser, signOut } = authMod;
+      const { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection } = firestoreMod;
 
       const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
 
       let currentUser = null;
+      let artAccounts = {};
+      let rootAccounts = {};
+      let artPlayers = {};
+      let rootPlayers = {};
+      let artPurged = [];
+      let rootPurged = [];
+
+      let artAccLoaded = false;
+      let rootAccLoaded = false;
+      let artLbLoaded = false;
+      let rootLbLoaded = false;
+
       let cloudPlayers = {};
       let cloudAccounts = {};
       let cloudPurged = [];
+
+      const isRecentCloudSignup = (uname) => {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return false;
+        try {
+          const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
+          return ts > 0 && (Date.now() - ts) < 25000;
+        } catch (e) {
+          return false;
+        }
+      };
+
+      const deleteAllCloudAccountMirrors = async (uname) => {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!db || !clean || isRecentCloudSignup(clean)) return;
+        try {
+          await Promise.allSettled([
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
+            deleteDoc(doc(db, 'accounts', clean)),
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean)),
+            deleteDoc(doc(db, 'leaderboard', clean))
+          ]);
+        } catch (e) {}
+      };
+
+      const recomputeAuthoritativeCloudState = () => {
+        if (!artAccLoaded && !rootAccLoaded) return;
+        cloudPurged = Array.from(new Set([...artPurged, ...rootPurged])).filter((u) => !isRecentCloudSignup(u));
+
+        let knownLbUsers = [];
+        try {
+          const rawKnown = localStorage.getItem('oddandeven_known_lb_users_v1');
+          if (rawKnown) knownLbUsers = JSON.parse(rawKnown) || [];
+        } catch (e) {}
+        const knownLbSet = new Set(Array.isArray(knownLbUsers) ? knownLbUsers : []);
+
+        const allSeen = new Set([
+          ...Object.keys(artAccounts),
+          ...Object.keys(rootAccounts),
+          ...Object.keys(artPlayers),
+          ...Object.keys(rootPlayers)
+        ]);
+
+        const nextAccounts = {};
+        const nextPlayers = {};
+
+        allSeen.forEach((clean) => {
+          if (cloudPurged.includes(clean) && !isRecentCloudSignup(clean)) {
+            deleteAllCloudAccountMirrors(clean);
+            return;
+          }
+          const inArtAcc = Boolean(artAccounts[clean]);
+          const inRootAcc = Boolean(rootAccounts[clean]);
+          const inArtLb = Boolean(artPlayers[clean]);
+          const inRootLb = Boolean(rootPlayers[clean]);
+
+          let validInAcc = false;
+          if (artAccLoaded && rootAccLoaded) {
+            validInAcc = (inArtAcc && inRootAcc) || (isRecentCloudSignup(clean) && (inArtAcc || inRootAcc));
+          } else if (artAccLoaded) {
+            validInAcc = inArtAcc;
+          } else if (rootAccLoaded) {
+            validInAcc = inRootAcc;
+          }
+
+          let deletedFromLb = false;
+          if (knownLbSet.has(clean) && !isRecentCloudSignup(clean)) {
+            if (artLbLoaded && !inArtLb) deletedFromLb = true;
+            if (rootLbLoaded && !inRootLb) deletedFromLb = true;
+          }
+
+          if (validInAcc && !deletedFromLb) {
+            nextAccounts[clean] = Object.assign({}, rootAccounts[clean] || {}, artAccounts[clean] || {}, { username: clean });
+            if (inArtLb || inRootLb) {
+              nextPlayers[clean] = Object.assign({}, rootPlayers[clean] || {}, artPlayers[clean] || {}, { name: clean });
+            }
+          } else if (!isRecentCloudSignup(clean)) {
+            deleteAllCloudAccountMirrors(clean);
+            if (typeof window.__scrubAccountCompletelyFromWebsite === 'function') {
+              window.__scrubAccountCompletelyFromWebsite(clean, true);
+            }
+          }
+        });
+
+        if (artLbLoaded && rootLbLoaded) {
+          const nextKnownLb = Object.keys(nextAccounts).filter((u) => artPlayers[u] && rootPlayers[u]);
+          try {
+            localStorage.setItem('oddandeven_known_lb_users_v1', JSON.stringify(nextKnownLb));
+          } catch (e) {}
+        }
+
+        cloudAccounts = nextAccounts;
+        cloudPlayers = nextPlayers;
+        window.__cloudAccountsLoaded = Boolean(artAccLoaded && rootAccLoaded);
+        window.__cloudAuthoritativeAccounts = cloudAccounts;
+
+        if (typeof window.__onCloudLeaderboardUpdate === 'function') {
+          window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged, window.__cloudAccountsLoaded);
+        }
+      };
+
+      const handleRemovedDocsInSnapshot = (snapshot, targetMap) => {
+        if (!snapshot || typeof snapshot.docChanges !== 'function') return;
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'removed') {
+            const d = change.doc;
+            const data = d ? d.data() : null;
+            const clean = String((data && (data.username || data.name)) || (d && d.id) || '').trim().toUpperCase();
+            if (clean && !isRecentCloudSignup(clean)) {
+              delete targetMap[clean];
+              delete artAccounts[clean];
+              delete rootAccounts[clean];
+              delete artPlayers[clean];
+              delete rootPlayers[clean];
+              if (window.__cloudAuthoritativeAccounts) delete window.__cloudAuthoritativeAccounts[clean];
+              deleteAllCloudAccountMirrors(clean);
+              if (typeof window.__scrubAccountCompletelyFromWebsite === 'function') {
+                window.__scrubAccountCompletelyFromWebsite(clean, true);
+              }
+            }
+          }
+        });
+      };
 
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -7614,98 +8055,153 @@
         console.warn('Anonymous sign-in notice:', e);
       }
 
-      // Live snapshot listeners for real-time multiplayer synchronization
+      // Live snapshot listeners for real-time multiplayer & deletion synchronization
       try {
         const accountsCol = collection(db, 'artifacts', appId, 'public', 'data', 'accounts');
         onSnapshot(accountsCol, (snapshot) => {
-          cloudAccounts = {};
+          handleRemovedDocsInSnapshot(snapshot, artAccounts);
+          artAccounts = {};
           snapshot.forEach((docSnap) => {
             if (docSnap.exists()) {
-              cloudAccounts[docSnap.id] = docSnap.data();
+              const d = docSnap.data();
+              const c = String((d && d.username) || docSnap.id).trim().toUpperCase();
+              if (c) artAccounts[c] = d;
             }
           });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+          artAccLoaded = true;
+          recomputeAuthoritativeCloudState();
         }, (err) => console.warn('Cloud accounts snapshot notice:', err));
 
         const lbCol = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
         onSnapshot(lbCol, (snapshot) => {
-          cloudPlayers = {};
+          handleRemovedDocsInSnapshot(snapshot, artPlayers);
+          artPlayers = {};
           snapshot.forEach((docSnap) => {
             if (docSnap.exists()) {
-              cloudPlayers[docSnap.id] = docSnap.data();
+              const d = docSnap.data();
+              const c = String((d && (d.name || d.username)) || docSnap.id).trim().toUpperCase();
+              if (c) artPlayers[c] = d;
             }
           });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+          artLbLoaded = true;
+          recomputeAuthoritativeCloudState();
         }, (err) => console.warn('Cloud leaderboard snapshot notice:', err));
 
         const purgedCol = collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts');
         onSnapshot(purgedCol, (snapshot) => {
-          cloudPurged = [];
+          artPurged = [];
           snapshot.forEach((docSnap) => {
             if (docSnap.exists()) {
-              cloudPurged.push(docSnap.id.toUpperCase());
+              artPurged.push(docSnap.id.toUpperCase());
             }
           });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+          recomputeAuthoritativeCloudState();
         }, (err) => console.warn('Cloud purged snapshot notice:', err));
       } catch (e) {
         console.warn('Snapshot listeners setup notice:', e);
       }
 
-      // Root collection fallback listeners
+      // Root collection listeners
       try {
         onSnapshot(collection(db, 'accounts'), (snapshot) => {
+          handleRemovedDocsInSnapshot(snapshot, rootAccounts);
+          rootAccounts = {};
           snapshot.forEach((docSnap) => {
-            if (docSnap.exists()) cloudAccounts[docSnap.id.toUpperCase()] = docSnap.data();
+            if (docSnap.exists()) {
+              const d = docSnap.data();
+              const c = String((d && d.username) || docSnap.id).trim().toUpperCase();
+              if (c) rootAccounts[c] = d;
+            }
           });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+          rootAccLoaded = true;
+          recomputeAuthoritativeCloudState();
         }, () => {});
 
         onSnapshot(collection(db, 'leaderboard'), (snapshot) => {
+          handleRemovedDocsInSnapshot(snapshot, rootPlayers);
+          rootPlayers = {};
           snapshot.forEach((docSnap) => {
-            if (docSnap.exists()) cloudPlayers[docSnap.id.toUpperCase()] = docSnap.data();
+            if (docSnap.exists()) {
+              const d = docSnap.data();
+              const c = String((d && (d.name || d.username)) || docSnap.id).trim().toUpperCase();
+              if (c) rootPlayers[c] = d;
+            }
           });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+          rootLbLoaded = true;
+          recomputeAuthoritativeCloudState();
         }, () => {});
 
         onSnapshot(collection(db, 'purged_accounts'), (snapshot) => {
+          rootPurged = [];
           snapshot.forEach((docSnap) => {
             if (docSnap.exists()) {
-              const p = docSnap.id.toUpperCase();
-              if (!cloudPurged.includes(p)) cloudPurged.push(p);
+              rootPurged.push(docSnap.id.toUpperCase());
             }
           });
-          if (typeof window.__onCloudLeaderboardUpdate === 'function') {
-            window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged);
-          }
+          recomputeAuthoritativeCloudState();
         }, () => {});
       } catch (e) {}
+
+      window.__verifyCloudAccount = async function (username) {
+        const clean = String(username || '').trim().toUpperCase();
+        if (!db || !clean) return { checked: false, exists: false, data: null };
+        try {
+          const [sArt, sRoot, pArt, pRoot] = await Promise.all([
+            getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
+            getDoc(doc(db, 'accounts', clean)),
+            getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean)),
+            getDoc(doc(db, 'purged_accounts', clean))
+          ]);
+          const isPurged = (pArt && pArt.exists()) || (pRoot && pRoot.exists());
+          const existsInBoth = Boolean(sArt && sArt.exists() && sRoot && sRoot.exists()) && !isPurged;
+          if (!existsInBoth) {
+            await deleteAllCloudAccountMirrors(clean);
+            return { checked: true, exists: false, data: null };
+          }
+          return { checked: true, exists: true, data: sArt.data() || sRoot.data() };
+        } catch (e) {
+          return { checked: false, exists: false, data: null };
+        }
+      };
+
+      window.__unpurgeCloudAccount = async function (username) {
+        if (!db || !username) return;
+        const clean = String(username).trim().toUpperCase();
+        artPurged = artPurged.filter((u) => u !== clean);
+        rootPurged = rootPurged.filter((u) => u !== clean);
+        cloudPurged = cloudPurged.filter((u) => u !== clean);
+        try {
+          await Promise.allSettled([
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean)),
+            deleteDoc(doc(db, 'purged_accounts', clean))
+          ]);
+        } catch (e) {}
+      };
 
       window.__syncCloudLeaderboard = async function (humanPlayersMap, usersVault, activeUsername) {
         if (!db) return;
         try {
+          const canPushUser = (clean) => {
+            if (!clean || clean.length < 3 || clean === 'GUEST' || clean === 'PLAYER_1' || clean === 'WAITING...' || clean === 'HOST') return false;
+            if (isRecentCloudSignup(clean)) return true;
+            if (cloudPurged.includes(clean)) return false;
+            if (window.__cloudAccountsLoaded && (!cloudAccounts || !cloudAccounts[clean])) return false;
+            return true;
+          };
+
           if (usersVault && typeof usersVault === 'object') {
             for (const k of Object.keys(usersVault)) {
               const clean = (k || '').trim().toUpperCase();
-              if (clean && clean.length >= 3 && clean !== 'GUEST' && clean !== 'PLAYER_1' && clean !== 'WAITING...' && clean !== 'HOST') {
+              if (canPushUser(clean)) {
                 const uPayload = usersVault[k];
                 await Promise.allSettled([
                   setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true }),
                   setDoc(doc(db, 'accounts', clean), uPayload, { merge: true })
                 ]);
-                if (!cloudAccounts[clean]) cloudAccounts[clean] = uPayload;
+                artAccounts[clean] = uPayload;
+                rootAccounts[clean] = uPayload;
+                cloudAccounts[clean] = uPayload;
 
-                // Ensure every account is also migrated to the cloud leaderboard!
                 if (!cloudPlayers[clean] && (!humanPlayersMap || !humanPlayersMap[clean])) {
                   const seedRec = {
                     name: clean,
@@ -7732,6 +8228,8 @@
                     weeklyWickets: 0,
                     updatedAt: Date.now()
                   };
+                  artPlayers[clean] = seedRec;
+                  rootPlayers[clean] = seedRec;
                   cloudPlayers[clean] = seedRec;
                   await Promise.allSettled([
                     setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), seedRec, { merge: true }),
@@ -7745,11 +8243,13 @@
             for (const k of Object.keys(humanPlayersMap)) {
               const clean = (k || '').trim().toUpperCase();
               const localRec = humanPlayersMap[k];
-              if (!clean || !localRec || !localRec.isRealRegisteredUser || clean === 'GUEST' || clean === 'PLAYER_1' || clean === 'WAITING...' || clean === 'HOST') continue;
+              if (!localRec || !localRec.isRealRegisteredUser || !canPushUser(clean)) continue;
               const cloudRec = cloudPlayers[clean];
               const mergedRec = typeof window.__mergeSinglePlayerRecord === 'function' && cloudRec
                 ? window.__mergeSinglePlayerRecord(cloudRec, localRec).record
                 : localRec;
+              artPlayers[clean] = mergedRec;
+              rootPlayers[clean] = mergedRec;
               cloudPlayers[clean] = mergedRec;
               await Promise.allSettled([
                 setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), mergedRec, { merge: true }),
@@ -7760,28 +8260,68 @@
         } catch (e) {}
       };
 
-      // Trigger immediate cloud sync for all local accounts and leaderboard entries
-      try {
-        const localVault = typeof loadEncryptedUsersMap === 'function' ? loadEncryptedUsersMap() : {};
-        const localPlayers = (typeof STATE !== 'undefined' && STATE && STATE.humanPlayers) ? STATE.humanPlayers : {};
-        const myU = (typeof STATE !== 'undefined' && STATE && STATE.myUsername) ? STATE.myUsername : null;
-        window.__syncCloudLeaderboard(localPlayers, localVault, myU);
-      } catch (e) {}
-
-      window.__purgeCloudAccount = async function (username) {
-        if (!db || !username) return;
+      window.__purgeCloudAccount = async function (username, googleUid = null) {
+        if (!username) return;
         const clean = username.trim().toUpperCase();
         try {
-          const purgeDoc = { username: clean, purgedAt: Date.now() };
-          await Promise.allSettled([
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean), purgeDoc),
-            setDoc(doc(db, 'purged_accounts', clean), purgeDoc),
-            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean)),
-            deleteDoc(doc(db, 'leaderboard', clean)),
-            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
-            deleteDoc(doc(db, 'accounts', clean))
-          ]);
+          localStorage.removeItem('oddandeven_recent_signup_' + clean);
         } catch (e) {}
+        const uidToDelete = googleUid || (cloudAccounts[clean] && cloudAccounts[clean].googleUid) || (artAccounts[clean] && artAccounts[clean].googleUid) || (rootAccounts[clean] && rootAccounts[clean].googleUid) || (auth && auth.currentUser ? auth.currentUser.uid : null);
+
+        delete artAccounts[clean];
+        delete rootAccounts[clean];
+        delete artPlayers[clean];
+        delete rootPlayers[clean];
+        delete cloudAccounts[clean];
+        delete cloudPlayers[clean];
+        if (window.__cloudAuthoritativeAccounts) {
+          delete window.__cloudAuthoritativeAccounts[clean];
+        }
+
+        // 1. Permanently delete all account & player documents from Firestore Database
+        if (db) {
+          try {
+            const purgeDoc = { username: clean, purgedAt: Date.now() };
+            const tasks = [
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean), purgeDoc),
+              setDoc(doc(db, 'purged_accounts', clean), purgeDoc),
+              deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean)),
+              deleteDoc(doc(db, 'leaderboard', clean)),
+              deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
+              deleteDoc(doc(db, 'accounts', clean)),
+              deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', clean)),
+              deleteDoc(doc(db, 'friends', clean)),
+              deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', clean)),
+              deleteDoc(doc(db, 'friend_requests', clean)),
+              deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean)),
+              deleteDoc(doc(db, 'invites', clean))
+            ];
+            if (uidToDelete) {
+              tasks.push(deleteDoc(doc(db, 'artifacts', appId, 'users', uidToDelete, 'profile', 'main')));
+            }
+            await Promise.allSettled(tasks);
+          } catch (e) {}
+        }
+
+        // 2. Permanently delete user from Firebase Authentication
+        if (auth && auth.currentUser) {
+          try {
+            if (typeof deleteUser === 'function') {
+              await deleteUser(auth.currentUser);
+            }
+          } catch (e) {
+            try {
+              if (typeof signOut === 'function') {
+                await signOut(auth);
+              }
+            } catch (err) {}
+          }
+          currentUser = null;
+          try {
+            const cred = await signInAnonymously(auth);
+            currentUser = cred.user;
+          } catch (e) {}
+        }
       };
 
       // Real-time Cloud Room Signaling
