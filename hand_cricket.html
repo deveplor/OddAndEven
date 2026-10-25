@@ -531,7 +531,7 @@
                   <span class="text-xs font-extrabold text-white">Live Commentary</span>
                   <span id="commentaryMoodChip" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300">HYPE</span>
                 </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Click to cycle Hype, Tactical & Classic broadcast styles.</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Click to cycle Hype, Tactical, Classic & Roast broadcast styles.</p>
               </div>
             </button>
           </div>
@@ -652,6 +652,7 @@
               <option value="HYPE">🔥 Stadium Hype Broadcast (Energetic)</option>
               <option value="TACTICAL">🧠 Pro Analyst & Mind-Games</option>
               <option value="CLASSIC">📻 Classic Crisp Cricket Feed</option>
+              <option value="ROAST">💀 Roast Commentary (Humiliates on Wicket)</option>
             </select>
           </div>
         </div>
@@ -1616,16 +1617,19 @@
             </span>
           </div>
 
-          <!-- 3-Way Commentary Broadcast Mode Switcher -->
-          <div class="grid grid-cols-3 gap-1.5 bg-[#211f1c] p-1 rounded-xl border border-[#45423e]">
-            <button id="btnCommOptHype" type="button" class="py-2 px-2 rounded-lg text-[11px] font-extrabold transition bg-[#81b64c] text-white shadow">
+          <!-- 4-Way Commentary Broadcast Mode Switcher (including Roast Commentary) -->
+          <div class="grid grid-cols-4 gap-1 bg-[#211f1c] p-1 rounded-xl border border-[#45423e]">
+            <button id="btnCommOptHype" type="button" class="py-2 px-1.5 rounded-lg text-[11px] font-extrabold transition bg-[#81b64c] text-white shadow">
               🔥 Hype
             </button>
-            <button id="btnCommOptTactical" type="button" class="py-2 px-2 rounded-lg text-[11px] font-bold transition text-slate-300 hover:text-white">
+            <button id="btnCommOptTactical" type="button" class="py-2 px-1.5 rounded-lg text-[11px] font-bold transition text-slate-300 hover:text-white">
               🧠 Tactical
             </button>
-            <button id="btnCommOptClassic" type="button" class="py-2 px-2 rounded-lg text-[11px] font-bold transition text-slate-300 hover:text-white">
+            <button id="btnCommOptClassic" type="button" class="py-2 px-1.5 rounded-lg text-[11px] font-bold transition text-slate-300 hover:text-white">
               📻 Classic
+            </button>
+            <button id="btnCommOptRoast" type="button" class="py-2 px-1.5 rounded-lg text-[11px] font-bold transition text-slate-300 hover:text-white">
+              💀 Roast
             </button>
           </div>
 
@@ -2009,24 +2013,34 @@
             if (pRaw) purged = JSON.parse(pRaw) || [];
           } catch (e) {}
 
-          // Never allow an active session user or a currently registered vault account to remain in the purged list
-          const registeredCleanSet = new Set();
-          Object.keys(vaultUsers).forEach((k) => {
-            const uObj = vaultUsers[k];
-            const c = String((uObj && uObj.username) ? uObj.username : k).trim().toUpperCase();
-            if (isRealUsername(c)) registeredCleanSet.add(c);
-          });
-          if (activeSess && isRealUsername(activeSess.username)) {
-            registeredCleanSet.add(String(activeSess.username).trim().toUpperCase());
-          }
-          if (purged.length > 0 && registeredCleanSet.size > 0) {
-            const filteredPurged = purged.filter((p) => !registeredCleanSet.has(String(p || '').trim().toUpperCase()));
+          const isRecentSignup = (u) => {
+            const clean = String(u || '').trim().toUpperCase();
+            if (!clean) return false;
+            try {
+              const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
+              return ts > 0 && (Date.now() - ts) < 25000;
+            } catch (e) {
+              return false;
+            }
+          };
+
+          // Only unpurge an account if it was freshly signed up within the last 25 seconds
+          if (purged.length > 0) {
+            const filteredPurged = purged.filter((p) => !isRecentSignup(p));
             if (filteredPurged.length !== purged.length) {
               purged = filteredPurged;
               localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(purged));
             }
           }
           const purgedSet = new Set(purged.map((p) => String(p || '').trim().toUpperCase()));
+          const cloudLoaded = Boolean(window.__cloudAccountsLoaded && window.__cloudAuthoritativeAccounts);
+          const cloudAuthMap = window.__cloudAuthoritativeAccounts || {};
+          const isAllowedAccount = (clean) => {
+            if (!isRealUsername(clean)) return false;
+            if (purgedSet.has(clean) && !isRecentSignup(clean)) return false;
+            if (cloudLoaded && !cloudAuthMap[clean] && !isRecentSignup(clean)) return false;
+            return true;
+          };
 
           let worldMap = {};
           try {
@@ -2045,7 +2059,7 @@
           const combined = {};
           const ingestRecord = (rawKey, rec, fallbackMeta) => {
             const clean = String((rec && rec.name) ? rec.name : rawKey || '').trim().toUpperCase();
-            if (!isRealUsername(clean) || purgedSet.has(clean)) return;
+            if (!isAllowedAccount(clean)) return;
             const prev = combined[clean] || {};
             const eloVal = (rec && typeof rec.elo === 'number' && !isNaN(rec.elo))
               ? rec.elo
