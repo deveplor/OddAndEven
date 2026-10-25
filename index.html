@@ -427,7 +427,7 @@
       const FIREBASE_CONFIG = (typeof __firebase_config !== 'undefined' && __firebase_config)
         ? (typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config)
         : {
-            apiKey: 'AIzaSyDW9c3rkUo5kvXTyAVFjvcuGsi3D0SimLk',
+            apiKey: 'AIzaSyDDeP-6rWqo0WFuMHv5jKtBVBuLnCz5Id0',
             authDomain: 'oddeven-1c742.firebaseapp.com',
             projectId: 'oddeven-1c742',
             storageBucket: 'oddeven-1c742.firebasestorage.app',
@@ -453,7 +453,13 @@
       let fbWhereFn = null;
       let fbSignInWithPopupFn = null;
       let fbRunTransaction = null;
+      let fbDeleteDoc = null;
+      let fbOnSnapshot = null;
       let fbCorePromise = null;      // Firebase SDK + auth ready (all Google sign-in needs)
+      let cloudAuthoritativeAccounts = null;
+      let cloudListenersAttached = false;
+      const PURGED_ACCOUNTS_KEY = 'oddandeven_purged_accounts_v1';
+      const KNOWN_LB_USERS_KEY = 'oddandeven_known_lb_users_v1';
       let googleFlowActive = false;  // stops background anonymous sign-in from replacing the Google user
       let fbInitPromise = null;      // single shared init (prevents duplicate-app errors)
       let fbRedirectResult = null;
@@ -601,12 +607,218 @@
         return {};
       }
 
+      function isRecentSignup(uname) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return false;
+        try {
+          const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
+          return ts > 0 && (Date.now() - ts) < 25000;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function stampRecentSignup(uname) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return;
+        try {
+          localStorage.setItem('oddandeven_recent_signup_' + clean, String(Date.now()));
+        } catch (e) {}
+      }
+
+      function loadPurgedAccountsList() {
+        try {
+          const raw = localStorage.getItem(PURGED_ACCOUNTS_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed.map(x => String(x || '').trim().toUpperCase()).filter(Boolean) : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function unmarkAccountPurgedLocal(uname) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return;
+        try {
+          const list = loadPurgedAccountsList();
+          if (list.includes(clean)) {
+            localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(list.filter(u => u !== clean)));
+          }
+        } catch (e) {}
+      }
+
+      async function unpurgeCloudAccount(uname) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return;
+        unmarkAccountPurgedLocal(clean);
+        if (fbDb && fbDeleteDoc && fbDoc) {
+          try {
+            await Promise.allSettled([
+              fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts', clean)),
+              fbDeleteDoc(fbDoc(fbDb, 'purged_accounts', clean))
+            ]);
+          } catch (e) {}
+        }
+      }
+
+      async function deleteOrphanCloudDocs(uname) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean || !fbDb || !fbDeleteDoc || !fbDoc || isRecentSignup(clean)) return;
+        try {
+          await Promise.allSettled([
+            fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean)),
+            fbDeleteDoc(fbDoc(fbDb, 'accounts', clean)),
+            fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean)),
+            fbDeleteDoc(fbDoc(fbDb, 'leaderboard', clean))
+          ]);
+        } catch (e) {}
+      }
+
+      function scrubAccountFromWebsite(uname, notifyIfActiveSession = true) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean || isRecentSignup(clean)) return false;
+        let scrubbedAny = false;
+
+        try {
+          const usersMap = loadEncryptedUsersMap();
+          if (usersMap[clean]) {
+            delete usersMap[clean];
+            saveEncryptedUsersMap(usersMap);
+            scrubbedAny = true;
+          }
+        } catch (e) {}
+
+        try {
+          const worldMap = loadWorldwidePlayersMap();
+          if (worldMap[clean]) {
+            delete worldMap[clean];
+            localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(worldMap));
+            scrubbedAny = true;
+          }
+        } catch (e) {}
+
+        try {
+          const rawDesktop = localStorage.getItem('hc_arena_elo_v2');
+          if (rawDesktop) {
+            const desktopObj = JSON.parse(rawDesktop) || {};
+            let eloChanged = false;
+            if (desktopObj.humanPlayers && desktopObj.humanPlayers[clean]) {
+              delete desktopObj.humanPlayers[clean];
+              eloChanged = true;
+            }
+            if (Array.isArray(desktopObj.eloHistory)) {
+              const prevLen = desktopObj.eloHistory.length;
+              desktopObj.eloHistory = desktopObj.eloHistory.filter(
+                h => h && String(h.p1Name || '').trim().toUpperCase() !== clean && String(h.opponent || '').trim().toUpperCase() !== clean
+              );
+              if (desktopObj.eloHistory.length !== prevLen) eloChanged = true;
+            }
+            if (eloChanged) {
+              localStorage.setItem('hc_arena_elo_v2', JSON.stringify(desktopObj));
+              scrubbedAny = true;
+            }
+          }
+        } catch (e) {}
+
+        try {
+          const rawSc = localStorage.getItem(SCORECARD_HISTORY_KEY);
+          if (rawSc) {
+            const scList = JSON.parse(rawSc);
+            if (Array.isArray(scList)) {
+              const filteredSc = scList.filter(
+                m => m && String(m.p1Name || '').trim().toUpperCase() !== clean && String(m.p2Name || '').trim().toUpperCase() !== clean
+              );
+              if (filteredSc.length !== scList.length) {
+                localStorage.setItem(SCORECARD_HISTORY_KEY, JSON.stringify(filteredSc));
+              }
+            }
+          }
+        } catch (e) {}
+
+        try {
+          localStorage.removeItem('oddandeven_friends_' + clean);
+          const rawF = localStorage.getItem('oddandeven_friends_map_v1');
+          if (rawF) {
+            const fMap = JSON.parse(rawF) || {};
+            delete fMap[clean];
+            Object.keys(fMap).forEach(owner => {
+              if (Array.isArray(fMap[owner])) {
+                fMap[owner] = fMap[owner].filter(fn => String(fn || '').trim().toUpperCase() !== clean);
+              }
+            });
+            localStorage.setItem('oddandeven_friends_map_v1', JSON.stringify(fMap));
+          }
+        } catch (e) {}
+
+        try {
+          const rawReq = localStorage.getItem('oddandeven_friend_requests_v1');
+          if (rawReq) {
+            const rMap = JSON.parse(rawReq) || {};
+            delete rMap[clean];
+            Object.keys(rMap).forEach(target => {
+              if (Array.isArray(rMap[target])) {
+                rMap[target] = rMap[target].filter(r => r && String(r.from || '').trim().toUpperCase() !== clean);
+              }
+            });
+            localStorage.setItem('oddandeven_friend_requests_v1', JSON.stringify(rMap));
+          }
+        } catch (e) {}
+
+        try {
+          const rawEv = localStorage.getItem('oddandeven_event_regs_map_v1');
+          if (rawEv) {
+            const evMap = JSON.parse(rawEv) || {};
+            if (evMap[clean]) {
+              delete evMap[clean];
+              localStorage.setItem('oddandeven_event_regs_map_v1', JSON.stringify(evMap));
+            }
+          }
+        } catch (e) {}
+
+        try {
+          const rawKnown = localStorage.getItem(KNOWN_LB_USERS_KEY);
+          if (rawKnown) {
+            const knownArr = JSON.parse(rawKnown);
+            if (Array.isArray(knownArr) && knownArr.includes(clean)) {
+              localStorage.setItem(KNOWN_LB_USERS_KEY, JSON.stringify(knownArr.filter(u => u !== clean)));
+            }
+          }
+        } catch (e) {}
+
+        try {
+          if (localStorage.getItem('oddandeven_last_user_v1') === clean) {
+            localStorage.removeItem('oddandeven_last_user_v1');
+          }
+        } catch (e) {}
+
+        try {
+          const activeSess = loadActiveSession();
+          if (activeSess && String(activeSess.username || '').trim().toUpperCase() === clean) {
+            sessionStorage.removeItem(SESSION_STORAGE_KEY);
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            localStorage.removeItem('oddandeven_just_logged_in');
+            localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+            scrubbedAny = true;
+            setMode('LOGIN');
+            if (notifyIfActiveSession) {
+              showBanner(`Username "${clean}" not found! This account was removed. You can create it again in the Sign Up option.`, false);
+            }
+          }
+        } catch (e) {}
+
+        if (scrubbedAny) {
+          try { updateUIState(); } catch (e) {}
+        }
+        return scrubbedAny;
+      }
+
       function saveWorldwidePlayersMap(map) {
         try {
           localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(map));
           const rawDesktop = localStorage.getItem('hc_arena_elo_v2');
           const desktopObj = rawDesktop ? JSON.parse(rawDesktop) : {};
-          desktopObj.humanPlayers = Object.assign({}, desktopObj.humanPlayers || {}, map);
+          desktopObj.humanPlayers = Object.assign({}, map);
           localStorage.setItem('hc_arena_elo_v2', JSON.stringify(desktopObj));
         } catch (e) {}
       }
@@ -622,11 +834,19 @@
       function mergeIncomingGlobalData(incomingPlayers, incomingUsers) {
         let usersChanged = false;
         let playersChanged = false;
+        const purgedList = loadPurgedAccountsList();
+        const isAllowedByCloud = (clean) => {
+          if (purgedList.includes(clean) && !isRecentSignup(clean)) return false;
+          if (cloudAuthoritativeAccounts && !cloudAuthoritativeAccounts[clean] && !isRecentSignup(clean)) return false;
+          return true;
+        };
+
         if (incomingUsers && typeof incomingUsers === 'object') {
           const localUsers = loadEncryptedUsersMap();
           Object.keys(incomingUsers).forEach((k) => {
             const clean = (k || '').trim().toUpperCase();
             if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
+            if (!isAllowedByCloud(clean)) return;
             if (isValidUserRecord(clean, incomingUsers[k]) && !localUsers[clean]) {
               localUsers[clean] = incomingUsers[k];
               usersChanged = true;
@@ -640,6 +860,7 @@
           Object.keys(incomingPlayers).forEach((k) => {
             const clean = (k || '').trim().toUpperCase();
             if (!clean || FAKE_SEED_NAMES.includes(clean)) return;
+            if (!isAllowedByCloud(clean)) return;
             const inc = incomingPlayers[k];
             if (!inc || typeof inc !== 'object') return;
             if (!worldMap[clean] || (inc.updatedAt || 0) > (worldMap[clean].updatedAt || 0)) {
@@ -676,6 +897,12 @@
           try {
             const gbc = getLbChannel();
             if (gbc) gbc.onmessage = (ev) => {
+              if (ev && ev.data && ev.data.type === 'GLOBAL_ACCOUNT_REMOVED' && ev.data.username) {
+                const rem = String(ev.data.username).trim().toUpperCase();
+                if (cloudAuthoritativeAccounts) delete cloudAuthoritativeAccounts[rem];
+                scrubAccountFromWebsite(rem, true);
+                return;
+              }
               if (ev && ev.data && ev.data.type === 'GLOBAL_LEADERBOARD_SYNC') {
                 if (mergeIncomingGlobalData(ev.data.allPlayers, ev.data.encryptedUsers)) {
                   updateUIState();
@@ -928,7 +1155,7 @@
             ]);
             const { initializeApp, getApps, getApp } = appMod;
             const { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult } = authMod;
-            const { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, runTransaction } = fsMod;
+            const { getFirestore, doc, setDoc, getDoc, deleteDoc, onSnapshot, collection, getDocs, query, where, runTransaction } = fsMod;
 
             GoogleAuthProviderCtor = GoogleAuthProvider;
             signInWithRedirectFn = signInWithRedirect;
@@ -937,6 +1164,8 @@
             fbDoc = doc;
             fbSetDoc = setDoc;
             fbGetDoc = getDoc;
+            fbDeleteDoc = deleteDoc;
+            fbOnSnapshot = onSnapshot;
             fbCollection = collection;
             fbGetDocs = getDocs;
             fbQueryFn = query;
@@ -1004,8 +1233,8 @@
 
           fbUser = fbAuth.currentUser || null;
           try {
-            await withTimeout(migrateLocalAccountsToFirebase(), 10000, 'migrate-timeout');
             await withTimeout(pullCloudAccountsIntoLocal(), 10000, 'pull-timeout');
+            attachLiveCloudAccountListeners();
           } catch (e) {
             console.warn('Cloud sync skipped', e);
           }
@@ -1122,19 +1351,219 @@
         }
       }
 
+      function attachLiveCloudAccountListeners() {
+        if (!fbReady || !fbDb || !fbOnSnapshot || cloudListenersAttached) return;
+        cloudListenersAttached = true;
+
+        const handleCollectionRemovals = (snapshot) => {
+          if (!snapshot || typeof snapshot.docChanges !== 'function') return;
+          let anyRemoved = false;
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === 'removed') {
+              const d = change.doc;
+              const data = d ? d.data() : null;
+              const clean = String((data && (data.username || data.name)) || (d && d.id) || '').trim().toUpperCase();
+              if (clean && !isRecentSignup(clean)) {
+                if (cloudAuthoritativeAccounts) delete cloudAuthoritativeAccounts[clean];
+                deleteOrphanCloudDocs(clean);
+                scrubAccountFromWebsite(clean, true);
+                anyRemoved = true;
+              }
+            }
+          });
+          if (anyRemoved) {
+            updateUIState();
+          } else {
+            pullCloudAccountsIntoLocal();
+          }
+        };
+
+        try {
+          fbOnSnapshot(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts'), handleCollectionRemovals, () => {});
+          fbOnSnapshot(fbCollection(fbDb, 'accounts'), handleCollectionRemovals, () => {});
+          fbOnSnapshot(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard'), handleCollectionRemovals, () => {});
+          fbOnSnapshot(fbCollection(fbDb, 'leaderboard'), handleCollectionRemovals, () => {});
+          fbOnSnapshot(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts'), () => {
+            pullCloudAccountsIntoLocal();
+          }, () => {});
+          fbOnSnapshot(fbCollection(fbDb, 'purged_accounts'), () => {
+            pullCloudAccountsIntoLocal();
+          }, () => {});
+        } catch (e) {}
+      }
+
       async function pullCloudAccountsIntoLocal() {
         if (!fbReady || !fbDb) return;
         try {
+          const artAccMap = {};
+          const rootAccMap = {};
+          const artLbMap = {};
+          const rootLbMap = {};
+          const cloudPurgedSet = new Set();
+
+          let artAccOk = false;
+          let rootAccOk = false;
+          let artLbOk = false;
+          let rootLbOk = false;
+
+          try {
+            const pSnap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts'));
+            pSnap1.forEach((d) => {
+              if (d.exists()) {
+                const c = String(d.id || '').trim().toUpperCase();
+                if (c && !isRecentSignup(c)) cloudPurgedSet.add(c);
+              }
+            });
+          } catch (e) {}
+          try {
+            const pSnap2 = await fbGetDocs(fbCollection(fbDb, 'purged_accounts'));
+            pSnap2.forEach((d) => {
+              if (d.exists()) {
+                const c = String(d.id || '').trim().toUpperCase();
+                if (c && !isRecentSignup(c)) cloudPurgedSet.add(c);
+              }
+            });
+          } catch (e) {}
+
+          try {
+            const snap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts'));
+            artAccOk = true;
+            snap1.forEach((d) => {
+              if (!d.exists()) return;
+              const data = d.data();
+              const clean = ((data && data.username) || d.id || '').trim().toUpperCase();
+              if (clean && !FAKE_SEED_NAMES.includes(clean) && !RESERVED_USERNAMES.includes(clean) && clean.length >= 3) {
+                artAccMap[clean] = data;
+              }
+            });
+          } catch (e) {}
+
+          try {
+            const snap2 = await fbGetDocs(fbCollection(fbDb, 'accounts'));
+            rootAccOk = true;
+            snap2.forEach((d) => {
+              if (!d.exists()) return;
+              const data = d.data();
+              const clean = ((data && data.username) || d.id || '').trim().toUpperCase();
+              if (clean && !FAKE_SEED_NAMES.includes(clean) && !RESERVED_USERNAMES.includes(clean) && clean.length >= 3) {
+                rootAccMap[clean] = data;
+              }
+            });
+          } catch (e) {}
+
+          try {
+            const lbSnap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard'));
+            artLbOk = true;
+            lbSnap1.forEach((d) => {
+              if (!d.exists()) return;
+              const data = d.data();
+              const clean = ((data && (data.name || data.username)) || d.id || '').trim().toUpperCase();
+              if (clean && !FAKE_SEED_NAMES.includes(clean) && !RESERVED_USERNAMES.includes(clean) && clean.length >= 3) {
+                artLbMap[clean] = data;
+              }
+            });
+          } catch (e) {}
+
+          try {
+            const lbSnap2 = await fbGetDocs(fbCollection(fbDb, 'leaderboard'));
+            rootLbOk = true;
+            lbSnap2.forEach((d) => {
+              if (!d.exists()) return;
+              const data = d.data();
+              const clean = ((data && (data.name || data.username)) || d.id || '').trim().toUpperCase();
+              if (clean && !FAKE_SEED_NAMES.includes(clean) && !RESERVED_USERNAMES.includes(clean) && clean.length >= 3) {
+                rootLbMap[clean] = data;
+              }
+            });
+          } catch (e) {}
+
+          if (!artAccOk && !rootAccOk) return;
+
+          let knownLbUsers = [];
+          try {
+            const rawKnown = localStorage.getItem(KNOWN_LB_USERS_KEY);
+            if (rawKnown) knownLbUsers = JSON.parse(rawKnown) || [];
+          } catch (e) {}
+          const knownLbSet = new Set(Array.isArray(knownLbUsers) ? knownLbUsers : []);
+
+          // Determine authoritative active accounts in Firebase
+          const validAccountsMap = {};
+          const allSeenCandidates = new Set([
+            ...Object.keys(artAccMap),
+            ...Object.keys(rootAccMap),
+            ...Object.keys(artLbMap),
+            ...Object.keys(rootLbMap)
+          ]);
+
+          allSeenCandidates.forEach((clean) => {
+            if (cloudPurgedSet.has(clean) && !isRecentSignup(clean)) {
+              deleteOrphanCloudDocs(clean);
+              return;
+            }
+            const inArtAcc = Boolean(artAccMap[clean]);
+            const inRootAcc = Boolean(rootAccMap[clean]);
+            const inArtLb = Boolean(artLbMap[clean]);
+            const inRootLb = Boolean(rootLbMap[clean]);
+
+            let isActiveInAccounts = false;
+            if (artAccOk && rootAccOk) {
+              isActiveInAccounts = (inArtAcc && inRootAcc) || (isRecentSignup(clean) && (inArtAcc || inRootAcc));
+            } else if (artAccOk) {
+              isActiveInAccounts = inArtAcc;
+            } else if (rootAccOk) {
+              isActiveInAccounts = inRootAcc;
+            }
+
+            // If user was previously in leaderboard and deleted from leaderboard in Firebase Console
+            let deletedFromLb = false;
+            if (knownLbSet.has(clean) && !isRecentSignup(clean)) {
+              if (artLbOk && !inArtLb) deletedFromLb = true;
+              if (rootLbOk && !inRootLb) deletedFromLb = true;
+            }
+
+            if (isActiveInAccounts && !deletedFromLb) {
+              validAccountsMap[clean] = Object.assign({}, rootAccMap[clean] || {}, artAccMap[clean] || {});
+            } else if (!isRecentSignup(clean)) {
+              deleteOrphanCloudDocs(clean);
+            }
+          });
+
+          cloudAuthoritativeAccounts = validAccountsMap;
+
+          // Update known leaderboard users
+          const nextKnownLb = Object.keys(validAccountsMap).filter(u => artLbMap[u] && rootLbMap[u]);
+          try {
+            localStorage.setItem(KNOWN_LB_USERS_KEY, JSON.stringify(nextKnownLb));
+          } catch (e) {}
+
           const usersMap = loadEncryptedUsersMap();
           const worldMap = loadWorldwidePlayersMap();
           let changed = false;
 
-          const ingestAccountDoc = (d) => {
-            if (!d.exists()) return;
-            const data = d.data();
-            const clean = ((data && data.username) || d.id || '').trim().toUpperCase();
-            if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean) || clean.length < 3) return;
+          // Scrub any local account that is no longer in Firebase validAccountsMap
+          const localUserKeys = new Set([
+            ...Object.keys(usersMap || {}),
+            ...Object.keys(worldMap || {})
+          ]);
+          const activeSess = loadActiveSession();
+          if (activeSess && activeSess.username) {
+            localUserKeys.add(String(activeSess.username).trim().toUpperCase());
+          }
 
+          localUserKeys.forEach((rawKey) => {
+            const clean = String(rawKey || '').trim().toUpperCase();
+            if (!clean) return;
+            if (!validAccountsMap[clean] && !isRecentSignup(clean)) {
+              delete usersMap[clean];
+              delete worldMap[clean];
+              scrubAccountFromWebsite(clean, true);
+              changed = true;
+            }
+          });
+
+          // Ingest valid cloud accounts & leaderboard records
+          Object.keys(validAccountsMap).forEach((clean) => {
+            const data = validAccountsMap[clean];
             if (!usersMap[clean]) {
               usersMap[clean] = {
                 username: clean,
@@ -1148,14 +1577,21 @@
                 createdAt: data.createdAt || new Date().toISOString()
               };
               changed = true;
-            } else if (data.googleUid && !usersMap[clean].googleUid) {
-              usersMap[clean].googleUid = data.googleUid;
-              usersMap[clean].authProvider = data.authProvider || 'google';
-              changed = true;
+            } else {
+              if (data.encryptedAuth && usersMap[clean].encryptedAuth !== data.encryptedAuth) {
+                usersMap[clean].encryptedAuth = data.encryptedAuth;
+                changed = true;
+              }
+              if (data.googleUid && !usersMap[clean].googleUid) {
+                usersMap[clean].googleUid = data.googleUid;
+                usersMap[clean].authProvider = data.authProvider || 'google';
+                changed = true;
+              }
             }
 
+            const lbData = Object.assign({}, rootLbMap[clean] || {}, artLbMap[clean] || {});
             if (!worldMap[clean]) {
-              worldMap[clean] = {
+              worldMap[clean] = Object.assign({
                 name: clean,
                 countryCode: data.countryCode || '+91',
                 countryFlag: data.countryFlag || '🇮🇳',
@@ -1174,47 +1610,22 @@
                 weeklyRuns: 0,
                 weeklyWickets: 0,
                 updatedAt: Date.now()
-              };
+              }, lbData, { name: clean, isRealRegisteredUser: true });
               changed = true;
-            }
-          };
-
-          try {
-            const snap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts'));
-            snap1.forEach(ingestAccountDoc);
-          } catch (e) {}
-          try {
-            const snap2 = await fbGetDocs(fbCollection(fbDb, 'accounts'));
-            snap2.forEach(ingestAccountDoc);
-          } catch (e) {}
-
-          const ingestLeaderboardDoc = (d) => {
-            if (!d.exists()) return;
-            const data = d.data();
-            const clean = ((data && (data.name || data.username)) || d.id || '').trim().toUpperCase();
-            if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean) || clean.length < 3) return;
-            if (!worldMap[clean] || (data.updatedAt || 0) > (worldMap[clean].updatedAt || 0)) {
-              worldMap[clean] = Object.assign({}, worldMap[clean] || {}, data, {
+            } else if (lbData && (lbData.updatedAt || 0) >= (worldMap[clean].updatedAt || 0)) {
+              worldMap[clean] = Object.assign({}, worldMap[clean], lbData, {
                 name: clean,
                 isRealRegisteredUser: true
               });
               changed = true;
             }
-          };
-
-          try {
-            const lbSnap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard'));
-            lbSnap1.forEach(ingestLeaderboardDoc);
-          } catch (e) {}
-          try {
-            const lbSnap2 = await fbGetDocs(fbCollection(fbDb, 'leaderboard'));
-            lbSnap2.forEach(ingestLeaderboardDoc);
-          } catch (e) {}
+          });
 
           if (changed) {
             saveEncryptedUsersMap(usersMap);
             saveWorldwidePlayersMap(worldMap);
             broadcastWorldwideSync(false);
+            updateUIState();
           }
         } catch (e) {}
       }
@@ -1352,37 +1763,37 @@
       }
 
       async function usernameIsTaken(candidate, googleUid) {
-        const local = loadEncryptedUsersMap()[candidate];
-        if (local && local.googleUid !== googleUid) return true;
         if (fbReady && fbDb) {
           try {
-            const snap = await fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidate));
-            if (snap.exists()) {
-              const d = snap.data();
+            const [s1, s2] = await Promise.all([
+              fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidate)),
+              fbGetDoc(fbDoc(fbDb, 'accounts', candidate))
+            ]);
+            if (s1.exists() && s2.exists()) {
+              const d = s1.data() || s2.data();
               if (!d || d.googleUid !== googleUid) return true;
             }
+            return false;
           } catch (e) {}
         }
+        const local = loadEncryptedUsersMap()[candidate];
+        if (local && local.googleUid !== googleUid) return true;
         return false;
       }
 
       // Returns the existing account record for a returning Google user, or null for a first-time user.
-      // THROWS if it cannot tell (e.g. Firestore denied/unreachable) so we never show the username
-      // prompt to someone who already has an account.
       async function lookupGoogleAccount(gUser) {
         const googleUid = gUser.uid;
 
-        // 1) Local cache (fast path)
-        const usersMap = loadEncryptedUsersMap();
-        for (const k of Object.keys(usersMap)) {
-          if (usersMap[k] && usersMap[k].googleUid === googleUid) return usersMap[k];
-        }
-
         if (!fbReady || !fbDb) {
+          const usersMap = loadEncryptedUsersMap();
+          for (const k of Object.keys(usersMap)) {
+            if (usersMap[k] && usersMap[k].googleUid === googleUid) return usersMap[k];
+          }
           return null;
         }
 
-        // 2) Private profile keyed by uid: authoritative, and always readable by its owner.
+        // Private profile keyed by uid: verify that the referenced account still exists in Firebase accounts!
         let profSnap = null;
         try {
           profSnap = await withTimeout(
@@ -1392,26 +1803,38 @@
         } catch (e) {
           profSnap = null;
         }
-        if (profSnap.exists()) {
+        if (profSnap && profSnap.exists()) {
           const p = profSnap.data() || {};
           const uname = String(p.username || '').trim().toUpperCase();
           if (uname) {
-            let a = {};
             try {
-              const accSnap = await fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname));
-              if (accSnap.exists()) a = accSnap.data() || {};
+              const [accSnap1, accSnap2] = await Promise.all([
+                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
+                fbGetDoc(fbDoc(fbDb, 'accounts', uname))
+              ]);
+              if (accSnap1.exists() && accSnap2.exists()) {
+                const a = accSnap1.data() || accSnap2.data() || {};
+                return {
+                  username: uname,
+                  countryCode: a.countryCode || p.countryCode || '+91',
+                  countryName: a.countryName || p.countryName || 'India',
+                  countryFlag: a.countryFlag || p.countryFlag || '🇮🇳',
+                  encryptedAuth: null,
+                  googleUid: googleUid,
+                  googleEmail: null,
+                  authProvider: 'google',
+                  createdAt: p.createdAt || a.createdAt || new Date().toISOString()
+                };
+              } else {
+                // Account was deleted from Firebase! Clean up stale profile & local cache so user can sign up again.
+                await deleteOrphanCloudDocs(uname);
+                scrubAccountFromWebsite(uname, false);
+                if (fbDeleteDoc) {
+                  try { await fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', googleUid, 'profile', 'main')); } catch (e) {}
+                }
+                return null;
+              }
             } catch (e) {}
-            return {
-              username: uname,
-              countryCode: a.countryCode || p.countryCode || '+91',
-              countryName: a.countryName || p.countryName || 'India',
-              countryFlag: a.countryFlag || p.countryFlag || '🇮🇳',
-              encryptedAuth: null,
-              googleUid: googleUid,
-              googleEmail: null,
-              authProvider: 'google',
-              createdAt: p.createdAt || a.createdAt || new Date().toISOString()
-            };
           }
         }
 
@@ -1787,59 +2210,83 @@
           await ensureFirebaseReady(2500);
 
           let usersMap = loadEncryptedUsersMap();
-          let rec = usersMap[uname];
+          let rec = usersMap[uname] || null;
 
-          // If not in local vault, check cloud Firestore accounts (both artifacts and root collection)
-          if (!rec && fbDb) {
+          // Authoritative Firebase check: verify whether the account exists in Firebase or was deleted
+          if (fbDb) {
             try {
-              let snap = await withTimeout(
-                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
-                2000,
+              const [snapArt, snapRoot, snapPurgeArt, snapPurgeRoot] = await withTimeout(
+                Promise.all([
+                  fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
+                  fbGetDoc(fbDoc(fbDb, 'accounts', uname)),
+                  fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts', uname)),
+                  fbGetDoc(fbDoc(fbDb, 'purged_accounts', uname))
+                ]),
+                3500,
                 'lookup-timeout'
               );
-              if (!snap || !snap.exists()) {
-                snap = await withTimeout(
-                  fbGetDoc(fbDoc(fbDb, 'accounts', uname)),
-                  2000,
-                  'lookup-timeout'
-                );
-              }
-              if (snap && snap.exists()) {
-                const data = snap.data();
+              const isPurgedInCloud = (snapPurgeArt && snapPurgeArt.exists()) || (snapPurgeRoot && snapPurgeRoot.exists());
+              const existsInBothCloud = Boolean(snapArt && snapArt.exists() && snapRoot && snapRoot.exists()) && !isPurgedInCloud;
+
+              if (existsInBothCloud) {
+                const data = snapArt.data() || snapRoot.data();
                 rec = {
                   username: uname,
                   countryCode: data.countryCode || dial,
                   countryName: data.countryName || cName,
                   countryFlag: data.countryFlag || cFlag,
-                  encryptedAuth: data.encryptedAuth || null,
+                  encryptedAuth: data.encryptedAuth || (rec && rec.encryptedAuth) || null,
                   googleUid: data.googleUid || null,
                   authProvider: data.authProvider || 'pin',
                   createdAt: data.createdAt || new Date().toISOString()
                 };
                 usersMap[uname] = rec;
                 saveEncryptedUsersMap(usersMap);
+              } else {
+                // Account was deleted from Firebase (or never existed in Firebase): scrub any stale local or orphan copy!
+                await deleteOrphanCloudDocs(uname);
+                scrubAccountFromWebsite(uname, false);
+                usersMap = loadEncryptedUsersMap();
+                delete usersMap[uname];
+                saveEncryptedUsersMap(usersMap);
+                rec = null;
               }
-            } catch (e) {}
+            } catch (e) {
+              // If offline/timeout, still respect local purged list
+              if (loadPurgedAccountsList().includes(uname)) {
+                scrubAccountFromWebsite(uname, false);
+                usersMap = loadEncryptedUsersMap();
+                rec = null;
+              }
+            }
+          } else if (loadPurgedAccountsList().includes(uname)) {
+            scrubAccountFromWebsite(uname, false);
+            usersMap = loadEncryptedUsersMap();
+            rec = null;
           }
 
           if (authMode === 'SIGNUP') {
             if (rec) {
               if (!rec.encryptedAuth) {
-                showBanner(`Username ${uname} is already registered with Google. Choose another username or use "Continue with Google".`, false);
+                showBanner(`Username "${uname}" is already registered with Google. Choose another username or use "Continue with Google".`, false);
                 setAuthBusy(false);
                 return;
               }
-              if (!verifyUserCredentials(rec, dial, pin5)) {
-                showBanner(`Username ${uname} is already registered. Enter its matching 5-digit PIN or choose a new username.`, false);
-                setAuthBusy(false);
-                return;
-              }
-              await finalizePlayerSession(rec);
+              showBanner(`Username "${uname}" is already registered! Switch to the Login option to sign in.`, false);
               setAuthBusy(false);
               return;
             }
 
+            // Creating a brand-new account OR re-creating an account that was previously deleted from Firebase
             showBanner(`Creating account for ${cFlag} ${uname}…`, true);
+            stampRecentSignup(uname);
+            await unpurgeCloudAccount(uname);
+
+            // Ensure fresh 1500 ELO stats on Sign Up (no leftover stats from any prior deleted account)
+            const worldMap = loadWorldwidePlayersMap();
+            delete worldMap[uname];
+            saveWorldwidePlayersMap(worldMap);
+
             const profile = {
               username: uname,
               countryCode: dial,
@@ -1849,29 +2296,20 @@
               authProvider: 'pin',
               createdAt: new Date().toISOString()
             };
+            usersMap = loadEncryptedUsersMap();
             usersMap[uname] = profile;
             saveEncryptedUsersMap(usersMap);
+            if (cloudAuthoritativeAccounts) {
+              cloudAuthoritativeAccounts[uname] = profile;
+            }
             await finalizePlayerSession(profile);
             setAuthBusy(false);
             return;
           }
 
-          // LOGIN MODE
+          // LOGIN MODE: Never auto-create an account if username does not exist or was deleted from Firebase!
           if (!rec) {
-            // New account login: automatically register without blocking
-            showBanner(`Creating new player account for ${cFlag} ${uname}…`, true);
-            const profile = {
-              username: uname,
-              countryCode: dial,
-              countryName: cName,
-              countryFlag: cFlag,
-              encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
-              authProvider: 'pin',
-              createdAt: new Date().toISOString()
-            };
-            usersMap[uname] = profile;
-            saveEncryptedUsersMap(usersMap);
-            await finalizePlayerSession(profile);
+            showBanner(`Username "${uname}" not found! You can create this account again in the Sign Up option.`, false);
             setAuthBusy(false);
             return;
           }
@@ -1901,17 +2339,9 @@
       function boot() {
         initWorldwideLeaderboardHub();
         initFirebaseCore().then((ok) => { if (ok) checkRedirectResult(); });
-        initFirebaseAuthBridge().then(async (ok) => {
-          if (ok) {
-            if (el.worldSyncText) {
-              const n = Object.keys(loadEncryptedUsersMap()).length;
-              if (n > 0) el.worldSyncText.textContent = `Cloud Linked • ${n} Account${n === 1 ? '' : 's'}`;
-            }
-          }
-        });
-
         const params = new URLSearchParams(window.location.search);
         const signedOutParam = params.get('signedout') === '1';
+        const removedParam = params.get('removed') === '1';
         const googlePending = (() => {
           try { return Boolean(sessionStorage.getItem(GOOGLE_PENDING_KEY)); } catch (e) { return false; }
         })();
@@ -1927,15 +2357,34 @@
           setMode('LOGIN');
         }
 
-        if (signedOutParam) {
+        if (removedParam) {
+          showBanner('Username not found! That account was removed. You can create it again in the Sign Up option.', false);
+        } else if (signedOutParam) {
           showBanner('You have signed out safely. Sign in below to return to the pitch.', true);
-        } else {
-          const activeSess = loadActiveSession();
-          if (activeSess && activeSess.username && params.get('stay') !== '1' && params.get('signedout') !== '1' && !googlePending) {
-            updateUIState();
-            setTimeout(() => navigateToHandCricketArena('?from=login'), 350);
-          }
         }
+
+        initFirebaseAuthBridge().then(async (ok) => {
+          if (ok) {
+            if (el.worldSyncText) {
+              const n = Object.keys(loadEncryptedUsersMap()).length;
+              if (n > 0) el.worldSyncText.textContent = `Cloud Linked • ${n} Account${n === 1 ? '' : 's'}`;
+            }
+          }
+          // Only auto-redirect an active session AFTER Firebase reconciliation confirms the account still exists!
+          if (!signedOutParam && !removedParam && params.get('stay') !== '1' && !googlePending) {
+            const verifiedSess = loadActiveSession();
+            if (verifiedSess && verifiedSess.username && !isPlaceholderUsername(verifiedSess.username)) {
+              const cleanS = String(verifiedSess.username).trim().toUpperCase();
+              const currentUsers = loadEncryptedUsersMap();
+              if (currentUsers[cleanS]) {
+                updateUIState();
+                setTimeout(() => navigateToHandCricketArena('?from=login'), 200);
+              } else {
+                scrubAccountFromWebsite(cleanS, true);
+              }
+            }
+          }
+        });
 
         el.tabAuthLogin.addEventListener('click', () => setMode('LOGIN'));
         el.tabAuthSignup.addEventListener('click', () => setMode('SIGNUP'));
