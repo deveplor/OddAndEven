@@ -93,7 +93,7 @@
           <div class="font-brand text-lg sm:text-xl font-extrabold tracking-tight leading-none flex items-baseline">
             <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-white bg-clip-text text-transparent">Odd</span><span class="text-amber-400 italic font-black px-0.5">And</span><span class="bg-gradient-to-r from-cyan-300 to-sky-400 bg-clip-text text-transparent">Even</span><span class="text-xs font-mono-num font-black text-[#a3d96c] ml-0.5">.in</span>
           </div>
-          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Official Hand Cricket Arena</div>
+          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Official Hand Cricket Arena • Version 2</div>
         </div>
       </div>
 
@@ -118,7 +118,7 @@
       <div class="lg:col-span-6 space-y-6 text-left">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-950 border border-white/10 text-[11px] font-extrabold uppercase tracking-widest text-[#a3d96c]">
           <span>⚡</span>
-          <span>Season 1 • Competitive Hand Cricket</span>
+          <span>Version 2 • Competitive Hand Cricket</span>
         </div>
 
         <div class="space-y-3">
@@ -264,7 +264,11 @@
                 >
                   <option value="+91" data-country="India" data-flag="🇮🇳" selected>🇮🇳 +91 (IN)</option>
                   <option value="+1" data-country="USA" data-flag="🇺🇸">🇺🇸 +1 (US)</option>
+                  <option value="+1" data-country="Canada" data-flag="🇨🇦">🇨🇦 +1 (CA)</option>
                   <option value="+44" data-country="UK" data-flag="🇬🇧">🇬🇧 +44 (UK)</option>
+                  <option value="+49" data-country="Germany" data-flag="🇩🇪">🇩🇪 +49 (DE)</option>
+                  <option value="+33" data-country="France" data-flag="🇫🇷">🇫🇷 +33 (FR)</option>
+                  <option value="+34" data-country="Spain" data-flag="🇪🇸">🇪🇸 +34 (ES)</option>
                   <option value="+61" data-country="Australia" data-flag="🇦🇺">🇦🇺 +61 (AU)</option>
                   <option value="+971" data-country="UAE" data-flag="🇦🇪">🇦🇪 +971 (AE)</option>
                   <option value="+64" data-country="NZ" data-flag="🇳🇿">🇳🇿 +64 (NZ)</option>
@@ -348,29 +352,67 @@
       </div>
       <div class="flex items-center gap-3">
         <span class="px-3 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-zinc-950 text-[#a3d96c] border border-[#81b64c]/40">
-          Version 1.5
+          Version 2
         </span>
       </div>
     </div>
   </footer>
 
-  <!-- Username picker (shown only for brand-new Google accounts) -->
+  <!-- Username & Country Code picker (shown ONLY for brand-new Google accounts on first sign-up) -->
   <div id="usernameModal" class="hidden fixed inset-0 z-50 items-center justify-center px-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="usernameModalTitle">
     <div class="obsidian-card rounded-3xl p-6 sm:p-8 w-full max-w-md space-y-5 relative overflow-hidden">
       <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#81b64c] to-transparent opacity-80"></div>
-      <div>
-        <h2 id="usernameModalTitle" class="text-xl sm:text-2xl font-black text-white font-brand tracking-tight">Choose your player name</h2>
-        <p id="usernameModalSub" class="text-xs text-zinc-400 mt-1">This is the name other players see on the leaderboard. It can't be changed later.</p>
-      </div>
-      <div>
-        <div class="flex items-center justify-between mb-1.5">
-          <label for="inputChooseUsername" class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">Player Username</label>
-          <span class="text-[10px] font-mono-num text-zinc-400">3–16 Chars</span>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase tracking-wider bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40 mb-1.5">
+            <span>🆕</span>
+            <span>New Google Player Setup</span>
+          </span>
+          <h2 id="usernameModalTitle" class="text-xl sm:text-2xl font-black text-white font-brand tracking-tight">Complete Your Player Profile</h2>
+          <p id="usernameModalSub" class="text-xs text-zinc-400 mt-1">Choose your permanent Arena Username and Country Code. Next time you sign in with Google, you'll go straight to the pitch!</p>
         </div>
-        <input id="inputChooseUsername" type="text" maxlength="16" autocomplete="off" spellcheck="false"
-          class="obsidian-input w-full px-4 py-3 rounded-xl text-sm font-extrabold uppercase tracking-wide" />
-        <p id="usernameModalError" class="text-xs font-bold text-rose-300 mt-2 min-h-[1rem]" role="alert"></p>
       </div>
+
+      <div class="space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="inputChooseUsername" class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">Player Username</label>
+            <span class="text-[10px] font-mono-num text-zinc-400">3–16 Chars</span>
+          </div>
+          <input id="inputChooseUsername" type="text" maxlength="16" autocomplete="off" spellcheck="false" placeholder="e.g. VIRAT_18"
+            class="obsidian-input w-full px-4 py-3 rounded-xl text-sm font-extrabold uppercase tracking-wide placeholder:text-zinc-600 placeholder:normal-case placeholder:font-medium" />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="selectGoogleCountry" class="text-[11px] font-bold uppercase tracking-wider text-zinc-300">Country Code Selection</label>
+            <span id="googleModalCountryPreview" class="text-[10px] font-mono-num font-bold text-emerald-300">🇮🇳 India (+91)</span>
+          </div>
+          <select
+            id="selectGoogleCountry"
+            aria-label="Google Account Country Dial Code"
+            class="obsidian-input w-full px-3.5 py-3 rounded-xl text-xs sm:text-sm font-extrabold cursor-pointer"
+          >
+            <option value="+91" data-country="India" data-flag="🇮🇳" selected>🇮🇳 +91 — India (IN)</option>
+            <option value="+1" data-country="USA" data-flag="🇺🇸">🇺🇸 +1 — United States (US)</option>
+            <option value="+1" data-country="Canada" data-flag="🇨🇦">🇨🇦 +1 — Canada (CA)</option>
+            <option value="+44" data-country="UK" data-flag="🇬🇧">🇬🇧 +44 — United Kingdom (UK)</option>
+            <option value="+49" data-country="Germany" data-flag="🇩🇪">🇩🇪 +49 — Germany (DE)</option>
+            <option value="+33" data-country="France" data-flag="🇫🇷">🇫🇷 +33 — France (FR)</option>
+            <option value="+34" data-country="Spain" data-flag="🇪🇸">🇪🇸 +34 — Spain (ES)</option>
+            <option value="+61" data-country="Australia" data-flag="🇦🇺">🇦🇺 +61 — Australia (AU)</option>
+            <option value="+971" data-country="UAE" data-flag="🇦🇪">🇦🇪 +971 — UAE (AE)</option>
+            <option value="+64" data-country="NZ" data-flag="🇳🇿">🇳🇿 +64 — New Zealand (NZ)</option>
+            <option value="+27" data-country="SA" data-flag="🇿🇦">🇿🇦 +27 — South Africa (ZA)</option>
+            <option value="+94" data-country="SL" data-flag="🇱🇰">🇱🇰 +94 — Sri Lanka (LK)</option>
+            <option value="+880" data-country="BAN" data-flag="🇧🇩">🇧🇩 +880 — Bangladesh (BD)</option>
+            <option value="+977" data-country="NEP" data-flag="🇳🇵">🇳🇵 +977 — Nepal (NP)</option>
+          </select>
+        </div>
+
+        <p id="usernameModalError" class="text-xs font-bold text-rose-300 min-h-[1rem]" role="alert"></p>
+      </div>
+
       <div class="flex items-center gap-3">
         <button id="btnUsernameCancel" type="button" class="px-4 py-3 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-white/10 transition">Cancel</button>
         <button id="btnUsernameConfirm" type="button" class="flex-1 py-3 px-6 rounded-xl font-black text-sm arena-cta-btn disabled:opacity-60 disabled:cursor-not-allowed">Confirm &amp; Play</button>
@@ -467,7 +509,106 @@
       let lbChannel = null;          // one reusable BroadcastChannel (was leaking one per call)
       let authBusy = false;
       const GOOGLE_PENDING_KEY = 'oddandeven_google_pending_v1';
+      const GOOGLE_UID_MAP_KEY = 'oddandeven_google_uid_map_v1';
+      const CLOUD_SYNCED_COLS_KEY = 'oddandeven_cloud_synced_cols_v1';
+
+      function loadGoogleUidMap() {
+        try {
+          const raw = localStorage.getItem(GOOGLE_UID_MAP_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          return (parsed && typeof parsed === 'object') ? parsed : {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function saveGoogleUidMapEntry(googleUid, googleEmail, profile) {
+        if (!profile || !profile.username) return;
+        try {
+          const map = loadGoogleUidMap();
+          const entry = {
+            username: String(profile.username).trim().toUpperCase(),
+            countryCode: profile.countryCode || '+91',
+            countryName: profile.countryName || 'India',
+            countryFlag: profile.countryFlag || '🇮🇳',
+            googleUid: googleUid || profile.googleUid || null,
+            authProvider: 'google',
+            createdAt: profile.createdAt || new Date().toISOString(),
+            updatedAt: Date.now()
+          };
+          if (googleUid) map[googleUid] = entry;
+          if (googleEmail) map['email:' + String(googleEmail).trim().toLowerCase()] = entry;
+          localStorage.setItem(GOOGLE_UID_MAP_KEY, JSON.stringify(map));
+        } catch (e) {}
+      }
+
+      function removeGoogleUidMapByUsername(uname) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return;
+        try {
+          const map = loadGoogleUidMap();
+          let changed = false;
+          Object.keys(map).forEach((k) => {
+            if (map[k] && String(map[k].username || '').trim().toUpperCase() === clean) {
+              delete map[k];
+              changed = true;
+            }
+          });
+          if (changed) localStorage.setItem(GOOGLE_UID_MAP_KEY, JSON.stringify(map));
+        } catch (e) {}
+      }
       const RESERVED_USERNAMES = ['ADMIN', 'ADMINISTRATOR', 'MODERATOR', 'SYSTEM', 'OFFICIAL', 'WAITING'];
+
+      function isPlaceholderUsername(name) {
+        const clean = String(name || '').trim().toUpperCase();
+        if (!clean || clean.length < 3) return true;
+        if (FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return true;
+        if (clean === 'YOU' || clean === 'PLAYER' || clean === 'GUEST' || clean === 'BOT' || clean === 'OPPONENT' || clean.startsWith('GUEST')) return true;
+        return false;
+      }
+
+      function loadCloudSyncedColsMap() {
+        try {
+          const raw = localStorage.getItem(CLOUD_SYNCED_COLS_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          return (parsed && typeof parsed === 'object') ? parsed : {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function saveCloudSyncedColsMap(map) {
+        try {
+          localStorage.setItem(CLOUD_SYNCED_COLS_KEY, JSON.stringify(map || {}));
+        } catch (e) {}
+      }
+
+      function updateCloudSyncedColsForUser(uname, flags) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return;
+        const map = loadCloudSyncedColsMap();
+        const prev = map[clean] || {};
+        map[clean] = {
+          artAcc: Boolean(prev.artAcc || (flags && flags.artAcc)),
+          rootAcc: Boolean(prev.rootAcc || (flags && flags.rootAcc)),
+          artLb: Boolean(prev.artLb || (flags && flags.artLb)),
+          rootLb: Boolean(prev.rootLb || (flags && flags.rootLb)),
+          updatedAt: Date.now()
+        };
+        saveCloudSyncedColsMap(map);
+      }
+
+      function clearCloudSyncedColsForUser(uname) {
+        const clean = String(uname || '').trim().toUpperCase();
+        if (!clean) return;
+        const map = loadCloudSyncedColsMap();
+        if (map[clean]) {
+          delete map[clean];
+          saveCloudSyncedColsMap(map);
+        }
+      }
 
       function getLbChannel() {
         if (typeof BroadcastChannel === 'undefined') return null;
@@ -612,7 +753,7 @@
         if (!clean) return false;
         try {
           const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
-          return ts > 0 && (Date.now() - ts) < 25000;
+          return ts > 0 && (Date.now() - ts) < 120000;
         } catch (e) {
           return false;
         }
@@ -623,6 +764,7 @@
         if (!clean) return;
         try {
           localStorage.setItem('oddandeven_recent_signup_' + clean, String(Date.now()));
+          clearCloudSyncedColsForUser(clean);
         } catch (e) {}
       }
 
@@ -681,6 +823,7 @@
         let scrubbedAny = false;
 
         try {
+          removeGoogleUidMapByUsername(clean);
           const usersMap = loadEncryptedUsersMap();
           if (usersMap[clean]) {
             delete usersMap[clean];
@@ -777,6 +920,7 @@
         } catch (e) {}
 
         try {
+          clearCloudSyncedColsForUser(clean);
           const rawKnown = localStorage.getItem(KNOWN_LB_USERS_KEY);
           if (rawKnown) {
             const knownArr = JSON.parse(rawKnown);
@@ -1086,10 +1230,12 @@
             : 'Global Network Live';
         }
 
-        const dial = el.selectAuthCountry.value || '+91';
+        const selOpt = el.selectAuthCountry && el.selectAuthCountry.options[el.selectAuthCountry.selectedIndex];
+        const dial = (selOpt && selOpt.value) || el.selectAuthCountry.value || '+91';
+        const flag = (selOpt && selOpt.getAttribute('data-flag')) || '🇮🇳';
         const pinVal = (el.inputAuthPin5.value || '').replace(/\D/g, '').slice(0, 5);
         el.inputAuthPin5.value = pinVal;
-        el.keyPreviewBadge.innerHTML = `Vault Key: <strong class="text-amber-300/90">${dial}-${pinVal.padEnd(5, '•')}</strong>`;
+        el.keyPreviewBadge.innerHTML = `Vault Key: <strong class="text-amber-300/90">${flag} ${dial}-${pinVal.padEnd(5, '•')}</strong>`;
 
         const sess = loadActiveSession();
         if (sess && sess.username) {
@@ -1107,10 +1253,10 @@
         const target = getArenaTargetUrl(querySuffix);
         showBanner(`✓ Redirecting to Arena (${target})…`, true);
         try {
-          window.location.href = target;
+          window.location.replace(target);
         } catch (e) {
           try {
-            window.location.assign(target);
+            window.location.href = target;
           } catch (err) {
             window.open(target, '_self');
           }
@@ -1176,11 +1322,15 @@
             fbAuth = getAuth(fbApp);
             fbDb = getFirestore(fbApp);
 
-            // Must run BEFORE any other auth call, otherwise a pending Google redirect result is lost.
-            try {
-              fbRedirectResult = await withTimeout(getRedirectResult(fbAuth), 8000, 'redirect-timeout');
-            } catch (e) {
-              fbRedirectError = (e && e.code === 'redirect-timeout') ? null : e;
+            // Only await getRedirectResult if a Google redirect was actually initiated
+            let hasGooglePending = false;
+            try { hasGooglePending = Boolean(sessionStorage.getItem(GOOGLE_PENDING_KEY)); } catch (e) {}
+            if (hasGooglePending) {
+              try {
+                fbRedirectResult = await withTimeout(getRedirectResult(fbAuth), 4000, 'redirect-timeout');
+              } catch (e) {
+                fbRedirectError = (e && e.code === 'redirect-timeout') ? null : e;
+              }
             }
 
             fbReady = true;
@@ -1195,10 +1345,10 @@
         return fbCorePromise;
       }
 
-      async function ensureFirebaseReady(timeoutMs = 5000) {
+      async function ensureFirebaseReady(timeoutMs = 700) {
         if (fbReady && fbDb) return true;
         try {
-          await withTimeout(initFirebaseAuthBridge(), timeoutMs, 'bridge-timeout');
+          await withTimeout(initFirebaseCore(), timeoutMs, 'core-timeout');
           return Boolean(fbReady && fbDb);
         } catch (e) {
           return Boolean(fbReady && fbDb);
@@ -1213,7 +1363,7 @@
           const ok = await initFirebaseCore();
           if (!ok) { fbInitPromise = null; return false; }
           try {
-            if (typeof fbAuth.authStateReady === 'function') await withTimeout(fbAuth.authStateReady(), 6000, 'auth-ready-timeout');
+            if (typeof fbAuth.authStateReady === 'function') await withTimeout(fbAuth.authStateReady(), 1200, 'auth-ready-timeout');
           } catch (e) {}
 
           if (!fbAuth.currentUser && !googleFlowActive) {
@@ -1221,9 +1371,9 @@
               const authMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
               if (!fbAuth.currentUser && !googleFlowActive) {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                  await withTimeout(authMod.signInWithCustomToken(fbAuth, __initial_auth_token), 8000, 'anon-timeout');
+                  await withTimeout(authMod.signInWithCustomToken(fbAuth, __initial_auth_token), 1500, 'anon-timeout');
                 } else {
-                  await withTimeout(authMod.signInAnonymously(fbAuth), 8000, 'anon-timeout');
+                  await withTimeout(authMod.signInAnonymously(fbAuth), 1500, 'anon-timeout');
                 }
               }
             } catch (e) {
@@ -1233,8 +1383,9 @@
 
           fbUser = fbAuth.currentUser || null;
           try {
-            await withTimeout(pullCloudAccountsIntoLocal(), 10000, 'pull-timeout');
+            await withTimeout(pullCloudAccountsIntoLocal(), 4000, 'pull-timeout');
             attachLiveCloudAccountListeners();
+            migrateLocalAccountsToFirebase();
           } catch (e) {
             console.warn('Cloud sync skipped', e);
           }
@@ -1248,7 +1399,7 @@
         const clean = String(accountRecord.username).trim().toUpperCase();
         if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
 
-        await ensureFirebaseReady(3500);
+        await ensureFirebaseReady(600);
         if (!fbDb) return;
 
         const payload = {
@@ -1264,10 +1415,14 @@
           migratedAt: Date.now()
         };
         try {
-          await Promise.allSettled([
+          const [resArt, resRoot] = await Promise.allSettled([
             fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean), payload, { merge: true }),
             fbSetDoc(fbDoc(fbDb, 'accounts', clean), payload, { merge: true })
           ]);
+          updateCloudSyncedColsForUser(clean, {
+            artAcc: resArt && resArt.status === 'fulfilled',
+            rootAcc: resRoot && resRoot.status === 'fulfilled'
+          });
         } catch (e) {
           console.warn('pushAccountToFirebase notice:', e);
         }
@@ -1278,7 +1433,7 @@
         const clean = String(uname).trim().toUpperCase();
         if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
 
-        await ensureFirebaseReady(3500);
+        await ensureFirebaseReady(600);
         if (!fbDb) return;
 
         const worldMap = loadWorldwidePlayersMap();
@@ -1310,10 +1465,14 @@
           updatedAt: Date.now()
         };
         try {
-          await Promise.allSettled([
+          const [resArtLb, resRootLb] = await Promise.allSettled([
             fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean), payload, { merge: true }),
             fbSetDoc(fbDoc(fbDb, 'leaderboard', clean), payload, { merge: true })
           ]);
+          updateCloudSyncedColsForUser(clean, {
+            artLb: resArtLb && resArtLb.status === 'fulfilled',
+            rootLb: resRootLb && resRootLb.status === 'fulfilled'
+          });
         } catch (e) {
           console.warn('pushLeaderboardSeedToFirebase notice:', e);
         }
@@ -1406,29 +1565,34 @@
           let artLbOk = false;
           let rootLbOk = false;
 
-          try {
-            const pSnap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts'));
-            pSnap1.forEach((d) => {
-              if (d.exists()) {
-                const c = String(d.id || '').trim().toUpperCase();
-                if (c && !isRecentSignup(c)) cloudPurgedSet.add(c);
-              }
-            });
-          } catch (e) {}
-          try {
-            const pSnap2 = await fbGetDocs(fbCollection(fbDb, 'purged_accounts'));
-            pSnap2.forEach((d) => {
-              if (d.exists()) {
-                const c = String(d.id || '').trim().toUpperCase();
-                if (c && !isRecentSignup(c)) cloudPurgedSet.add(c);
-              }
-            });
-          } catch (e) {}
+          const [rP1, rP2, rA1, rA2, rL1, rL2] = await Promise.allSettled([
+            fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts')),
+            fbGetDocs(fbCollection(fbDb, 'purged_accounts')),
+            fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts')),
+            fbGetDocs(fbCollection(fbDb, 'accounts')),
+            fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard')),
+            fbGetDocs(fbCollection(fbDb, 'leaderboard'))
+          ]);
 
-          try {
-            const snap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts'));
+          if (rP1.status === 'fulfilled' && rP1.value) {
+            rP1.value.forEach((d) => {
+              if (d.exists()) {
+                const c = String(d.id || '').trim().toUpperCase();
+                if (c && !isRecentSignup(c)) cloudPurgedSet.add(c);
+              }
+            });
+          }
+          if (rP2.status === 'fulfilled' && rP2.value) {
+            rP2.value.forEach((d) => {
+              if (d.exists()) {
+                const c = String(d.id || '').trim().toUpperCase();
+                if (c && !isRecentSignup(c)) cloudPurgedSet.add(c);
+              }
+            });
+          }
+          if (rA1.status === 'fulfilled' && rA1.value) {
             artAccOk = true;
-            snap1.forEach((d) => {
+            rA1.value.forEach((d) => {
               if (!d.exists()) return;
               const data = d.data();
               const clean = ((data && data.username) || d.id || '').trim().toUpperCase();
@@ -1436,12 +1600,10 @@
                 artAccMap[clean] = data;
               }
             });
-          } catch (e) {}
-
-          try {
-            const snap2 = await fbGetDocs(fbCollection(fbDb, 'accounts'));
+          }
+          if (rA2.status === 'fulfilled' && rA2.value) {
             rootAccOk = true;
-            snap2.forEach((d) => {
+            rA2.value.forEach((d) => {
               if (!d.exists()) return;
               const data = d.data();
               const clean = ((data && data.username) || d.id || '').trim().toUpperCase();
@@ -1449,12 +1611,10 @@
                 rootAccMap[clean] = data;
               }
             });
-          } catch (e) {}
-
-          try {
-            const lbSnap1 = await fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard'));
+          }
+          if (rL1.status === 'fulfilled' && rL1.value) {
             artLbOk = true;
-            lbSnap1.forEach((d) => {
+            rL1.value.forEach((d) => {
               if (!d.exists()) return;
               const data = d.data();
               const clean = ((data && (data.name || data.username)) || d.id || '').trim().toUpperCase();
@@ -1462,12 +1622,10 @@
                 artLbMap[clean] = data;
               }
             });
-          } catch (e) {}
-
-          try {
-            const lbSnap2 = await fbGetDocs(fbCollection(fbDb, 'leaderboard'));
+          }
+          if (rL2.status === 'fulfilled' && rL2.value) {
             rootLbOk = true;
-            lbSnap2.forEach((d) => {
+            rL2.value.forEach((d) => {
               if (!d.exists()) return;
               const data = d.data();
               const clean = ((data && (data.name || data.username)) || d.id || '').trim().toUpperCase();
@@ -1475,16 +1633,13 @@
                 rootLbMap[clean] = data;
               }
             });
-          } catch (e) {}
+          }
 
           if (!artAccOk && !rootAccOk) return;
 
-          let knownLbUsers = [];
-          try {
-            const rawKnown = localStorage.getItem(KNOWN_LB_USERS_KEY);
-            if (rawKnown) knownLbUsers = JSON.parse(rawKnown) || [];
-          } catch (e) {}
-          const knownLbSet = new Set(Array.isArray(knownLbUsers) ? knownLbUsers : []);
+          const syncedColsMap = loadCloudSyncedColsMap();
+          const usersMap = loadEncryptedUsersMap();
+          const worldMap = loadWorldwidePlayersMap();
 
           // Determine authoritative active accounts in Firebase
           const validAccountsMap = {};
@@ -1492,10 +1647,12 @@
             ...Object.keys(artAccMap),
             ...Object.keys(rootAccMap),
             ...Object.keys(artLbMap),
-            ...Object.keys(rootLbMap)
+            ...Object.keys(rootLbMap),
+            ...Object.keys(usersMap || {})
           ]);
 
           allSeenCandidates.forEach((clean) => {
+            if (!clean || isPlaceholderUsername(clean)) return;
             if (cloudPurgedSet.has(clean) && !isRecentSignup(clean)) {
               deleteOrphanCloudDocs(clean);
               return;
@@ -1504,43 +1661,42 @@
             const inRootAcc = Boolean(rootAccMap[clean]);
             const inArtLb = Boolean(artLbMap[clean]);
             const inRootLb = Boolean(rootLbMap[clean]);
+            const prevCols = syncedColsMap[clean] || {};
 
-            let isActiveInAccounts = false;
-            if (artAccOk && rootAccOk) {
-              isActiveInAccounts = (inArtAcc && inRootAcc) || (isRecentSignup(clean) && (inArtAcc || inRootAcc));
-            } else if (artAccOk) {
-              isActiveInAccounts = inArtAcc;
-            } else if (rootAccOk) {
-              isActiveInAccounts = inRootAcc;
+            // Check if this user was previously confirmed in a Firestore collection and has now been deleted from it
+            let deletedFromCloudCol = false;
+            if (!isRecentSignup(clean)) {
+              if (prevCols.artAcc && artAccOk && !inArtAcc) deletedFromCloudCol = true;
+              if (prevCols.rootAcc && rootAccOk && !inRootAcc) deletedFromCloudCol = true;
+              if (prevCols.artLb && artLbOk && !inArtLb) deletedFromCloudCol = true;
+              if (prevCols.rootLb && rootLbOk && !inRootLb) deletedFromCloudCol = true;
             }
 
-            // If user was previously in leaderboard and deleted from leaderboard in Firebase Console
-            let deletedFromLb = false;
-            if (knownLbSet.has(clean) && !isRecentSignup(clean)) {
-              if (artLbOk && !inArtLb) deletedFromLb = true;
-              if (rootLbOk && !inRootLb) deletedFromLb = true;
-            }
+            const hasAnyAccountSource = inArtAcc || inRootAcc || Boolean(usersMap[clean]);
 
-            if (isActiveInAccounts && !deletedFromLb) {
-              validAccountsMap[clean] = Object.assign({}, rootAccMap[clean] || {}, artAccMap[clean] || {});
+            if (hasAnyAccountSource && !deletedFromCloudCol) {
+              validAccountsMap[clean] = Object.assign({}, usersMap[clean] || {}, rootAccMap[clean] || {}, artAccMap[clean] || {});
+              if (inArtAcc || inRootAcc || inArtLb || inRootLb) {
+                syncedColsMap[clean] = {
+                  artAcc: Boolean(prevCols.artAcc || inArtAcc),
+                  rootAcc: Boolean(prevCols.rootAcc || inRootAcc),
+                  artLb: Boolean(prevCols.artLb || inArtLb),
+                  rootLb: Boolean(prevCols.rootLb || inRootLb),
+                  updatedAt: Date.now()
+                };
+              }
             } else if (!isRecentSignup(clean)) {
+              delete syncedColsMap[clean];
               deleteOrphanCloudDocs(clean);
             }
           });
 
+          saveCloudSyncedColsMap(syncedColsMap);
           cloudAuthoritativeAccounts = validAccountsMap;
 
-          // Update known leaderboard users
-          const nextKnownLb = Object.keys(validAccountsMap).filter(u => artLbMap[u] && rootLbMap[u]);
-          try {
-            localStorage.setItem(KNOWN_LB_USERS_KEY, JSON.stringify(nextKnownLb));
-          } catch (e) {}
-
-          const usersMap = loadEncryptedUsersMap();
-          const worldMap = loadWorldwidePlayersMap();
           let changed = false;
 
-          // Scrub any local account that is no longer in Firebase validAccountsMap
+          // Scrub any local account that was confirmed deleted from Firebase
           const localUserKeys = new Set([
             ...Object.keys(usersMap || {}),
             ...Object.keys(worldMap || {})
@@ -1587,6 +1743,9 @@
                 usersMap[clean].authProvider = data.authProvider || 'google';
                 changed = true;
               }
+            }
+            if (usersMap[clean] && usersMap[clean].googleUid) {
+              saveGoogleUidMapEntry(usersMap[clean].googleUid, data.googleEmail || null, usersMap[clean]);
             }
 
             const lbData = Object.assign({}, rootLbMap[clean] || {}, artLbMap[clean] || {});
@@ -1696,24 +1855,21 @@
         broadcastWorldwideSync(true);
 
         updateUIState();
-        showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Storing in Cloud Database & Leaderboard…`, true);
+        showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena…`, true);
 
-        // Await writing to both Firestore collections (accounts & leaderboard) before navigating
+        // Fire cloud sync in parallel with a fast 300ms cap so navigation is instantaneous
         try {
           await withTimeout(
             Promise.allSettled([
               pushAccountToFirebase(activeProf),
               pushLeaderboardSeedToFirebase(uname, activeProf)
             ]),
-            3500,
-            'cloud-sync-timeout'
+            300,
+            'fast-nav-sync'
           );
         } catch (e) {}
 
-        showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena…`, true);
-        setTimeout(() => {
-          navigateToHandCricketArena('?from=login');
-        }, 120);
+        navigateToHandCricketArena('?from=login');
       }
 
       function usernameFromGoogleProfile(user) {
@@ -1726,13 +1882,38 @@
         return base.slice(0, 16);
       }
 
-      function readCountrySelection() {
-        const opt = el.selectAuthCountry && el.selectAuthCountry.options[el.selectAuthCountry.selectedIndex];
+      function readCountrySelection(selectElement) {
+        const selEl = selectElement || el.selectAuthCountry;
+        const opt = selEl && selEl.options[selEl.selectedIndex];
         return {
           dial: opt ? opt.value : '+91',
           cName: opt ? (opt.getAttribute('data-country') || 'India') : 'India',
           cFlag: opt ? (opt.getAttribute('data-flag') || '🇮🇳') : '🇮🇳'
         };
+      }
+
+      function syncCountrySelectElement(selectElement, countryObj) {
+        if (!selectElement || !countryObj) return;
+        const wantName = String(countryObj.cName || countryObj.countryName || '').trim().toLowerCase();
+        const wantDial = String(countryObj.dial || countryObj.countryCode || '').trim();
+        const opts = selectElement.options;
+        if (wantName) {
+          for (let i = 0; i < opts.length; i++) {
+            const cName = String(opts[i].getAttribute('data-country') || '').trim().toLowerCase();
+            if (cName === wantName) {
+              selectElement.selectedIndex = i;
+              return;
+            }
+          }
+        }
+        if (wantDial) {
+          for (let i = 0; i < opts.length; i++) {
+            if (opts[i].value === wantDial) {
+              selectElement.selectedIndex = i;
+              return;
+            }
+          }
+        }
       }
 
       function setAuthBusy(busy) {
@@ -1765,12 +1946,18 @@
       async function usernameIsTaken(candidate, googleUid) {
         if (fbReady && fbDb) {
           try {
-            const [s1, s2] = await Promise.all([
-              fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidate)),
-              fbGetDoc(fbDoc(fbDb, 'accounts', candidate))
-            ]);
-            if (s1.exists() && s2.exists()) {
-              const d = s1.data() || s2.data();
+            const [r1, r2] = await withTimeout(
+              Promise.allSettled([
+                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidate)),
+                fbGetDoc(fbDoc(fbDb, 'accounts', candidate))
+              ]),
+              1800,
+              'taken-check-timeout'
+            );
+            const s1 = r1 && r1.status === 'fulfilled' ? r1.value : null;
+            const s2 = r2 && r2.status === 'fulfilled' ? r2.value : null;
+            if ((s1 && s1.exists()) || (s2 && s2.exists())) {
+              const d = (s1 && s1.exists() ? s1.data() : null) || (s2 && s2.exists() ? s2.data() : null);
               if (!d || d.googleUid !== googleUid) return true;
             }
             return false;
@@ -1784,102 +1971,192 @@
       // Returns the existing account record for a returning Google user, or null for a first-time user.
       async function lookupGoogleAccount(gUser) {
         const googleUid = gUser.uid;
+        const googleEmail = String(gUser.email || '').trim().toLowerCase();
+        const purgedLocal = loadPurgedAccountsList();
 
-        if (!fbReady || !fbDb) {
+        // 1) Check local Google UID map & local encrypted users vault first for candidate match
+        let localCandidate = null;
+        const uidMap = loadGoogleUidMap();
+        if (uidMap[googleUid] && uidMap[googleUid].username) {
+          localCandidate = uidMap[googleUid];
+        } else if (googleEmail && uidMap['email:' + googleEmail] && uidMap['email:' + googleEmail].username) {
+          localCandidate = uidMap['email:' + googleEmail];
+        }
+        if (!localCandidate) {
           const usersMap = loadEncryptedUsersMap();
           for (const k of Object.keys(usersMap)) {
-            if (usersMap[k] && usersMap[k].googleUid === googleUid) return usersMap[k];
+            const rec = usersMap[k];
+            if (!rec) continue;
+            if (rec.googleUid === googleUid || (googleEmail && String(rec.googleEmail || '').trim().toLowerCase() === googleEmail)) {
+              localCandidate = rec;
+              break;
+            }
           }
-          return null;
+        }
+        if (localCandidate && localCandidate.username) {
+          const cleanLocal = String(localCandidate.username).trim().toUpperCase();
+          if (purgedLocal.includes(cleanLocal) && !isRecentSignup(cleanLocal)) {
+            removeGoogleUidMapByUsername(cleanLocal);
+            localCandidate = null;
+          }
         }
 
-        // Private profile keyed by uid: verify that the referenced account still exists in Firebase accounts!
-        let profSnap = null;
+        await ensureFirebaseReady(900);
+        if (!fbReady || !fbDb) {
+          return localCandidate || null;
+        }
+
+        // 2) Check private profile docs keyed by googleUid in Firestore (both artifacts path and root users path)
+        let profData = null;
         try {
-          profSnap = await withTimeout(
-            fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', googleUid, 'profile', 'main')),
-            6000, 'lookup-timeout'
+          const [pArt, pRoot] = await withTimeout(
+            Promise.allSettled([
+              fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', googleUid, 'profile', 'main')),
+              fbGetDoc(fbDoc(fbDb, 'users', googleUid))
+            ]),
+            2500,
+            'profile-lookup-timeout'
           );
-        } catch (e) {
-          profSnap = null;
-        }
-        if (profSnap && profSnap.exists()) {
-          const p = profSnap.data() || {};
-          const uname = String(p.username || '').trim().toUpperCase();
-          if (uname) {
-            try {
-              const [accSnap1, accSnap2] = await Promise.all([
-                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
-                fbGetDoc(fbDoc(fbDb, 'accounts', uname))
-              ]);
-              if (accSnap1.exists() && accSnap2.exists()) {
-                const a = accSnap1.data() || accSnap2.data() || {};
-                return {
-                  username: uname,
-                  countryCode: a.countryCode || p.countryCode || '+91',
-                  countryName: a.countryName || p.countryName || 'India',
-                  countryFlag: a.countryFlag || p.countryFlag || '🇮🇳',
-                  encryptedAuth: null,
-                  googleUid: googleUid,
-                  googleEmail: null,
-                  authProvider: 'google',
-                  createdAt: p.createdAt || a.createdAt || new Date().toISOString()
-                };
-              } else {
-                // Account was deleted from Firebase! Clean up stale profile & local cache so user can sign up again.
-                await deleteOrphanCloudDocs(uname);
-                scrubAccountFromWebsite(uname, false);
-                if (fbDeleteDoc) {
-                  try { await fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', googleUid, 'profile', 'main')); } catch (e) {}
-                }
-                return null;
-              }
-            } catch (e) {}
-          }
-        }
+          const sArt = pArt && pArt.status === 'fulfilled' ? pArt.value : null;
+          const sRoot = pRoot && pRoot.status === 'fulfilled' ? pRoot.value : null;
+          if (sArt && sArt.exists()) profData = sArt.data();
+          else if (sRoot && sRoot.exists()) profData = sRoot.data();
+        } catch (e) {}
 
-        // 3) Legacy accounts created before private profiles existed (query by uid)
-        const colRef = fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts');
-        const q = (fbQueryFn && fbWhereFn) ? fbQueryFn(colRef, fbWhereFn('googleUid', '==', googleUid)) : colRef;
-        const snap = await withTimeout(fbGetDocs(q), 10000, 'lookup-timeout');
-        let legacy = null;
-        snap.forEach((d) => {
-          if (!d.exists()) return;
-          const data = d.data();
-          if (data && data.googleUid === googleUid) {
-            legacy = {
-              username: String(data.username || d.id).trim().toUpperCase(),
-              countryCode: data.countryCode || '+91',
-              countryName: data.countryName || 'India',
-              countryFlag: data.countryFlag || '🇮🇳',
-              encryptedAuth: data.encryptedAuth || null,
+        const candidateUname = String(
+          (profData && profData.username) ||
+          (localCandidate && localCandidate.username) ||
+          ''
+        ).trim().toUpperCase();
+
+        if (candidateUname) {
+          try {
+            const [rAcc1, rAcc2, rPurge1, rPurge2] = await withTimeout(
+              Promise.allSettled([
+                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidateUname)),
+                fbGetDoc(fbDoc(fbDb, 'accounts', candidateUname)),
+                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts', candidateUname)),
+                fbGetDoc(fbDoc(fbDb, 'purged_accounts', candidateUname))
+              ]),
+              2500,
+              'acc-verify-timeout'
+            );
+            const accSnap1 = rAcc1 && rAcc1.status === 'fulfilled' ? rAcc1.value : null;
+            const accSnap2 = rAcc2 && rAcc2.status === 'fulfilled' ? rAcc2.value : null;
+            const purgeSnap1 = rPurge1 && rPurge1.status === 'fulfilled' ? rPurge1.value : null;
+            const purgeSnap2 = rPurge2 && rPurge2.status === 'fulfilled' ? rPurge2.value : null;
+
+            const inA1 = Boolean(accSnap1 && accSnap1.exists());
+            const inA2 = Boolean(accSnap2 && accSnap2.exists());
+            const isPurgedCloud = ((purgeSnap1 && purgeSnap1.exists()) || (purgeSnap2 && purgeSnap2.exists())) && !isRecentSignup(candidateUname);
+            const syncedCols = loadCloudSyncedColsMap()[candidateUname] || {};
+            const wasDel = !isRecentSignup(candidateUname) && (
+              (syncedCols.artAcc && rAcc1 && rAcc1.status === 'fulfilled' && !inA1) ||
+              (syncedCols.rootAcc && rAcc2 && rAcc2.status === 'fulfilled' && !inA2)
+            );
+
+            if (isPurgedCloud || wasDel || (!inA1 && !inA2 && !localCandidate && !isRecentSignup(candidateUname))) {
+              await deleteOrphanCloudDocs(candidateUname);
+              scrubAccountFromWebsite(candidateUname, false);
+              if (fbDeleteDoc) {
+                try {
+                  await Promise.allSettled([
+                    fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', googleUid, 'profile', 'main')),
+                    fbDeleteDoc(fbDoc(fbDb, 'users', googleUid))
+                  ]);
+                } catch (e) {}
+              }
+              return null;
+            }
+
+            const a = (inA1 ? accSnap1.data() : null) || (inA2 ? accSnap2.data() : null) || profData || localCandidate || {};
+            const resolvedAcct = {
+              username: candidateUname,
+              countryCode: a.countryCode || (profData && profData.countryCode) || (localCandidate && localCandidate.countryCode) || '+91',
+              countryName: a.countryName || (profData && profData.countryName) || (localCandidate && localCandidate.countryName) || 'India',
+              countryFlag: a.countryFlag || (profData && profData.countryFlag) || (localCandidate && localCandidate.countryFlag) || '🇮🇳',
+              encryptedAuth: null,
               googleUid: googleUid,
               googleEmail: null,
-              authProvider: data.authProvider || 'google',
-              createdAt: data.createdAt || new Date().toISOString()
+              authProvider: 'google',
+              createdAt: a.createdAt || (profData && profData.createdAt) || (localCandidate && localCandidate.createdAt) || new Date().toISOString()
             };
+            saveGoogleUidMapEntry(googleUid, googleEmail, resolvedAcct);
+            return resolvedAcct;
+          } catch (e) {
+            if (localCandidate) return localCandidate;
           }
-        });
-        return legacy; // null => genuinely first-time user
+        }
+
+        // 3) Query public accounts collections by googleUid (both artifacts and root accounts)
+        try {
+          const colRef1 = fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts');
+          const colRef2 = fbCollection(fbDb, 'accounts');
+          const q1 = (fbQueryFn && fbWhereFn) ? fbQueryFn(colRef1, fbWhereFn('googleUid', '==', googleUid)) : colRef1;
+          const q2 = (fbQueryFn && fbWhereFn) ? fbQueryFn(colRef2, fbWhereFn('googleUid', '==', googleUid)) : colRef2;
+          const [s1, s2] = await withTimeout(
+            Promise.allSettled([fbGetDocs(q1), fbGetDocs(q2)]),
+            3000,
+            'query-lookup-timeout'
+          );
+          let found = null;
+          const inspectSnap = (res) => {
+            if (!res || res.status !== 'fulfilled' || !res.value) return;
+            res.value.forEach((d) => {
+              if (!d.exists() || found) return;
+              const data = d.data();
+              if (data && data.googleUid === googleUid) {
+                const uname = String(data.username || d.id).trim().toUpperCase();
+                if (uname && (!purgedLocal.includes(uname) || isRecentSignup(uname))) {
+                  found = {
+                    username: uname,
+                    countryCode: data.countryCode || '+91',
+                    countryName: data.countryName || 'India',
+                    countryFlag: data.countryFlag || '🇮🇳',
+                    encryptedAuth: data.encryptedAuth || null,
+                    googleUid: googleUid,
+                    googleEmail: null,
+                    authProvider: data.authProvider || 'google',
+                    createdAt: data.createdAt || new Date().toISOString()
+                  };
+                }
+              }
+            });
+          };
+          inspectSnap(s1);
+          inspectSnap(s2);
+          if (found) {
+            saveGoogleUidMapEntry(googleUid, googleEmail, found);
+            return found;
+          }
+        } catch (e) {}
+
+        return localCandidate || null; // null => genuinely first-time Google user
       }
 
       // Best-effort: refresh lastLoginAt (and backfill the private profile for legacy accounts).
       async function touchPrivateProfile(gUser, acct) {
-        if (!fbReady || !fbDb || !acct) return;
+        if (!acct) return;
+        saveGoogleUidMapEntry(gUser.uid, gUser.email, acct);
+        if (!fbReady || !fbDb) return;
+        const profPayload = {
+          uid: gUser.uid,
+          username: acct.username,
+          email: gUser.email || null,
+          emailVerified: Boolean(gUser.emailVerified),
+          displayName: gUser.displayName || null,
+          photoURL: gUser.photoURL || null,
+          countryCode: acct.countryCode || '+91',
+          countryName: acct.countryName || 'India',
+          countryFlag: acct.countryFlag || '🇮🇳',
+          authProvider: 'google',
+          lastLoginAt: new Date().toISOString()
+        };
         try {
-          await fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), {
-            uid: gUser.uid,
-            username: acct.username,
-            email: gUser.email || null,
-            emailVerified: Boolean(gUser.emailVerified),
-            displayName: gUser.displayName || null,
-            photoURL: gUser.photoURL || null,
-            countryCode: acct.countryCode || '+91',
-            countryName: acct.countryName || 'India',
-            countryFlag: acct.countryFlag || '🇮🇳',
-            authProvider: 'google',
-            lastLoginAt: new Date().toISOString()
-          }, { merge: true });
+          await Promise.allSettled([
+            fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), profPayload, { merge: true }),
+            fbSetDoc(fbDoc(fbDb, 'users', gUser.uid), profPayload, { merge: true })
+          ]);
         } catch (e) {
           console.warn('Could not update private profile', e);
         }
@@ -1887,34 +2164,38 @@
 
       // Shared by the popup flow and the redirect fallback.
       async function completeGoogleSignIn(gUser, sel) {
-        const country = sel || readCountrySelection();
+        const defaultCountry = sel || readCountrySelection(el.selectAuthCountry);
         const googleUid = gUser.uid;
         fbUser = (fbAuth && fbAuth.currentUser) || fbUser;
 
-        // We are now authenticated as the Google user, so Firestore reads that were denied earlier can succeed.
-        try { await withTimeout(pullCloudAccountsIntoLocal(), 8000, 'pull-timeout'); } catch (e) {}
+        // Pull latest cloud accounts with a fast bound so returning users never wait long
+        try { await withTimeout(pullCloudAccountsIntoLocal(), 2200, 'pull-timeout'); } catch (e) {}
 
         let existing = null;
         try {
           existing = await lookupGoogleAccount(gUser);
         } catch (e) {
-          console.warn('Account lookup failed', e);
-          const code = (e && e.code) ? ` (${e.code})` : '';
-          showBanner(`Couldn't check your account${code}. Check your connection and Firestore rules, then try again.`, false);
-          return;
+          console.warn('Account lookup warning', e);
         }
 
-        if (existing) {
-          // Returning user: NO username prompt.
+        if (existing && existing.username) {
+          // Returning Google user: DO NOT display username or country code modal! Log straight in.
+          const modal = document.getElementById('usernameModal');
+          if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+          }
+          syncCountrySelectElement(el.selectAuthCountry, existing);
           const usersMap = loadEncryptedUsersMap();
           usersMap[existing.username] = existing;
           saveEncryptedUsersMap(usersMap);
-          try { await withTimeout(touchPrivateProfile(gUser, existing), 2500, 'touch-timeout'); } catch (e) {}
+          saveGoogleUidMapEntry(googleUid, gUser.email, existing);
+          touchPrivateProfile(gUser, existing).catch(() => {});
           await finalizePlayerSession(existing);
           return;
         }
 
-        // New Google account: let the user choose a username (login of an existing account never reaches here).
+        // Brand-new Google account: show the modal with BOTH Username box AND Country Code selection!
         const base = usernameFromGoogleProfile(gUser);
         let suggestion = base;
         let n = 1;
@@ -1929,27 +2210,39 @@
           if (n > 99) break;
         }
 
-        const chosen = await chooseGoogleUsername(suggestion, gUser, country);
-        if (!chosen) {
+        const chosenResult = await chooseGoogleUsername(suggestion, gUser, defaultCountry);
+        if (!chosenResult || !chosenResult.username) {
           try { if (fbAuth) await fbAuth.signOut(); } catch (e) {}
-          showBanner('Sign-up cancelled. Pick a username to finish creating your account.', false);
+          showBanner('Sign-up cancelled. Pick a username and country code to finish creating your account.', false);
           return;
         }
 
+        const chosenName = chosenResult.username;
+        const chosenCountry = chosenResult.country || defaultCountry;
+        syncCountrySelectElement(el.selectAuthCountry, chosenCountry);
+
+        stampRecentSignup(chosenName);
+        unmarkAccountPurgedLocal(chosenName);
+        unpurgeCloudAccount(chosenName).catch(() => {});
+
         const newProf = {
-          username: chosen,
-          countryCode: country.dial,
-          countryName: country.cName,
-          countryFlag: country.cFlag,
+          username: chosenName,
+          countryCode: chosenCountry.dial,
+          countryName: chosenCountry.cName,
+          countryFlag: chosenCountry.cFlag,
           encryptedAuth: null,
           googleUid: googleUid,
-          googleEmail: null, // email lives only in the user's private Firestore profile
+          googleEmail: null,
           authProvider: 'google',
           createdAt: new Date().toISOString()
         };
         const usersMap = loadEncryptedUsersMap();
-        usersMap[chosen] = newProf;
+        usersMap[chosenName] = newProf;
         saveEncryptedUsersMap(usersMap);
+        saveGoogleUidMapEntry(googleUid, gUser.email, newProf);
+        if (cloudAuthoritativeAccounts) {
+          cloudAuthoritativeAccounts[chosenName] = newProf;
+        }
         await finalizePlayerSession(newProf);
       }
 
@@ -1959,95 +2252,107 @@
         return null;
       }
 
-      // Atomically claims the username in Firestore and stores the user's private profile.
+      // Atomically claims the username + country code in Firestore and stores the user's private profile.
       async function reserveGoogleUsername(name, gUser, country) {
         const local = loadEncryptedUsersMap()[name];
-        if (local && local.googleUid !== gUser.uid) return { ok: false, error: 'That username is already taken.' };
-        if (!fbReady || !fbDb || !fbRunTransaction) {
-          return { ok: false, error: 'Cloud database unavailable. Check your connection and try again.' };
+        if (local && local.googleUid && local.googleUid !== gUser.uid) {
+          return { ok: false, error: 'That username is already taken.' };
         }
         const createdAt = new Date().toISOString();
-        try {
-          const accountPayload = {
-            username: name,
-            countryCode: country.dial,
-            countryName: country.cName,
-            countryFlag: country.cFlag,
-            encryptedAuth: null,
-            googleUid: gUser.uid,
-            googleEmail: null,
-            authProvider: 'google',
-            createdAt: createdAt,
-            migratedAt: Date.now()
-          };
-          const acctRef = fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', name);
-          await fbRunTransaction(fbDb, async (tx) => {
-            const snap = await tx.get(acctRef);
-            if (snap.exists()) {
-              const d = snap.data();
-              if (!d || d.googleUid !== gUser.uid) {
-                const err = new Error('username-taken');
-                err.code = 'username-taken';
-                throw err;
-              }
+        const accountPayload = {
+          username: name,
+          countryCode: country.dial,
+          countryName: country.cName,
+          countryFlag: country.cFlag,
+          encryptedAuth: null,
+          googleUid: gUser.uid,
+          googleEmail: null,
+          authProvider: 'google',
+          createdAt: createdAt,
+          migratedAt: Date.now()
+        };
+
+        await ensureFirebaseReady(800);
+        if (fbReady && fbDb) {
+          try {
+            const taken = await usernameIsTaken(name, gUser.uid);
+            if (taken) {
+              return { ok: false, error: 'That username is already taken.' };
             }
-            tx.set(acctRef, accountPayload);
-          });
-
-          // Private profile: readable/writable only by this user (see Firestore rules).
-          await fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), {
-            uid: gUser.uid,
-            username: name,
-            email: gUser.email || null,
-            emailVerified: Boolean(gUser.emailVerified),
-            displayName: gUser.displayName || null,
-            photoURL: gUser.photoURL || null,
-            countryCode: country.dial,
-            countryName: country.cName,
-            countryFlag: country.cFlag,
-            authProvider: 'google',
-            createdAt: createdAt,
-            lastLoginAt: createdAt
-          });
-
-          // Also write to root accounts and seed both leaderboard collections
-          await Promise.allSettled([
-            fbSetDoc(fbDoc(fbDb, 'accounts', name), accountPayload, { merge: true }),
-            pushLeaderboardSeedToFirebase(name, accountPayload)
-          ]);
-          return { ok: true };
-        } catch (e) {
-          if (e && e.code === 'username-taken') return { ok: false, error: 'That username is already taken.' };
-          console.warn('Username reservation failed', e);
-          const code = (e && e.code) ? ` (${e.code})` : '';
-          return { ok: false, error: `Couldn't save your account${code}. Please try again.` };
+            const profilePayload = {
+              uid: gUser.uid,
+              username: name,
+              email: gUser.email || null,
+              emailVerified: Boolean(gUser.emailVerified),
+              displayName: gUser.displayName || null,
+              photoURL: gUser.photoURL || null,
+              countryCode: country.dial,
+              countryName: country.cName,
+              countryFlag: country.cFlag,
+              authProvider: 'google',
+              createdAt: createdAt,
+              lastLoginAt: createdAt
+            };
+            await withTimeout(
+              Promise.allSettled([
+                fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', name), accountPayload, { merge: true }),
+                fbSetDoc(fbDoc(fbDb, 'accounts', name), accountPayload, { merge: true }),
+                fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), profilePayload, { merge: true }),
+                fbSetDoc(fbDoc(fbDb, 'users', gUser.uid), profilePayload, { merge: true }),
+                pushLeaderboardSeedToFirebase(name, accountPayload)
+              ]),
+              2500,
+              'reserve-google-timeout'
+            );
+          } catch (e) {
+            if (e && e.code === 'username-taken') return { ok: false, error: 'That username is already taken.' };
+            console.warn('Cloud reservation notice (continuing with local + background sync):', e);
+          }
         }
+        saveGoogleUidMapEntry(gUser.uid, gUser.email, accountPayload);
+        return { ok: true };
       }
 
-      function chooseGoogleUsername(suggestion, gUser, country) {
+      function chooseGoogleUsername(suggestion, gUser, initialCountry) {
         return new Promise((resolve) => {
           const modal = document.getElementById('usernameModal');
           const input = document.getElementById('inputChooseUsername');
+          const countrySelect = document.getElementById('selectGoogleCountry');
+          const countryPreview = document.getElementById('googleModalCountryPreview');
           const errEl = document.getElementById('usernameModalError');
           const btnOk = document.getElementById('btnUsernameConfirm');
           const btnCancel = document.getElementById('btnUsernameCancel');
-          if (!modal || !input || !btnOk || !btnCancel) { resolve(suggestion); return; }
+          if (!modal || !input || !btnOk || !btnCancel) {
+            resolve({ username: suggestion, country: initialCountry || readCountrySelection() });
+            return;
+          }
+
+          syncCountrySelectElement(countrySelect, initialCountry || readCountrySelection());
+
+          function updateModalCountryPreview() {
+            if (!countrySelect || !countryPreview) return;
+            const c = readCountrySelection(countrySelect);
+            countryPreview.textContent = `${c.cFlag} ${c.cName} (${c.dial})`;
+          }
+          updateModalCountryPreview();
 
           const clean = (v) => String(v || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 16);
           const okLabel = btnOk.textContent;
           let working = false;
 
-          function close(value) {
+          function close(resultObj) {
             input.removeEventListener('input', onInput);
             input.removeEventListener('keydown', onKey);
+            if (countrySelect) countrySelect.removeEventListener('change', onCountryChange);
             btnOk.removeEventListener('click', submit);
             btnCancel.removeEventListener('click', onCancel);
             document.removeEventListener('keydown', onEsc);
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            resolve(value);
+            resolve(resultObj);
           }
           function onInput() { input.value = clean(input.value); errEl.textContent = ''; }
+          function onCountryChange() { updateModalCountryPreview(); errEl.textContent = ''; }
           function onKey(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }
           function onEsc(e) { if (e.key === 'Escape' && !working) close(null); }
           function onCancel() { if (!working) close(null); }
@@ -2058,14 +2363,15 @@
             input.value = name;
             const problem = validateChosenUsername(name);
             if (problem) { errEl.textContent = problem; return; }
+            const selectedCountry = readCountrySelection(countrySelect || el.selectAuthCountry);
             working = true;
             btnOk.disabled = true;
-            btnOk.textContent = 'Checking…';
-            const res = await reserveGoogleUsername(name, gUser, country);
+            btnOk.textContent = 'Saving Profile…';
+            const res = await reserveGoogleUsername(name, gUser, selectedCountry);
             working = false;
             btnOk.disabled = false;
             btnOk.textContent = okLabel;
-            if (res.ok) close(name);
+            if (res.ok) close({ username: name, country: selectedCountry });
             else errEl.textContent = res.error;
           }
 
@@ -2073,6 +2379,7 @@
           errEl.textContent = '';
           input.addEventListener('input', onInput);
           input.addEventListener('keydown', onKey);
+          if (countrySelect) countrySelect.addEventListener('change', onCountryChange);
           btnOk.addEventListener('click', submit);
           btnCancel.addEventListener('click', onCancel);
           document.addEventListener('keydown', onEsc);
@@ -2204,70 +2511,85 @@
         }
 
         setAuthBusy(true);
-        showBanner('Checking player credentials in local vault & cloud…', true);
+        showBanner(authMode === 'SIGNUP' ? `Creating account for ${cFlag} ${uname}…` : `Signing in as ${cFlag} ${uname}…`, true);
 
         try {
-          await ensureFirebaseReady(2500);
-
           let usersMap = loadEncryptedUsersMap();
+          const purgedLocal = loadPurgedAccountsList();
+          if (purgedLocal.includes(uname) && !isRecentSignup(uname)) {
+            delete usersMap[uname];
+            saveEncryptedUsersMap(usersMap);
+          }
           let rec = usersMap[uname] || null;
 
-          // Authoritative Firebase check: verify whether the account exists in Firebase or was deleted
+          // Fast non-blocking / time-boxed cloud check (max 550ms if local exists, 1200ms if checking remote account)
+          await ensureFirebaseReady(rec ? 350 : 900);
           if (fbDb) {
             try {
-              const [snapArt, snapRoot, snapPurgeArt, snapPurgeRoot] = await withTimeout(
-                Promise.all([
+              const timeoutWindow = rec ? 550 : 1200;
+              const [rArt, rRoot, rPurgeArt, rPurgeRoot] = await withTimeout(
+                Promise.allSettled([
                   fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
                   fbGetDoc(fbDoc(fbDb, 'accounts', uname)),
                   fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts', uname)),
                   fbGetDoc(fbDoc(fbDb, 'purged_accounts', uname))
                 ]),
-                3500,
+                timeoutWindow,
                 'lookup-timeout'
               );
-              const isPurgedInCloud = (snapPurgeArt && snapPurgeArt.exists()) || (snapPurgeRoot && snapPurgeRoot.exists());
-              const existsInBothCloud = Boolean(snapArt && snapArt.exists() && snapRoot && snapRoot.exists()) && !isPurgedInCloud;
+              const snapArt = rArt && rArt.status === 'fulfilled' ? rArt.value : null;
+              const snapRoot = rRoot && rRoot.status === 'fulfilled' ? rRoot.value : null;
+              const snapPurgeArt = rPurgeArt && rPurgeArt.status === 'fulfilled' ? rPurgeArt.value : null;
+              const snapPurgeRoot = rPurgeRoot && rPurgeRoot.status === 'fulfilled' ? rPurgeRoot.value : null;
 
-              if (existsInBothCloud) {
-                const data = snapArt.data() || snapRoot.data();
-                rec = {
-                  username: uname,
-                  countryCode: data.countryCode || dial,
-                  countryName: data.countryName || cName,
-                  countryFlag: data.countryFlag || cFlag,
-                  encryptedAuth: data.encryptedAuth || (rec && rec.encryptedAuth) || null,
-                  googleUid: data.googleUid || null,
-                  authProvider: data.authProvider || 'pin',
-                  createdAt: data.createdAt || new Date().toISOString()
-                };
-                usersMap[uname] = rec;
-                saveEncryptedUsersMap(usersMap);
-              } else {
-                // Account was deleted from Firebase (or never existed in Firebase): scrub any stale local or orphan copy!
-                await deleteOrphanCloudDocs(uname);
+              const artChecked = Boolean(rArt && rArt.status === 'fulfilled');
+              const rootChecked = Boolean(rRoot && rRoot.status === 'fulfilled');
+              const inArt = Boolean(snapArt && snapArt.exists());
+              const inRoot = Boolean(snapRoot && snapRoot.exists());
+              const isPurgedInCloud = ((snapPurgeArt && snapPurgeArt.exists()) || (snapPurgeRoot && snapPurgeRoot.exists())) && !isRecentSignup(uname);
+
+              const syncedCols = loadCloudSyncedColsMap()[uname] || {};
+              const wasDeletedFromCloud = !isRecentSignup(uname) && (
+                (syncedCols.artAcc && artChecked && !inArt) ||
+                (syncedCols.rootAcc && rootChecked && !inRoot)
+              );
+
+              if (isPurgedInCloud || wasDeletedFromCloud) {
+                deleteOrphanCloudDocs(uname);
                 scrubAccountFromWebsite(uname, false);
                 usersMap = loadEncryptedUsersMap();
                 delete usersMap[uname];
                 saveEncryptedUsersMap(usersMap);
                 rec = null;
+              } else if (inArt || inRoot) {
+                const data = (inArt ? snapArt.data() : null) || (inRoot ? snapRoot.data() : null) || {};
+                rec = {
+                  username: uname,
+                  countryCode: data.countryCode || (rec && rec.countryCode) || dial,
+                  countryName: data.countryName || (rec && rec.countryName) || cName,
+                  countryFlag: data.countryFlag || (rec && rec.countryFlag) || cFlag,
+                  encryptedAuth: data.encryptedAuth || (rec && rec.encryptedAuth) || null,
+                  googleUid: data.googleUid || (rec && rec.googleUid) || null,
+                  authProvider: data.authProvider || (rec && rec.authProvider) || 'pin',
+                  createdAt: data.createdAt || (rec && rec.createdAt) || new Date().toISOString()
+                };
+                usersMap[uname] = rec;
+                saveEncryptedUsersMap(usersMap);
+                updateCloudSyncedColsForUser(uname, { artAcc: inArt, rootAcc: inRoot });
               }
             } catch (e) {
-              // If offline/timeout, still respect local purged list
-              if (loadPurgedAccountsList().includes(uname)) {
+              // On timeout/offline, preserve valid local account unless explicitly purged locally
+              if (loadPurgedAccountsList().includes(uname) && !isRecentSignup(uname)) {
                 scrubAccountFromWebsite(uname, false);
                 usersMap = loadEncryptedUsersMap();
                 rec = null;
               }
             }
-          } else if (loadPurgedAccountsList().includes(uname)) {
-            scrubAccountFromWebsite(uname, false);
-            usersMap = loadEncryptedUsersMap();
-            rec = null;
           }
 
           if (authMode === 'SIGNUP') {
             if (rec) {
-              if (!rec.encryptedAuth) {
+              if (!rec.encryptedAuth && rec.authProvider === 'google') {
                 showBanner(`Username "${uname}" is already registered with Google. Choose another username or use "Continue with Google".`, false);
                 setAuthBusy(false);
                 return;
@@ -2278,9 +2600,11 @@
             }
 
             // Creating a brand-new account OR re-creating an account that was previously deleted from Firebase
-            showBanner(`Creating account for ${cFlag} ${uname}…`, true);
+            showBanner(`✓ Account created for ${cFlag} ${uname}! Entering Arena…`, true);
             stampRecentSignup(uname);
-            await unpurgeCloudAccount(uname);
+            unmarkAccountPurgedLocal(uname);
+            // Fire cloud unpurge non-blocking
+            unpurgeCloudAccount(uname).catch(() => {});
 
             // Ensure fresh 1500 ELO stats on Sign Up (no leftover stats from any prior deleted account)
             const worldMap = loadWorldwidePlayersMap();
@@ -2325,7 +2649,7 @@
             return;
           }
 
-          showBanner(`Signing in as ${cFlag} ${uname}…`, true);
+          showBanner(`✓ Signed in as ${cFlag} ${uname}! Launching Arena…`, true);
           await finalizePlayerSession(rec);
           setAuthBusy(false);
 
@@ -2337,11 +2661,10 @@
       }
 
       function boot() {
-        initWorldwideLeaderboardHub();
-        initFirebaseCore().then((ok) => { if (ok) checkRedirectResult(); });
         const params = new URLSearchParams(window.location.search);
         const signedOutParam = params.get('signedout') === '1';
         const removedParam = params.get('removed') === '1';
+        const stayParam = params.get('stay') === '1';
         const googlePending = (() => {
           try { return Boolean(sessionStorage.getItem(GOOGLE_PENDING_KEY)); } catch (e) { return false; }
         })();
@@ -2349,6 +2672,31 @@
         if (params.get('view') === 'mobile' || params.get('view') === 'desktop') {
           sessionStorage.setItem(PREFERRED_DEVICE_OVERRIDE_KEY, params.get('view'));
         }
+
+        // Immediate Auto-Redirect if user is already logged in:
+        // Computer/Desktop -> hand_cricket.html, Mobile -> mobile.html
+        if (!signedOutParam && !removedParam && !stayParam && !googlePending) {
+          const activeSess = loadActiveSession();
+          if (activeSess && activeSess.username && !isPlaceholderUsername(activeSess.username)) {
+            const cleanS = String(activeSess.username).trim().toUpperCase();
+            const purgedList = loadPurgedAccountsList();
+            if (!purgedList.includes(cleanS) || isRecentSignup(cleanS)) {
+              const currentUsers = loadEncryptedUsersMap();
+              if (currentUsers[cleanS] || activeSess.loggedInAt) {
+                const v2Modal = document.getElementById('version2ShowcaseModal');
+                if (v2Modal) {
+                  v2Modal.classList.add('hidden');
+                  v2Modal.classList.remove('flex');
+                }
+                navigateToHandCricketArena('?from=login');
+                return;
+              }
+            }
+          }
+        }
+
+        initWorldwideLeaderboardHub();
+        initFirebaseCore().then((ok) => { if (ok) checkRedirectResult(); });
 
         const usersMap = loadEncryptedUsersMap();
         if (Object.keys(usersMap).length === 0) {
@@ -2370,16 +2718,15 @@
               if (n > 0) el.worldSyncText.textContent = `Cloud Linked • ${n} Account${n === 1 ? '' : 's'}`;
             }
           }
-          // Only auto-redirect an active session AFTER Firebase reconciliation confirms the account still exists!
-          if (!signedOutParam && !removedParam && params.get('stay') !== '1' && !googlePending) {
+          if (!signedOutParam && !removedParam && !stayParam && !googlePending) {
             const verifiedSess = loadActiveSession();
             if (verifiedSess && verifiedSess.username && !isPlaceholderUsername(verifiedSess.username)) {
               const cleanS = String(verifiedSess.username).trim().toUpperCase();
               const currentUsers = loadEncryptedUsersMap();
               if (currentUsers[cleanS]) {
                 updateUIState();
-                setTimeout(() => navigateToHandCricketArena('?from=login'), 200);
-              } else {
+                navigateToHandCricketArena('?from=login');
+              } else if (!isRecentSignup(cleanS)) {
                 scrubAccountFromWebsite(cleanS, true);
               }
             }
@@ -2449,5 +2796,462 @@
       }
     })();
   </script>
+
+  <!-- =========================================================================
+       CENTERED INTERACTIVE VERSION 2.0 SHOWCASE BOX (#version2ShowcaseModal)
+       ========================================================================= -->
+  <div
+    id="version2ShowcaseModal"
+    class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="v2ShowcaseTitle"
+  >
+    <!-- Ambient Outer Glow -->
+    <div class="relative w-full max-w-2xl rounded-3xl bg-gradient-to-b from-[#171c22] via-[#12161b] to-[#0c0f13] border border-[#a3d96c]/45 shadow-[0_25px_90px_rgba(0,0,0,0.9),0_0_50px_rgba(129,182,76,0.22)] overflow-hidden text-zinc-100 animate-pop max-h-[92vh] flex flex-col">
+      <!-- Top Shimmer Accent Line -->
+      <div class="h-1.5 w-full bg-gradient-to-r from-[#81b64c] via-cyan-400 to-amber-400 shrink-0"></div>
+
+      <!-- Scrollable Interior -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+        <!-- 1. HEADER & VERSION 2.0 TITLE -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono-num font-black uppercase tracking-widest bg-[#81b64c]/20 text-[#a3d96c] border border-[#a3d96c]/40 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-ping"></span>
+              <span>🚀 OFFICIAL RELEASE • VERSION 2</span>
+            </div>
+            <h2 id="v2ShowcaseTitle" class="font-brand text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
+              OddAndEven.in <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Version 2</span> Arena Update
+            </h2>
+            <p class="text-xs sm:text-sm text-zinc-400">
+              Explore our biggest upgrade yet — click any feature card below to preview &amp; test it live.
+            </p>
+          </div>
+
+          <button
+            id="btnTopCloseV2Modal"
+            type="button"
+            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
+            aria-label="Close Version 2.0 box"
+            class="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-400/40 flex items-center justify-center text-sm font-bold transition shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- 2. HERO IMAGE IN BETWEEN (Between Title & Interactive Feature Layout) -->
+        <div class="relative rounded-2xl overflow-hidden border border-white/15 bg-[#090d12] shadow-inner group">
+          <img
+            id="v2HeroIllustration"
+            src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20800%20250%22%20width%3D%22800%22%20height%3D%22250%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bgGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307130d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2245%25%22%20stop-color%3D%22%230d1b24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231c1126%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22stadiumGlow%22%20cx%3D%2250%25%22%20cy%3D%2255%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.38%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2322d3ee%22%20stop-opacity%3D%220.14%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23000000%22%20stop-opacity%3D%220%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22v2TextGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23d9f99d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%2381b64c%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2322d3ee%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22goldGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fde047%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23f97316%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22pitchGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%220%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.28%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2315803d%22%20stop-opacity%3D%220.05%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22glow%22%20x%3D%22-20%25%22%20y%3D%22-20%25%22%20width%3D%22140%25%22%20height%3D%22140%25%22%3E%0A%20%20%20%20%20%20%3CfeGaussianBlur%20stdDeviation%3D%226%22%20result%3D%22blur%22/%3E%0A%20%20%20%20%20%20%3CfeComposite%20in%3D%22SourceGraphic%22%20in2%3D%22blur%22%20operator%3D%22over%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%0A%20%20%3C%21--%20Background%20--%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23bgGrad%29%22/%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23stadiumGlow%29%22/%3E%0A%0A%20%20%3C%21--%20Perspective%20Arena%20Grid%20/%20Turf%20Rings%20--%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22340%22%20ry%3D%2252%22%20fill%3D%22url%28%23pitchGrad%29%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22230%22%20ry%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.25%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%226%206%22/%3E%0A%20%20%3Cline%20x1%3D%2260%22%20y1%3D%22215%22%20x2%3D%22740%22%20y2%3D%22215%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.2%22%20stroke-width%3D%221%22/%3E%0A%0A%20%20%3C%21--%20Stadium%20Floodlights%20Left%20%26%20Right%20--%3E%0A%20%20%3Cg%20opacity%3D%220.75%22%3E%0A%20%20%20%20%3Cpolygon%20points%3D%2285%2C25%20135%2C210%2035%2C210%22%20fill%3D%22%23a3d96c%22%20fill-opacity%3D%220.07%22/%3E%0A%20%20%20%20%3Crect%20x%3D%2270%22%20y%3D%2218%22%20width%3D%2230%22%20height%3D%2210%22%20rx%3D%223%22%20fill%3D%22%23e2e8f0%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2278%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%23fde047%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2292%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%23fde047%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%0A%20%20%20%20%3Cpolygon%20points%3D%22715%2C25%20765%2C210%20665%2C210%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.07%22/%3E%0A%20%20%20%20%3Crect%20x%3D%22700%22%20y%3D%2218%22%20width%3D%2230%22%20height%3D%2210%22%20rx%3D%223%22%20fill%3D%22%23e2e8f0%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22708%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%2367e8f9%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22722%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%2367e8f9%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3C%21--%20Left%20Feature%20Floating%20Badge%3A%20Roast%20Commentary%20%26%20Gameplay%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%2836%2C%2048%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2262%22%20rx%3D%2214%22%20fill%3D%22%2318131e%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%23f43f5e%22%20stroke-opacity%3D%220.55%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2231%22%20cy%3D%2231%22%20r%3D%2218%22%20fill%3D%22%23f43f5e%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2231%22%20y%3D%2237%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20text-anchor%3D%22middle%22%3E%F0%9F%92%80%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2227%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%23fda4af%22%20letter-spacing%3D%220.8%22%3EROAST%20MODE%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2244%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3ESavage%20Wicket%20Audio%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Cg%20transform%3D%22translate%2852%2C%20124%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%23121c19%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2230%22%20cy%3D%2229%22%20r%3D%2217%22%20fill%3D%22%2310b981%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2230%22%20y%3D%2235%22%20font-family%3D%22sans-serif%22%20font-size%3D%2217%22%20text-anchor%3D%22middle%22%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2225%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%236ee7b7%22%20letter-spacing%3D%220.8%22%3ESECURITY%202.0%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2241%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3EVault%20%26amp%3B%20Clean%20Wipe%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3C%21--%20Right%20Feature%20Floating%20Badges%3A%20Cloud%20Sync%20%26%20Google%20Sign-In%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%28589%2C%2048%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2262%22%20rx%3D%2214%22%20fill%3D%22%23101b24%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.55%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2231%22%20cy%3D%2231%22%20r%3D%2218%22%20fill%3D%22%230ea5e9%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2231%22%20y%3D%2237%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20text-anchor%3D%22middle%22%3E%E2%98%81%EF%B8%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2227%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%237dd3fc%22%20letter-spacing%3D%220.8%22%3ECLOUD%20SYNC%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2244%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3ELive%20Cross-Device%20Elo%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Cg%20transform%3D%22translate%28573%2C%20124%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%231c1914%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2230%22%20cy%3D%2229%22%20r%3D%2217%22%20fill%3D%22%23eab308%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2230%22%20y%3D%2235%22%20font-family%3D%22sans-serif%22%20font-size%3D%2217%22%20text-anchor%3D%22middle%22%3E%F0%9F%94%91%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2225%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%23fde047%22%20letter-spacing%3D%220.8%22%3EGOOGLE%20AUTH%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2241%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3E1-Tap%20Instant%20Portal%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3C%21--%20Center%20Championship%20Emblem%3A%20VERSION%202.0%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%28400%2C%20108%29%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2276%22%20fill%3D%22%230d1512%22%20stroke%3D%22url%28%23v2TextGrad%29%22%20stroke-width%3D%223%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2266%22%20fill%3D%22%23131f18%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.2%22%20stroke-dasharray%3D%224%204%22/%3E%0A%20%20%20%20%3C%21--%20Crossed%20Cricket%20Bats%20/%20Wickets%20Iconography%20--%3E%0A%20%20%20%20%3Crect%20x%3D%22-18%22%20y%3D%22-50%22%20width%3D%224%22%20height%3D%2222%22%20rx%3D%222%22%20fill%3D%22%23fde047%22%20opacity%3D%220.85%22/%3E%0A%20%20%20%20%3Crect%20x%3D%22-2%22%20y%3D%22-52%22%20width%3D%224%22%20height%3D%2224%22%20rx%3D%222%22%20fill%3D%22%23fde047%22%20opacity%3D%220.95%22/%3E%0A%20%20%20%20%3Crect%20x%3D%2214%22%20y%3D%22-50%22%20width%3D%224%22%20height%3D%2222%22%20rx%3D%222%22%20fill%3D%22%23fde047%22%20opacity%3D%220.85%22/%3E%0A%20%20%20%20%3Crect%20x%3D%22-21%22%20y%3D%22-54%22%20width%3D%2242%22%20height%3D%223.5%22%20rx%3D%221.5%22%20fill%3D%22%23f97316%22/%3E%0A%20%20%20%20%3C%21--%20Red%20Cricket%20Ball%20Shine%20--%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%22-38%22%20r%3D%227%22%20fill%3D%22%23ef4444%22%20stroke%3D%22%23fca5a5%22%20stroke-width%3D%221.5%22/%3E%0A%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%22-8%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2211%22%20fill%3D%22%23a3d96c%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%223%22%3EODD%20%26amp%3B%20EVEN%20ARENA%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2224%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2233%22%20fill%3D%22url%28%23v2TextGrad%29%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221%22%3EV2.0%3C/text%3E%0A%20%20%20%20%3Crect%20x%3D%22-48%22%20y%3D%2234%22%20width%3D%2296%22%20height%3D%2219%22%20rx%3D%229.5%22%20fill%3D%22url%28%23goldGrad%29%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2247%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%229.5%22%20fill%3D%22%23090d16%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221.2%22%3EMAJOR%20UPDATE%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E"
+            alt="Version 2.0 Hand Cricket Arena Showcase Graphic"
+            class="w-full h-36 sm:h-44 object-cover object-center select-none transition-transform duration-500 group-hover:scale-[1.02]"
+          />
+          <!-- Dynamic Live Feature Overlay Strip at Bottom of Image -->
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-3.5 py-2.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span id="v2ImageLiveBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase bg-rose-500/25 text-rose-200 border border-rose-400/40 shrink-0">
+                💀 ROAST MODE
+              </span>
+              <span id="v2ImageLiveCaption" class="text-xs font-bold text-white truncate">
+                Savage stadium humiliation &amp; Golden Duck roasts on every wicket!
+              </span>
+            </div>
+            <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono-num font-bold text-[#a3d96c] shrink-0">
+              <span>Interactive Preview</span>
+              <span>●</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 3. INTERACTIVE FEATURE LAYOUT (Selectable Cards + Live Interactive Detail Box) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-[11px] font-mono-num uppercase tracking-wider text-zinc-400">
+            <span>✨ Select a Version 2 Feature to Inspect</span>
+            <span id="v2FeatureCounter" class="text-[#a3d96c] font-bold">1 / 5 Selected</span>
+          </div>
+
+          <!-- Interactive Feature Pills Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" role="tablist" aria-label="Version 2.0 Features">
+            <button
+              type="button"
+              data-v2-tab="roast"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('roast')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-rose-500/15 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">💀</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-rose-500/30 text-rose-200">NEW</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Roast Mode</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Savage Commentary</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="security"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('security')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🛡️</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">VAULT</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Security 2.0</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Clean Account Wipe</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="cloud"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('cloud')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">☁️</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">LIVE</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Cloud Sync</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Real-Time Elo &amp; Stats</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="google"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('google')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🔑</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">1-TAP</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Google Sign-In</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Instant OAuth Portal</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="gameplay"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('gameplay')"
+              class="v2-feature-tab col-span-2 sm:col-span-1 group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🤝</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">FAIR AI</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Bot &amp; Tie Rules</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Predictive AI &amp; Draws</div>
+            </button>
+          </div>
+
+          <!-- Dynamic Interactive Feature Detail Card -->
+          <div id="v2FeatureDetailBox" class="rounded-2xl bg-[#181c22]/95 border border-white/10 p-3.5 sm:p-4 space-y-2.5 transition-all">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span id="v2DetailIcon" class="text-xl">💀</span>
+                <h3 id="v2DetailTitle" class="font-brand text-sm sm:text-base font-extrabold text-white">
+                  New Roast Commentary Mode (Savage Wicket Humiliation)
+                </h3>
+              </div>
+              <span id="v2DetailTag" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-rose-500/20 text-rose-300 border border-rose-400/30">
+                AUDIO + SCOREBOARD ROASTS
+              </span>
+            </div>
+
+            <p id="v2DetailDesc" class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+              Switch your announcer to <strong class="text-rose-300">💀 Roast</strong> mode for zero-mercy commentary whenever a batter gets dismissed—complete with dedicated Golden Duck (0-run) humiliation lines and live voice synthesis!
+            </p>
+
+            <!-- Interactive Live Roast Sampler (visible on Roast tab or general status bar on other tabs) -->
+            <div id="v2InteractiveSubWidget" class="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-white/10">
+              <div id="v2SampleRoastText" class="text-[11px] italic text-amber-200/95 flex-1 min-w-[200px]">
+                "💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!"
+              </div>
+              <button
+                id="btnV2SampleAction"
+                type="button"
+                onclick="window.triggerVersion2Sample && window.triggerVersion2Sample()"
+                class="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 transition active:scale-95 shrink-0"
+              >
+                🎲 Another Savage Roast
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. FOOTER WITH TWO OPTIONS: CLOSE & TRY OUT -->
+      <div class="px-4 sm:px-6 py-3.5 bg-[#090b0e]/95 border-t border-white/10 flex items-center justify-between gap-3 shrink-0">
+        <div class="hidden sm:flex items-center gap-2 text-[11px] text-zinc-400">
+          <span class="w-2 h-2 rounded-full bg-[#a3d96c]"></span>
+          <span id="v2TryOutHint">Ready to activate: <strong class="text-white">💀 Roast Commentary Mode</strong></span>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 w-full sm:w-auto">
+          <button
+            id="btnCloseV2Modal"
+            type="button"
+            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
+            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-white/15 transition active:scale-95"
+          >
+            Close
+          </button>
+          <button
+            id="btnTryOutV2Modal"
+            type="button"
+            onclick="window.tryOutVersion2Feature && window.tryOutVersion2Feature()"
+            class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-[#81b64c] via-emerald-400 to-[#a3d96c] hover:brightness-110 text-slate-950 shadow-[0_6px_25px_rgba(129,182,76,0.45)] transition active:scale-95 flex items-center justify-center gap-1.5"
+          >
+            <span id="btnTryOutV2Label">🔥 Try Out Now</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- VERSION 2.0 INTERACTIVE SHOWCASE CONTROLLER -->
+<script>
+(function() {
+  var V2_FEATURES = {
+    roast: {
+      index: 1,
+      icon: "💀",
+      badge: "💀 ROAST MODE",
+      badgeClass: "bg-rose-500/25 text-rose-200 border-rose-400/40",
+      caption: "Savage stadium humiliation & Golden Duck roasts on every wicket!",
+      title: "New Roast Commentary Mode (Savage Wicket Humiliation)",
+      tag: "AUDIO + SCOREBOARD ROASTS",
+      tagClass: "bg-rose-500/20 text-rose-300 border-rose-400/30",
+      desc: "Switch your announcer to <strong class=\"text-rose-300\">💀 Roast</strong> mode for zero-mercy commentary whenever a batter gets dismissed—complete with dedicated Golden Duck (0-run) humiliation lines and live voice synthesis!",
+      tryHint: "💀 Roast Commentary Mode",
+      tryBtn: "🔥 Try Out Roast Mode",
+      tabActiveClass: "bg-rose-500/15 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+    },
+    security: {
+      index: 2,
+      icon: "🛡️",
+      badge: "🛡️ SECURITY 2.0",
+      badgeClass: "bg-emerald-500/25 text-emerald-200 border-emerald-400/40",
+      caption: "Upgraded Firebase API Key, OAE1 Vault & full account removal across Cloud + Auth.",
+      title: "Security Update & Complete Account Removal",
+      tag: "FIREBASE AUTH + FIRESTORE WIPE",
+      tagClass: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+      desc: "Powered by the upgraded Firebase security configuration, salted OAE1 password protection, and 1-click <strong class=\"text-emerald-300\">Remove Account</strong> that permanently purges your profile from the website, Firestore, and Firebase Authentication so your username can be freshly re-registered anytime.",
+      tryHint: "🛡️ Account & Security Controls",
+      tryBtn: "🛡️ Try Out Security Controls",
+      tabActiveClass: "bg-emerald-500/15 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+    },
+    cloud: {
+      index: 3,
+      icon: "☁️",
+      badge: "☁️ CLOUD SYNC 2.0",
+      badgeClass: "bg-cyan-500/25 text-cyan-200 border-cyan-400/40",
+      caption: "Instant real-time cross-device sync for Global Elo, Weekly Rankings & Friends.",
+      title: "Real-Time Cloud Sync Across Desktop & Mobile",
+      tag: "DUAL-COLLECTION FIRESTORE",
+      tagClass: "bg-cyan-500/20 text-cyan-300 border-cyan-400/30",
+      desc: "Every run, wicket, achievement, friend invite, and Elo rating change syncs automatically across <code class=\"text-cyan-300\">handcricket_users</code> and <code class=\"text-cyan-300\">profiles</code> in real time—with instant deleted-account detection.",
+      tryHint: "☁️ Live Cloud Sync & Leaderboard",
+      tryBtn: "☁️ Try Out Cloud Sync",
+      tabActiveClass: "bg-cyan-500/15 border-cyan-400/60 shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+    },
+    google: {
+      index: 4,
+      icon: "🔑",
+      badge: "🔑 GOOGLE SIGN-IN",
+      badgeClass: "bg-amber-500/25 text-amber-200 border-amber-400/40",
+      caption: "1-Tap Continue with Google authentication with smart username reservation.",
+      title: "1-Tap Google Sign-In & Smart Player Portal",
+      tag: "OAUTH 2.0 INSTANT LOGIN",
+      tagClass: "bg-amber-500/20 text-amber-300 border-amber-400/30",
+      desc: "Skip passwords with one-tap <strong class=\"text-amber-300\">Continue with Google</strong> sign-in, automatic account linking, custom player username reservation, and device-aware routing between Desktop and Mobile.",
+      tryHint: "🔑 Google Sign-In & Account Portal",
+      tryBtn: "🔑 Try Out Google Sign-In",
+      tabActiveClass: "bg-amber-500/15 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+    },
+    gameplay: {
+      index: 5,
+      icon: "🤝",
+      badge: "🤝 FAIR AI & DRAWS",
+      badgeClass: "bg-purple-500/25 text-purple-200 border-purple-400/40",
+      caption: "Official Match Drawn tie rules (0 Elo delta) & non-tracking Predictive Master Bot.",
+      title: "Match Drawn Rules & Fair Predictive Master Bot",
+      tag: "COMPETITIVE FAIR PLAY",
+      tagClass: "bg-purple-500/20 text-purple-300 border-purple-400/30",
+      desc: "When 2nd-innings scores level (`score === target - 1`), the match officially finishes as <strong class=\"text-purple-300\">MATCH DRAWN</strong> across Bot &amp; Multiplayer modes. Plus, Master Bot now uses fair predictive pattern psychology instead of reading your camera fingers!",
+      tryHint: "🤝 Fair Master Bot & Match Drawn Engine",
+      tryBtn: "🏏 Try Out In Arena",
+      tabActiveClass: "bg-purple-500/15 border-purple-400/60 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+    }
+  };
+
+  var SAMPLE_ROASTS = [
+    "\"💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!\"",
+    "\"🦆 GOLDEN DUCK ROAST! 0 off 1 ball! Came from the dressing room just to check the pitch weather!\"",
+    "\"🤡 Bro thought he was playing 4D chess and walked straight into the most obvious finger trap in history!\"",
+    "\"📉 That batting display just set Hand Cricket back by 10 years. The crowd is demanding a refund!\"",
+    "\"🪦 RIP INNINGS! Even the stadium floodlights dimmed out of second-hand embarrassment for that shot!\""
+  ];
+  var roastIdx = 0;
+  window.__currentV2Feature = "roast";
+
+  window.openVersion2Showcase = function() {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  };
+
+  window.closeVersion2Showcase = function() {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  };
+
+  window.triggerVersion2Sample = function() {
+    roastIdx = (roastIdx + 1) % SAMPLE_ROASTS.length;
+    var el = document.getElementById("v2SampleRoastText");
+    if (el) {
+      el.textContent = SAMPLE_ROASTS[roastIdx];
+    }
+    try {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        var clean = SAMPLE_ROASTS[roastIdx].replace(/[^a-zA-Z0-9 ,.!'-]/g, "");
+        var u = new SpeechSynthesisUtterance(clean);
+        u.rate = 1.05;
+        window.speechSynthesis.speak(u);
+      }
+    } catch (e) {}
+  };
+
+  window.selectVersion2Feature = function(key) {
+    var feat = V2_FEATURES[key] || V2_FEATURES.roast;
+    window.__currentV2Feature = key;
+
+    // Update tabs
+    var tabs = document.querySelectorAll("[data-v2-tab]");
+    for (var i = 0; i < tabs.length; i++) {
+      var t = tabs[i];
+      var k = t.getAttribute("data-v2-tab");
+      t.className = "v2-feature-tab " + (k === "gameplay" ? "col-span-2 sm:col-span-1 " : "") +
+        "group text-left p-2.5 rounded-2xl border transition-all " +
+        (k === key ? feat.tabActiveClass : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]");
+    }
+
+    // Update image live overlay
+    var imgBadge = document.getElementById("v2ImageLiveBadge");
+    if (imgBadge) {
+      imgBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase border shrink-0 " + feat.badgeClass;
+      imgBadge.textContent = feat.badge;
+    }
+    var imgCap = document.getElementById("v2ImageLiveCaption");
+    if (imgCap) imgCap.textContent = feat.caption;
+
+    // Update counter & detail box
+    var counter = document.getElementById("v2FeatureCounter");
+    if (counter) counter.textContent = feat.index + " / 5 Selected";
+    var icon = document.getElementById("v2DetailIcon");
+    if (icon) icon.textContent = feat.icon;
+    var title = document.getElementById("v2DetailTitle");
+    if (title) title.textContent = feat.title;
+    var tag = document.getElementById("v2DetailTag");
+    if (tag) {
+      tag.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black border " + feat.tagClass;
+      tag.textContent = feat.tag;
+    }
+    var desc = document.getElementById("v2DetailDesc");
+    if (desc) desc.innerHTML = feat.desc;
+
+    var hint = document.getElementById("v2TryOutHint");
+    if (hint) hint.innerHTML = "Ready to activate: <strong class=\"text-white\">" + feat.tryHint + "</strong>";
+    var btnLbl = document.getElementById("btnTryOutV2Label");
+    if (btnLbl) btnLbl.textContent = feat.tryBtn;
+
+    var subWidget = document.getElementById("v2InteractiveSubWidget");
+    if (subWidget) {
+      if (key === "roast") {
+        subWidget.classList.remove("hidden");
+      } else {
+        subWidget.classList.add("hidden");
+      }
+    }
+  };
+
+  window.tryOutVersion2Feature = function() {
+    var key = window.__currentV2Feature || "roast";
+    window.closeVersion2Showcase();
+
+    if (key === "roast") {
+      var sel = document.getElementById("selectCommentaryStyle");
+      if (sel) {
+        sel.value = "roast";
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+        try {
+          sel.scrollIntoView({ behavior: "smooth", block: "center" });
+        } catch (e) {}
+      }
+      var banner = document.getElementById("commentaryBanner");
+      if (banner) {
+        banner.textContent = "💀 ROAST MODE ARMED! Every wicket will now trigger savage stadium humiliation!";
+      }
+      var callout = document.getElementById("pitchCalloutText");
+      if (callout) {
+        callout.textContent = "💀 ROAST MODE READY!";
+      }
+      window.triggerVersion2Sample();
+      return;
+    }
+
+    if (key === "security") {
+      var sideAcct = document.getElementById("sideNavAccount") || document.getElementById("drawerNavAccount") || document.getElementById("btnOpenAuthModal");
+      if (sideAcct) {
+        sideAcct.click();
+        return;
+      }
+    }
+
+    if (key === "cloud") {
+      var sideLb = document.getElementById("sideNavLeaderboard") || document.getElementById("drawerNavLeaderboard");
+      if (sideLb) {
+        sideLb.click();
+        return;
+      }
+    }
+
+    if (key === "google") {
+      var googleBtn = document.getElementById("btnGoogleSignIn") || document.getElementById("btnOpenAuthModal") || document.getElementById("sideNavAccount");
+      if (googleBtn) {
+        googleBtn.click();
+        return;
+      }
+    }
+
+    // Default / gameplay action: focus the play arena or bot selector
+    var playBtn = document.getElementById("sideNavPlayBot") || document.getElementById("btnStartMatch") || document.getElementById("selectCommentaryStyle");
+    if (playBtn) {
+      try { playBtn.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+    }
+  };
+
+  // Close on Escape key or backdrop click
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      window.closeVersion2Showcase();
+    }
+  });
+  document.addEventListener("click", function(e) {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (modal && e.target === modal) {
+      window.closeVersion2Showcase();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
