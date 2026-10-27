@@ -7,7 +7,7 @@
   <title>OddAndEven.in — Official Hand Cricket Arena</title>
   <meta name="description" content="Play the fast-paced Odd Even hand cricket game online against friends or AI. Track your score, play turns, and test your quick reflexes right in your browser." />
 
-<!-- Canonical URL (Prevents duplicate content issues) -->
+  <!-- Canonical URL (Prevents duplicate content issues) -->
   <link rel="canonical" href="https://oddeven-two.vercel.app/" />
 
   <!-- Open Graph / Facebook (Controls how your link looks when shared) -->
@@ -22,7 +22,6 @@
   <meta name="twitter:title" content="Odd Even Game Online" />
   <meta name="twitter:description" content="Play the classic Odd Even game online against AI or friends." />
   <meta name="twitter:image" content="https://oddeven-two.vercel.app/preview-thumbnail.png" />
-  
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -458,11 +457,17 @@
         'KABIR_STRIKER',
         'PRIYA_XI',
         'DEV_CAPTAIN',
+        'PLAYER',
         'PLAYER_1',
+        'PLAYER_2',
         'GUEST',
         'YOU',
         'FRIEND',
-        'WAITING...'
+        'WAITING...',
+        'WAITING',
+        'LOGIN REQUIRED',
+        'UNAUTHENTICATED',
+        'HOST'
       ];
       const GLOBAL_HUB_IDS = [
         'oddandeven-world-hub-v1-1',
@@ -1684,33 +1689,17 @@
             const inRootAcc = Boolean(rootAccMap[clean]);
             const inArtLb = Boolean(artLbMap[clean]);
             const inRootLb = Boolean(rootLbMap[clean]);
-            const prevCols = syncedColsMap[clean] || {};
+            const hasAnyAccountSource = inArtAcc || inRootAcc || inArtLb || inRootLb || Boolean(usersMap[clean]);
 
-            // Check if this user was previously confirmed in a Firestore collection and has now been deleted from it
-            let deletedFromCloudCol = false;
-            if (!isRecentSignup(clean)) {
-              if (prevCols.artAcc && artAccOk && !inArtAcc) deletedFromCloudCol = true;
-              if (prevCols.rootAcc && rootAccOk && !inRootAcc) deletedFromCloudCol = true;
-              if (prevCols.artLb && artLbOk && !inArtLb) deletedFromCloudCol = true;
-              if (prevCols.rootLb && rootLbOk && !inRootLb) deletedFromCloudCol = true;
-            }
-
-            const hasAnyAccountSource = inArtAcc || inRootAcc || Boolean(usersMap[clean]);
-
-            if (hasAnyAccountSource && !deletedFromCloudCol) {
+            if (hasAnyAccountSource) {
               validAccountsMap[clean] = Object.assign({}, usersMap[clean] || {}, rootAccMap[clean] || {}, artAccMap[clean] || {});
-              if (inArtAcc || inRootAcc || inArtLb || inRootLb) {
-                syncedColsMap[clean] = {
-                  artAcc: Boolean(prevCols.artAcc || inArtAcc),
-                  rootAcc: Boolean(prevCols.rootAcc || inRootAcc),
-                  artLb: Boolean(prevCols.artLb || inArtLb),
-                  rootLb: Boolean(prevCols.rootLb || inRootLb),
-                  updatedAt: Date.now()
-                };
-              }
-            } else if (!isRecentSignup(clean)) {
-              delete syncedColsMap[clean];
-              deleteOrphanCloudDocs(clean);
+              syncedColsMap[clean] = {
+                artAcc: inArtAcc,
+                rootAcc: inRootAcc,
+                artLb: inArtLb,
+                rootLb: inRootLb,
+                updatedAt: Date.now()
+              };
             }
           });
 
@@ -1732,7 +1721,7 @@
           localUserKeys.forEach((rawKey) => {
             const clean = String(rawKey || '').trim().toUpperCase();
             if (!clean) return;
-            if (!validAccountsMap[clean] && !isRecentSignup(clean)) {
+            if (cloudPurgedSet.has(clean) && !isRecentSignup(clean)) {
               delete usersMap[clean];
               delete worldMap[clean];
               scrubAccountFromWebsite(clean, true);
@@ -1800,6 +1789,14 @@
                 isRealRegisteredUser: true
               });
               changed = true;
+            }
+
+            // Auto-heal missing cloud documents so all collections are 100% synchronized!
+            if (!artLbMap[clean] || !rootLbMap[clean]) {
+              pushLeaderboardSeedToFirebase(clean, data).catch(() => {});
+            }
+            if (!artAccMap[clean] || !rootAccMap[clean]) {
+              pushAccountToFirebase(data).catch(() => {});
             }
           });
 
@@ -1880,15 +1877,25 @@
         updateUIState();
         showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena…`, true);
 
-        // Fire cloud sync in parallel with a fast 300ms cap so navigation is instantaneous
+        try {
+          const rawDesktop = localStorage.getItem('hc_arena_elo_v2');
+          const desktopObj = rawDesktop ? JSON.parse(rawDesktop) : {};
+          desktopObj.humanPlayers = desktopObj.humanPlayers || {};
+          desktopObj.humanPlayers[uname] = Object.assign({}, worldMap[uname]);
+          desktopObj.eloRating = worldMap[uname].elo || 1500;
+          desktopObj.peakElo = worldMap[uname].peak || 1500;
+          localStorage.setItem('hc_arena_elo_v2', JSON.stringify(desktopObj));
+        } catch (e) {}
+
+        // Reliable cloud sync before redirecting so Firebase collections are guaranteed to have the new player
         try {
           await withTimeout(
             Promise.allSettled([
               pushAccountToFirebase(activeProf),
               pushLeaderboardSeedToFirebase(uname, activeProf)
             ]),
-            300,
-            'fast-nav-sync'
+            2500,
+            'nav-sync'
           );
         } catch (e) {}
 
@@ -2072,13 +2079,8 @@
             const inA1 = Boolean(accSnap1 && accSnap1.exists());
             const inA2 = Boolean(accSnap2 && accSnap2.exists());
             const isPurgedCloud = ((purgeSnap1 && purgeSnap1.exists()) || (purgeSnap2 && purgeSnap2.exists())) && !isRecentSignup(candidateUname);
-            const syncedCols = loadCloudSyncedColsMap()[candidateUname] || {};
-            const wasDel = !isRecentSignup(candidateUname) && (
-              (syncedCols.artAcc && rAcc1 && rAcc1.status === 'fulfilled' && !inA1) ||
-              (syncedCols.rootAcc && rAcc2 && rAcc2.status === 'fulfilled' && !inA2)
-            );
 
-            if (isPurgedCloud || wasDel || (!inA1 && !inA2 && !localCandidate && !isRecentSignup(candidateUname))) {
+            if (isPurgedCloud) {
               await deleteOrphanCloudDocs(candidateUname);
               scrubAccountFromWebsite(candidateUname, false);
               if (fbDeleteDoc) {
@@ -2571,13 +2573,7 @@
               const inRoot = Boolean(snapRoot && snapRoot.exists());
               const isPurgedInCloud = ((snapPurgeArt && snapPurgeArt.exists()) || (snapPurgeRoot && snapPurgeRoot.exists())) && !isRecentSignup(uname);
 
-              const syncedCols = loadCloudSyncedColsMap()[uname] || {};
-              const wasDeletedFromCloud = !isRecentSignup(uname) && (
-                (syncedCols.artAcc && artChecked && !inArt) ||
-                (syncedCols.rootAcc && rootChecked && !inRoot)
-              );
-
-              if (isPurgedInCloud || wasDeletedFromCloud) {
+              if (isPurgedInCloud) {
                 deleteOrphanCloudDocs(uname);
                 scrubAccountFromWebsite(uname, false);
                 usersMap = loadEncryptedUsersMap();
