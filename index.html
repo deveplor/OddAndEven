@@ -1247,11 +1247,9 @@
         updateDeviceIndicator();
 
         const worldMap = loadWorldwidePlayersMap();
-        const worldCount = Object.keys(worldMap).length;
+        const worldCount = getAuthoritativeRealPlayerCount();
         if (el.worldSyncText) {
-          el.worldSyncText.textContent = worldCount > 0
-            ? `Global Live • ${worldCount} Player${worldCount === 1 ? '' : 's'}`
-            : 'Global Network Live';
+          el.worldSyncText.textContent = `Global Live • ${worldCount} Player${worldCount === 1 ? '' : 's'}`;
         }
 
         const selOpt = el.selectAuthCountry && el.selectAuthCountry.options[el.selectAuthCountry.selectedIndex];
@@ -1273,12 +1271,38 @@
         }
       }
 
+      function getAuthoritativeRealPlayerCount() {
+        const users = loadEncryptedUsersMap();
+        const world = loadWorldwidePlayersMap();
+        const purged = new Set(loadPurgedAccountsList());
+        const realNames = new Set();
+        [...Object.keys(users || {}), ...Object.keys(world || {})].forEach((k) => {
+          const clean = String(k || '').trim().toUpperCase();
+          if (clean && clean.length >= 3 && !isPlaceholderUsername(clean) && !purged.has(clean)) {
+            realNames.add(clean);
+          }
+        });
+        if (cloudAuthoritativeAccounts && typeof cloudAuthoritativeAccounts === 'object') {
+          Object.keys(cloudAuthoritativeAccounts).forEach((k) => {
+            const clean = String(k || '').trim().toUpperCase();
+            if (clean && clean.length >= 3 && !isPlaceholderUsername(clean) && !purged.has(clean)) {
+              realNames.add(clean);
+            }
+          });
+        }
+        return realNames.size;
+      }
+
       function navigateToHandCricketArena(querySuffix = '') {
         try {
           localStorage.setItem('oddandeven_just_logged_in', '1');
           sessionStorage.setItem('oddandeven_show_v2_box', '1');
         } catch (e) {}
-        const target = getArenaTargetUrl(querySuffix);
+        let suffix = querySuffix || '?from=login&screen=PITCH';
+        if (suffix.includes('from=login') && !suffix.includes('screen=')) {
+          suffix += (suffix.includes('?') ? '&' : '?') + 'screen=PITCH';
+        }
+        const target = getArenaTargetUrl(suffix);
         showBanner(`✓ Redirecting to Arena (${target})…`, true);
         try {
           window.location.replace(target);
@@ -1533,8 +1557,9 @@
             } catch (e) {}
           }
         }
-        if (migrated > 0 && el.worldSyncText) {
-          el.worldSyncText.textContent = `Cloud Synced • ${migrated} Account${migrated === 1 ? '' : 's'}`;
+        if (el.worldSyncText) {
+          const totalPlayers = getAuthoritativeRealPlayerCount();
+          el.worldSyncText.textContent = `Global Live • ${totalPlayers} Player${totalPlayers === 1 ? '' : 's'}`;
         }
       }
 
@@ -1668,6 +1693,15 @@
           const syncedColsMap = loadCloudSyncedColsMap();
           const usersMap = loadEncryptedUsersMap();
           const worldMap = loadWorldwidePlayersMap();
+
+          // Purge any fake seed entries from maps
+          FAKE_SEED_NAMES.forEach((fakeName) => {
+            delete artAccMap[fakeName];
+            delete rootAccMap[fakeName];
+            delete artLbMap[fakeName];
+            delete rootLbMap[fakeName];
+            deleteOrphanCloudDocs(fakeName);
+          });
 
           // Determine authoritative active accounts in Firebase
           const validAccountsMap = {};
@@ -1889,17 +1923,14 @@
 
         // Reliable cloud sync before redirecting so Firebase collections are guaranteed to have the new player
         try {
-          await withTimeout(
-            Promise.allSettled([
-              pushAccountToFirebase(activeProf),
-              pushLeaderboardSeedToFirebase(uname, activeProf)
-            ]),
-            2500,
-            'nav-sync'
-          );
+          const syncP = Promise.allSettled([
+            pushAccountToFirebase(activeProf),
+            pushLeaderboardSeedToFirebase(uname, activeProf)
+          ]);
+          await withTimeout(syncP, 350, 'nav-sync');
         } catch (e) {}
 
-        navigateToHandCricketArena('?from=login');
+        navigateToHandCricketArena('?from=login&screen=PITCH');
       }
 
       function usernameFromGoogleProfile(user) {
@@ -2280,8 +2311,14 @@
       // Atomically claims the username + country code in Firestore and stores the user's private profile.
       async function reserveGoogleUsername(name, gUser, country) {
         const local = loadEncryptedUsersMap()[name];
-        if (local && local.googleUid && local.googleUid !== gUser.uid) {
-          return { ok: false, error: 'That username is already taken.' };
+        if (local && (local.googleUid !== gUser.uid || !local.googleUid)) {
+          return { ok: false, error: 'Username already created' };
+        }
+        if (cloudAuthoritativeAccounts && cloudAuthoritativeAccounts[name]) {
+          const ca = cloudAuthoritativeAccounts[name];
+          if (ca.googleUid !== gUser.uid || !ca.googleUid) {
+            return { ok: false, error: 'Username already created' };
+          }
         }
         const createdAt = new Date().toISOString();
         const accountPayload = {
@@ -2302,7 +2339,7 @@
           try {
             const taken = await usernameIsTaken(name, gUser.uid);
             if (taken) {
-              return { ok: false, error: 'That username is already taken.' };
+              return { ok: false, error: 'Username already created' };
             }
             const profilePayload = {
               uid: gUser.uid,
@@ -2330,7 +2367,7 @@
               'reserve-google-timeout'
             );
           } catch (e) {
-            if (e && e.code === 'username-taken') return { ok: false, error: 'That username is already taken.' };
+            if (e && e.code === 'username-taken') return { ok: false, error: 'Username already created' };
             console.warn('Cloud reservation notice (continuing with local + background sync):', e);
           }
         }
@@ -2496,7 +2533,7 @@
         }
       }
 
-      async function handleAuthSubmit() {
+            async function handleAuthSubmit() {
         if (authBusy) return;
         const uname = (el.inputAuthUsername.value || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
         const pin5 = (el.inputAuthPin5.value || '').trim();
@@ -2506,7 +2543,7 @@
         if (!uname && !pin5) {
           const activeSess = loadActiveSession();
           if (activeSess && activeSess.username && !isPlaceholderUsername(activeSess.username)) {
-            navigateToHandCricketArena('?from=login');
+            navigateToHandCricketArena('?from=login&screen=PITCH');
             return;
           }
         }
@@ -2531,27 +2568,64 @@
           return;
         }
         if (!/^\d{5}$/.test(pin5)) {
-          showBanner(`Please enter a valid 5-digit numeric password (PIN) connected with ${dial}.`, false);
+          showBanner('Please enter a valid 5-digit numeric password (PIN).', false);
           return;
         }
 
         setAuthBusy(true);
-        showBanner(authMode === 'SIGNUP' ? `Creating account for ${cFlag} ${uname}…` : `Signing in as ${cFlag} ${uname}…`, true);
 
         try {
           let usersMap = loadEncryptedUsersMap();
           const purgedLocal = loadPurgedAccountsList();
-          if (purgedLocal.includes(uname) && !isRecentSignup(uname)) {
+          const isPurgedLocally = purgedLocal.includes(uname) && !isRecentSignup(uname);
+          if (isPurgedLocally) {
             delete usersMap[uname];
             saveEncryptedUsersMap(usersMap);
           }
-          let rec = usersMap[uname] || null;
+          let rec = (!isPurgedLocally && usersMap[uname]) ? usersMap[uname] : null;
 
-          // Fast non-blocking / time-boxed cloud check (max 550ms if local exists, 1200ms if checking remote account)
-          await ensureFirebaseReady(rec ? 350 : 900);
+          // FAST LOCAL CHECK FIRST:
+          // In SIGNUP mode: if username already exists locally or in synced accounts, immediately show 'Username already created'
+          if (authMode === 'SIGNUP') {
+            if (rec || (cloudAuthoritativeAccounts && cloudAuthoritativeAccounts[uname])) {
+              showBanner('Username already created', false);
+              setAuthBusy(false);
+              return;
+            }
+          } else if (authMode === 'LOGIN') {
+            // Instantly detect purged account
+            if (isPurgedLocally) {
+              showBanner('Username not found', false);
+              setAuthBusy(false);
+              return;
+            }
+            // Instantly detect non-existent account if cloud accounts are already synced
+            if (cloudAuthoritativeAccounts !== null && !rec && !cloudAuthoritativeAccounts[uname]) {
+              showBanner('Username not found', false);
+              setAuthBusy(false);
+              return;
+            }
+            // If account is found locally, verify credentials instantly with zero lag
+            if (rec) {
+              if (!rec.encryptedAuth || !verifyUserCredentials(rec, dial, pin5)) {
+                showBanner('Username or password is wrong', false);
+                setAuthBusy(false);
+                return;
+              }
+              showBanner('✓ Signed in as ' + cFlag + ' ' + uname + '! Launching Arena…', true);
+              await finalizePlayerSession(rec);
+              setAuthBusy(false);
+              return;
+            }
+          }
+
+          // If not resolvable from local cache, query Firebase (ultra-fast & accurate)
+          showBanner(authMode === 'SIGNUP' ? 'Checking account ' + cFlag + ' ' + uname + '…' : 'Verifying ' + cFlag + ' ' + uname + '…', true);
+
+          await ensureFirebaseReady(500);
           if (fbDb) {
             try {
-              const timeoutWindow = rec ? 550 : 1200;
+              const timeoutWindow = rec ? 500 : 800;
               const [rArt, rRoot, rPurgeArt, rPurgeRoot] = await withTimeout(
                 Promise.allSettled([
                   fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
@@ -2567,8 +2641,6 @@
               const snapPurgeArt = rPurgeArt && rPurgeArt.status === 'fulfilled' ? rPurgeArt.value : null;
               const snapPurgeRoot = rPurgeRoot && rPurgeRoot.status === 'fulfilled' ? rPurgeRoot.value : null;
 
-              const artChecked = Boolean(rArt && rArt.status === 'fulfilled');
-              const rootChecked = Boolean(rRoot && rRoot.status === 'fulfilled');
               const inArt = Boolean(snapArt && snapArt.exists());
               const inRoot = Boolean(snapRoot && snapRoot.exists());
               const isPurgedInCloud = ((snapPurgeArt && snapPurgeArt.exists()) || (snapPurgeRoot && snapPurgeRoot.exists())) && !isRecentSignup(uname);
@@ -2584,48 +2656,40 @@
                 const data = (inArt ? snapArt.data() : null) || (inRoot ? snapRoot.data() : null) || {};
                 rec = {
                   username: uname,
-                  countryCode: data.countryCode || (rec && rec.countryCode) || dial,
-                  countryName: data.countryName || (rec && rec.countryName) || cName,
-                  countryFlag: data.countryFlag || (rec && rec.countryFlag) || cFlag,
-                  encryptedAuth: data.encryptedAuth || (rec && rec.encryptedAuth) || null,
-                  googleUid: data.googleUid || (rec && rec.googleUid) || null,
-                  authProvider: data.authProvider || (rec && rec.authProvider) || 'pin',
-                  createdAt: data.createdAt || (rec && rec.createdAt) || new Date().toISOString()
+                  countryCode: data.countryCode || dial,
+                  countryName: data.countryName || cName,
+                  countryFlag: data.countryFlag || cFlag,
+                  encryptedAuth: data.encryptedAuth || null,
+                  googleUid: data.googleUid || null,
+                  authProvider: data.authProvider || 'pin',
+                  createdAt: data.createdAt || new Date().toISOString()
                 };
                 usersMap[uname] = rec;
                 saveEncryptedUsersMap(usersMap);
+                if (cloudAuthoritativeAccounts) {
+                  cloudAuthoritativeAccounts[uname] = rec;
+                }
                 updateCloudSyncedColsForUser(uname, { artAcc: inArt, rootAcc: inRoot });
               }
             } catch (e) {
-              // On timeout/offline, preserve valid local account unless explicitly purged locally
-              if (loadPurgedAccountsList().includes(uname) && !isRecentSignup(uname)) {
-                scrubAccountFromWebsite(uname, false);
-                usersMap = loadEncryptedUsersMap();
-                rec = null;
-              }
+              // Network timeout / offline fallback
             }
           }
 
           if (authMode === 'SIGNUP') {
             if (rec) {
-              if (!rec.encryptedAuth && rec.authProvider === 'google') {
-                showBanner(`Username "${uname}" is already registered with Google. Choose another username or use "Continue with Google".`, false);
-                setAuthBusy(false);
-                return;
-              }
-              showBanner(`Username "${uname}" is already registered! Switch to the Login option to sign in.`, false);
+              showBanner('Username already created', false);
               setAuthBusy(false);
               return;
             }
 
-            // Creating a brand-new account OR re-creating an account that was previously deleted from Firebase
-            showBanner(`✓ Account created for ${cFlag} ${uname}! Entering Arena…`, true);
+            // Creating a brand-new account
+            showBanner('✓ Account created for ' + cFlag + ' ' + uname + '! Entering Arena…', true);
             stampRecentSignup(uname);
             unmarkAccountPurgedLocal(uname);
-            // Fire cloud unpurge non-blocking
             unpurgeCloudAccount(uname).catch(() => {});
 
-            // Ensure fresh 1500 ELO stats on Sign Up (no leftover stats from any prior deleted account)
+            // Ensure fresh 1500 ELO stats on Sign Up
             const worldMap = loadWorldwidePlayersMap();
             delete worldMap[uname];
             saveWorldwidePlayersMap(worldMap);
@@ -2650,25 +2714,20 @@
             return;
           }
 
-          // LOGIN MODE: Never auto-create an account if username does not exist or was deleted from Firebase!
+          // LOGIN MODE:
           if (!rec) {
-            showBanner(`Username "${uname}" not found! You can create this account again in the Sign Up option.`, false);
+            showBanner('Username not found', false);
             setAuthBusy(false);
             return;
           }
 
-          if (!rec.encryptedAuth) {
-            showBanner(`${uname} was created with Google. Use "Continue with Google" to sign in.`, false);
-            setAuthBusy(false);
-            return;
-          }
-          if (!verifyUserCredentials(rec, dial, pin5)) {
-            showBanner(`Incorrect Country Code (${dial}) or 5-Digit Password for ${uname}.`, false);
+          if (!rec.encryptedAuth || !verifyUserCredentials(rec, dial, pin5)) {
+            showBanner('Username or password is wrong', false);
             setAuthBusy(false);
             return;
           }
 
-          showBanner(`✓ Signed in as ${cFlag} ${uname}! Launching Arena…`, true);
+          showBanner('✓ Signed in as ' + cFlag + ' ' + uname + '! Launching Arena…', true);
           await finalizePlayerSession(rec);
           setAuthBusy(false);
 
@@ -2702,7 +2761,7 @@
             if (!purgedList.includes(cleanS) || isRecentSignup(cleanS)) {
               const currentUsers = loadEncryptedUsersMap();
               if (currentUsers[cleanS] || activeSess.loggedInAt) {
-                navigateToHandCricketArena('?from=login');
+                navigateToHandCricketArena('?from=login&screen=PITCH');
                 return;
               }
             }
@@ -2728,8 +2787,8 @@
         initFirebaseAuthBridge().then(async (ok) => {
           if (ok) {
             if (el.worldSyncText) {
-              const n = Object.keys(loadEncryptedUsersMap()).length;
-              if (n > 0) el.worldSyncText.textContent = `Cloud Linked • ${n} Account${n === 1 ? '' : 's'}`;
+              const n = getAuthoritativeRealPlayerCount();
+              el.worldSyncText.textContent = `Global Live • ${n} Player${n === 1 ? '' : 's'}`;
             }
           }
           if (!signedOutParam && !removedParam && !stayParam && !googlePending) {
@@ -2739,7 +2798,7 @@
               const currentUsers = loadEncryptedUsersMap();
               if (currentUsers[cleanS]) {
                 updateUIState();
-                navigateToHandCricketArena('?from=login');
+                navigateToHandCricketArena('?from=login&screen=PITCH');
               } else if (!isRecentSignup(cleanS)) {
                 scrubAccountFromWebsite(cleanS, true);
               }
@@ -2751,6 +2810,12 @@
         el.tabAuthSignup.addEventListener('click', () => setMode('SIGNUP'));
 
         el.inputAuthPin5.addEventListener('input', updateUIState);
+        el.inputAuthUsername.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); handleAuthSubmit(); }
+        });
+        el.inputAuthPin5.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); handleAuthSubmit(); }
+        });
         el.selectAuthCountry.addEventListener('change', updateUIState);
         el.btnSubmitAuth.addEventListener('click', handleAuthSubmit);
         if (el.btnGoogleSignIn) {
@@ -2774,7 +2839,7 @@
           });
         }
 
-        el.btnContinueSession.addEventListener('click', () => navigateToHandCricketArena('?from=login'));
+        el.btnContinueSession.addEventListener('click', () => navigateToHandCricketArena('?from=login&screen=PITCH'));
         el.btnLogoutSessionHere.addEventListener('click', () => {
           try {
             sessionStorage.removeItem(SESSION_STORAGE_KEY);
