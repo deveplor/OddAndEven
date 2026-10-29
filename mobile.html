@@ -4,7 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="google-site-verification" content="ClxrPShB46PFCfYNrHOBWlMxRk_KvOXx5sxsEDGtzxA" />
-  <title>OddAndEven.in — Mobile Arena</title>
+  <title>OddAndEven.in — Official Hand Cricket Arena</title>
+  <meta name="description" content="Play the fast-paced Odd Even hand cricket game online against friends or AI. Track your score, play turns, and test your quick reflexes right in your browser." />
+
+  <!-- Canonical URL (Prevents duplicate content issues) -->
+  <link rel="canonical" href="https://oddeven-two.vercel.app/" />
+
+  <!-- Open Graph / Facebook (Controls how your link looks when shared) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://oddeven-two.vercel.app/" />
+  <meta property="og:title" content="Odd Even Game Online | Play Hand Cricket & Odd-Even" />
+  <meta property="og:description" content="Play the fast-paced Odd Even hand cricket game online. Challenge AI or friends and see who wins!" />
+  <meta property="og:image" content="https://oddeven-two.vercel.app/preview-thumbnail.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Odd Even Game Online" />
+  <meta name="twitter:description" content="Play the classic Odd Even game online against AI or friends." />
+  <meta name="twitter:image" content="https://oddeven-two.vercel.app/preview-thumbnail.png" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -122,6 +139,29 @@
     </div>
   </div>
 
+  <!-- INCOMING FRIEND REQUEST BANNER (Pops up on mobile when receiving friend request) -->
+  <div id="friendRequestBanner" class="fixed top-3 inset-x-3 z-50 hidden animate-slide-down">
+    <div class="glass-card rounded-2xl p-3.5 border-2 border-cyan-400 shadow-2xl bg-[#0f1f28] flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-300 border border-cyan-400/40 flex items-center justify-center text-lg shrink-0">
+          📩
+        </div>
+        <div class="min-w-0">
+          <div id="friendRequestBannerTitle" class="text-xs font-black text-white truncate">NEW FRIEND REQUEST</div>
+          <div id="friendRequestBannerSub" class="text-[11px] text-cyan-200 truncate">Friend wants to add you!</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="btnAcceptFriendRequestBanner" type="button" class="px-3 py-1.5 rounded-xl font-black text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow">
+          ✓ Accept
+        </button>
+        <button id="btnDismissFriendRequestBanner" type="button" class="w-7 h-7 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- COMPACT MOBILE HEADER (Hamburger + Brand + Match Status + Controls) -->
   <header class="w-full bg-[#181715] border-b border-[#36332e] px-3 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-md">
     <div class="flex items-center gap-2">
@@ -143,6 +183,14 @@
 
     <!-- Active Mode & Header Quick Toggles -->
     <div class="flex items-center gap-1.5">
+      <a href="profile.html" id="btnHeaderProfile" class="px-2 py-1 rounded-lg text-[10px] font-brand font-black bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 flex items-center gap-1 active:scale-95 transition shadow-sm" aria-label="Open Career Profile">
+        <span>👤</span>
+        <span>Profile</span>
+      </a>
+      <a href="store.html" id="btnHeaderStore" class="px-2 py-1 rounded-lg text-[10px] font-brand font-black bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 border border-amber-500/40 flex items-center gap-1 active:scale-95 transition shadow-sm" aria-label="Open XP Store">
+        <span>🛍️</span>
+        <span>Store</span>
+      </a>
       <span id="phaseBadge" class="px-2 py-0.5 text-[10px] font-mono-num font-extrabold uppercase rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/30">
         Toss Phase
       </span>
@@ -171,8 +219,9 @@
       <a
         id="btnBannerNewUpdate"
         href="updates.html"
+        onclick="if(window.openVersion2Showcase){event.preventDefault();window.openVersion2Showcase();}"
         class="flex-1 flex items-center gap-2.5 text-left min-w-0 group"
-        aria-label="View Version 1.8 release notes and changelog"
+        aria-label="View Version 2 release notes and changelog"
       >
         <!-- Glowing Animated Rocket Icon -->
         <div class="relative shrink-0">
@@ -187,14 +236,14 @@
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase tracking-wider bg-gradient-to-r from-[#81b64c] to-emerald-400 text-slate-950 shadow-sm shrink-0">
               <span>⚡</span>
-              <span>v1.8 LIVE</span>
+              <span>v2.0 LIVE</span>
             </span>
             <span class="font-brand text-xs font-black text-white group-hover:text-[#a3d96c] transition-colors truncate">
-              What's New in Version 1.8
+              What's New in Version 2.0
             </span>
           </div>
           <p class="text-[10px] text-cyan-200/90 truncate mt-0.5">
-            Achievements, Season 1 Events, Cloud Sync &amp; more →
+            Roast Mode, Security 2.0, Cloud Sync &amp; Google Sign-In →
           </p>
         </div>
       </a>
@@ -235,9 +284,39 @@
         </button>
       </div>
 
-      <!-- Navigation Mode Buttons -->
+            <!-- Navigation Mode Buttons -->
       <div class="space-y-1.5">
-        <button id="sideNavPitch" type="button" class="w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 text-emerald-300 border border-emerald-400/40">
+        <!-- CAREER PROFILE TAB (Placed at the top of all navigation tabs) -->
+        <a id="sideNavProfile" href="profile.html" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-200 border border-blue-500/40 transition">
+          <span class="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-sm">👤</span>
+          <div class="min-w-0 flex-1 flex items-center justify-between">
+            <div>
+              <div class="font-extrabold text-white flex items-center gap-1.5">
+                <span>Profile</span>
+                <span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">STATS</span>
+              </div>
+              <div class="text-[9px] text-blue-300/80 font-normal" id="sideNavProfileSub">Career Dashboard &amp; Acc Info</div>
+            </div>
+            <span class="text-xs text-blue-400 font-bold">→</span>
+          </div>
+        </a>
+
+        <!-- XP STORE TAB (XP Marketplace & Player Cards) -->
+        <a id="sideNavStore" href="store.html" class="w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-200 border border-amber-500/40 transition">
+          <span class="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-sm shadow-sm">🛍️</span>
+          <div class="min-w-0 flex-1 flex items-center justify-between">
+            <div>
+              <div class="font-extrabold text-white flex items-center gap-1.5">
+                <span>Store</span>
+                <span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono-num" id="sideNavStoreBadge">5000+ XP</span>
+              </div>
+              <div class="text-[9px] text-amber-300/80 font-normal" id="sideNavStoreSub">Player Cards &amp; Custom Flex</div>
+            </div>
+            <span class="text-xs text-amber-400 font-bold">→</span>
+          </div>
+        </a>
+
+        <button id="sideNavPitch"  type="button" class="w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 text-emerald-300 border border-emerald-400/40">
           <span class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">🏏</span>
           <div>
             <div>Active Pitch</div>
@@ -285,7 +364,7 @@
           <div class="min-w-0 flex-1 flex items-center justify-between">
             <div>
               <div class="font-extrabold text-white">Achievements</div>
-              <div class="text-[9px] text-yellow-300 font-mono-num font-normal" id="sideNavAchievementsSub">0/10 Unlocked</div>
+              <div class="text-[9px] text-yellow-300 font-mono-num font-normal" id="sideNavAchievementsSub">0/30 Unlocked</div>
             </div>
             <span id="sideNavAchievementsXpPill" class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-yellow-500/10 text-yellow-300 border border-yellow-400/30">0 XP</span>
           </div>
@@ -307,9 +386,9 @@
           <div class="min-w-0 flex-1 flex items-center justify-between">
             <div>
               <div class="font-extrabold text-white">Updates &amp; Notes</div>
-              <div class="text-[9px] text-[#a3d96c] font-normal">v1.0, v1.5 &amp; v1.8 · updates.html</div>
+              <div class="text-[9px] text-[#a3d96c] font-normal">v1.0, v1.5, v1.8 &amp; v2.0 · updates.html</div>
             </div>
-            <span class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v1.8</span>
+            <span class="px-1.5 py-0.5 rounded-md text-[9px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v2.0</span>
           </div>
         </a>
 
@@ -360,6 +439,12 @@
         </div>
         <div id="sidebarCommentaryStyleBadge" class="text-[10px] text-amber-300/90 font-medium">
           🎙️ Hype Broadcast
+        </div>
+        <div class="grid grid-cols-4 gap-1 pt-1">
+          <button id="btnMobCommHype" type="button" class="py-1 px-1 rounded text-[9px] font-extrabold bg-[#81b64c] text-white transition">🔥 Hype</button>
+          <button id="btnMobCommTactical" type="button" class="py-1 px-1 rounded text-[9px] font-bold bg-[#141311] text-slate-300 border border-[#36332e] transition">🧠 Tact</button>
+          <button id="btnMobCommClassic" type="button" class="py-1 px-1 rounded text-[9px] font-bold bg-[#141311] text-slate-300 border border-[#36332e] transition">📻 Clas</button>
+          <button id="btnMobCommRoast" type="button" class="py-1 px-1 rounded text-[9px] font-bold bg-[#141311] text-slate-300 border border-[#36332e] transition">💀 Roast</button>
         </div>
       </div>
 
@@ -501,6 +586,7 @@
           <option value="HYPE" selected>🔥 Stadium Hype Broadcast (Energetic)</option>
           <option value="TACTICAL">🧠 Pro Analyst &amp; Mind-Games (Tactical)</option>
           <option value="CLASSIC">📻 Classic Crisp Cricket Feed</option>
+          <option value="ROAST">💀 Roast Commentary (Humiliates on Wicket)</option>
         </select>
       </div>
 
@@ -628,7 +714,7 @@
       </div>
 
       <!-- Real Players Standings Scroll Area -->
-      <div id="leaderboardStandingsList" class="space-y-1.5 max-h-64 overflow-y-auto text-xs pr-0.5"></div>
+      <div id="leaderboardStandingsList" class="space-y-1.5 max-h-[60vh] overflow-y-auto text-xs pr-0.5"></div>
     </section>
 
     <!-- INLINE VIEW 4B: FRIENDS & PLAYER SEARCH -->
@@ -661,6 +747,9 @@
         </div>
       </div>
 
+      <!-- Feedback Message Banner -->
+      <div id="friendActionFeedback" class="hidden p-2.5 rounded-xl text-xs font-bold border"></div>
+
       <!-- Search Results Area -->
       <div id="friendSearchResultsArea" class="hidden space-y-1.5 p-2 rounded-xl bg-[#151412] border border-[#33302b]">
         <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
@@ -668,6 +757,18 @@
           <span id="friendSearchResultsCount" class="text-blue-300 font-mono-num">0 found</span>
         </div>
         <div id="friendSearchResultsList" class="space-y-1.5 max-h-44 overflow-y-auto pr-0.5"></div>
+      </div>
+
+      <!-- Pending Incoming Friend Requests Card -->
+      <div id="pendingFriendRequestsCard" class="p-3 rounded-xl bg-[#1c1b18] border-2 border-cyan-500/40 space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-cyan-300">📩 Friend Requests</span>
+            <span id="pendingFriendRequestsBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-cyan-500/10 text-cyan-300 border border-cyan-400/40">0 Pending</span>
+          </div>
+          <span class="text-[9px] text-slate-400">Accept or Decline</span>
+        </div>
+        <div id="pendingFriendRequestsList" class="space-y-1.5 max-h-44 overflow-y-auto pr-0.5"></div>
       </div>
 
       <!-- My Friends List Heading & Counter -->
@@ -698,6 +799,9 @@
           <p class="text-[10px] text-slate-300 truncate">Synced with <code class="text-[#a3d96c] font-mono-num">events.html</code> (All times in IST)</p>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
+          <a href="t1.html" class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow">
+            📺 t1.html ↗
+          </a>
           <a href="events.html" class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-[#81b64c] text-slate-950 shadow">
             events.html ↗
           </a>
@@ -787,6 +891,9 @@
           <button id="btnJoinEventSolo" type="button" class="w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#0d0c12] text-white transition shadow">
             Register for tournament
           </button>
+          <a href="t1.html" class="w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#16151c] text-[#a3d96c] transition shadow flex items-center justify-center gap-1.5 text-center">
+            📺 Watch Live Split-Screen (t1.html) →
+          </a>
         </div>
       </article>
     </section>
@@ -817,8 +924,8 @@
             </div>
           </div>
           <div class="text-right shrink-0">
-            <div id="achUnlockedSummaryText" class="text-xs font-black font-mono-num text-yellow-300">0/10 (0%)</div>
-            <div id="achTotalXpText" class="text-[9px] font-mono-num text-emerald-300">0 / 1000 XP</div>
+            <div id="achUnlockedSummaryText" class="text-xs font-black font-mono-num text-yellow-300">0/30 (0%)</div>
+            <div id="achTotalXpText" class="text-[9px] font-mono-num text-emerald-300">0 / 3525 XP</div>
           </div>
         </div>
         <div class="w-full h-2 rounded-full bg-[#12110f] overflow-hidden border border-[#302e2b]">
@@ -826,15 +933,29 @@
         </div>
       </div>
 
+      <!-- XP Store Marketplace Banner -->
+      <div class="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border border-amber-500/35 flex items-center justify-between gap-2 shadow-sm">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-xl">🛍️</span>
+          <div class="min-w-0">
+            <div class="text-xs font-black text-amber-300 font-brand">XP Store &amp; Player Cards</div>
+            <div class="text-[9px] text-slate-300 truncate">Buy Elite Player Cards, Custom Cards &amp; VFX from 5,000 XP</div>
+          </div>
+        </div>
+        <a href="store.html" class="px-2.5 py-1.5 rounded-lg text-[10px] font-brand font-black bg-amber-500 hover:bg-amber-400 text-slate-950 shrink-0 shadow active:scale-95 transition">
+          Open Store →
+        </a>
+      </div>
+
       <!-- Category Filter Tabs -->
       <div class="grid grid-cols-4 gap-1 p-1 rounded-xl bg-[#181715] border border-[#383530] text-[10px] font-bold">
-        <button id="btnAchFilterAll" type="button" class="py-1.5 px-1.5 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate">All (10)</button>
+        <button id="btnAchFilterAll" type="button" class="py-1.5 px-1.5 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate">All (30)</button>
         <button id="btnAchFilterBatting" type="button" class="py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate">🏏 Bat</button>
         <button id="btnAchFilterBowling" type="button" class="py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate">⚾ Bowl</button>
         <button id="btnAchFilterRanked" type="button" class="py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate">🏆 Ranked</button>
       </div>
 
-      <!-- Dynamic 10-Achievement Cards List -->
+      <!-- Dynamic 20-Achievement Cards List -->
       <div id="achievementsGridList" class="space-y-2 max-h-80 overflow-y-auto pr-0.5"></div>
     </section>
 
@@ -1243,7 +1364,7 @@
             if (!clean) return false;
             try {
               const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
-              return ts > 0 && (Date.now() - ts) < 25000;
+              return ts > 0 && (Date.now() - ts) < 120000;
             } catch (e) {
               return false;
             }
@@ -1262,7 +1383,6 @@
           const isAllowedAccount = (clean) => {
             if (!isRealUsername(clean)) return false;
             if (purgedSet.has(clean) && !isRecentSignup(clean)) return false;
-            if (cloudLoaded && !cloudAuthMap[clean] && !isRecentSignup(clean)) return false;
             return true;
           };
 
@@ -1299,9 +1419,20 @@
             const totalRuns = Math.max(Number(rec && rec.totalRuns) || 0, Number(prev && prev.totalRuns) || 0);
             const totalBalls = Math.max(Number(rec && rec.totalBalls) || 0, Number(prev && prev.totalBalls) || 0);
             const highScore = Math.max(Number(rec && rec.highScore) || 0, Number(prev && prev.highScore) || 0);
+            const centuriesCount = Math.max(Number(rec && rec.centuriesCount) || 0, Number(prev && prev.centuriesCount) || 0);
+            const sr500Count = Math.max(Number(rec && rec.sr500Count) || 0, Number(prev && prev.sr500Count) || 0);
             const wicketsTaken = Math.max(Number(rec && rec.wicketsTaken) || 0, Number(prev && prev.wicketsTaken) || 0);
             const wicketsLost = Math.max(Number(rec && rec.wicketsLost) || 0, Number(prev && prev.wicketsLost) || 0);
             const ballsBowled = Math.max(Number(rec && rec.ballsBowled) || 0, Number(prev && prev.ballsBowled) || 0);
+
+            const recSameWk = Boolean(rec && rec.weekKey === wk);
+            const prevSameWk = Boolean(prev && prev.weekKey === wk);
+            const wkElo = recSameWk ? (Number(rec.weeklyEloGain) || 0) : (prevSameWk ? (Number(prev.weeklyEloGain) || 0) : 0);
+            const wkWins = Math.max(recSameWk ? (Number(rec.weeklyWins) || 0) : 0, prevSameWk ? (Number(prev.weeklyWins) || 0) : 0);
+            const wkLosses = Math.max(recSameWk ? (Number(rec.weeklyLosses) || 0) : 0, prevSameWk ? (Number(prev.weeklyLosses) || 0) : 0);
+            const wkMatches = Math.max(recSameWk ? (Number(rec.weeklyMatches) || 0) : 0, prevSameWk ? (Number(prev.weeklyMatches) || 0) : 0, wkWins + wkLosses);
+            const wkRuns = Math.max(recSameWk ? (Number(rec.weeklyRuns) || 0) : 0, prevSameWk ? (Number(prev.weeklyRuns) || 0) : 0);
+            const wkWickets = Math.max(recSameWk ? (Number(rec.weeklyWickets) || 0) : 0, prevSameWk ? (Number(prev.weeklyWickets) || 0) : 0);
 
             combined[clean] = Object.assign({}, prev, rec || {}, {
               name: clean,
@@ -1318,16 +1449,18 @@
               totalRuns: totalRuns,
               totalBalls: totalBalls,
               highScore: highScore,
+              centuriesCount: centuriesCount,
+              sr500Count: sr500Count,
               wicketsTaken: wicketsTaken,
               wicketsLost: wicketsLost,
               ballsBowled: ballsBowled,
-              weekKey: (rec && rec.weekKey) || prev.weekKey || wk,
-              weeklyEloGain: Number(rec && rec.weeklyEloGain) || Number(prev && prev.weeklyEloGain) || 0,
-              weeklyWins: Math.max(Number(rec && rec.weeklyWins) || 0, Number(prev && prev.weeklyWins) || 0),
-              weeklyLosses: Math.max(Number(rec && rec.weeklyLosses) || 0, Number(prev && prev.weeklyLosses) || 0),
-              weeklyMatches: Math.max(Number(rec && rec.weeklyMatches) || 0, Number(prev && prev.weeklyMatches) || 0),
-              weeklyRuns: Math.max(Number(rec && rec.weeklyRuns) || 0, Number(prev && prev.weeklyRuns) || 0),
-              weeklyWickets: Math.max(Number(rec && rec.weeklyWickets) || 0, Number(prev && prev.weeklyWickets) || 0),
+              weekKey: wk,
+              weeklyEloGain: wkElo,
+              weeklyWins: wkWins,
+              weeklyLosses: wkLosses,
+              weeklyMatches: wkMatches,
+              weeklyRuns: wkRuns,
+              weeklyWickets: wkWickets,
               updatedAt: Math.max(Number(rec && rec.updatedAt) || 0, Number(prev && prev.updatedAt) || 0, Date.now())
             });
           };
@@ -1477,6 +1610,35 @@
         wicket() {
           this.playTone(300, 'sawtooth', 0.18, 0.15, 140);
           setTimeout(() => this.playTone(180, 'sawtooth', 0.28, 0.15, 85), 130);
+        },
+        thunderWicket() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            this.playTone(950, 'sawtooth', 0.08, 0.22, 220);
+            setTimeout(() => this.playTone(680, 'square', 0.1, 0.2, 140), 50);
+            setTimeout(() => this.playTone(120, 'sawtooth', 0.45, 0.25, 45), 110);
+          } catch(e) {}
+        },
+        fireballWicket() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            this.playTone(420, 'sawtooth', 0.12, 0.2, 80);
+            setTimeout(() => this.playTone(160, 'sawtooth', 0.35, 0.22, 50), 90);
+          } catch(e) {}
+        },
+        goldChime() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            [587.33, 739.99, 880, 1174.66].forEach((f, idx) => {
+              setTimeout(() => this.playTone(f, 'sine', 0.18, 0.12), idx * 60);
+            });
+          } catch(e) {}
         },
         victory() {
           const notes = [523.25, 659.25, 783.99, 1046.5];
@@ -1645,7 +1807,7 @@
         if (!clean) return false;
         try {
           const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
-          return ts > 0 && (Date.now() - ts) < 25000;
+          return ts > 0 && (Date.now() - ts) < 120000;
         } catch (e) {
           return false;
         }
@@ -1656,6 +1818,27 @@
         if (!clean) return;
         try {
           localStorage.setItem('oddandeven_recent_signup_' + clean, String(Date.now()));
+          const rawCols = localStorage.getItem('oddandeven_cloud_synced_cols_v1');
+          if (rawCols) {
+            const colsMap = JSON.parse(rawCols) || {};
+            if (colsMap[clean]) {
+              delete colsMap[clean];
+              localStorage.setItem('oddandeven_cloud_synced_cols_v1', JSON.stringify(colsMap));
+            }
+          }
+        } catch (e) {}
+      }
+
+      function unmarkAccountPurgedLocal(username) {
+        const clean = (username || '').trim().toUpperCase();
+        if (!clean) return;
+        cloudPurgedList = cloudPurgedList.filter((u) => u !== clean);
+        try {
+          const list = loadPurgedAccountsList();
+          if (list.includes(clean)) {
+            const next = list.filter((u) => u !== clean);
+            localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(next));
+          }
         } catch (e) {}
       }
 
@@ -1663,9 +1846,11 @@
         const clean = String(uname || '').trim().toUpperCase();
         if (!clean || isPlaceholderUsername(clean)) return false;
         if (isRecentMobileSignup(clean)) return true;
+        const activeAuthSess = loadActiveAuthSession();
+        const activeSessUname = activeAuthSess && activeAuthSess.username ? activeAuthSess.username.trim().toUpperCase() : '';
+        if (activeSessUname && clean === activeSessUname) return true;
         const purged = loadPurgedAccountsList();
         if (purged.includes(clean)) return false;
-        if (window.__cloudAccountsLoaded && (!cloudAccounts || !cloudAccounts[clean])) return false;
         return true;
       }
 
@@ -1673,13 +1858,7 @@
         const clean = String(uname || '').trim().toUpperCase();
         if (!clean) return;
         cloudPurgedList = cloudPurgedList.filter(u => u !== clean);
-        try {
-          const raw = localStorage.getItem(PURGED_ACCOUNTS_KEY);
-          const list = raw ? JSON.parse(raw) : [];
-          if (Array.isArray(list) && list.includes(clean)) {
-            localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(list.filter(u => u !== clean)));
-          }
-        } catch (e) {}
+        unmarkAccountPurgedLocal(clean);
         if (db) {
           try {
             await Promise.allSettled([
@@ -1851,10 +2030,11 @@
       function loadPurgedAccountsList() {
         try {
           const raw = localStorage.getItem(PURGED_ACCOUNTS_KEY);
-          const local = raw ? JSON.parse(raw) : [];
-          return Array.from(new Set([...(Array.isArray(local) ? local : []), ...cloudPurgedList]));
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
         } catch (e) {
-          return cloudPurgedList;
+          return [];
         }
       }
 
@@ -1877,6 +2057,8 @@
             totalRuns: Number(incoming && incoming.totalRuns) || 0,
             totalBalls: Number(incoming && incoming.totalBalls) || 0,
             highScore: Number(incoming && incoming.highScore) || 0,
+            centuriesCount: Number(incoming && incoming.centuriesCount) || 0,
+            sr500Count: Number(incoming && incoming.sr500Count) || 0,
             wicketsTaken: Number(incoming && incoming.wicketsTaken) || 0,
             wicketsLost: Number(incoming && incoming.wicketsLost) || 0,
             ballsBowled: Number(incoming && incoming.ballsBowled) || 0,
@@ -1944,6 +2126,8 @@
           totalRuns: Math.max(Number(existing.totalRuns) || 0, Number(incoming.totalRuns) || 0),
           totalBalls: Math.max(Number(existing.totalBalls) || 0, Number(incoming.totalBalls) || 0),
           highScore: Math.max(Number(existing.highScore) || 0, Number(incoming.highScore) || 0),
+          centuriesCount: Math.max(Number(existing.centuriesCount) || 0, Number(incoming.centuriesCount) || 0),
+          sr500Count: Math.max(Number(existing.sr500Count) || 0, Number(incoming.sr500Count) || 0),
           wicketsTaken: Math.max(Number(existing.wicketsTaken) || 0, Number(incoming.wicketsTaken) || 0),
           wicketsLost: Math.max(Number(existing.wicketsLost) || 0, Number(incoming.wicketsLost) || 0),
           ballsBowled: Math.max(Number(existing.ballsBowled) || 0, Number(incoming.ballsBowled) || 0),
@@ -2194,10 +2378,21 @@
         const cleanRem = String(remName || '').trim().toUpperCase();
         if (!cleanRem || isPlaceholderUsername(cleanRem) || isRecentMobileSignup(cleanRem)) return;
 
+        const sess = loadActiveAuthSession();
+        const sessUser = sess && sess.username ? String(sess.username).trim().toUpperCase() : '';
+        const myCurrent = (STATE.myUsername || '').trim().toUpperCase();
+        if ((myCurrent === cleanRem || sessUser === cleanRem) && !markPurged && sess && sess.loggedInAt) {
+          return;
+        }
+
         if (markPurged && !cloudPurgedList.includes(cleanRem)) {
           cloudPurgedList.push(cleanRem);
           try {
-            localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(loadPurgedAccountsList()));
+            const curP = loadPurgedAccountsList();
+            if (!curP.includes(cleanRem)) {
+              curP.push(cleanRem);
+              localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(curP));
+            }
           } catch (e) {}
         }
 
@@ -2250,9 +2445,6 @@
           }
         } catch (e) {}
 
-        const sess = loadActiveAuthSession();
-        const sessUser = sess && sess.username ? String(sess.username).trim().toUpperCase() : '';
-        const myCurrent = (STATE.myUsername || '').trim().toUpperCase();
         if (myCurrent === cleanRem || sessUser === cleanRem) {
           cleanupRoomSession(true);
           sessionStorage.removeItem(SESSION_STORAGE_KEY);
@@ -2390,6 +2582,107 @@
         handleIncomingMatchInvite(data);
       }
 
+      async function sendCloudFriendRequest(targetUser, reqObj) {
+        if (!db || !targetUser || !reqObj) return;
+        const cleanTarget = String(targetUser).trim().toUpperCase();
+        try {
+          let currentList = [];
+          try {
+            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget)).catch(() => null)
+              || await getDoc(doc(db, 'friend_requests', cleanTarget)).catch(() => null);
+            if (snap && snap.exists() && Array.isArray(snap.data().requests)) {
+              currentList = snap.data().requests;
+            }
+          } catch (e) {}
+
+          if (currentList.length === 0) {
+            const mapR = loadFriendRequestsMap();
+            if (Array.isArray(mapR[cleanTarget])) currentList = mapR[cleanTarget];
+          }
+
+          const fromU = String(reqObj.from || '').trim().toUpperCase();
+          const idx = currentList.findIndex((r) => r && String(r.from || '').trim().toUpperCase() === fromU);
+          if (idx >= 0) currentList[idx] = reqObj;
+          else currentList.unshift(reqObj);
+
+          const docPayload = {
+            username: cleanTarget,
+            requests: currentList,
+            latestRequest: {
+              from: reqObj.from,
+              to: cleanTarget,
+              fromFlag: reqObj.fromFlag || '🇮🇳',
+              fromCode: reqObj.fromCode || '+91',
+              fromElo: reqObj.fromElo || 1500,
+              timestamp: reqObj.timestamp || Date.now()
+            },
+            updatedAt: Date.now()
+          };
+
+          await Promise.allSettled([
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget), docPayload, { merge: true }),
+            setDoc(doc(db, 'friend_requests', cleanTarget), docPayload, { merge: true }),
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), docPayload),
+            setDoc(doc(db, 'friend_requests', 'GLOBAL_LATEST'), docPayload)
+          ]);
+        } catch (e) {}
+      }
+
+      async function respondCloudFriendRequest(responderUser, requesterUser, action, responderFriends, requesterFriends) {
+        if (!db || !responderUser || !requesterUser) return;
+        const cleanResp = String(responderUser).trim().toUpperCase();
+        const cleanReq = String(requesterUser).trim().toUpperCase();
+        try {
+          const mapR = loadFriendRequestsMap();
+          const nextReqs = Array.isArray(mapR[cleanResp]) ? mapR[cleanResp] : [];
+          const reqDocPayload = {
+            username: cleanResp,
+            requests: nextReqs,
+            latestResponse: {
+              action: action,
+              fromUser: cleanResp,
+              toUser: cleanReq,
+              timestamp: Date.now()
+            },
+            updatedAt: Date.now()
+          };
+          await Promise.allSettled([
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanResp), reqDocPayload, { merge: true }),
+            setDoc(doc(db, 'friend_requests', cleanResp), reqDocPayload, { merge: true }),
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), reqDocPayload),
+            setDoc(doc(db, 'friend_requests', 'GLOBAL_LATEST'), reqDocPayload)
+          ]);
+
+          if (action === 'ACCEPT') {
+            const friendsPayloadResp = {
+              username: cleanResp,
+              friends: Array.isArray(responderFriends) ? responderFriends : [],
+              updatedAt: Date.now()
+            };
+            const friendsPayloadReq = {
+              username: cleanReq,
+              friends: Array.isArray(requesterFriends) ? requesterFriends : [],
+              updatedAt: Date.now()
+            };
+            const globalFriendsPayload = {
+              type: 'FRIEND_REQUEST_RESPONSE',
+              action: 'ACCEPT',
+              fromUser: cleanResp,
+              toUser: cleanReq,
+              timestamp: Date.now()
+            };
+            await Promise.allSettled([
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanResp), friendsPayloadResp, { merge: true }),
+              setDoc(doc(db, 'friends', cleanResp), friendsPayloadResp, { merge: true }),
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanReq), friendsPayloadReq, { merge: true }),
+              setDoc(doc(db, 'friends', cleanReq), friendsPayloadReq, { merge: true }),
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), globalFriendsPayload),
+              setDoc(doc(db, 'friends', 'GLOBAL_LATEST'), globalFriendsPayload)
+            ]);
+          }
+        } catch (e) {}
+      }
+
       function initInviteListener() {
         if (!db) return;
         const myName = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
@@ -2397,19 +2690,111 @@
           try { inviteUnsub(); } catch (e) {}
           inviteUnsub = null;
         }
+
         const handleSnap = (docSnap) => {
           if (!docSnap || !docSnap.exists()) return;
           handleIncomingMatchInvite(docSnap.data());
         };
-        const u1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', myName), handleSnap, () => {});
-        const u2 = onSnapshot(doc(db, 'invites', myName), handleSnap, () => {});
-        const u3 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
-        const u4 = onSnapshot(doc(db, 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
+
+        const handleReqSnap = (docSnap) => {
+          if (!docSnap || !docSnap.exists()) return;
+          const data = docSnap.data();
+          if (!data) return;
+
+          let updated = false;
+          let newReqForMe = null;
+          try {
+            const rawR = localStorage.getItem('oddandeven_friend_requests_v1');
+            const mapR = rawR ? JSON.parse(rawR) : {};
+            if (!Array.isArray(mapR[myName])) mapR[myName] = [];
+
+            if (data.latestRequest && String(data.latestRequest.to || '').trim().toUpperCase() === myName) {
+              const req = data.latestRequest;
+              const exists = mapR[myName].some((r) => r && String(r.from || '').trim().toUpperCase() === String(req.from || '').trim().toUpperCase());
+              if (!exists) {
+                mapR[myName].unshift(req);
+                updated = true;
+                newReqForMe = req;
+              }
+            }
+            if (Array.isArray(data.requests) && String(data.username || docSnap.id).trim().toUpperCase() === myName) {
+              const existingSenders = new Set(mapR[myName].map((r) => String(r && r.from || '').trim().toUpperCase()));
+              data.requests.forEach((r) => {
+                const sName = String(r && r.from || '').trim().toUpperCase();
+                if (sName && !existingSenders.has(sName)) {
+                  mapR[myName].unshift(r);
+                  existingSenders.add(sName);
+                  updated = true;
+                  if (!newReqForMe) newReqForMe = r;
+                }
+              });
+            }
+
+            if (updated) {
+              localStorage.setItem('oddandeven_friend_requests_v1', JSON.stringify(mapR));
+              window.dispatchEvent(new StorageEvent('storage', { key: 'oddandeven_friend_requests_v1', newValue: JSON.stringify(mapR) }));
+              renderFriendsRoster();
+              handleFriendsSearch();
+            }
+            if (newReqForMe) {
+              SoundFX.click();
+              showFriendRequestBanner(newReqForMe);
+              showFriendFeedback('📩 New Friend Request from @' + (newReqForMe.from || newReqForMe.fromUser) + '! Accept or Decline above.', true);
+            }
+          } catch (e) {}
+        };
+
+        const handleFriendsSnap = (docSnap) => {
+          if (!docSnap || !docSnap.exists()) return;
+          const data = docSnap.data();
+          if (!data) return;
+          try {
+            const rawF = localStorage.getItem('oddandeven_friends_map_v1');
+            const mapF = rawF ? JSON.parse(rawF) : {};
+            let friendsChanged = false;
+            if (Array.isArray(data.friends) && String(data.username || docSnap.id).trim().toUpperCase() === myName) {
+              const combined = Array.from(new Set([...(mapF[myName] || []), ...data.friends]));
+              if (combined.length !== (mapF[myName] || []).length) {
+                mapF[myName] = combined;
+                friendsChanged = true;
+              }
+            }
+            if (data.type === 'FRIEND_REQUEST_RESPONSE' && data.action === 'ACCEPT' && String(data.toUser || '').trim().toUpperCase() === myName) {
+              const newFriend = String(data.fromUser || '').trim().toUpperCase();
+              if (newFriend) {
+                const combined = Array.from(new Set([...(mapF[myName] || []), newFriend]));
+                if (combined.length !== (mapF[myName] || []).length) {
+                  mapF[myName] = combined;
+                  friendsChanged = true;
+                }
+              }
+            }
+            if (friendsChanged) {
+              localStorage.setItem('oddandeven_friends_map_v1', JSON.stringify(mapF));
+              localStorage.setItem('oddandeven_friends_' + myName, JSON.stringify(mapF[myName]));
+              window.dispatchEvent(new StorageEvent('storage', { key: 'oddandeven_friends_map_v1', newValue: JSON.stringify(mapF) }));
+              renderFriendsRoster();
+              handleFriendsSearch();
+            }
+          } catch (e) {}
+        };
+
+        const unsubs = [
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', myName), handleSnap, () => {}),
+          onSnapshot(doc(db, 'invites', myName), handleSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), handleSnap, () => {}),
+          onSnapshot(doc(db, 'invites', 'GLOBAL_LATEST'), handleSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', myName), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'friend_requests', myName), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'friend_requests', 'GLOBAL_LATEST'), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', myName), handleFriendsSnap, () => {}),
+          onSnapshot(doc(db, 'friends', myName), handleFriendsSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), handleFriendsSnap, () => {}),
+          onSnapshot(doc(db, 'friends', 'GLOBAL_LATEST'), handleFriendsSnap, () => {})
+        ];
         inviteUnsub = () => {
-          try { u1(); } catch (e) {}
-          try { u2(); } catch (e) {}
-          try { u3(); } catch (e) {}
-          try { u4(); } catch (e) {}
+          unsubs.forEach((u) => { try { u(); } catch (e) {} });
         };
       }
 
@@ -2519,70 +2904,105 @@
             if (!artAccLoaded && !rootAccLoaded) return;
             cloudPurgedList = cloudPurgedList.filter((u) => !isRecentMobileSignup(u));
 
+            let syncedColsMap = {};
+            try {
+              const rawCols = localStorage.getItem('oddandeven_cloud_synced_cols_v1');
+              if (rawCols) syncedColsMap = JSON.parse(rawCols) || {};
+            } catch (e) {}
+
+            let localAuth = {};
+            try {
+              const rawAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+              if (rawAuth) localAuth = decryptPayload(rawAuth) || {};
+            } catch (e) {}
+
             const allCandidates = new Set([
               ...Object.keys(artAcc),
               ...Object.keys(rootAcc),
               ...Object.keys(artLb),
-              ...Object.keys(rootLb)
+              ...Object.keys(rootLb),
+              ...Object.keys(localAuth)
             ]);
+
+            FAKE_SEED_NAMES.forEach((fakeName) => {
+              deleteAllMobileCloudMirrors(fakeName);
+              delete artAcc[fakeName];
+              delete rootAcc[fakeName];
+              delete artLb[fakeName];
+              delete rootLb[fakeName];
+              delete localAuth[fakeName];
+            });
 
             const nextAcc = {};
             const nextLb = {};
 
             allCandidates.forEach((clean) => {
+              if (!clean || isPlaceholderUsername(clean)) return;
               if (cloudPurgedList.includes(clean) && !isRecentMobileSignup(clean)) {
+                delete syncedColsMap[clean];
                 deleteAllMobileCloudMirrors(clean);
-                scrubAccountFromMobileWebsite(clean, true, true);
                 return;
               }
               const inArt = Boolean(artAcc[clean]);
               const inRoot = Boolean(rootAcc[clean]);
-              let valid = false;
-              if (artAccLoaded && rootAccLoaded) {
-                valid = (inArt && inRoot) || (isRecentMobileSignup(clean) && (inArt || inRoot));
-              } else if (artAccLoaded) {
-                valid = inArt;
-              } else if (rootAccLoaded) {
-                valid = inRoot;
-              }
+              const inArtL = Boolean(artLb[clean]);
+              const inRootL = Boolean(rootLb[clean]);
+              const hasAnyAcc = inArt || inRoot || inArtL || inRootL || Boolean(localAuth[clean]);
 
-              if (valid) {
-                nextAcc[clean] = Object.assign({}, rootAcc[clean] || {}, artAcc[clean] || {}, { username: clean });
-                if (artLb[clean] || rootLb[clean]) {
-                  nextLb[clean] = Object.assign({}, rootLb[clean] || {}, artLb[clean] || {}, { name: clean });
+              if (hasAnyAcc) {
+                nextAcc[clean] = Object.assign({}, localAuth[clean] || {}, rootAcc[clean] || {}, artAcc[clean] || {}, { username: clean });
+                const baseLb = Object.assign({}, rootLb[clean] || {}, artLb[clean] || {});
+                nextLb[clean] = Object.assign({
+                  name: clean,
+                  countryCode: nextAcc[clean].countryCode || '+91',
+                  countryFlag: nextAcc[clean].countryFlag || '🇮🇳',
+                  countryName: nextAcc[clean].countryName || 'India',
+                  isRealRegisteredUser: true,
+                  elo: 1500,
+                  peak: 1500,
+                  wins: 0,
+                  losses: 0,
+                  matches: 0,
+                  totalRuns: 0,
+                  totalBalls: 0,
+                  highScore: 0,
+                  wicketsTaken: 0,
+                  weeklyEloGain: 0,
+                  weeklyRuns: 0,
+                  weeklyWickets: 0,
+                  updatedAt: Date.now()
+                }, baseLb);
+
+                syncedColsMap[clean] = {
+                  artAcc: inArt,
+                  rootAcc: inRoot,
+                  artLb: inArtL,
+                  rootLb: inRootL,
+                  updatedAt: Date.now()
+                };
+
+                // Auto-sync missing leaderboard entries to Firestore
+                if (!inArtL || !inRootL) {
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), nextLb[clean], { merge: true }).catch(() => {});
+                  setDoc(doc(db, 'leaderboard', clean), nextLb[clean], { merge: true }).catch(() => {});
                 }
-              } else if (!isRecentMobileSignup(clean)) {
-                deleteAllMobileCloudMirrors(clean);
-                scrubAccountFromMobileWebsite(clean, false, true);
+                if (localAuth[clean] && (!inArt || !inRoot)) {
+                  pushUserAccountToCloud(clean, nextAcc[clean]);
+                }
               }
             });
 
+            try {
+              localStorage.setItem('oddandeven_cloud_synced_cols_v1', JSON.stringify(syncedColsMap));
+            } catch (e) {}
+
             cloudAccounts = nextAcc;
             cloudLeaderboard = nextLb;
-            window.__cloudAccountsLoaded = Boolean(artAccLoaded && rootAccLoaded);
+            window.__cloudAccountsLoaded = Boolean(artAccLoaded || rootAccLoaded);
             window.__cloudAccounts = cloudAccounts;
             window.__cloudLeaderboard = cloudLeaderboard;
 
-            // Scrub any local account missing from authoritative Firebase accounts
-            if (window.__cloudAccountsLoaded) {
-              try {
-                const rawAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-                const localAuth = rawAuth ? decryptPayload(rawAuth) : {};
-                const localCandidates = new Set([
-                  ...Object.keys(localAuth || {}),
-                  ...Object.keys(STATE.humanPlayers || {})
-                ]);
-                if (STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-                  localCandidates.add(String(STATE.myUsername).trim().toUpperCase());
-                }
-                localCandidates.forEach((u) => {
-                  const clean = String(u || '').trim().toUpperCase();
-                  if (clean && !isPlaceholderUsername(clean) && !cloudAccounts[clean] && !isRecentMobileSignup(clean)) {
-                    scrubAccountFromMobileWebsite(clean, false, true);
-                  }
-                });
-              } catch (e) {}
-            }
+            // Local account cloud sync reconciled
 
             scheduleDebouncedCloudSync();
           };
@@ -2766,6 +3186,11 @@
         mobileDrawer: document.getElementById('mobileDrawer'),
         drawerBackdrop: document.getElementById('drawerBackdrop'),
 
+        sideNavProfile: document.getElementById('sideNavProfile'),
+        sideNavProfileSub: document.getElementById('sideNavProfileSub'),
+        sideNavStore: document.getElementById('sideNavStore'),
+        sideNavStoreSub: document.getElementById('sideNavStoreSub'),
+        sideNavStoreBadge: document.getElementById('sideNavStoreBadge'),
         sideNavPitch: document.getElementById('sideNavPitch'),
         sideNavBot: document.getElementById('sideNavBot'),
         sideNavBotSubtitle: document.getElementById('sideNavBotSubtitle'),
@@ -2781,6 +3206,15 @@
         friendSearchResultsList: document.getElementById('friendSearchResultsList'),
         myFriendsCountPill: document.getElementById('myFriendsCountPill'),
         myFriendsListContainer: document.getElementById('myFriendsListContainer'),
+        friendActionFeedback: document.getElementById('friendActionFeedback'),
+        pendingFriendRequestsCard: document.getElementById('pendingFriendRequestsCard'),
+        pendingFriendRequestsBadge: document.getElementById('pendingFriendRequestsBadge'),
+        pendingFriendRequestsList: document.getElementById('pendingFriendRequestsList'),
+        friendRequestBanner: document.getElementById('friendRequestBanner'),
+        friendRequestBannerTitle: document.getElementById('friendRequestBannerTitle'),
+        friendRequestBannerSub: document.getElementById('friendRequestBannerSub'),
+        btnAcceptFriendRequestBanner: document.getElementById('btnAcceptFriendRequestBanner'),
+        btnDismissFriendRequestBanner: document.getElementById('btnDismissFriendRequestBanner'),
         viewAchievementsBanner: document.getElementById('viewAchievementsBanner'),
         btnBannerViewAchievements: document.getElementById('btnBannerViewAchievements'),
         bannerAchievementsBadge: document.getElementById('bannerAchievementsBadge'),
@@ -3118,6 +3552,8 @@
           rec.totalRuns = Number(rec.totalRuns) || 0;
           rec.totalBalls = Number(rec.totalBalls) || 0;
           rec.highScore = Number(rec.highScore) || 0;
+          rec.centuriesCount = Number(rec.centuriesCount) || 0;
+          rec.sr500Count = Number(rec.sr500Count) || 0;
           rec.wicketsTaken = Number(rec.wicketsTaken) || 0;
           rec.wicketsLost = Number(rec.wicketsLost) || 0;
           rec.ballsBowled = Number(rec.ballsBowled) || 0;
@@ -3163,14 +3599,22 @@
 
       function syncLeaderboardRegistry() {
         reconcileAllNewPlayersIntoLeaderboard();
-        const purged = loadPurgedAccountsList();
         STATE.humanPlayers = loadWorldwidePlayersMap();
+
+        const activeAuthSess = loadActiveAuthSession();
+        const activeSessUname = activeAuthSess && activeAuthSess.username ? activeAuthSess.username.trim().toUpperCase() : '';
+        if (activeSessUname) {
+          unmarkAccountPurgedLocal(activeSessUname);
+          cloudPurgedList = cloudPurgedList.filter(u => u !== activeSessUname);
+        }
+        const purged = loadPurgedAccountsList();
 
         const registeredAccounts = loadEncryptedUsersMap();
         Object.keys(registeredAccounts).forEach((uname) => {
           const clean = uname.trim().toUpperCase();
           if (isPlaceholderUsername(clean)) return;
           if (purged.includes(clean)) {
+            if (activeSessUname && clean === activeSessUname) return;
             delete registeredAccounts[clean];
             saveEncryptedUsersMap(registeredAccounts);
             return;
@@ -3181,12 +3625,6 @@
             countryFlag: acc.countryFlag || '🇮🇳'
           }, true);
         });
-
-        const activeAuthSess = loadActiveAuthSession();
-        const activeSessUname = activeAuthSess && activeAuthSess.username ? activeAuthSess.username.trim().toUpperCase() : '';
-        if (activeSessUname) {
-          cloudPurgedList = cloudPurgedList.filter(u => u !== activeSessUname);
-        }
         if (!isPlaceholderUsername(STATE.myUsername) && purged.includes(STATE.myUsername.toUpperCase()) && STATE.myUsername !== activeSessUname) {
           sessionStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.removeItem(SESSION_STORAGE_KEY);
@@ -3253,7 +3691,7 @@
         const allPlayers = Object.values(STATE.humanPlayers).filter((p) => {
           if (!p) return false;
           const clean = String(p.name || p.username || '').trim().toUpperCase();
-          if (!clean || isPlaceholderUsername(clean)) return false;
+          if (!clean || clean.length < 3 || isPlaceholderUsername(clean) || FAKE_SEED_NAMES.includes(clean)) return false;
           p.name = clean;
           p.elo = (typeof p.elo === 'number' && !isNaN(p.elo)) ? p.elo : (Number(p.elo) || 1500);
           p.peak = Math.max(1500, p.elo, Number(p.peak) || 1500);
@@ -3262,6 +3700,24 @@
           p.matches = Math.max(Number(p.matches) || 0, p.wins + p.losses);
           p.totalRuns = Number(p.totalRuns) || 0;
           p.wicketsTaken = Number(p.wicketsTaken) || 0;
+
+          // Strictly enforce weekly cycle reset (Monday to Sunday)
+          if (p.weekKey !== weekInfo.weekKey) {
+            p.weekKey = weekInfo.weekKey;
+            p.weeklyEloGain = 0;
+            p.weeklyWins = 0;
+            p.weeklyLosses = 0;
+            p.weeklyMatches = 0;
+            p.weeklyRuns = 0;
+            p.weeklyWickets = 0;
+          } else {
+            p.weeklyEloGain = typeof p.weeklyEloGain === 'number' ? p.weeklyEloGain : 0;
+            p.weeklyWins = Number(p.weeklyWins) || 0;
+            p.weeklyLosses = Number(p.weeklyLosses) || 0;
+            p.weeklyMatches = Math.max(Number(p.weeklyMatches) || 0, p.weeklyWins + p.weeklyLosses);
+            p.weeklyRuns = Number(p.weeklyRuns) || 0;
+            p.weeklyWickets = Number(p.weeklyWickets) || 0;
+          }
           return true;
         });
 
@@ -3318,8 +3774,9 @@
             const myIdx = sorted.findIndex((p) => p.name === highlightName);
             const myRank = myIdx >= 0 ? myIdx + 1 : sorted.length + 1;
             const myEnt = myIdx >= 0 ? sorted[myIdx] : Object.assign({}, activeRec, { name: highlightName });
-            const listHtml = sorted.map((p, idx) => renderMobGlobalRow(p, idx + 1, p.name === highlightName)).join('');
-            const pinnedHtml = isMeRegistered ? `
+            const top10 = sorted.slice(0, 10);
+            const listHtml = top10.map((p, idx) => renderMobGlobalRow(p, idx + 1, p.name === highlightName)).join('');
+            const pinnedHtml = `
               <div class="pt-2 mt-1.5 border-t border-dashed border-[#81b64c]/45 space-y-1">
                 <div class="flex items-center justify-between text-[9px] font-mono-num font-extrabold uppercase text-[#a3d96c] px-1">
                   <span>📌 Your Rank in Leaderboard</span>
@@ -3327,7 +3784,7 @@
                 </div>
                 ${renderMobGlobalRow(myEnt, myRank, true)}
               </div>
-            ` : '';
+            `;
             dom.leaderboardStandingsList.innerHTML = listHtml + pinnedHtml;
           }
         } else if (tab === 'WEEKLY') {
@@ -3381,8 +3838,9 @@
             const myWeeklyIdx = sortedWeekly.findIndex((p) => p.name === highlightName);
             const myWeeklyRank = myWeeklyIdx >= 0 ? myWeeklyIdx + 1 : sortedWeekly.length + 1;
             const myWeeklyEnt = myWeeklyIdx >= 0 ? sortedWeekly[myWeeklyIdx] : Object.assign({}, activeRec, { name: highlightName });
-            const listWeeklyHtml = sortedWeekly.map((p, idx) => renderMobWeeklyRow(p, idx + 1, p.name === highlightName)).join('');
-            const pinnedWeeklyHtml = isMeRegistered ? `
+            const top10Weekly = sortedWeekly.slice(0, 10);
+            const listWeeklyHtml = top10Weekly.map((p, idx) => renderMobWeeklyRow(p, idx + 1, p.name === highlightName)).join('');
+            const pinnedWeeklyHtml = `
               <div class="pt-2 mt-1.5 border-t border-dashed border-[#81b64c]/45 space-y-1">
                 <div class="flex items-center justify-between text-[9px] font-mono-num font-extrabold uppercase text-[#a3d96c] px-1">
                   <span>📌 Your Rank in Leaderboard</span>
@@ -3390,7 +3848,7 @@
                 </div>
                 ${renderMobWeeklyRow(myWeeklyEnt, myWeeklyRank, true)}
               </div>
-            ` : '';
+            `;
             dom.leaderboardStandingsList.innerHTML = listWeeklyHtml + pinnedWeeklyHtml;
           }
         } else {
@@ -3441,8 +3899,9 @@
             const myRunsIdx = sortedRuns.findIndex((p) => p.name === highlightName);
             const myRunsRank = myRunsIdx >= 0 ? myRunsIdx + 1 : sortedRuns.length + 1;
             const myRunsEnt = myRunsIdx >= 0 ? sortedRuns[myRunsIdx] : Object.assign({}, activeRec, { name: highlightName });
-            const listRunsHtml = sortedRuns.map((p, idx) => renderMobRunsRow(p, idx + 1, p.name === highlightName)).join('');
-            const pinnedRunsHtml = isMeRegistered ? `
+            const top10Runs = sortedRuns.slice(0, 10);
+            const listRunsHtml = top10Runs.map((p, idx) => renderMobRunsRow(p, idx + 1, p.name === highlightName)).join('');
+            const pinnedRunsHtml = `
               <div class="pt-2 mt-1.5 border-t border-dashed border-[#81b64c]/45 space-y-1">
                 <div class="flex items-center justify-between text-[9px] font-mono-num font-extrabold uppercase text-[#a3d96c] px-1">
                   <span>📌 Your Rank in Leaderboard</span>
@@ -3450,7 +3909,7 @@
                 </div>
                 ${renderMobRunsRow(myRunsEnt, myRunsRank, true)}
               </div>
-            ` : '';
+            `;
             dom.leaderboardStandingsList.innerHTML = listRunsHtml + pinnedRunsHtml;
           }
         }
@@ -4466,6 +4925,59 @@
         });
       }
 
+      function recordPlayerActiveDay(username) {
+        try {
+          const clean = String(username || (typeof STATE !== 'undefined' && STATE.myUsername) || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean)) return 1;
+          const storageKey = 'oddandeven_active_days_' + clean;
+          const todayStr = new Date().toISOString().slice(0, 10);
+          let days = [];
+          const raw = localStorage.getItem(storageKey);
+          if (raw) days = JSON.parse(raw);
+          if (!Array.isArray(days)) days = [];
+          if (!days.includes(todayStr)) {
+            days.push(todayStr);
+            localStorage.setItem(storageKey, JSON.stringify(days));
+          }
+          return Math.max(1, days.length);
+        } catch (e) {
+          return 1;
+        }
+      }
+
+      function getPlayerActiveDaysCount(username, rec) {
+        try {
+          const clean = String(username || (rec && rec.name) || (typeof STATE !== 'undefined' && STATE.myUsername) || '').trim().toUpperCase();
+          let localCount = 1;
+          if (clean && !isPlaceholderUsername(clean)) {
+            const raw = localStorage.getItem('oddandeven_active_days_' + clean);
+            if (raw) {
+              const arr = JSON.parse(raw);
+              if (Array.isArray(arr)) localCount = Math.max(localCount, arr.length);
+            }
+          }
+          if (rec && typeof rec.activeDays === 'number') {
+            localCount = Math.max(localCount, rec.activeDays);
+          }
+          return Math.max(1, localCount);
+        } catch (e) {
+          return 1;
+        }
+      }
+
+      function recordTournamentWin(username) {
+        try {
+          const clean = String(username || (typeof STATE !== 'undefined' && STATE.myUsername) || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean)) return;
+          const storageKey = 'oddandeven_tourney_wins_' + clean;
+          const current = parseInt(localStorage.getItem(storageKey) || '0', 10);
+          localStorage.setItem(storageKey, String(current + 1));
+          const rec = ensureHumanPlayerRecord(clean);
+          if (rec) rec.tournamentWins = (rec.tournamentWins || 0) + 1;
+        } catch (e) {}
+      }
+      try { window.recordTournamentWin = recordTournamentWin; } catch (e) {}
+
       function computePlayerAchievements(myRec) {
         const rec = myRec || {};
         const totalMatches = Math.max(rec.matches || 0, (rec.wins || 0) + (rec.losses || 0));
@@ -4474,10 +4986,93 @@
         const highScore = Math.max(rec.highScore || 0, STATE.userScore || 0);
         const totalWickets = Math.max(rec.wicketsTaken || 0, STATE.userMatchWickets || 0);
         const peakElo = Math.max(rec.peak || 1500, rec.elo || 1500, STATE.peakElo || 1500);
-        const friendsCount = loadUserFriends().length;
-        const regsCount = loadEventRegistrations().length;
+        const friendsCount = (typeof loadUserFriends === 'function' ? loadUserFriends() : []).length;
+        const regsCount = (typeof loadEventRegistrations === 'function' ? loadEventRegistrations() : []).length;
 
-        return [
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+
+        // 1. Active calendar days
+        recordPlayerActiveDay(cleanMe);
+        const activeDaysCount = getPlayerActiveDaysCount(cleanMe, rec);
+
+        // 2. Tournament wins
+        let tourneyWins = rec.tournamentWins || 0;
+        try {
+          const localTourneyWins = parseInt(localStorage.getItem('oddandeven_tourney_wins_' + cleanMe) || '0', 10);
+          tourneyWins = Math.max(tourneyWins, localTourneyWins);
+        } catch (e) {}
+
+        // 3. Derive fallback 100+ score count & 500+ SR count from matchScorecards + career record
+        let scCenturies = 0;
+        let scSr500 = 0;
+        if (Array.isArray(STATE.matchScorecards)) {
+          STATE.matchScorecards.forEach((sc) => {
+            if (!sc) return;
+            const checkInnings = (teamName, summaryStr) => {
+              if (!teamName || !summaryStr) return;
+              if (String(teamName).trim().toUpperCase() !== cleanMe) return;
+              const m = String(summaryStr).match(/^(\d+)\/\d+\s*\((\d+)b\)/);
+              if (m) {
+                const r = parseInt(m[1], 10) || 0;
+                const b = parseInt(m[2], 10) || 0;
+                if (r >= 100) scCenturies += 1;
+                if (b > 0 && r > 0 && ((r / b) * 100) >= 500) scSr500 += 1;
+              }
+            };
+            checkInnings(sc.inn1Team, sc.inn1Summary);
+            checkInnings(sc.inn2Team, sc.inn2Summary);
+          });
+        }
+        const liveCenturies = (STATE.phase !== 'GAME_OVER' && (STATE.userScore || 0) >= 100) ? 1 : 0;
+        const centuriesCount = Math.max(
+          rec.centuriesCount || 0,
+          scCenturies + liveCenturies,
+          highScore >= 100 ? 1 : 0
+        );
+        const sr500Count = Math.max(
+          rec.sr500Count || 0,
+          scSr500
+        );
+
+        // 4. Consecutive win streak
+        let derivedStreak = Math.max(rec.maxWinStreak || 0, rec.currentWinStreak || 0);
+        if (Array.isArray(STATE.eloHistory) && STATE.eloHistory.length > 0) {
+          let curS = 0;
+          let maxS = 0;
+          for (const h of STATE.eloHistory) {
+            if (h && (h.result === 'WIN' || String(h.delta || '').startsWith('+'))) {
+              curS += 1;
+              if (curS > maxS) maxS = curS;
+            } else if (h && h.result !== 'FORFEIT' && h.delta !== 'FROZEN') {
+              curS = 0;
+            }
+          }
+          derivedStreak = Math.max(derivedStreak, maxS);
+        }
+        if (totalWins >= 10) derivedStreak = Math.max(derivedStreak, 10);
+        else if (totalWins > 0) derivedStreak = Math.max(derivedStreak, Math.min(totalWins, 5));
+
+        // 5. Boundaries in a single match (4s, 6s, 10s)
+        let maxBoundariesInMatch = rec.maxBoundariesInMatch || 0;
+        if (Array.isArray(STATE.userNumHistory)) {
+          const liveBoundaries = STATE.userNumHistory.filter((n) => n === 4 || n === 6 || n === 10).length;
+          maxBoundariesInMatch = Math.max(maxBoundariesInMatch, liveBoundaries);
+        }
+        if (highScore >= 50) maxBoundariesInMatch = Math.max(maxBoundariesInMatch, 5);
+        else if (highScore >= 30) maxBoundariesInMatch = Math.max(maxBoundariesInMatch, 3);
+
+        // 6. Target defended matches in innings 2
+        let defendedMatches = rec.defendedMatches || 0;
+        if (Array.isArray(STATE.eloHistory)) {
+          const defCount = STATE.eloHistory.filter((h) => h && h.result === 'WIN' && (h.wicketsTaken || 0) >= 1).length;
+          defendedMatches = Math.max(defendedMatches, defCount);
+        }
+        if (totalWickets >= 5 && totalWins >= 3) {
+          defendedMatches = Math.max(defendedMatches, 1);
+        }
+
+        const baseList = [
+          // --- EXISTING 10 CORE ACHIEVEMENTS ---
           {
             id: 'first_cap',
             category: 'RANKED',
@@ -4516,7 +5111,7 @@
             category: 'BATTING',
             icon: '👑',
             title: '250 Career Runs Club',
-            desc: 'Score 250+ cumulative runs across Bot and Multiplayer matches.',
+            desc: 'Score 250+ cumulative runs across Multiplayer and Arena matches.',
             current: totalRuns,
             target: 250,
             unit: 'Runs',
@@ -4589,8 +5184,252 @@
             target: 1,
             unit: 'Entry / Friend',
             xp: 80
+          },
+          // --- EXISTING 10 ELITE & GRANDMASTER ACHIEVEMENTS ---
+          {
+            id: 'century_blaster',
+            category: 'BATTING',
+            icon: '💯',
+            title: 'Century Blaster (100* Club)',
+            desc: 'Score 100 or more runs in a single explosive innings.',
+            current: highScore,
+            target: 100,
+            unit: 'High Score',
+            xp: 175
+          },
+          {
+            id: 'centurion_5x',
+            category: 'BATTING',
+            icon: '🏅',
+            title: '100+ Score 5 Times (5x Centurion)',
+            desc: 'Smash a 100+ score in an innings 5 times across your career.',
+            current: centuriesCount,
+            target: 5,
+            unit: '100+ Scores',
+            xp: 250
+          },
+          {
+            id: 'five_hundred_runs',
+            category: 'BATTING',
+            icon: '🚀',
+            title: '500 Career Runs Titan',
+            desc: 'Accumulate 500+ cumulative runs across intense Arena battles.',
+            current: totalRuns,
+            target: 500,
+            unit: 'Runs',
+            xp: 200
+          },
+          {
+            id: 'thousand_runs_club',
+            category: 'BATTING',
+            icon: '🌟',
+            title: '1000 Career Runs Legend',
+            desc: 'Cross the iconic 1,000+ career runs milestone under your username.',
+            current: totalRuns,
+            target: 1000,
+            unit: 'Runs',
+            xp: 300
+          },
+          {
+            id: 'strike_rate_500_5x',
+            category: 'BATTING',
+            icon: '💥',
+            title: '500+ Strike Rate 5 Times',
+            desc: 'Finish an innings with an explosive 500+ Strike Rate at least 5 times.',
+            current: sr500Count,
+            target: 5,
+            unit: '500+ SR Innings',
+            xp: 250
+          },
+          {
+            id: 'mp_wickets_30',
+            category: 'BOWLING',
+            icon: '🎳',
+            title: '30 Multiplayer Wickets Ace',
+            desc: 'Claim 30 wickets by outsmarting batters in Multiplayer matches.',
+            current: totalWickets,
+            target: 30,
+            unit: 'Wickets',
+            xp: 225
+          },
+          {
+            id: 'mp_wickets_50',
+            category: 'BOWLING',
+            icon: '💀',
+            title: '50 Multiplayer Wickets Warlord',
+            desc: 'Claim 50 wickets in Ranked Multiplayer matches.',
+            current: totalWickets,
+            target: 50,
+            unit: 'Multiplayer Wkts',
+            xp: 300
+          },
+          {
+            id: 'match_winner_25',
+            category: 'RANKED',
+            icon: '🥇',
+            title: '25 Arena Wins Champion',
+            desc: 'Win 25 matches in the Hand Cricket Arena.',
+            current: totalWins,
+            target: 25,
+            unit: 'Wins',
+            xp: 250
+          },
+          {
+            id: 'elo_1600_master',
+            category: 'RANKED',
+            icon: '💎',
+            title: 'Crossed 1600 Elo (Diamond Tier)',
+            desc: 'Reach 1600+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 100,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1600 Elo',
+            unit: 'Elo',
+            xp: 225
+          },
+          {
+            id: 'elo_1700_grandmaster',
+            category: 'RANKED',
+            icon: '👑',
+            title: 'Crossed 1700 Elo (Grandmaster)',
+            desc: 'Cross 1700+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 200,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1700 Elo',
+            unit: 'Elo',
+            xp: 350
+          },
+          // --- 10 NEW ACHIEVEMENTS (TOTAL 30) ---
+          {
+            id: 'active_5_days',
+            category: 'RANKED',
+            icon: '📅',
+            title: '5-Day Dedicated Arena Player',
+            desc: 'Log in and play across 5 separate active days in the Hand Cricket Arena.',
+            current: activeDaysCount,
+            target: 5,
+            unit: 'Days',
+            xp: 150
+          },
+          {
+            id: 'active_10_days',
+            category: 'RANKED',
+            icon: '🗓️',
+            title: '10-Day Arena Loyalist',
+            desc: 'Maintain competitive presence by playing across 10 active calendar days.',
+            current: activeDaysCount,
+            target: 10,
+            unit: 'Days',
+            xp: 250
+          },
+          {
+            id: 'tourney_champion_1',
+            category: 'RANKED',
+            icon: '👑',
+            title: 'Tournament Champion (1st Place)',
+            desc: 'Win 1 official Double-Elimination Championship bracket or Tournament Final.',
+            current: tourneyWins,
+            target: 1,
+            unit: 'Tourney Win',
+            xp: 400
+          },
+          {
+            id: 'elo_1800_legend',
+            category: 'RANKED',
+            icon: '🔱',
+            title: 'Crossed 1800 Elo (Apex Legend)',
+            desc: 'Ascend to 1800+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 300,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1800 Elo',
+            unit: 'Elo',
+            xp: 400
+          },
+          {
+            id: 'boundary_blitz_5',
+            category: 'BATTING',
+            icon: '💥',
+            title: 'Boundary Blitz (5 in a Match)',
+            desc: 'Hit 5 boundaries (4s, 6s, or 10s) in a single high-intensity match innings.',
+            current: maxBoundariesInMatch,
+            target: 5,
+            unit: 'Boundaries',
+            xp: 200
+          },
+          {
+            id: 'clutch_defender',
+            category: 'BOWLING',
+            icon: '🛡️',
+            title: 'Clutch Target Defender',
+            desc: 'Successfully defend a target score in Innings 2 by bowling out the opponent.',
+            current: defendedMatches,
+            target: 1,
+            unit: 'Target Defended',
+            xp: 250
+          },
+          {
+            id: 'win_streak_10',
+            category: 'RANKED',
+            icon: '🔥',
+            title: 'Unstoppable 10-Win Streak',
+            desc: 'String together 10 consecutive match victories without a defeat.',
+            current: derivedStreak,
+            target: 10,
+            unit: 'Consecutive Wins',
+            xp: 300
+          },
+          {
+            id: 'arena_veteran_50',
+            category: 'RANKED',
+            icon: '🎖️',
+            title: 'Arena Veteran (50 Matches)',
+            desc: 'Complete 50 competitive matches across Ranked Multiplayer and Arena play.',
+            current: totalMatches,
+            target: 50,
+            unit: 'Matches',
+            xp: 350
           }
         ];
+
+        // XP Milestones (3000 XP & 5000 XP)
+        const earnedBaseXp = baseList.filter((a) => a.current >= a.target).reduce((sum, a) => sum + a.xp, 0);
+        const careerMatchXp = totalMatches * 20 + totalWins * 40 + Math.floor(totalRuns * 1.5) + totalWickets * 30 + (centuriesCount * 100);
+        const totalPlayerXp = Math.max(rec.xp || 0, careerMatchXp + earnedBaseXp);
+
+        const ach3000 = {
+          id: 'xp_hunter_3000',
+          category: 'RANKED',
+          icon: '⚡',
+          title: 'Crossed 3000 XP (XP Hunter)',
+          desc: 'Reach 3,000+ Career XP through match triumphs and achievement mastery.',
+          current: totalPlayerXp,
+          target: 3000,
+          displayCurrent: `${totalPlayerXp} XP`,
+          displayTarget: '3000 XP',
+          unit: 'XP',
+          xp: 300
+        };
+        baseList.push(ach3000);
+
+        const totalPlayerXpWith3000 = totalPlayerXp + (totalPlayerXp >= 3000 ? 300 : 0);
+        const ach5000 = {
+          id: 'xp_titan_5000',
+          category: 'RANKED',
+          icon: '🌌',
+          title: 'Crossed 5000 XP (XP Titan)',
+          desc: 'Attain the prestigious 5,000+ Career XP summit across all game modes.',
+          current: totalPlayerXpWith3000,
+          target: 5000,
+          displayCurrent: `${totalPlayerXpWith3000} XP`,
+          displayTarget: '5000 XP',
+          unit: 'XP',
+          xp: 500
+        };
+        baseList.push(ach5000);
+
+        return baseList;
       }
 
       function renderAchievementsSection() {
@@ -4614,9 +5453,11 @@
         }
 
         let rankTitle = 'Rookie Striker';
-        if (unlockedCount >= 9) rankTitle = '👑 Hall of Fame Legend';
-        else if (unlockedCount >= 6) rankTitle = '🔥 Grandmaster All-Rounder';
-        else if (unlockedCount >= 3) rankTitle = '⚡ Rising Contender';
+        if (unlockedCount >= 28) rankTitle = '🐐 Immortal Hand Cricket GOAT';
+        else if (unlockedCount >= 22) rankTitle = '👑 Hall of Fame Legend';
+        else if (unlockedCount >= 16) rankTitle = '💎 Diamond Grandmaster';
+        else if (unlockedCount >= 10) rankTitle = '🔥 Grandmaster All-Rounder';
+        else if (unlockedCount >= 5) rankTitle = '⚡ Rising Contender';
         else if (unlockedCount >= 1) rankTitle = '🏏 Cap Holder';
 
         if (dom.achRankTierBadge) dom.achRankTierBadge.textContent = rankTitle;
@@ -4638,7 +5479,10 @@
         const filter = STATE.achievementFilter || 'ALL';
         const activeTabCls = 'py-1.5 px-1.5 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate';
         const idleTabCls = 'py-1.5 px-1.5 rounded-lg text-slate-400 hover:text-white transition truncate';
-        if (dom.btnAchFilterAll) dom.btnAchFilterAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+        if (dom.btnAchFilterAll) {
+          dom.btnAchFilterAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+          dom.btnAchFilterAll.textContent = `All (${totalCount})`;
+        }
         if (dom.btnAchFilterBatting) dom.btnAchFilterBatting.className = filter === 'BATTING' ? activeTabCls : idleTabCls;
         if (dom.btnAchFilterBowling) dom.btnAchFilterBowling.className = filter === 'BOWLING' ? activeTabCls : idleTabCls;
         if (dom.btnAchFilterRanked) dom.btnAchFilterRanked.className = filter === 'RANKED' ? activeTabCls : idleTabCls;
@@ -4738,9 +5582,91 @@
         renderView();
       }
 
+      const FRIEND_REQUESTS_KEY = 'oddandeven_friend_requests_v1';
+      const FRIENDS_MAP_KEY = 'oddandeven_friends_map_v1';
+      let pendingFriendRequestForMe = null;
+
       function getFriendsStorageKey() {
         const u = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
         return `oddandeven_friends_${u}`;
+      }
+
+      function loadFriendRequestsMap() {
+        try {
+          const raw = localStorage.getItem(FRIEND_REQUESTS_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') return parsed;
+          }
+        } catch (e) {}
+        return {};
+      }
+
+      function saveFriendRequestsMap(map) {
+        try {
+          localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify(map || {}));
+        } catch (e) {}
+      }
+
+      function getIncomingFriendRequests() {
+        const me = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
+        if (!me || isPlaceholderUsername(me)) return [];
+        const mapR = loadFriendRequestsMap();
+        const list = mapR[me];
+        if (!Array.isArray(list)) return [];
+        const myFriends = loadUserFriends();
+        return list.filter((req) => req && req.from && !myFriends.includes(String(req.from).trim().toUpperCase()));
+      }
+
+      function getOutgoingFriendRequests() {
+        const me = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
+        if (!me || isPlaceholderUsername(me)) return [];
+        const mapR = loadFriendRequestsMap();
+        const outgoing = [];
+        Object.keys(mapR).forEach((targetUser) => {
+          const cleanTarget = (targetUser || '').trim().toUpperCase();
+          const arr = mapR[targetUser];
+          if (cleanTarget !== me && Array.isArray(arr)) {
+            const found = arr.some((r) => r && String(r.from || '').trim().toUpperCase() === me);
+            if (found) outgoing.push(cleanTarget);
+          }
+        });
+        return outgoing;
+      }
+
+      function showFriendFeedback(msg, isSuccess = true) {
+        if (!dom.friendActionFeedback) return;
+        dom.friendActionFeedback.classList.remove('hidden');
+        dom.friendActionFeedback.className = isSuccess
+          ? 'p-2.5 rounded-xl text-xs font-bold border bg-emerald-500/15 border-emerald-400/40 text-emerald-300'
+          : 'p-2.5 rounded-xl text-xs font-bold border bg-rose-500/15 border-rose-500/40 text-rose-300';
+        dom.friendActionFeedback.textContent = msg;
+      }
+
+      function showFriendRequestBanner(req) {
+        if (!dom.friendRequestBanner) return;
+        pendingFriendRequestForMe = req;
+        const sender = String(req && (req.fromUser || req.from) || 'PLAYER').trim().toUpperCase();
+        if (dom.friendRequestBannerTitle) dom.friendRequestBannerTitle.textContent = 'NEW FRIEND REQUEST';
+        if (dom.friendRequestBannerSub) dom.friendRequestBannerSub.textContent = `@${sender} wants to add you as a friend!`;
+        dom.friendRequestBanner.classList.remove('hidden');
+      }
+
+      function hideFriendRequestBanner() {
+        pendingFriendRequestForMe = null;
+        if (dom.friendRequestBanner) dom.friendRequestBanner.classList.add('hidden');
+      }
+
+      function broadcastFriendEventPacket(packet) {
+        if (!packet || typeof packet !== 'object') return;
+        try {
+          const bc = new BroadcastChannel('oddandeven_global_leaderboard_v1');
+          bc.postMessage(packet);
+          bc.close();
+        } catch (e) {}
+        try {
+          localStorage.setItem('oddandeven_friend_invite_bus', JSON.stringify(packet));
+        } catch (e) {}
       }
 
       function loadUserFriends() {
@@ -4752,8 +5678,14 @@
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed)) localList = parsed;
           }
+          const rawMap = localStorage.getItem(FRIENDS_MAP_KEY);
+          let mapList = [];
+          if (rawMap) {
+            const parsedMap = JSON.parse(rawMap);
+            if (parsedMap && Array.isArray(parsedMap[u])) mapList = parsedMap[u];
+          }
           const cloudList = cloudFriendsMap[u] || [];
-          return Array.from(new Set([...localList, ...cloudList]));
+          return Array.from(new Set([...localList, ...mapList, ...cloudList]));
         } catch (e) {
           return cloudFriendsMap[u] || [];
         }
@@ -4763,6 +5695,10 @@
         const u = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
         try {
           localStorage.setItem(getFriendsStorageKey(), JSON.stringify(list));
+          const rawMap = localStorage.getItem(FRIENDS_MAP_KEY);
+          const mapF = rawMap ? JSON.parse(rawMap) : {};
+          mapF[u] = list;
+          localStorage.setItem(FRIENDS_MAP_KEY, JSON.stringify(mapF));
         } catch (e) {}
 
         if (syncCloud && db && currentUser && u && !isPlaceholderUsername(u)) {
@@ -4771,7 +5707,12 @@
               username: u,
               friends: list,
               updatedAt: Date.now()
-            });
+            }, { merge: true });
+            await setDoc(doc(db, 'friends', u), {
+              username: u,
+              friends: list,
+              updatedAt: Date.now()
+            }, { merge: true });
           } catch (e) {}
         }
         updateFriendsBadge();
@@ -4779,18 +5720,204 @@
 
       function updateFriendsBadge() {
         const friends = loadUserFriends();
-        if (dom.sideNavFriendsCountBadge) dom.sideNavFriendsCountBadge.textContent = friends.length;
+        const incoming = getIncomingFriendRequests();
+        const totalBadge = friends.length + (incoming.length > 0 ? ` (${incoming.length} new)` : '');
+        if (dom.sideNavFriendsCountBadge) dom.sideNavFriendsCountBadge.textContent = friends.length + incoming.length;
         if (dom.myFriendsCountPill) dom.myFriendsCountPill.textContent = `${friends.length} Friend${friends.length === 1 ? '' : 's'}`;
+        if (dom.pendingFriendRequestsBadge) {
+          dom.pendingFriendRequestsBadge.textContent = `${incoming.length} Pending`;
+        }
       }
 
-      function addFriend(username) {
+      function sendFriendRequest(targetUsername) {
         SoundFX.click();
-        const clean = (username || '').trim().toUpperCase();
-        if (!clean || clean === STATE.myUsername.toUpperCase()) return;
-        const friends = loadUserFriends();
-        if (!friends.includes(clean)) {
-          friends.push(clean);
-          saveUserFriends(friends, true);
+        const target = (targetUsername || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+        const me = (STATE.myUsername || '').trim().toUpperCase();
+        if (target.length < 3 || isPlaceholderUsername(target)) {
+          showFriendFeedback('Please enter a valid username (at least 3 characters).', false);
+          return;
+        }
+        if (target === me) {
+          showFriendFeedback('You cannot send a friend request to yourself!', false);
+          return;
+        }
+
+        const myFriends = loadUserFriends();
+        if (myFriends.includes(target)) {
+          showFriendFeedback(`@${target} is already in your Friends List!`, true);
+          return;
+        }
+
+        const incomingReqs = getIncomingFriendRequests();
+        if (incomingReqs.some((r) => r && String(r.from || '').trim().toUpperCase() === target)) {
+          acceptFriendRequest(target);
+          return;
+        }
+
+        const mapR = loadFriendRequestsMap();
+        if (!Array.isArray(mapR[target])) mapR[target] = [];
+
+        const reqObj = {
+          from: me,
+          fromFlag: STATE.myCountryFlag || '🇮🇳',
+          fromCode: STATE.myCountryCode || '+91',
+          fromElo: STATE.eloRating || 1500,
+          timestamp: Date.now()
+        };
+
+        const idx = mapR[target].findIndex((r) => r && String(r.from || '').trim().toUpperCase() === me);
+        if (idx >= 0) mapR[target][idx] = reqObj;
+        else mapR[target].unshift(reqObj);
+        saveFriendRequestsMap(mapR);
+
+        const reqPacket = {
+          type: 'FRIEND_REQUEST_SEND',
+          fromUser: me,
+          fromFlag: reqObj.fromFlag,
+          fromCode: reqObj.fromCode,
+          fromElo: reqObj.fromElo,
+          toUser: target,
+          timestamp: reqObj.timestamp
+        };
+        broadcastFriendEventPacket(reqPacket);
+        sendCloudFriendRequest(target, reqObj);
+
+        showFriendFeedback(`📩 Friend Request sent to @${target}! When @${target} accepts, they will appear in your Friends List.`, true);
+        renderFriendsRoster();
+        handleFriendsSearch();
+      }
+
+      function acceptFriendRequest(fromUsername) {
+        SoundFX.runScored(4);
+        const fromClean = (fromUsername || '').trim().toUpperCase();
+        const me = (STATE.myUsername || '').trim().toUpperCase();
+        if (!fromClean || !me || fromClean === me) return;
+
+        hideFriendRequestBanner();
+
+        let myFriends = loadUserFriends();
+        if (!myFriends.includes(fromClean)) myFriends.unshift(fromClean);
+        saveUserFriends(myFriends, true);
+
+        try {
+          const rawMap = localStorage.getItem(FRIENDS_MAP_KEY);
+          const mapF = rawMap ? JSON.parse(rawMap) : {};
+          if (!Array.isArray(mapF[me])) mapF[me] = [];
+          if (!mapF[me].includes(fromClean)) mapF[me].unshift(fromClean);
+          if (!Array.isArray(mapF[fromClean])) mapF[fromClean] = [];
+          if (!mapF[fromClean].includes(me)) mapF[fromClean].unshift(me);
+          localStorage.setItem(FRIENDS_MAP_KEY, JSON.stringify(mapF));
+        } catch (e) {}
+
+        const mapR = loadFriendRequestsMap();
+        if (Array.isArray(mapR[me])) {
+          mapR[me] = mapR[me].filter((r) => String(r && r.from || '').trim().toUpperCase() !== fromClean);
+          saveFriendRequestsMap(mapR);
+        }
+
+        const respPacket = {
+          type: 'FRIEND_REQUEST_RESPONSE',
+          action: 'ACCEPT',
+          fromUser: me,
+          toUser: fromClean,
+          timestamp: Date.now()
+        };
+        broadcastFriendEventPacket(respPacket);
+        respondCloudFriendRequest(me, fromClean, 'ACCEPT', myFriends, [me]);
+
+        showFriendFeedback(`✓ Accepted @${fromClean}'s friend request! @${fromClean} is now in your Friends List.`, true);
+        renderFriendsRoster();
+        handleFriendsSearch();
+      }
+
+      function declineFriendRequest(fromUsername) {
+        SoundFX.click();
+        const fromClean = (fromUsername || '').trim().toUpperCase();
+        const me = (STATE.myUsername || '').trim().toUpperCase();
+        if (!fromClean || !me) return;
+
+        hideFriendRequestBanner();
+
+        const mapR = loadFriendRequestsMap();
+        if (Array.isArray(mapR[me])) {
+          mapR[me] = mapR[me].filter((r) => String(r && r.from || '').trim().toUpperCase() !== fromClean);
+          saveFriendRequestsMap(mapR);
+        }
+
+        const respPacket = {
+          type: 'FRIEND_REQUEST_RESPONSE',
+          action: 'DECLINE',
+          fromUser: me,
+          toUser: fromClean,
+          timestamp: Date.now()
+        };
+        broadcastFriendEventPacket(respPacket);
+        respondCloudFriendRequest(me, fromClean, 'DECLINE');
+
+        showFriendFeedback(`Declined friend request from @${fromClean}.`, false);
+        renderFriendsRoster();
+        handleFriendsSearch();
+      }
+
+      function handleIncomingFriendRequestPacket(packet) {
+        if (!packet || typeof packet !== 'object') return;
+        const me = (STATE.myUsername || '').trim().toUpperCase();
+
+        if (packet.type === 'FRIEND_REQUEST_SEND') {
+          const fromUser = String(packet.fromUser || '').trim().toUpperCase();
+          const toUser = String(packet.toUser || '').trim().toUpperCase();
+          if (!fromUser || !toUser || fromUser === toUser) return;
+
+          const mapR = loadFriendRequestsMap();
+          if (!Array.isArray(mapR[toUser])) mapR[toUser] = [];
+          const myFriends = loadUserFriends();
+          if (!myFriends.includes(fromUser)) {
+            const existingIdx = mapR[toUser].findIndex((r) => r && String(r.from || '').trim().toUpperCase() === fromUser);
+            const reqObj = {
+              from: fromUser,
+              fromFlag: packet.fromFlag || '🇮🇳',
+              fromCode: packet.fromCode || '+91',
+              fromElo: packet.fromElo || 1500,
+              timestamp: packet.timestamp || Date.now()
+            };
+            if (existingIdx >= 0) mapR[toUser][existingIdx] = reqObj;
+            else mapR[toUser].unshift(reqObj);
+            saveFriendRequestsMap(mapR);
+          }
+          if (toUser === me) {
+            SoundFX.click();
+            showFriendRequestBanner(packet);
+            showFriendFeedback(`📩 New Friend Request from @${fromUser}! Accept or Decline above.`, true);
+          }
+          renderFriendsRoster();
+          handleFriendsSearch();
+          return;
+        }
+
+        if (packet.type === 'FRIEND_REQUEST_RESPONSE') {
+          const fromUser = String(packet.fromUser || '').trim().toUpperCase();
+          const toUser = String(packet.toUser || '').trim().toUpperCase();
+          const action = String(packet.action || '').toUpperCase();
+          if (!fromUser || !toUser) return;
+
+          if (action === 'ACCEPT') {
+            let myFriends = loadUserFriends();
+            if (toUser === me) {
+              if (!myFriends.includes(fromUser)) myFriends.unshift(fromUser);
+              saveUserFriends(myFriends, true);
+              SoundFX.runScored(4);
+              showFriendFeedback(`🎉 @${fromUser} accepted your Friend Request! You can now challenge @${fromUser} anytime.`, true);
+            }
+          } else {
+            const mapR = loadFriendRequestsMap();
+            if (Array.isArray(mapR[fromUser])) {
+              mapR[fromUser] = mapR[fromUser].filter((r) => String(r && r.from || '').trim().toUpperCase() !== toUser);
+              saveFriendRequestsMap(mapR);
+            }
+            if (toUser === me) {
+              showFriendFeedback(`@${fromUser} declined the friend request.`, false);
+            }
+          }
           renderFriendsRoster();
           handleFriendsSearch();
         }
@@ -4802,6 +5929,7 @@
         let friends = loadUserFriends();
         friends = friends.filter((f) => f !== clean);
         saveUserFriends(friends, true);
+        showFriendFeedback(`Removed @${clean} from your Friends List.`, true);
         renderFriendsRoster();
         handleFriendsSearch();
       }
@@ -4838,22 +5966,52 @@
         });
 
         const myFriends = loadUserFriends();
+        const incomingReqs = getIncomingFriendRequests();
+        const outgoingReqs = getOutgoingFriendRequests();
         const matched = Object.values(allKnown).filter((p) => p.name.includes(query));
 
         dom.friendSearchResultsArea.classList.remove('hidden');
         dom.friendSearchResultsCount.textContent = `${matched.length} found`;
 
         if (matched.length === 0) {
-          dom.friendSearchResultsList.innerHTML = `
-            <div class="p-3 rounded-lg bg-[#191816] text-center text-[11px] text-slate-400">
-              No registered user matches "${query}".
-            </div>`;
+          if (query.length >= 3) {
+            const isAlreadyFriend = myFriends.includes(query);
+            const isPendingIn = incomingReqs.some((r) => r && String(r.from || '').trim().toUpperCase() === query);
+            const isPendingOut = outgoingReqs.includes(query);
+
+            dom.friendSearchResultsList.innerHTML = `
+              <div class="p-2.5 rounded-xl bg-[#1a1916] border border-cyan-500/35 flex items-center justify-between gap-2">
+                <div>
+                  <div class="font-extrabold text-white text-xs">@${query}</div>
+                  <div class="text-[10px] text-slate-400">Send friend request to connect &amp; play 1v1!</div>
+                </div>
+                <div class="shrink-0 flex items-center gap-1.5">
+                  ${
+                    isAlreadyFriend
+                      ? '<span class="text-[10px] font-bold text-emerald-400 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30">✓ Friend</span>'
+                      : isPendingIn
+                      ? `<button type="button" data-friend-accept="${query}" class="btn-action-friend-accept px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-500 text-slate-950">✓ Accept</button>`
+                      : isPendingOut
+                      ? '<span class="text-[10px] font-bold text-amber-300 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/30">⏳ Request Sent</span>'
+                      : `<button type="button" data-send-request="${query}" class="btn-action-send-request px-2.5 py-1 rounded-lg text-[10px] font-black chess-green-btn">➕ Add Friend</button>`
+                  }
+                </div>
+              </div>
+            `;
+          } else {
+            dom.friendSearchResultsList.innerHTML = `
+              <div class="p-3 rounded-lg bg-[#191816] text-center text-[11px] text-slate-400">
+                Type at least 3 characters to find registered players or send a friend request.
+              </div>`;
+          }
           return;
         }
 
         dom.friendSearchResultsList.innerHTML = matched.map((user) => {
           const isSelf = user.name === STATE.myUsername.toUpperCase();
           const isAlreadyFriend = myFriends.includes(user.name);
+          const isPendingIn = incomingReqs.some((r) => r && String(r.from || '').trim().toUpperCase() === user.name);
+          const isPendingOut = outgoingReqs.includes(user.name);
           const elo = typeof user.elo === 'number' ? user.elo : 1500;
 
           return `
@@ -4869,27 +6027,26 @@
                   <div class="text-[10px] text-slate-400 font-mono-num">${elo} Elo • ${user.totalRuns || 0} Runs</div>
                 </div>
               </div>
-              <div class="shrink-0">
+              <div class="shrink-0 flex items-center gap-1.5">
                 ${
                   isSelf 
                     ? '<span class="text-[10px] text-slate-500 font-bold px-2 py-1">Your Account</span>' 
                     : isAlreadyFriend
-                    ? '<span class="text-[10px] font-bold text-emerald-400 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30">✓ Added</span>'
-                    : `<button type="button" data-add-username="${user.name}" class="btn-action-add-friend px-2.5 py-1 rounded-lg text-[10px] font-black chess-green-btn">
-                        ➕ Add
+                    ? `<span class="text-[10px] font-bold text-emerald-400 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30">✓ Added</span>
+                       <button type="button" data-friend-play="${user.name}" class="btn-action-friend-play px-2.5 py-1 rounded-lg text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/40">📞 Play</button>`
+                    : isPendingIn
+                    ? `<button type="button" data-friend-accept="${user.name}" class="btn-action-friend-accept px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-500 text-slate-950">✓ Accept</button>
+                       <button type="button" data-friend-decline="${user.name}" class="btn-action-friend-decline px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/20 text-rose-300">✕ Decline</button>`
+                    : isPendingOut
+                    ? '<span class="text-[10px] font-bold text-amber-300 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/30">⏳ Request Sent</span>'
+                    : `<button type="button" data-send-request="${user.name}" class="btn-action-send-request px-2.5 py-1 rounded-lg text-[10px] font-black chess-green-btn">
+                        ➕ Add Friend
                       </button>`
                 }
               </div>
             </div>
           `;
         }).join('');
-
-        dom.friendSearchResultsList.querySelectorAll('.btn-action-add-friend').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const uname = btn.getAttribute('data-add-username');
-            addFriend(uname);
-          });
-        });
       }
 
       function renderFriendsRoster() {
@@ -4897,18 +6054,79 @@
         updateFriendsBadge();
         syncLeaderboardRegistry();
 
+        const incomingReqs = getIncomingFriendRequests();
+        const outgoingReqs = getOutgoingFriendRequests();
+        const encryptedUsers = loadEncryptedUsersMap();
+
+        // Render Pending Friend Requests
+        if (dom.pendingFriendRequestsList) {
+          if (incomingReqs.length === 0 && outgoingReqs.length === 0) {
+            dom.pendingFriendRequestsList.innerHTML = `
+              <div class="p-2.5 rounded-lg bg-[#151412] text-center text-[10px] text-slate-400">
+                No pending requests. When a friend sends you a request, it appears here with <strong>Accept</strong> or <strong>Decline</strong>!
+              </div>`;
+          } else {
+            const incHtml = incomingReqs.map((req) => {
+              const sender = String(req.from || '').trim().toUpperCase();
+              const rec = STATE.humanPlayers[sender] || encryptedUsers[sender] || {};
+              const flag = req.fromFlag || rec.countryFlag || '🇮🇳';
+              const elo = rec.elo || req.fromElo || 1500;
+              return `
+                <div class="p-2 rounded-xl bg-[#171e22] border border-cyan-500/40 flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-base">${flag}</span>
+                    <div class="min-w-0">
+                      <div class="font-extrabold text-white text-xs truncate flex items-center gap-1">
+                        <span>${sender}</span>
+                        <span class="text-[9px] font-mono-num text-cyan-300 font-bold px-1 rounded bg-slate-900 border border-cyan-700/50">Incoming</span>
+                      </div>
+                      <div class="text-[10px] text-slate-400 font-mono-num">${elo} Elo</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" data-req-accept="${sender}" class="btn-action-req-accept px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow">
+                      ✓ Accept
+                    </button>
+                    <button type="button" data-req-decline="${sender}" class="btn-action-req-decline px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/35">
+                      ✕ Decline
+                    </button>
+                  </div>
+                </div>`;
+            }).join('');
+
+            const outHtml = outgoingReqs.map((target) => {
+              const rec = STATE.humanPlayers[target] || encryptedUsers[target] || {};
+              const flag = rec.countryFlag || '🇮🇳';
+              return `
+                <div class="p-2 rounded-xl bg-[#1b1a17] border border-amber-500/30 flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-base">${flag}</span>
+                    <div class="min-w-0">
+                      <div class="font-extrabold text-white text-xs truncate flex items-center gap-1">
+                        <span>${target}</span>
+                        <span class="text-[9px] font-mono-num text-amber-300 font-bold px-1 rounded bg-slate-900 border border-amber-700/50">Sent</span>
+                      </div>
+                      <div class="text-[10px] text-slate-400">Waiting for @${target} to accept</div>
+                    </div>
+                  </div>
+                  <span class="text-[10px] font-bold text-amber-300 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">⏳ Pending</span>
+                </div>`;
+            }).join('');
+
+            dom.pendingFriendRequestsList.innerHTML = incHtml + outHtml;
+          }
+        }
+
         const friends = loadUserFriends();
         if (friends.length === 0) {
           dom.myFriendsListContainer.innerHTML = `
             <div class="p-4 rounded-xl bg-[#1b1a17] border border-[#36332e] text-center text-xs text-slate-400 space-y-1">
               <div class="text-xl">🤝</div>
               <div class="font-bold text-white">No Friends Added Yet</div>
-              <p class="text-[10px] text-slate-500">Search any registered username in the box above to add them to your roster!</p>
+              <p class="text-[10px] text-slate-500">Search any registered username in the box above to send them a friend request!</p>
             </div>`;
           return;
         }
-
-        const encryptedUsers = loadEncryptedUsersMap();
 
         dom.myFriendsListContainer.innerHTML = friends.map((fname) => {
           const rec = STATE.humanPlayers[fname] || encryptedUsers[fname] || {
@@ -4947,20 +6165,6 @@
             </div>
           `;
         }).join('');
-
-        dom.myFriendsListContainer.querySelectorAll('.btn-action-remove-friend').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const uname = btn.getAttribute('data-remove-username');
-            removeFriend(uname);
-          });
-        });
-
-        dom.myFriendsListContainer.querySelectorAll('.btn-action-challenge-friend').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const target = btn.getAttribute('data-challenge-username');
-            sendFriendInvite(target);
-          });
-        });
       }
 
       function stopTurnTimer() {
@@ -5544,7 +6748,68 @@
           dom.aiTossChoiceContinue.classList.add('hidden');
           STATE.lastOutcomeText = `You won toss (${sum} ${sumParity})! Choose Bat or Bowl.`;
         } else {
-          SoundFX.wicket();
+          const cleanActor = String(STATE.myUsername || '').trim().toUpperCase();
+          const eqVfx = (function() {
+            try { return localStorage.getItem('oddandeven_equipped_vfx_' + cleanActor) || ''; } catch(e) { return ''; }
+          })();
+          const eqCard = (function() {
+            try { return localStorage.getItem('oddandeven_equipped_card_' + cleanActor) || ''; } catch(e) { return ''; }
+          })();
+
+          if (eqVfx === 'vfx_thunder_wicket') {
+            SoundFX.thunderWicket ? SoundFX.thunderWicket() : SoundFX.wicket();
+            STATE.anim.flashColor = '#38bdf8';
+            STATE.anim.flashAlpha = 0.9;
+            for (let i = 0; i < 35; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 2 + Math.random() * 6;
+              STATE.anim.particles.push({
+                x: dom.arenaCanvas ? dom.arenaCanvas.width / 2 : 150,
+                y: dom.arenaCanvas ? dom.arenaCanvas.height * 0.5 : 100,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                alpha: 1,
+                radius: 2 + Math.random() * 3,
+                color: Math.random() > 0.4 ? '#38bdf8' : '#facc15'
+              });
+            }
+          } else if (eqVfx === 'ball_meteorite_fireball') {
+            SoundFX.fireballWicket ? SoundFX.fireballWicket() : SoundFX.wicket();
+            STATE.anim.flashColor = '#f97316';
+            STATE.anim.flashAlpha = 0.9;
+            for (let i = 0; i < 35; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 2 + Math.random() * 6;
+              STATE.anim.particles.push({
+                x: dom.arenaCanvas ? dom.arenaCanvas.width / 2 : 150,
+                y: dom.arenaCanvas ? dom.arenaCanvas.height * 0.5 : 100,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                alpha: 1,
+                radius: 2 + Math.random() * 3.5,
+                color: Math.random() > 0.3 ? '#f97316' : '#ef4444'
+              });
+            }
+          } else if (eqCard === 'card_mythic_immortal') {
+            SoundFX.wicket();
+            STATE.anim.flashColor = '#ff4d6d';
+            STATE.anim.flashAlpha = 0.85;
+            for (let i = 0; i < 30; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 2 + Math.random() * 5;
+              STATE.anim.particles.push({
+                x: dom.arenaCanvas ? dom.arenaCanvas.width / 2 : 150,
+                y: dom.arenaCanvas ? dom.arenaCanvas.height * 0.5 : 100,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                alpha: 1,
+                radius: 2 + Math.random() * 3,
+                color: '#ff4d6d'
+              });
+            }
+          } else {
+            SoundFX.wicket();
+          }
           const botChoseBat = Math.random() < 0.6;
           STATE.firstBatter = botChoseBat ? 'AI' : 'USER';
           dom.tossWinnerTag.textContent = `🤖 ${p2Name.toUpperCase()} WON THE TOSS`;
@@ -5617,6 +6882,7 @@
         SoundFX.click();
         stopTurnTimer();
         STATE.userNumHistory.push(userNum);
+        recordNumberPickTelemetry(userNum);
 
         const isUserBatting = STATE.currentBatter === 'USER';
         const oppNum = generateBotNumber(!isUserBatting, userNum);
@@ -5675,13 +6941,44 @@
             }
           }
 
+          const batterName = isUserBatting ? p1 : p2;
+          const bowlerName = isUserBatting ? p2 : p1;
+          const outScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+          const outBalls = isUserBatting ? STATE.userBalls : STATE.aiBalls;
+          const getRoastLine = () => {
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            if (outScore === 0) {
+              return pick([
+                `🦆 GOLDEN DUCK ROAST! ${batterName} flashed ${userNum} and speedran back to the pavilion for ZERO!`,
+                `💀 0 RUNS?! ${batterName} spent longer walking in than batting! Read like a picture book by ${bowlerName} on ${userNum}!`,
+                `🤡 CERTIFIED DUCK! ${batterName} donated a free wicket on ${userNum} for 0 runs!`
+              ]);
+            }
+            if (outScore < 15) {
+              return pick([
+                `💀 HUMILIATED ON ${userNum}! ${batterName} scraped a pitiful ${outScore} runs before ${bowlerName} exposed them!`,
+                `😂 PACK YOUR BAGS! ${batterName} lasted ${outBalls} balls for a measly ${outScore} runs! Caught in 4K on ${userNum}!`
+              ]);
+            }
+            return pick([
+              `💀 SAVAGE READ ON ${userNum}! ${bowlerName} lived rent-free in ${batterName}'s head (Out for ${outScore})!`,
+              `🪦 RIP INNINGS! ${batterName} walked straight into ${bowlerName}'s ${userNum} trap! Sent packing for ${outScore}!`,
+              `🤡 COOKED ON ${userNum}! ${bowlerName} read ${batterName} like morning newspaper (Out for ${outScore})!`
+            ]);
+          };
+          const roastText = STATE.commentaryStyle === 'ROAST' ? getRoastLine() : null;
+
           if (STATE.currentInnings === 1) {
             const firstScore = isUserBatting ? STATE.userScore : STATE.aiScore;
             STATE.target = firstScore + 1;
             STATE.phase = 'INNINGS_BREAK';
             dom.breakHeadline.textContent = `1st Innings Total: ${firstScore} Runs`;
-            dom.breakTargetExplanation.textContent = `Target to chase: ${STATE.target} Runs`;
-            STATE.lastOutcomeText = `WICKET! Matched on ${userNum} (Target: ${STATE.target})`;
+            dom.breakTargetExplanation.textContent = roastText
+              ? `${roastText} • Target to chase: ${STATE.target} Runs`
+              : `Target to chase: ${STATE.target} Runs`;
+            STATE.lastOutcomeText = roastText
+              ? `${roastText} (Target: ${STATE.target})`
+              : `WICKET! Matched on ${userNum} (Target: ${STATE.target})`;
           } else {
             // 2nd Innings Wicket! Check for Drawn Match (e.g. 5 vs 5)
             const firstScore = STATE.target - 1;
@@ -5693,7 +6990,8 @@
               const winner = isUserBatting ? 'AI' : 'USER';
               const margin = firstScore - secondScore;
               const winName = winner === 'USER' ? p1 : p2;
-              concludeMatch(winner, `Wicket on ${userNum}! ${winName} defended the target and won by ${margin} run${margin === 1 ? '' : 's'}!`);
+              const baseWinReason = `Wicket on ${userNum}! ${winName} defended the target and won by ${margin} run${margin === 1 ? '' : 's'}!`;
+              concludeMatch(winner, roastText ? `${roastText} • ${baseWinReason}` : baseWinReason);
               return;
             }
           }
@@ -5721,7 +7019,28 @@
             }
           }
 
-          SoundFX.runScored(scoredRuns);
+          const cleanRunner = String(STATE.myUsername || '').trim().toUpperCase();
+          const eqBat = (function() {
+            try { return localStorage.getItem('oddandeven_equipped_bat_' + cleanRunner) || ''; } catch(e) { return ''; }
+          })();
+          if (eqBat === 'bat_solid_gold_willow' && scoredRuns >= 4) {
+            SoundFX.goldChime ? SoundFX.goldChime() : SoundFX.runScored(scoredRuns);
+            for (let i = 0; i < 25; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 1.5 + Math.random() * 5;
+              STATE.anim.particles.push({
+                x: dom.arenaCanvas ? dom.arenaCanvas.width * 0.22 : 80,
+                y: dom.arenaCanvas ? dom.arenaCanvas.height * 0.5 : 100,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                alpha: 1,
+                radius: 2 + Math.random() * 2.5,
+                color: Math.random() > 0.5 ? '#f5b83d' : '#ffd166'
+              });
+            }
+          } else {
+            SoundFX.runScored(scoredRuns);
+          }
           const currentBatScore = isUserBatting ? STATE.userScore : STATE.aiScore;
 
           if (STATE.currentInnings === 2 && currentBatScore >= STATE.target) {
@@ -5737,6 +7056,19 @@
         renderView();
       }
 
+      
+      function recordNumberPickTelemetry(num) {
+        const clean = (STATE.myUsername || '').trim().toUpperCase();
+        if (!clean || isPlaceholderUsername(clean)) return;
+        try {
+          const key = 'oddandeven_number_frequency_' + clean;
+          const raw = localStorage.getItem(key);
+          const freq = raw ? JSON.parse(raw) : {};
+          freq[num] = (Number(freq[num]) || 0) + 1;
+          localStorage.setItem(key, JSON.stringify(freq));
+        } catch (e) {}
+      }
+
       function concludeMatch(winner, reason, isTimeoutForfeit = false, isTossForfeit = false) {
         stopTurnTimer();
         STATE.phase = 'GAME_OVER';
@@ -5748,6 +7080,36 @@
         const mpMatch = isMultiplayer();
         const amIGuest = mpMatch && STATE.onlineRole === 'GUEST';
         const isDraw = (winner === 'DRAW');
+
+        if (!STATE.isTossForfeit) {
+          const myRecForMilestones = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, STATE.eloRating, {
+            countryCode: STATE.p1CountryCode,
+            countryFlag: STATE.p1CountryFlag
+          }, true) : null;
+          if (myRecForMilestones) {
+            if (STATE.userScore >= 100) {
+              myRecForMilestones.centuriesCount = (myRecForMilestones.centuriesCount || 0) + 1;
+            }
+            if (STATE.userBalls > 0 && STATE.userScore > 0 && ((STATE.userScore / STATE.userBalls) * 100) >= 500) {
+              myRecForMilestones.sr500Count = (myRecForMilestones.sr500Count || 0) + 1;
+            }
+          }
+          if (mpMatch && !isPlaceholderUsername(p2)) {
+            const oppRecForMilestones = ensureHumanPlayerRecord(p2, STATE.friendEloRating, {
+              countryCode: STATE.p2CountryCode,
+              countryFlag: STATE.p2CountryFlag
+            }, true);
+            if (oppRecForMilestones) {
+              if (STATE.aiScore >= 100) {
+                oppRecForMilestones.centuriesCount = (oppRecForMilestones.centuriesCount || 0) + 1;
+              }
+              if (STATE.aiBalls > 0 && STATE.aiScore > 0 && ((STATE.aiScore / STATE.aiBalls) * 100) >= 500) {
+                oppRecForMilestones.sr500Count = (oppRecForMilestones.sr500Count || 0) + 1;
+              }
+            }
+          }
+          saveLocalStatsOnly();
+        }
         const didIWin = !isDraw && !STATE.isTossForfeit && (amIGuest ? (winner === 'AI') : (winner === 'USER'));
 
         if (STATE.isTossForfeit) {
@@ -5766,7 +7128,24 @@
         dom.gameOverMargin.textContent = reason;
         STATE.lastOutcomeText = isDraw ? `🤝 Match Drawn! ${reason}` : (didIWin ? `🏆 You Won! ${reason}` : `Match Lost: ${reason}`);
 
+        
         if (!mpMatch) {
+          const cleanUser = (STATE.myUsername || '').trim().toUpperCase();
+          if (cleanUser && !isPlaceholderUsername(cleanUser)) {
+            try {
+              const diffKey = STATE.botDifficulty || 'TACTICIAN';
+              const aiKey = 'oddandeven_ai_tier_stats_' + cleanUser;
+              const rawAi = localStorage.getItem(aiKey);
+              const aiStats = rawAi ? JSON.parse(rawAi) : {};
+              if (!aiStats[diffKey]) aiStats[diffKey] = { matches: 0, wins: 0, losses: 0, draws: 0 };
+              aiStats[diffKey].matches = (aiStats[diffKey].matches || 0) + 1;
+              if (isDraw) aiStats[diffKey].draws = (aiStats[diffKey].draws || 0) + 1;
+              else if (didIWin) aiStats[diffKey].wins = (aiStats[diffKey].wins || 0) + 1;
+              else aiStats[diffKey].losses = (aiStats[diffKey].losses || 0) + 1;
+              localStorage.setItem(aiKey, JSON.stringify(aiStats));
+            } catch (e) {}
+          }
+
           const curBot = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
           dom.gameOverRatingBox.innerHTML = `
             <div class="text-amber-400 font-bold mb-1">🤖 Casual Match vs ${curBot.name}</div>
@@ -5943,17 +7322,49 @@
 
         ctx.clearRect(0, 0, w, h);
 
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        let equippedTheme = '';
+        let equippedCard = 'card_default';
+        try {
+          if (cleanMe && !isPlaceholderUsername(cleanMe)) {
+            equippedTheme = localStorage.getItem('oddandeven_equipped_theme_' + cleanMe) || '';
+            equippedCard = localStorage.getItem('oddandeven_equipped_card_' + cleanMe) || 'card_default';
+          }
+        } catch(e) {}
+
+        // 1. Dynamic Pitch Theme
         const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, '#090d16');
-        grad.addColorStop(1, '#0e231b');
+        let creaseStroke = 'rgba(129, 182, 76, 0.22)';
+        if (equippedTheme === 'theme_lords_pavilion') {
+          grad.addColorStop(0, '#061a0d');
+          grad.addColorStop(1, '#0d3319');
+          creaseStroke = 'rgba(245, 184, 61, 0.45)';
+        } else if (equippedTheme === 'theme_cyberpunk_neon') {
+          grad.addColorStop(0, '#05111a');
+          grad.addColorStop(1, '#160824');
+          creaseStroke = 'rgba(56, 189, 248, 0.65)';
+        } else {
+          grad.addColorStop(0, '#090d16');
+          grad.addColorStop(1, '#0e231b');
+          creaseStroke = 'rgba(129, 182, 76, 0.22)';
+        }
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
 
-        ctx.strokeStyle = 'rgba(129, 182, 76, 0.22)';
+        // Pitch Crease Ellipse
+        ctx.strokeStyle = creaseStroke;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.ellipse(w / 2, h * 0.82, w * 0.44, h * 0.22, 0, 0, Math.PI * 2);
         ctx.stroke();
+
+        if (equippedTheme === 'theme_cyberpunk_neon') {
+          ctx.strokeStyle = 'rgba(217, 70, 239, 0.4)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.ellipse(w / 2, h * 0.82, w * 0.32, h * 0.16, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
 
         if (STATE.anim.flashAlpha > 0.01) {
           ctx.fillStyle = STATE.anim.flashColor;
@@ -5971,23 +7382,53 @@
 
         const isMatchOut = STATE.lastUserNum !== null && STATE.lastUserNum === STATE.lastAiNum && (STATE.phase === 'INNINGS_BREAK' || STATE.phase === 'GAME_OVER');
 
-        ctx.fillStyle = isMatchOut ? 'rgba(244, 63, 94, 0.16)' : 'rgba(129, 182, 76, 0.14)';
-        ctx.strokeStyle = isMatchOut ? '#f43f5e' : '#81b64c';
-        ctx.lineWidth = 2;
+        // 2. Unlocked Player Card Features on Canvas
+        let p1CardFill = 'rgba(129, 182, 76, 0.14)';
+        let p1CardStroke = '#81b64c';
+        let p1Crown = '';
+        if (isMatchOut) {
+          p1CardFill = 'rgba(244, 63, 94, 0.16)';
+          p1CardStroke = '#f43f5e';
+        } else if (equippedCard === 'card_custom_divine') {
+          p1CardFill = 'rgba(255, 209, 102, 0.22)';
+          p1CardStroke = '#ffd166';
+          p1Crown = '🔱';
+        } else if (equippedCard === 'card_cosmic_celestial') {
+          p1CardFill = 'rgba(192, 132, 252, 0.22)';
+          p1CardStroke = '#c084fc';
+          p1Crown = '🌌';
+        } else if (equippedCard === 'card_mythic_immortal') {
+          p1CardFill = 'rgba(255, 77, 109, 0.22)';
+          p1CardStroke = '#ff4d6d';
+          p1Crown = '👑';
+        } else if (equippedCard === 'card_diamond_vanguard') {
+          p1CardFill = 'rgba(56, 189, 248, 0.22)';
+          p1CardStroke = '#38bdf8';
+          p1Crown = '💎';
+        } else if (equippedCard === 'card_gold_elite') {
+          p1CardFill = 'rgba(245, 184, 61, 0.22)';
+          p1CardStroke = '#f5b83d';
+          p1Crown = '🏆';
+        }
+
+        ctx.fillStyle = p1CardFill;
+        ctx.strokeStyle = p1CardStroke;
+        ctx.lineWidth = p1Crown ? 2.5 : 2;
         drawRoundedRect(ctx, leftX, cardY, cardW, cardH, 12);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = p1Crown ? '#ffd166' : '#94a3b8';
         ctx.font = '700 9px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(getP1Label(), leftX + cardW / 2, cardY + 16);
+        ctx.fillText((p1Crown ? `${p1Crown} ` : '') + getP1Label(), leftX + cardW / 2, cardY + 16);
 
         ctx.fillStyle = '#ffffff';
         ctx.font = '900 28px "JetBrains Mono", monospace';
         const p1Val = STATE.pendingP1Num !== null ? '🔒' : (STATE.lastUserNum !== null ? String(STATE.lastUserNum) : '-');
         ctx.fillText(p1Val, leftX + cardW / 2, cardY + cardH * 0.66);
 
+        // Right Card (Opponent)
         ctx.fillStyle = isMatchOut ? 'rgba(244, 63, 94, 0.16)' : 'rgba(56, 189, 248, 0.14)';
         ctx.strokeStyle = isMatchOut ? '#f43f5e' : '#38bdf8';
         ctx.lineWidth = 2;
@@ -6061,7 +7502,28 @@
         const p1Name = getP1Label();
         const p2Name = getP2Label();
 
-        dom.p1CardTitle.textContent = mpActive ? `${STATE.p1CountryFlag || '🇮🇳'} ${p1Name} (P1)` : `${STATE.myCountryFlag} ${STATE.myUsername}`;
+        let equippedCardTag = '';
+        try {
+          const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+          if (cleanMe && !isPlaceholderUsername(cleanMe)) {
+            const eqId = localStorage.getItem('oddandeven_equipped_card_' + cleanMe);
+            if (eqId === 'card_custom_divine') {
+              const rawC = localStorage.getItem('oddandeven_custom_card_' + cleanMe);
+              const cObj = rawC ? JSON.parse(rawC) : null;
+              equippedCardTag = ` [🔱 ${(cObj && cObj.title) || 'DIVINE'}]`;
+            } else if (eqId === 'card_cosmic_celestial') {
+              equippedCardTag = ' [🌌 COSMIC]';
+            } else if (eqId === 'card_mythic_immortal') {
+              equippedCardTag = ' [👑 IMMORTAL]';
+            } else if (eqId === 'card_diamond_vanguard') {
+              equippedCardTag = ' [💎 DIAMOND]';
+            } else if (eqId === 'card_gold_elite') {
+              equippedCardTag = ' [🏆 GOLD]';
+            }
+          }
+        } catch (e) {}
+
+        dom.p1CardTitle.textContent = mpActive ? `${STATE.p1CountryFlag || '🇮🇳'} ${p1Name} (P1)${equippedCardTag}` : `${STATE.myCountryFlag} ${STATE.myUsername}${equippedCardTag}`;
         dom.p2CardTitle.textContent = mpActive ? `${STATE.p2CountryFlag || '🇮🇳'} ${p2Name} (P2)` : `${curBot.icon} ${curBot.shortName}`;
 
         if (dom.inlineLobbyP1Display) {
@@ -6166,6 +7628,35 @@
             ? `<span>👥</span><span>${p1Name} vs ${p2Name}</span>`
             : `<span>${curBot.icon}</span><span>${curBot.shortName} (${curBot.elo} Elo)</span>`;
         }
+        const mobStyleNames = {
+          HYPE: '🎙️ Hype Broadcast',
+          TACTICAL: '🧠 Tactical Analyst',
+          CLASSIC: '📻 Classic Feed',
+          ROAST: '💀 Roast Commentary'
+        };
+        if (dom.sidebarCommentaryStyleBadge) {
+          dom.sidebarCommentaryStyleBadge.textContent = mobStyleNames[STATE.commentaryStyle] || mobStyleNames.HYPE;
+        }
+        if (dom.botSetupCommentaryStyle && dom.botSetupCommentaryStyle.value !== STATE.commentaryStyle) {
+          dom.botSetupCommentaryStyle.value = STATE.commentaryStyle;
+        }
+        const btnMobMap = {
+          HYPE: document.getElementById('btnMobCommHype'),
+          TACTICAL: document.getElementById('btnMobCommTactical'),
+          CLASSIC: document.getElementById('btnMobCommClassic'),
+          ROAST: document.getElementById('btnMobCommRoast')
+        };
+        Object.keys(btnMobMap).forEach((k) => {
+          const b = btnMobMap[k];
+          if (!b) return;
+          if (k === STATE.commentaryStyle) {
+            b.className = k === 'ROAST'
+              ? 'py-1 px-1 rounded text-[9px] font-extrabold bg-rose-600 text-white transition shadow'
+              : 'py-1 px-1 rounded text-[9px] font-extrabold bg-[#81b64c] text-white transition shadow';
+          } else {
+            b.className = 'py-1 px-1 rounded text-[9px] font-bold bg-[#141311] text-slate-300 border border-[#36332e] transition';
+          }
+        });
 
         const isUserBat = STATE.currentBatter === 'USER';
         if (STATE.phase === 'GAME_OVER') {
@@ -6196,6 +7687,24 @@
 
         const navActive = 'w-full p-2.5 rounded-xl text-left font-extrabold text-xs flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 text-emerald-300 border border-emerald-400/40 transition';
         const navIdle = 'w-full p-2.5 rounded-xl text-left font-bold text-xs flex items-center gap-2.5 bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] transition';
+        if (dom.sideNavProfileSub && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+          dom.sideNavProfileSub.textContent = `${STATE.myUsername} • ${STATE.eloRating} ELO`;
+        }
+        if (dom.sideNavStoreSub && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+          try {
+            const cleanU = String(STATE.myUsername).trim().toUpperCase();
+            const spent = parseInt(localStorage.getItem('oddandeven_spent_xp_' + cleanU) || '0', 10);
+            const myR = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+            const achs = computePlayerAchievements(myR);
+            const aXp = achs.filter(a => a.current >= a.target).reduce((s, a) => s + a.xp, 0);
+            const mXp = ((myR.totalRuns || 0) * 2) + ((myR.wicketsTaken || 0) * 25) + ((myR.wins || 0) * 50) + ((myR.matches || 0) * 15);
+            const avail = Math.max(0, aXp + mXp - spent);
+            dom.sideNavStoreSub.textContent = `${avail.toLocaleString()} XP • Player Cards`;
+            if (dom.sideNavStoreBadge) {
+              dom.sideNavStoreBadge.textContent = avail >= 5000 ? 'UNLOCKED' : `${avail} XP`;
+            }
+          } catch (e) {}
+        }
         if (dom.sideNavPitch) dom.sideNavPitch.className = STATE.activeScreen === 'PITCH' ? navActive : navIdle;
         if (dom.sideNavBot) dom.sideNavBot.className = STATE.activeScreen === 'BOT_SETUP' ? navActive : navIdle;
         if (dom.sideNavMultiplayer) dom.sideNavMultiplayer.className = STATE.activeScreen === 'MP_SETUP' ? navActive : navIdle;
@@ -6230,6 +7739,10 @@
                 STATE.p1Name = STATE.myUsername;
                 STATE.p1CountryCode = STATE.myCountryCode;
                 STATE.p1CountryFlag = STATE.myCountryFlag;
+                STATE.isAuthenticated = true;
+                stampRecentMobileSignup(STATE.myUsername);
+                unmarkAccountPurgedLocal(STATE.myUsername);
+                cloudPurgedList = cloudPurgedList.filter((u) => u !== STATE.myUsername);
                 reconcileAllNewPlayersIntoLeaderboard();
                 syncLeaderboardRegistry();
                 renderView();
@@ -6252,6 +7765,101 @@
         if (dom.inputSearchFriendUsername) {
           dom.inputSearchFriendUsername.addEventListener('input', handleFriendsSearch);
         }
+
+        // Delegated clicks for friend requests, search results, and friends roster
+        const handleFriendsDelegatedEvents = (e) => {
+          const sendBtn = e.target.closest('[data-send-request]');
+          if (sendBtn) {
+            sendFriendRequest(sendBtn.getAttribute('data-send-request'));
+            return;
+          }
+          const accBtn = e.target.closest('[data-req-accept], [data-friend-accept]');
+          if (accBtn) {
+            const u = accBtn.getAttribute('data-req-accept') || accBtn.getAttribute('data-friend-accept');
+            if (u) acceptFriendRequest(u);
+            return;
+          }
+          const decBtn = e.target.closest('[data-req-decline], [data-friend-decline]');
+          if (decBtn) {
+            const u = decBtn.getAttribute('data-req-decline') || decBtn.getAttribute('data-friend-decline');
+            if (u) declineFriendRequest(u);
+            return;
+          }
+          const playBtn = e.target.closest('[data-friend-play], [data-challenge-username]');
+          if (playBtn) {
+            const u = playBtn.getAttribute('data-friend-play') || playBtn.getAttribute('data-challenge-username');
+            if (u) sendFriendInvite(u);
+            return;
+          }
+          const remBtn = e.target.closest('[data-remove-username]');
+          if (remBtn) {
+            const u = remBtn.getAttribute('data-remove-username');
+            if (u) removeFriend(u);
+            return;
+          }
+        };
+
+        if (dom.friendSearchResultsList) {
+          dom.friendSearchResultsList.addEventListener('click', handleFriendsDelegatedEvents);
+        }
+        if (dom.pendingFriendRequestsList) {
+          dom.pendingFriendRequestsList.addEventListener('click', handleFriendsDelegatedEvents);
+        }
+        if (dom.myFriendsListContainer) {
+          dom.myFriendsListContainer.addEventListener('click', handleFriendsDelegatedEvents);
+        }
+        if (dom.btnAcceptFriendRequestBanner) {
+          dom.btnAcceptFriendRequestBanner.addEventListener('click', () => {
+            if (pendingFriendRequestForMe) {
+              const u = pendingFriendRequestForMe.fromUser || pendingFriendRequestForMe.from;
+              hideFriendRequestBanner();
+              if (u) acceptFriendRequest(u);
+            } else {
+              hideFriendRequestBanner();
+            }
+          });
+        }
+        if (dom.btnDismissFriendRequestBanner) {
+          dom.btnDismissFriendRequestBanner.addEventListener('click', () => {
+            if (pendingFriendRequestForMe) {
+              const u = pendingFriendRequestForMe.fromUser || pendingFriendRequestForMe.from;
+              hideFriendRequestBanner();
+              if (u) declineFriendRequest(u);
+            } else {
+              hideFriendRequestBanner();
+            }
+          });
+        }
+
+        // Listen for store & equipped item broadcasts
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const storeBc = new BroadcastChannel('oddandeven_store_sync');
+            storeBc.onmessage = () => {
+              renderView();
+              drawCanvas();
+            };
+          }
+        } catch(e) {}
+
+        window.addEventListener('storage', (ev) => {
+          if (!ev || !ev.key) return;
+          if (ev.key.startsWith('oddandeven_equipped_') || ev.key === 'oddandeven_store_bus' || ev.key.startsWith('oddandeven_store_inventory_')) {
+            renderView();
+            drawCanvas();
+          }
+          if (ev.key === 'oddandeven_friend_invite_bus' && ev.newValue) {
+            try {
+              const data = JSON.parse(ev.newValue);
+              if (data && (data.type === 'FRIEND_REQUEST_SEND' || data.type === 'FRIEND_REQUEST_RESPONSE')) {
+                handleIncomingFriendRequestPacket(data);
+              }
+            } catch (e) {}
+          } else if (ev.key === 'oddandeven_friend_requests_v1' || ev.key === 'oddandeven_friends_map_v1') {
+            renderFriendsRoster();
+            handleFriendsSearch();
+          }
+        });
         if (dom.btnBannerViewAchievements) {
           dom.btnBannerViewAchievements.addEventListener('click', () => switchScreen('ACHIEVEMENTS'));
         }
@@ -6360,6 +7968,21 @@
             renderView();
           });
         }
+        ['HYPE', 'TACTICAL', 'CLASSIC', 'ROAST'].forEach((styleKey) => {
+          const btnId = styleKey === 'HYPE' ? 'btnMobCommHype' : (styleKey === 'TACTICAL' ? 'btnMobCommTactical' : (styleKey === 'CLASSIC' ? 'btnMobCommClassic' : 'btnMobCommRoast'));
+          const btnEl = document.getElementById(btnId);
+          if (btnEl) {
+            btnEl.addEventListener('click', () => {
+              SoundFX.click();
+              STATE.commentaryStyle = styleKey;
+              if (dom.botSetupCommentaryStyle) dom.botSetupCommentaryStyle.value = styleKey;
+              STATE.lastOutcomeText = styleKey === 'ROAST'
+                ? '💀 Roast Commentary Active! Prepare for brutal humiliation on every wicket!'
+                : `🎙️ Switched to ${styleKey} Commentary Mode!`;
+              renderView();
+            });
+          }
+        });
 
         dom.btnLaunchBotMatch.addEventListener('click', () => {
           STATE.mode = 'AI';
@@ -6636,23 +8259,37 @@
 
             if (db) {
               try {
-                const [sArt, sRoot, pArt, pRoot] = await Promise.all([
+                const [rArt, rRoot, rPArt, rPRoot] = await Promise.allSettled([
                   getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', uname)),
                   getDoc(doc(db, 'accounts', uname)),
                   getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', uname)),
                   getDoc(doc(db, 'purged_accounts', uname))
                 ]);
-                const isPurgedInCloud = (pArt && pArt.exists()) || (pRoot && pRoot.exists());
-                const existsInBoth = Boolean(sArt && sArt.exists() && sRoot && sRoot.exists()) && !isPurgedInCloud;
-                if (existsInBoth) {
-                  const cData = sArt.data() || sRoot.data();
-                  usersMap[uname] = Object.assign({}, usersMap[uname] || {}, cData, { username: uname });
-                  saveEncryptedUsersMap(usersMap);
-                } else {
+                const sArt = rArt.status === 'fulfilled' ? rArt.value : null;
+                const sRoot = rRoot.status === 'fulfilled' ? rRoot.value : null;
+                const pArt = rPArt.status === 'fulfilled' ? rPArt.value : null;
+                const pRoot = rPRoot.status === 'fulfilled' ? rPRoot.value : null;
+                const inArt = Boolean(sArt && sArt.exists());
+                const inRoot = Boolean(sRoot && sRoot.exists());
+                const isPurgedInCloud = ((pArt && pArt.exists()) || (pRoot && pRoot.exists())) && !isRecentMobileSignup(uname);
+                let syncedCols = {};
+                try {
+                  const rawCols = localStorage.getItem('oddandeven_cloud_synced_cols_v1');
+                  if (rawCols) syncedCols = (JSON.parse(rawCols) || {})[uname] || {};
+                } catch (e) {}
+                const wasDeletedFromCloud = !isRecentMobileSignup(uname) && !inArt && !inRoot && (
+                  (syncedCols.artAcc && rArt.status === 'fulfilled') ||
+                  (syncedCols.rootAcc && rRoot.status === 'fulfilled')
+                );
+                if (isPurgedInCloud || wasDeletedFromCloud) {
                   await deleteAllMobileCloudMirrors(uname);
                   scrubAccountFromMobileWebsite(uname, false, false);
                   usersMap = loadEncryptedUsersMap();
                   delete usersMap[uname];
+                  saveEncryptedUsersMap(usersMap);
+                } else if (inArt || inRoot) {
+                  const cData = (inArt ? sArt.data() : null) || (inRoot ? sRoot.data() : null) || {};
+                  usersMap[uname] = Object.assign({}, usersMap[uname] || {}, cData, { username: uname });
                   saveEncryptedUsersMap(usersMap);
                 }
               } catch (e) {}
@@ -6671,6 +8308,12 @@
                 dom.modalAuthAlert.className = 'p-2 rounded-xl text-xs font-bold border bg-rose-500/10 text-rose-300 border-rose-500/30';
                 return;
               }
+              stampRecentMobileSignup(uname);
+              unmarkAccountPurgedLocal(uname);
+              if (typeof unpurgeMobileCloudAccount === 'function') {
+                try { await unpurgeMobileCloudAccount(uname); } catch (e) {}
+              }
+              cloudPurgedList = cloudPurgedList.filter((u) => u !== uname);
             } else {
               if (usersMap[uname]) {
                 dom.modalAuthAlert.classList.remove('hidden');
@@ -6679,7 +8322,11 @@
                 return;
               }
               stampRecentMobileSignup(uname);
-              await unpurgeMobileCloudAccount(uname);
+              unmarkAccountPurgedLocal(uname);
+              if (typeof unpurgeMobileCloudAccount === 'function') {
+                try { await unpurgeMobileCloudAccount(uname); } catch (e) {}
+              }
+              cloudPurgedList = cloudPurgedList.filter((u) => u !== uname);
               delete STATE.humanPlayers[uname];
             }
 
@@ -6696,6 +8343,32 @@
             if (window.__cloudAccounts) window.__cloudAccounts[uname] = newAccRecord;
             saveEncryptedUsersMap(usersMap);
             pushUserAccountToCloud(uname, newAccRecord);
+            try {
+              if (db && setDoc && doc) {
+                const seedLb = {
+                  name: uname,
+                  countryCode: dial,
+                  countryFlag: flag,
+                  countryName: 'India',
+                  isRealRegisteredUser: true,
+                  elo: 1500,
+                  peak: 1500,
+                  wins: 0,
+                  losses: 0,
+                  matches: 0,
+                  totalRuns: 0,
+                  totalBalls: 0,
+                  highScore: 0,
+                  wicketsTaken: 0,
+                  weeklyEloGain: 0,
+                  weeklyRuns: 0,
+                  weeklyWickets: 0,
+                  updatedAt: Date.now()
+                };
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', uname), seedLb, { merge: true }).catch(() => {});
+                setDoc(doc(db, 'leaderboard', uname), seedLb, { merge: true }).catch(() => {});
+              }
+            } catch (e) {}
 
             const sess = {
               username: uname,
@@ -6714,6 +8387,8 @@
             STATE.myUsername = uname;
             STATE.myCountryCode = dial;
             STATE.myCountryFlag = flag;
+            STATE.isAuthenticated = true;
+            unmarkAccountPurgedLocal(STATE.myUsername);
             if (STATE.onlineRole !== 'GUEST') {
               STATE.p1Name = uname;
               STATE.p1CountryCode = dial;
@@ -6767,6 +8442,9 @@
             dom.authModal.classList.add('hidden');
             dom.authModal.classList.remove('flex');
             initInviteListener();
+            if (typeof window.openVersion2Showcase === 'function') {
+              window.openVersion2Showcase();
+            }
           });
         }
 
@@ -6805,9 +8483,13 @@
       }
 
       function boot() {
+        let fromLogin = false;
+        let reqScreen = '';
         try {
           const urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.get('from') === 'login') {
+          fromLogin = urlParams.get('from') === 'login';
+          reqScreen = (urlParams.get('screen') || '').trim().toUpperCase();
+          if (fromLogin) {
             window.history.replaceState({}, document.title, window.location.pathname);
           }
         } catch (e) {}
@@ -6815,12 +8497,30 @@
         reconcileAllNewPlayersIntoLeaderboard();
         const sess = loadActiveAuthSession();
         if (sess && sess.username) {
-          STATE.myUsername = sess.username.trim().toUpperCase();
+          const sessU = sess.username.trim().toUpperCase();
+          STATE.myUsername = sessU;
           STATE.myCountryFlag = sess.countryFlag || '🇮🇳';
           STATE.myCountryCode = sess.countryCode || '+91';
           STATE.p1Name = STATE.myUsername;
           STATE.p1CountryFlag = STATE.myCountryFlag;
           STATE.p1CountryCode = STATE.myCountryCode;
+          STATE.isAuthenticated = true;
+          stampRecentMobileSignup(sessU);
+          unmarkAccountPurgedLocal(sessU);
+          cloudPurgedList = cloudPurgedList.filter(u => u !== sessU);
+
+          const encryptedUsers = loadEncryptedUsersMap();
+          if (!encryptedUsers[sessU]) {
+            encryptedUsers[sessU] = {
+              username: sessU,
+              countryCode: STATE.myCountryCode,
+              countryFlag: STATE.myCountryFlag,
+              countryName: 'India',
+              encryptedAuth: sess.encryptedAuth || null,
+              createdAt: sess.loggedInAt || new Date().toISOString()
+            };
+            saveEncryptedUsersMap(encryptedUsers);
+          }
         } else {
           const lastUser = (localStorage.getItem(LAST_USER_STORAGE_KEY) || '').trim().toUpperCase();
           if (lastUser && !isPlaceholderUsername(lastUser)) {
@@ -6837,10 +8537,12 @@
         initEvents();
         highlightBotSelectionCard(STATE.botDifficulty || 'TACTICIAN');
         try {
-          const urlParams = new URLSearchParams(window.location.search);
-          const reqScreen = (urlParams.get('screen') || '').trim().toUpperCase();
-          if (reqScreen === 'EVENTS' || reqScreen === 'ACHIEVEMENTS' || reqScreen === 'LEADERBOARD') {
+          if (fromLogin) {
+            switchScreen(reqScreen && reqScreen !== 'LEADERBOARD' ? reqScreen : 'PITCH');
+          } else if (reqScreen === 'LEADERBOARD' || reqScreen === 'EVENTS' || reqScreen === 'ACHIEVEMENTS' || reqScreen === 'PITCH') {
             switchScreen(reqScreen);
+          } else {
+            switchScreen('PITCH');
           }
         } catch (e) {}
         renderView();
@@ -6859,5 +8561,496 @@
       }
     })();
   </script>
+
+  <!-- =========================================================================
+       CENTERED INTERACTIVE VERSION 2.0 SHOWCASE BOX (#version2ShowcaseModal)
+       ========================================================================= -->
+  <div
+    id="version2ShowcaseModal"
+    class="fixed inset-0 z-[70] hidden items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="v2ShowcaseTitle"
+  >
+    <!-- Ambient Outer Glow -->
+    <div class="relative w-full max-w-2xl rounded-3xl bg-gradient-to-b from-[#171c22] via-[#12161b] to-[#0c0f13] border border-[#a3d96c]/45 shadow-[0_25px_90px_rgba(0,0,0,0.9),0_0_50px_rgba(129,182,76,0.22)] overflow-hidden text-zinc-100 animate-pop max-h-[92vh] flex flex-col">
+      <!-- Top Shimmer Accent Line -->
+      <div class="h-1.5 w-full bg-gradient-to-r from-[#81b64c] via-cyan-400 to-amber-400 shrink-0"></div>
+
+      <!-- Scrollable Interior -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+        <!-- 1. HEADER & VERSION 2.0 TITLE -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono-num font-black uppercase tracking-widest bg-[#81b64c]/20 text-[#a3d96c] border border-[#a3d96c]/40 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-ping"></span>
+              <span>🚀 OFFICIAL RELEASE • VERSION 2</span>
+            </div>
+            <h2 id="v2ShowcaseTitle" class="font-brand text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
+              OddAndEven.in <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Version 2</span> Arena Update
+            </h2>
+            <p class="text-xs sm:text-sm text-zinc-400">
+              Explore our biggest upgrade yet — click any feature card below to preview &amp; test it live.
+            </p>
+          </div>
+
+          <button
+            id="btnTopCloseV2Modal"
+            type="button"
+            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
+            aria-label="Close Version 2.0 box"
+            class="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-400/40 flex items-center justify-center text-sm font-bold transition shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- 2. HERO IMAGE IN BETWEEN (Between Title & Interactive Feature Layout) -->
+        <div class="relative rounded-2xl overflow-hidden border border-white/15 bg-[#090d12] shadow-inner group">
+          <img
+            id="v2HeroIllustration"
+            src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20800%20250%22%20width%3D%22800%22%20height%3D%22250%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bgGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307130d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2245%25%22%20stop-color%3D%22%230d1b24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231c1126%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22stadiumGlow%22%20cx%3D%2250%25%22%20cy%3D%2255%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.38%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2322d3ee%22%20stop-opacity%3D%220.14%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23000000%22%20stop-opacity%3D%220%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22v2TextGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23d9f99d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%2381b64c%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2322d3ee%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22goldGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fde047%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23f97316%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22pitchGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%220%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.28%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2315803d%22%20stop-opacity%3D%220.05%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22glow%22%20x%3D%22-20%25%22%20y%3D%22-20%25%22%20width%3D%22140%25%22%20height%3D%22140%25%22%3E%0A%20%20%20%20%20%20%3CfeGaussianBlur%20stdDeviation%3D%226%22%20result%3D%22blur%22/%3E%0A%20%20%20%20%20%20%3CfeComposite%20in%3D%22SourceGraphic%22%20in2%3D%22blur%22%20operator%3D%22over%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%0A%20%20%3C%21--%20Background%20--%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23bgGrad%29%22/%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23stadiumGlow%29%22/%3E%0A%0A%20%20%3C%21--%20Perspective%20Arena%20Grid%20/%20Turf%20Rings%20--%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22340%22%20ry%3D%2252%22%20fill%3D%22url%28%23pitchGrad%29%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22230%22%20ry%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.25%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%226%206%22/%3E%0A%20%20%3Cline%20x1%3D%2260%22%20y1%3D%22215%22%20x2%3D%22740%22%20y2%3D%22215%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.2%22%20stroke-width%3D%221%22/%3E%0A%0A%20%20%3C%21--%20Stadium%20Floodlights%20Left%20%26%20Right%20--%3E%0A%20%20%3Cg%20opacity%3D%220.75%22%3E%0A%20%20%20%20%3Cpolygon%20points%3D%2285%2C25%20135%2C210%2035%2C210%22%20fill%3D%22%23a3d96c%22%20fill-opacity%3D%220.07%22/%3E%0A%20%20%20%20%3Crect%20x%3D%2270%22%20y%3D%2218%22%20width%3D%2230%22%20height%3D%2210%22%20rx%3D%223%22%20fill%3D%22%23e2e8f0%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2278%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%23fde047%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2292%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%23fde047%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%0A%20%20%20%20%3Cpolygon%20points%3D%22715%2C25%20765%2C210%20665%2C210%22%20fill%3D%22%2322d3ee%22%20fill-opacity%3D%220.07%22/%3E%0A%20%20%20%20%3Crect%20x%3D%22700%22%20y%3D%2218%22%20width%3D%2230%22%20height%3D%2210%22%20rx%3D%223%22%20fill%3D%22%23e2e8f0%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22708%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%2367e8f9%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22722%22%20cy%3D%2223%22%20r%3D%223%22%20fill%3D%22%2367e8f9%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3C%21--%20Left%20Feature%20Floating%20Badge%3A%20Roast%20Commentary%20%26%20Gameplay%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%2836%2C%2048%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2262%22%20rx%3D%2214%22%20fill%3D%22%2318131e%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%23f43f5e%22%20stroke-opacity%3D%220.55%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2231%22%20cy%3D%2231%22%20r%3D%2218%22%20fill%3D%22%23f43f5e%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2231%22%20y%3D%2237%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20text-anchor%3D%22middle%22%3E%F0%9F%92%80%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2227%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%23fda4af%22%20letter-spacing%3D%220.8%22%3EROAST%20MODE%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2244%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3ESavage%20Wicket%20Audio%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Cg%20transform%3D%22translate%2852%2C%20124%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%23121c19%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%2334d399%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2230%22%20cy%3D%2229%22%20r%3D%2217%22%20fill%3D%22%2310b981%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2230%22%20y%3D%2235%22%20font-family%3D%22sans-serif%22%20font-size%3D%2217%22%20text-anchor%3D%22middle%22%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2225%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%236ee7b7%22%20letter-spacing%3D%220.8%22%3ESECURITY%202.0%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2241%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3EVault%20%26amp%3B%20Clean%20Wipe%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3C%21--%20Right%20Feature%20Floating%20Badges%3A%20Cloud%20Sync%20%26%20Google%20Sign-In%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%28589%2C%2048%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2262%22%20rx%3D%2214%22%20fill%3D%22%23101b24%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%2338bdf8%22%20stroke-opacity%3D%220.55%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2231%22%20cy%3D%2231%22%20r%3D%2218%22%20fill%3D%22%230ea5e9%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2231%22%20y%3D%2237%22%20font-family%3D%22sans-serif%22%20font-size%3D%2218%22%20text-anchor%3D%22middle%22%3E%E2%98%81%EF%B8%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2227%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%237dd3fc%22%20letter-spacing%3D%220.8%22%3ECLOUD%20SYNC%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2258%22%20y%3D%2244%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3ELive%20Cross-Device%20Elo%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3Cg%20transform%3D%22translate%28573%2C%20124%29%22%3E%0A%20%20%20%20%3Crect%20width%3D%22175%22%20height%3D%2258%22%20rx%3D%2214%22%20fill%3D%22%231c1914%22%20fill-opacity%3D%220.9%22%20stroke%3D%22%23facc15%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%2230%22%20cy%3D%2229%22%20r%3D%2217%22%20fill%3D%22%23eab308%22%20fill-opacity%3D%220.2%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%2230%22%20y%3D%2235%22%20font-family%3D%22sans-serif%22%20font-size%3D%2217%22%20text-anchor%3D%22middle%22%3E%F0%9F%94%91%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2225%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22800%22%20font-size%3D%2211%22%20fill%3D%22%23fde047%22%20letter-spacing%3D%220.8%22%3EGOOGLE%20AUTH%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%2256%22%20y%3D%2241%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22600%22%20font-size%3D%2210%22%20fill%3D%22%23e2e8f0%22%3E1-Tap%20Instant%20Portal%3C/text%3E%0A%20%20%3C/g%3E%0A%0A%20%20%3C%21--%20Center%20Championship%20Emblem%3A%20VERSION%202.0%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%28400%2C%20108%29%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2276%22%20fill%3D%22%230d1512%22%20stroke%3D%22url%28%23v2TextGrad%29%22%20stroke-width%3D%223%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2266%22%20fill%3D%22%23131f18%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.2%22%20stroke-dasharray%3D%224%204%22/%3E%0A%20%20%20%20%3C%21--%20Crossed%20Cricket%20Bats%20/%20Wickets%20Iconography%20--%3E%0A%20%20%20%20%3Crect%20x%3D%22-18%22%20y%3D%22-50%22%20width%3D%224%22%20height%3D%2222%22%20rx%3D%222%22%20fill%3D%22%23fde047%22%20opacity%3D%220.85%22/%3E%0A%20%20%20%20%3Crect%20x%3D%22-2%22%20y%3D%22-52%22%20width%3D%224%22%20height%3D%2224%22%20rx%3D%222%22%20fill%3D%22%23fde047%22%20opacity%3D%220.95%22/%3E%0A%20%20%20%20%3Crect%20x%3D%2214%22%20y%3D%22-50%22%20width%3D%224%22%20height%3D%2222%22%20rx%3D%222%22%20fill%3D%22%23fde047%22%20opacity%3D%220.85%22/%3E%0A%20%20%20%20%3Crect%20x%3D%22-21%22%20y%3D%22-54%22%20width%3D%2242%22%20height%3D%223.5%22%20rx%3D%221.5%22%20fill%3D%22%23f97316%22/%3E%0A%20%20%20%20%3C%21--%20Red%20Cricket%20Ball%20Shine%20--%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%22-38%22%20r%3D%227%22%20fill%3D%22%23ef4444%22%20stroke%3D%22%23fca5a5%22%20stroke-width%3D%221.5%22/%3E%0A%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%22-8%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2211%22%20fill%3D%22%23a3d96c%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%223%22%3EODD%20%26amp%3B%20EVEN%20ARENA%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2224%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2233%22%20fill%3D%22url%28%23v2TextGrad%29%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221%22%3EV2.0%3C/text%3E%0A%20%20%20%20%3Crect%20x%3D%22-48%22%20y%3D%2234%22%20width%3D%2296%22%20height%3D%2219%22%20rx%3D%229.5%22%20fill%3D%22url%28%23goldGrad%29%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2247%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%229.5%22%20fill%3D%22%23090d16%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221.2%22%3EMAJOR%20UPDATE%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E"
+            alt="Version 2.0 Hand Cricket Arena Showcase Graphic"
+            class="w-full h-36 sm:h-44 object-cover object-center select-none transition-transform duration-500 group-hover:scale-[1.02]"
+          />
+          <!-- Dynamic Live Feature Overlay Strip at Bottom of Image -->
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-3.5 py-2.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span id="v2ImageLiveBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase bg-rose-500/25 text-rose-200 border border-rose-400/40 shrink-0">
+                💀 ROAST MODE
+              </span>
+              <span id="v2ImageLiveCaption" class="text-xs font-bold text-white truncate">
+                Savage stadium humiliation &amp; Golden Duck roasts on every wicket!
+              </span>
+            </div>
+            <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono-num font-bold text-[#a3d96c] shrink-0">
+              <span>Interactive Preview</span>
+              <span>●</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 3. INTERACTIVE FEATURE LAYOUT (Selectable Cards + Live Interactive Detail Box) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-[11px] font-mono-num uppercase tracking-wider text-zinc-400">
+            <span>✨ Select a Version 2 Feature to Inspect</span>
+            <span id="v2FeatureCounter" class="text-[#a3d96c] font-bold">1 / 5 Selected</span>
+          </div>
+
+          <!-- Interactive Feature Pills Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" role="tablist" aria-label="Version 2.0 Features">
+            <button
+              type="button"
+              data-v2-tab="roast"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('roast')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-rose-500/15 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">💀</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-rose-500/30 text-rose-200">NEW</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Roast Mode</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Savage Commentary</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="security"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('security')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🛡️</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">VAULT</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Security 2.0</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Clean Account Wipe</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="cloud"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('cloud')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">☁️</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">LIVE</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Cloud Sync</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Real-Time Elo &amp; Stats</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="google"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('google')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🔑</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">1-TAP</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Google Sign-In</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Instant OAuth Portal</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="gameplay"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('gameplay')"
+              class="v2-feature-tab col-span-2 sm:col-span-1 group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🤝</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">FAIR AI</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Bot &amp; Tie Rules</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Predictive AI &amp; Draws</div>
+            </button>
+          </div>
+
+          <!-- Dynamic Interactive Feature Detail Card -->
+          <div id="v2FeatureDetailBox" class="rounded-2xl bg-[#181c22]/95 border border-white/10 p-3.5 sm:p-4 space-y-2.5 transition-all">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span id="v2DetailIcon" class="text-xl">💀</span>
+                <h3 id="v2DetailTitle" class="font-brand text-sm sm:text-base font-extrabold text-white">
+                  New Roast Commentary Mode (Savage Wicket Humiliation)
+                </h3>
+              </div>
+              <span id="v2DetailTag" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-rose-500/20 text-rose-300 border border-rose-400/30">
+                AUDIO + SCOREBOARD ROASTS
+              </span>
+            </div>
+
+            <p id="v2DetailDesc" class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+              Switch your announcer to <strong class="text-rose-300">💀 Roast</strong> mode for zero-mercy commentary whenever a batter gets dismissed—complete with dedicated Golden Duck (0-run) humiliation lines and live voice synthesis!
+            </p>
+
+            <!-- Interactive Live Roast Sampler (visible on Roast tab or general status bar on other tabs) -->
+            <div id="v2InteractiveSubWidget" class="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-white/10">
+              <div id="v2SampleRoastText" class="text-[11px] italic text-amber-200/95 flex-1 min-w-[200px]">
+                "💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!"
+              </div>
+              <button
+                id="btnV2SampleAction"
+                type="button"
+                onclick="window.triggerVersion2Sample && window.triggerVersion2Sample()"
+                class="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 transition active:scale-95 shrink-0"
+              >
+                🎲 Another Savage Roast
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. FOOTER WITH TWO OPTIONS: CLOSE & TRY OUT -->
+      <div class="px-4 sm:px-6 py-3.5 bg-[#090b0e]/95 border-t border-white/10 flex items-center justify-between gap-3 shrink-0">
+        <div class="hidden sm:flex items-center gap-2 text-[11px] text-zinc-400">
+          <span class="w-2 h-2 rounded-full bg-[#a3d96c]"></span>
+          <span id="v2TryOutHint">Ready to activate: <strong class="text-white">💀 Roast Commentary Mode</strong></span>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 w-full sm:w-auto">
+          <button
+            id="btnCloseV2Modal"
+            type="button"
+            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
+            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-white/15 transition active:scale-95"
+          >
+            Close
+          </button>
+          <button
+            id="btnTryOutV2Modal"
+            type="button"
+            onclick="window.tryOutVersion2Feature && window.tryOutVersion2Feature()"
+            class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-[#81b64c] via-emerald-400 to-[#a3d96c] hover:brightness-110 text-slate-950 shadow-[0_6px_25px_rgba(129,182,76,0.45)] transition active:scale-95 flex items-center justify-center gap-1.5"
+          >
+            <span id="btnTryOutV2Label">🔥 Try Out Now</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- VERSION 2.0 INTERACTIVE SHOWCASE CONTROLLER -->
+<script>
+(function() {
+  var V2_FEATURES = {
+    roast: {
+      index: 1,
+      icon: "💀",
+      badge: "💀 ROAST MODE",
+      badgeClass: "bg-rose-500/25 text-rose-200 border-rose-400/40",
+      caption: "Savage stadium humiliation & Golden Duck roasts on every wicket!",
+      title: "New Roast Commentary Mode (Savage Wicket Humiliation)",
+      tag: "AUDIO + SCOREBOARD ROASTS",
+      tagClass: "bg-rose-500/20 text-rose-300 border-rose-400/30",
+      desc: "Switch your announcer to <strong class=\"text-rose-300\">💀 Roast</strong> mode for zero-mercy commentary whenever a batter gets dismissed—complete with dedicated Golden Duck (0-run) humiliation lines and live voice synthesis!",
+      tryHint: "💀 Roast Commentary Mode",
+      tryBtn: "🔥 Try Out Roast Mode",
+      tabActiveClass: "bg-rose-500/15 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+    },
+    security: {
+      index: 2,
+      icon: "🛡️",
+      badge: "🛡️ SECURITY 2.0",
+      badgeClass: "bg-emerald-500/25 text-emerald-200 border-emerald-400/40",
+      caption: "Upgraded Firebase API Key, OAE1 Vault & full account removal across Cloud + Auth.",
+      title: "Security Update & Complete Account Removal",
+      tag: "FIREBASE AUTH + FIRESTORE WIPE",
+      tagClass: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+      desc: "Powered by the upgraded Firebase security configuration, salted OAE1 password protection, and 1-click <strong class=\"text-emerald-300\">Remove Account</strong> that permanently purges your profile from the website, Firestore, and Firebase Authentication so your username can be freshly re-registered anytime.",
+      tryHint: "🛡️ Account & Security Controls",
+      tryBtn: "🛡️ Try Out Security Controls",
+      tabActiveClass: "bg-emerald-500/15 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+    },
+    cloud: {
+      index: 3,
+      icon: "☁️",
+      badge: "☁️ CLOUD SYNC 2.0",
+      badgeClass: "bg-cyan-500/25 text-cyan-200 border-cyan-400/40",
+      caption: "Instant real-time cross-device sync for Global Elo, Weekly Rankings & Friends.",
+      title: "Real-Time Cloud Sync Across Desktop & Mobile",
+      tag: "DUAL-COLLECTION FIRESTORE",
+      tagClass: "bg-cyan-500/20 text-cyan-300 border-cyan-400/30",
+      desc: "Every run, wicket, achievement, friend invite, and Elo rating change syncs automatically across <code class=\"text-cyan-300\">handcricket_users</code> and <code class=\"text-cyan-300\">profiles</code> in real time—with instant deleted-account detection.",
+      tryHint: "☁️ Live Cloud Sync & Leaderboard",
+      tryBtn: "☁️ Try Out Cloud Sync",
+      tabActiveClass: "bg-cyan-500/15 border-cyan-400/60 shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+    },
+    google: {
+      index: 4,
+      icon: "🔑",
+      badge: "🔑 GOOGLE SIGN-IN",
+      badgeClass: "bg-amber-500/25 text-amber-200 border-amber-400/40",
+      caption: "1-Tap Continue with Google authentication with smart username reservation.",
+      title: "1-Tap Google Sign-In & Smart Player Portal",
+      tag: "OAUTH 2.0 INSTANT LOGIN",
+      tagClass: "bg-amber-500/20 text-amber-300 border-amber-400/30",
+      desc: "Skip passwords with one-tap <strong class=\"text-amber-300\">Continue with Google</strong> sign-in, automatic account linking, custom player username reservation, and device-aware routing between Desktop and Mobile.",
+      tryHint: "🔑 Google Sign-In & Account Portal",
+      tryBtn: "🔑 Try Out Google Sign-In",
+      tabActiveClass: "bg-amber-500/15 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+    },
+    gameplay: {
+      index: 5,
+      icon: "🤝",
+      badge: "🤝 FAIR AI & DRAWS",
+      badgeClass: "bg-purple-500/25 text-purple-200 border-purple-400/40",
+      caption: "Official Match Drawn tie rules (0 Elo delta) & non-tracking Predictive Master Bot.",
+      title: "Match Drawn Rules & Fair Predictive Master Bot",
+      tag: "COMPETITIVE FAIR PLAY",
+      tagClass: "bg-purple-500/20 text-purple-300 border-purple-400/30",
+      desc: "When 2nd-innings scores level (`score === target - 1`), the match officially finishes as <strong class=\"text-purple-300\">MATCH DRAWN</strong> across Bot &amp; Multiplayer modes. Plus, Master Bot now uses fair predictive pattern psychology instead of reading your camera fingers!",
+      tryHint: "🤝 Fair Master Bot & Match Drawn Engine",
+      tryBtn: "🏏 Try Out In Arena",
+      tabActiveClass: "bg-purple-500/15 border-purple-400/60 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+    }
+  };
+
+  var SAMPLE_ROASTS = [
+    "\"💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!\"",
+    "\"🦆 GOLDEN DUCK ROAST! 0 off 1 ball! Came from the dressing room just to check the pitch weather!\"",
+    "\"🤡 Bro thought he was playing 4D chess and walked straight into the most obvious finger trap in history!\"",
+    "\"📉 That batting display just set Hand Cricket back by 10 years. The crowd is demanding a refund!\"",
+    "\"🪦 RIP INNINGS! Even the stadium floodlights dimmed out of second-hand embarrassment for that shot!\""
+  ];
+  var roastIdx = 0;
+  window.__currentV2Feature = "roast";
+
+  window.openVersion2Showcase = function() {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  };
+
+  window.closeVersion2Showcase = function() {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  };
+
+  window.triggerVersion2Sample = function() {
+    roastIdx = (roastIdx + 1) % SAMPLE_ROASTS.length;
+    var el = document.getElementById("v2SampleRoastText");
+    if (el) {
+      el.textContent = SAMPLE_ROASTS[roastIdx];
+    }
+    try {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        var clean = SAMPLE_ROASTS[roastIdx].replace(/[^a-zA-Z0-9 ,.!'-]/g, "");
+        var u = new SpeechSynthesisUtterance(clean);
+        u.rate = 1.05;
+        window.speechSynthesis.speak(u);
+      }
+    } catch (e) {}
+  };
+
+  window.selectVersion2Feature = function(key) {
+    var feat = V2_FEATURES[key] || V2_FEATURES.roast;
+    window.__currentV2Feature = key;
+
+    // Update tabs
+    var tabs = document.querySelectorAll("[data-v2-tab]");
+    for (var i = 0; i < tabs.length; i++) {
+      var t = tabs[i];
+      var k = t.getAttribute("data-v2-tab");
+      t.className = "v2-feature-tab " + (k === "gameplay" ? "col-span-2 sm:col-span-1 " : "") +
+        "group text-left p-2.5 rounded-2xl border transition-all " +
+        (k === key ? feat.tabActiveClass : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]");
+    }
+
+    // Update image live overlay
+    var imgBadge = document.getElementById("v2ImageLiveBadge");
+    if (imgBadge) {
+      imgBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase border shrink-0 " + feat.badgeClass;
+      imgBadge.textContent = feat.badge;
+    }
+    var imgCap = document.getElementById("v2ImageLiveCaption");
+    if (imgCap) imgCap.textContent = feat.caption;
+
+    // Update counter & detail box
+    var counter = document.getElementById("v2FeatureCounter");
+    if (counter) counter.textContent = feat.index + " / 5 Selected";
+    var icon = document.getElementById("v2DetailIcon");
+    if (icon) icon.textContent = feat.icon;
+    var title = document.getElementById("v2DetailTitle");
+    if (title) title.textContent = feat.title;
+    var tag = document.getElementById("v2DetailTag");
+    if (tag) {
+      tag.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black border " + feat.tagClass;
+      tag.textContent = feat.tag;
+    }
+    var desc = document.getElementById("v2DetailDesc");
+    if (desc) desc.innerHTML = feat.desc;
+
+    var hint = document.getElementById("v2TryOutHint");
+    if (hint) hint.innerHTML = "Ready to activate: <strong class=\"text-white\">" + feat.tryHint + "</strong>";
+    var btnLbl = document.getElementById("btnTryOutV2Label");
+    if (btnLbl) btnLbl.textContent = feat.tryBtn;
+
+    var subWidget = document.getElementById("v2InteractiveSubWidget");
+    if (subWidget) {
+      if (key === "roast") {
+        subWidget.classList.remove("hidden");
+      } else {
+        subWidget.classList.add("hidden");
+      }
+    }
+  };
+
+  window.tryOutVersion2Feature = function() {
+    var key = window.__currentV2Feature || "roast";
+    window.closeVersion2Showcase();
+
+    if (key === "roast") {
+      var sel = document.getElementById("selectCommentaryStyle");
+      if (sel) {
+        sel.value = "roast";
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+        try {
+          sel.scrollIntoView({ behavior: "smooth", block: "center" });
+        } catch (e) {}
+      }
+      var banner = document.getElementById("commentaryBanner");
+      if (banner) {
+        banner.textContent = "💀 ROAST MODE ARMED! Every wicket will now trigger savage stadium humiliation!";
+      }
+      var callout = document.getElementById("pitchCalloutText");
+      if (callout) {
+        callout.textContent = "💀 ROAST MODE READY!";
+      }
+      window.triggerVersion2Sample();
+      return;
+    }
+
+    if (key === "security") {
+      var sideAcct = document.getElementById("sideNavAccount") || document.getElementById("drawerNavAccount") || document.getElementById("btnOpenAuthModal");
+      if (sideAcct) {
+        sideAcct.click();
+        return;
+      }
+    }
+
+    if (key === "cloud") {
+      var sideLb = document.getElementById("sideNavLeaderboard") || document.getElementById("drawerNavLeaderboard");
+      if (sideLb) {
+        sideLb.click();
+        return;
+      }
+    }
+
+    if (key === "google") {
+      var googleBtn = document.getElementById("btnGoogleSignIn") || document.getElementById("btnOpenAuthModal") || document.getElementById("sideNavAccount");
+      if (googleBtn) {
+        googleBtn.click();
+        return;
+      }
+    }
+
+    // Default / gameplay action: focus the play arena or bot selector
+    var playBtn = document.getElementById("sideNavPlayBot") || document.getElementById("btnStartMatch") || document.getElementById("selectCommentaryStyle");
+    if (playBtn) {
+      try { playBtn.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+    }
+  };
+
+  // Close on Escape key or backdrop click
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      window.closeVersion2Showcase();
+    }
+  });
+  document.addEventListener("click", function(e) {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (modal && e.target === modal) {
+      window.closeVersion2Showcase();
+    }
+  });
+
+  window.isUserLoggedIntoWebsite = function() {
+    try {
+      if (localStorage.getItem("oddandeven_signed_out_v1") === "1") return false;
+      var rawSess = sessionStorage.getItem("oddandeven_active_session_v1") || localStorage.getItem("oddandeven_active_session_v1");
+      if (!rawSess || typeof rawSess !== "string" || rawSess.indexOf("OAE1.") !== 0) return false;
+      var authModal = document.getElementById("authModal");
+      if (authModal && !authModal.classList.contains("hidden")) return false;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  window.autoShowVersion2IfLoggedIn = function() {
+    if (window.isUserLoggedIntoWebsite()) {
+      try {
+        localStorage.removeItem("oddandeven_just_logged_in");
+        sessionStorage.removeItem("oddandeven_show_v2_box");
+      } catch (e) {}
+      window.openVersion2Showcase();
+    } else {
+      window.closeVersion2Showcase();
+    }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function() {
+      setTimeout(window.autoShowVersion2IfLoggedIn, 60);
+    });
+  } else {
+    setTimeout(window.autoShowVersion2IfLoggedIn, 60);
+  }
+
+})();
+</script>
+
 </body>
 </html>
