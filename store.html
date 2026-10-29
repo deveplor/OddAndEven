@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#121110">
+  <title>XP Store &amp; Marketplace | OddAndEven.in</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#81b64c',
+            brandLight: '#a3d96c',
+            pitchDark: '#121110',
+            cardDark: '#181715',
+            borderDark: '#36332e',
+            subtleDark: '#262420',
+            gold: '#f5b83d',
+            goldLight: '#ffd166',
+            cyanGlow: '#5ad1e6',
+            mythicRed: '#ff4d6d',
+            celestialPurple: '#a855f7'
+          },
+          fontFamily: {
+            sans: ['Inter', 'Outfit', 'sans-serif'],
+            brand: ['Outfit', 'sans-serif'],
+            monoNum: ['JetBrains Mono', 'ui-monospace', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Google Fonts: Outfit, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #121110;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    .font-brand { font-family: 'Outfit', sans-serif; }
+    .font-mono-num { font-family: 'JetBrains Mono', monospace; }
+
+    .glass-card {
+      background: rgba(24, 23, 21, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid #36332e;
+    }
+
+    .glass-card-gold {
+      background: linear-gradient(135deg, rgba(38, 30, 16, 0.95), rgba(24, 23, 21, 0.9));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(245, 184, 61, 0.4);
+      box-shadow: 0 4px 24px -2px rgba(245, 184, 61, 0.15);
+    }
+
+    /* 3D Perspective Card Container */
+    .card-3d-wrap {
+      perspective: 1000px;
+    }
+
+    .card-3d-inner {
+      transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card-3d-inner.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face-front, .card-face-back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .card-face-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Holographic Shimmer Effect */
+    .holo-shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .holo-shimmer::after {
+      content: '';
+      position: absolute;
+      top: -150%;
+      left: -150%;
+      width: 400%;
+      height: 400%;
+      background: linear-gradient(
+        115deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.08) 35%,
+        rgba(245, 184, 61, 0.25) 45%,
+        rgba(90, 209, 230, 0.25) 55%,
+        rgba(168, 85, 247, 0.2) 65%,
+        transparent 80%
+      );
+      transform: rotate(-25deg);
+      animation: holoSweep 6s infinite linear;
+      pointer-events: none;
+    }
+
+    @keyframes holoSweep {
+      0% { transform: translateY(-40%) rotate(-25deg); }
+      100% { transform: translateY(40%) rotate(-25deg); }
+    }
+
+    /* Animated Gold & Celestial Glow */
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(245, 184, 61, 0.3), inset 0 0 15px rgba(245, 184, 61, 0.15);
+    }
+
+    .diamond-glow {
+      box-shadow: 0 0 20px rgba(90, 209, 230, 0.3), inset 0 0 15px rgba(90, 209, 230, 0.15);
+    }
+
+    .mythic-glow {
+      box-shadow: 0 0 22px rgba(255, 77, 109, 0.35), inset 0 0 15px rgba(255, 77, 109, 0.2);
+    }
+
+    .celestial-glow {
+      box-shadow: 0 0 24px rgba(168, 85, 247, 0.4), inset 0 0 18px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #181715;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #36332e;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f5b83d;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#121110] text-slate-100 antialiased pb-20">
+
+  <!-- TOP APP HEADER -->
+  <header class="w-full bg-[#181715]/95 backdrop-blur-md border-b border-[#36332e] px-3.5 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-lg">
+    <div class="flex items-center gap-2.5">
+      <!-- Back to Mobile Arena -->
+      <a href="mobile.html" id="btnBackToArena" class="w-9 h-9 rounded-xl bg-[#262420] border border-[#3d3a34] flex items-center justify-center text-slate-200 hover:text-white active:scale-95 transition shadow-sm" aria-label="Return to Mobile Arena">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </a>
+
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-1.5">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-xs shadow-md">
+          🛍️
+        </div>
+        <div class="leading-none">
+          <div class="flex items-baseline gap-1">
+            <span class="font-brand font-black text-sm text-white tracking-tight">
+              <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span>
+            </span>
+            <span class="text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">STORE</span>
+          </div>
+          <div class="text-[9px] text-amber-300/80 font-medium">XP Marketplace &amp; Player Cards</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Action Utilities -->
+    <div class="flex items-center gap-1.5">
+      <!-- Sound FX Toggle -->
+      <button id="btnStoreSound" type="button" title="Toggle Sound FX" class="w-8 h-8 rounded-lg bg-[#272521] border border-[#3d3a34] text-slate-300 hover:text-white flex items-center justify-center text-sm active:scale-95 transition">
+        <span id="storeMuteIcon">🔊</span>
+      </button>
+
+      <!-- Career Profile Link -->
+      <a href="profile.html" class="px-2 py-1 rounded-lg text-[10px] font-brand font-bold bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 flex items-center gap-1 active:scale-95 transition shadow-sm">
+        <span>👤</span>
+        <span>Profile</span>
+      </a>
+
+      <!-- Return to Play -->
+      <a href="mobile.html" class="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-[#81b64c] hover:bg-[#92cb57] text-slate-950 font-brand active:scale-95 transition shadow">
+        Play 🏏
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN STORE VIEWPORT CONTAINER -->
+  <main class="flex-1 max-w-md mx-auto w-full p-3.5 space-y-4">
+
+    <!-- UNAUTHENTICATED GUEST BANNER (Hidden when logged in) -->
+    <section id="guestNoticeCard" class="hidden glass-card rounded-2xl p-4 border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-transparent space-y-3">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">
+          ⚠️
+        </div>
+        <div>
+          <div class="font-brand font-black text-sm text-amber-300">Guest / Unauthenticated Mode</div>
+          <div class="text-xs text-slate-300 leading-relaxed mt-0.5">
+            Log in to your OddAndEven.in account to load your real achievement XP and unlock prestigious Player Cards.
+          </div>
+        </div>
+      </div>
+      <a href="mobile.html" class="block w-full py-2 rounded-xl text-center font-brand font-bold text-xs bg-[#81b64c] hover:bg-[#92cb57] text-slate-950 active:scale-95 transition shadow">
+        Log In / Register on Mobile Arena →
+      </a>
+    </section>
+
+    <!-- WALLET & XP BALANCE DASHBOARD -->
+    <section class="glass-card-gold rounded-2xl p-4 space-y-3 relative overflow-hidden border border-amber-500/40">
+      <!-- Ambient Radial Shimmer -->
+      <div class="absolute -right-8 -top-8 w-32 h-32 bg-amber-500/15 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="flex items-center justify-between gap-2 relative z-10">
+        <div>
+          <span class="text-[9px] font-bold uppercase tracking-wider text-amber-300/80 block">Current Available Balance</span>
+          <div class="flex items-baseline gap-1.5 mt-0.5">
+            <span class="text-2xl font-black font-mono-num text-amber-300 flex items-center gap-1" id="walletAvailableXp">
+              <span>🪙</span>
+              <span id="walletAvailableXpNum">0</span>
+            </span>
+            <span class="text-[11px] font-bold text-amber-400/90 font-mono-num">XP</span>
+          </div>
+        </div>
+
+        <button id="btnHowToEarnXp" type="button" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 flex items-center gap-1 active:scale-95 transition">
+          <span>💡</span>
+          <span>How to Earn XP</span>
+        </button>
+      </div>
+
+      <!-- XP Breakdown Stats (3 Columns) -->
+      <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-amber-500/20 text-center relative z-10">
+        <div class="bg-[#171512]/90 p-2 rounded-xl border border-amber-500/20">
+          <div class="text-[9px] text-slate-400 font-medium">Achievements</div>
+          <div class="font-mono-num font-black text-xs text-emerald-300 mt-0.5" id="walletAchXp">0 XP</div>
+        </div>
+        <div class="bg-[#171512]/90 p-2 rounded-xl border border-amber-500/20">
+          <div class="text-[9px] text-slate-400 font-medium">Career Matches</div>
+          <div class="font-mono-num font-black text-xs text-cyan-300 mt-0.5" id="walletMatchXp">0 XP</div>
+        </div>
+        <div class="bg-[#171512]/90 p-2 rounded-xl border border-amber-500/20">
+          <div class="text-[9px] text-slate-400 font-medium">Spent in Store</div>
+          <div class="font-mono-num font-black text-xs text-rose-300 mt-0.5" id="walletSpentXp">0 XP</div>
+        </div>
+      </div>
+
+      <!-- Minimum Entry Price Notice -->
+      <div class="flex items-center justify-between text-[10px] text-amber-200/90 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/25 relative z-10">
+        <span class="flex items-center gap-1 font-medium">
+          <span>🔒</span>
+          <span>Starting Price: <strong>5,000 XP</strong></span>
+        </span>
+        <span class="font-bold text-amber-300" id="walletProgressToNext">Grind achievements to unlock items</span>
+      </div>
+    </section>
+
+    <!-- LIVE EQUIPPED PLAYER CARD SHOWCASE (3D Tilt / Interactive Flip) -->
+    <section class="space-y-2">
+      <div class="flex items-center justify-between px-1">
+        <h3 class="font-brand font-black text-xs text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <span>🎴</span>
+          <span>Your Active Player Card Showcase</span>
+        </h3>
+        <span class="text-[10px] text-amber-400 font-medium" id="cardFlipHint">Tap card to inspect back ↺</span>
+      </div>
+
+      <!-- 3D Card Box -->
+      <div class="card-3d-wrap w-full cursor-pointer select-none" id="cardPreviewContainer" title="Click to flip card">
+        <div class="card-3d-inner w-full min-h-[200px] relative rounded-2xl holo-shimmer" id="card3dInner">
+
+          <!-- CARD FRONT FACE -->
+          <div class="card-face-front w-full rounded-2xl p-4 transition-all duration-300" id="cardFrontFace">
+            <!-- Dynamic Background & Border via JS -->
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl" id="cardUserFlag">🇮🇳</span>
+                <div>
+                  <div class="font-brand font-black text-base text-white flex items-center gap-1.5" id="cardUsernameDisplay">
+                    <span>PLAYER</span>
+                    <span id="cardVerifiedBadge" class="hidden text-amber-300 text-xs">⭐</span>
+                  </div>
+                  <div class="text-[10px] font-mono-num text-slate-400" id="cardDialCodeDisplay">+91</div>
+                </div>
+              </div>
+
+              <!-- Card Tier Badge -->
+              <span id="cardTierBadge" class="px-2 py-0.5 rounded-full text-[9px] font-brand font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-600">
+                Default Rookie
+              </span>
+            </div>
+
+            <!-- Card Custom Title -->
+            <div class="mt-3 p-2 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
+              <div>
+                <span class="text-[8px] uppercase tracking-wider text-slate-400 block font-bold">Custom Title</span>
+                <span class="text-xs font-black text-amber-300 font-brand" id="cardCustomTitleDisplay">Hand Cricket Aspirant</span>
+              </div>
+              <span class="text-xs font-mono-num font-bold text-cyan-300" id="cardEloDisplay">1500 ELO</span>
+            </div>
+
+            <!-- Card Stats Summary Grid -->
+            <div class="grid grid-cols-3 gap-1.5 mt-3 text-center text-[10px]">
+              <div class="bg-black/30 p-1.5 rounded-lg border border-white/5">
+                <span class="text-slate-400 block text-[8px]">Career Runs</span>
+                <span class="font-mono-num font-bold text-white" id="cardRunsDisplay">0</span>
+              </div>
+              <div class="bg-black/30 p-1.5 rounded-lg border border-white/5">
+                <span class="text-slate-400 block text-[8px]">Wickets</span>
+                <span class="font-mono-num font-bold text-cyan-300" id="cardWicketsDisplay">0</span>
+              </div>
+              <div class="bg-black/30 p-1.5 rounded-lg border border-white/5">
+                <span class="text-slate-400 block text-[8px]">Win Ratio</span>
+                <span class="font-mono-num font-bold text-emerald-300" id="cardWinRatioDisplay">0%</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between text-[9px] text-slate-400 border-t border-white/10 pt-2">
+              <span id="cardMottoDisplay">"Every number counts on the pitch."</span>
+              <span class="font-mono-num text-[8px] text-amber-400">OddAndEven.in Verified</span>
+            </div>
+          </div>
+
+          <!-- CARD BACK FACE (Revealed on Tap) -->
+          <div class="card-face-back absolute inset-0 w-full h-full rounded-2xl p-4 bg-gradient-to-br from-[#1c1a17] via-[#24211c] to-[#171614] border border-amber-500/40 flex flex-col justify-between" id="cardBackFace">
+            <div>
+              <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                <span class="font-brand font-black text-xs text-amber-300">PLAYER CREDENTIALS &amp; FLEX</span>
+                <span class="text-[9px] font-mono-num text-slate-400" id="cardBackIdDisplay">ID: #0001</span>
+              </div>
+
+              <div class="space-y-1.5 mt-3 text-xs">
+                <div class="flex justify-between py-0.5 border-b border-white/5">
+                  <span class="text-slate-400 text-[10px]">Peak Rating:</span>
+                  <span class="font-mono-num font-bold text-white" id="cardBackPeakElo">1500 ELO</span>
+                </div>
+                <div class="flex justify-between py-0.5 border-b border-white/5">
+                  <span class="text-slate-400 text-[10px]">Achievements:</span>
+                  <span class="font-mono-num font-bold text-yellow-300" id="cardBackAchCount">0 / 30 Unlocked</span>
+                </div>
+                <div class="flex justify-between py-0.5 border-b border-white/5">
+                  <span class="text-slate-400 text-[10px]">Favorite Number:</span>
+                  <span class="font-mono-num font-bold text-cyan-300" id="cardBackFavNum">#6</span>
+                </div>
+                <div class="flex justify-between py-0.5">
+                  <span class="text-slate-400 text-[10px]">Tourney Wins:</span>
+                  <span class="font-mono-num font-bold text-emerald-300" id="cardBackTourneyWins">0 Cups</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center pt-2 border-t border-amber-500/20">
+              <span class="text-[9px] font-mono-num text-amber-300 block">OddAndEven Official League Card • Tap to Flip Front</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Quick Action: Open Custom Card Studio if owned -->
+      <div id="customStudioPrompt" class="hidden">
+        <button id="btnOpenStudio" type="button" class="w-full py-2 px-3 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-purple-600/30 via-indigo-600/30 to-purple-600/30 hover:from-purple-600/40 hover:to-indigo-600/40 text-purple-200 border border-purple-500/40 flex items-center justify-center gap-1.5 shadow active:scale-95 transition">
+          <span>🎨</span>
+          <span>Open Custom Card Studio (Customize Title, Border &amp; Motto)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- STORE CATALOG FILTER TABS -->
+    <section class="space-y-3">
+      <div class="flex items-center justify-between px-1">
+        <h3 class="font-brand font-black text-sm text-white flex items-center gap-1.5">
+          <span>🏆</span>
+          <span>Valuable Items Catalog</span>
+        </h3>
+        <span class="text-[9px] font-mono-num text-amber-300 font-bold">10 High-Tier Items</span>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="grid grid-cols-4 gap-1 text-[10px] font-bold">
+        <button id="btnTabAll" type="button" class="py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black transition">All</button>
+        <button id="btnTabCards" type="button" class="py-1.5 rounded-xl bg-[#1e1c19] text-slate-400 border border-[#36332e] hover:text-white transition">Cards</button>
+        <button id="btnTabCustom" type="button" class="py-1.5 rounded-xl bg-[#1e1c19] text-slate-400 border border-[#36332e] hover:text-white transition">Custom</button>
+        <button id="btnTabCosmetics" type="button" class="py-1.5 rounded-xl bg-[#1e1c19] text-slate-400 border border-[#36332e] hover:text-white transition">VFX/Pitch</button>
+      </div>
+
+      <!-- STORE ITEMS LIST CONTAINER -->
+      <div class="space-y-3" id="storeItemsContainer">
+        <!-- Dynamic Item Cards Injected by JS -->
+      </div>
+    </section>
+
+    <!-- FOOTER LINK BACK TO ARENA -->
+    <div class="pt-4 text-center space-y-2 border-t border-[#262420]">
+      <a href="mobile.html" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition">
+        <span>← Return to Hand Cricket Mobile Pitch</span>
+      </a>
+      <div class="text-[9px] text-slate-500">
+        OddAndEven.in • All purchases sync locally &amp; across multiplayer profiles.
+      </div>
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       CUSTOM CARD STUDIO MODAL (#customCardModal)
+       ========================================================================= -->
+  <div id="customCardModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-3 animate-fade-in">
+    <div class="w-full max-w-md bg-[#181715] border border-purple-500/40 rounded-2xl overflow-hidden shadow-2xl space-y-4 p-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#36332e] pb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-base">🎨</span>
+          <div>
+            <h3 class="font-brand font-black text-sm text-white">Custom Card Studio</h3>
+            <p class="text-[9px] text-purple-300">Design your personalized player card</p>
+          </div>
+        </div>
+        <button id="btnCloseStudio" type="button" class="w-7 h-7 rounded-lg bg-[#272521] text-slate-400 hover:text-white flex items-center justify-center">✕</button>
+      </div>
+
+      <!-- Live Mini Preview -->
+      <div class="p-3 rounded-xl border border-purple-500/30 bg-black/40 text-center" id="studioPreviewBox">
+        <span class="text-xs uppercase tracking-wider text-purple-300 font-bold block mb-1">Live Studio Preview</span>
+        <div class="p-3 rounded-xl border" id="studioPreviewCard">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-white" id="studioPreviewName">PLAYER</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">CUSTOM</span>
+          </div>
+          <div class="text-xs font-black text-amber-300 mt-1" id="studioPreviewTitle">Sixer King</div>
+          <div class="text-[10px] text-slate-300 mt-1 italic" id="studioPreviewMotto">"Can't break this defense."</div>
+        </div>
+      </div>
+
+      <!-- Studio Customization Fields -->
+      <div class="space-y-3 text-xs">
+        <!-- Preset / Custom Title Selection -->
+        <div>
+          <label class="block text-slate-300 font-bold text-[11px] mb-1">Prestige Title</label>
+          <div class="grid grid-cols-2 gap-1 mb-1.5">
+            <button type="button" class="btnPresetTitle py-1 px-2 rounded-lg bg-[#24221f] text-slate-300 border border-[#383530] text-[10px] hover:border-purple-400" data-title="👑 Pitch Overlord">👑 Pitch Overlord</button>
+            <button type="button" class="btnPresetTitle py-1 px-2 rounded-lg bg-[#24221f] text-slate-300 border border-[#383530] text-[10px] hover:border-purple-400" data-title="🏏 Sixer King">🏏 Sixer King</button>
+            <button type="button" class="btnPresetTitle py-1 px-2 rounded-lg bg-[#24221f] text-slate-300 border border-[#383530] text-[10px] hover:border-purple-400" data-title="🛡️ The Wall">🛡️ The Wall</button>
+            <button type="button" class="btnPresetTitle py-1 px-2 rounded-lg bg-[#24221f] text-slate-300 border border-[#383530] text-[10px] hover:border-purple-400" data-title="⚡ Cricket Deity">⚡ Cricket Deity</button>
+          </div>
+          <input type="text" id="inputCustomTitle" maxlength="28" placeholder="Or type your own custom title..." class="w-full bg-[#121110] border border-[#36332e] focus:border-purple-500 rounded-xl px-3 py-2 text-xs text-white outline-none">
+        </div>
+
+        <!-- Custom Signature Motto -->
+        <div>
+          <label class="block text-slate-300 font-bold text-[11px] mb-1">Signature Motto (Bio)</label>
+          <input type="text" id="inputCustomMotto" maxlength="45" placeholder="e.g. Master of the 6 and 10." class="w-full bg-[#121110] border border-[#36332e] focus:border-purple-500 rounded-xl px-3 py-2 text-xs text-white outline-none">
+        </div>
+
+        <!-- Card Aura & Border Glow -->
+        <div>
+          <label class="block text-slate-300 font-bold text-[11px] mb-1">Aura Glow Effect</label>
+          <div class="grid grid-cols-4 gap-1.5 text-center">
+            <button type="button" class="btnStudioAura py-2 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px] font-bold" data-aura="gold">✨ Gold</button>
+            <button type="button" class="btnStudioAura py-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 text-[10px] font-bold" data-aura="diamond">💎 Cyan</button>
+            <button type="button" class="btnStudioAura py-2 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 text-[10px] font-bold" data-aura="mythic">🔥 Magma</button>
+            <button type="button" class="btnStudioAura py-2 rounded-xl border border-purple-500/40 bg-purple-500/10 text-purple-300 text-[10px] font-bold" data-aura="celestial">🌌 Astral</button>
+          </div>
+        </div>
+
+        <!-- Card Theme Palette -->
+        <div>
+          <label class="block text-slate-300 font-bold text-[11px] mb-1">Card Palette Theme</label>
+          <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+            <button type="button" class="btnStudioPalette py-2 px-2.5 rounded-xl border border-[#383530] bg-[#1a1916] text-white font-bold text-left" data-palette="obsidian">🖤 Obsidian Gold</button>
+            <button type="button" class="btnStudioPalette py-2 px-2.5 rounded-xl border border-[#383530] bg-[#101924] text-cyan-200 font-bold text-left" data-palette="cyber">⚡ Cyber Neon</button>
+            <button type="button" class="btnStudioPalette py-2 px-2.5 rounded-xl border border-[#383530] bg-[#1f1024] text-purple-200 font-bold text-left" data-palette="celestial">🌌 Cosmic Astral</button>
+            <button type="button" class="btnStudioPalette py-2 px-2.5 rounded-xl border border-[#383530] bg-[#162112] text-emerald-200 font-bold text-left" data-palette="pavilion">🏏 Royal Pavilion</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-[#36332e] flex gap-2">
+        <button id="btnSaveStudio" type="button" class="flex-1 py-2 rounded-xl font-brand font-black text-xs bg-[#81b64c] hover:bg-[#92cb57] text-slate-950 active:scale-95 transition shadow">
+          Save &amp; Apply Custom Card ✓
+        </button>
+        <button id="btnCancelStudio" type="button" class="py-2 px-3 rounded-xl font-bold text-xs bg-[#24221f] text-slate-300 hover:text-white">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       HOW TO EARN XP MODAL (#earnXpModal)
+       ========================================================================= -->
+  <div id="earnXpModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 animate-fade-in">
+    <div class="w-full max-w-md bg-[#181715] border border-amber-500/40 rounded-2xl p-4 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#36332e] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">💡</span>
+          <div>
+            <h3 class="font-brand font-black text-sm text-white">How to Earn XP in OddAndEven</h3>
+            <p class="text-[9px] text-amber-300">Grind your way to 5,000+ XP items</p>
+          </div>
+        </div>
+        <button id="btnCloseEarnXp" type="button" class="w-7 h-7 rounded-lg bg-[#272521] text-slate-400 hover:text-white flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="space-y-2 text-xs text-slate-300">
+        <div class="p-2.5 rounded-xl bg-[#1f1d1a] border border-[#36332e] flex items-start gap-2.5">
+          <span class="text-lg">🎖️</span>
+          <div>
+            <div class="font-bold text-white">Unlock All 30 Achievements (Up to 6,625 XP)</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">Complete batting milestones, wicket targets, Elo ranks, and tournament cups in the Achievements tab.</div>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-[#1f1d1a] border border-[#36332e] flex items-start gap-2.5">
+          <span class="text-lg">🏏</span>
+          <div>
+            <div class="font-bold text-white">Play Ranked 1v1 Matches (+50 XP Win / +20 XP Play)</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">Every official match grants career match XP added to your store balance automatically.</div>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-[#1f1d1a] border border-[#36332e] flex items-start gap-2.5">
+          <span class="text-lg">🔥</span>
+          <div>
+            <div class="font-bold text-white">Score Runs &amp; Wickets (+2 XP per Run / +25 XP per Wkt)</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">Every boundary you hit and wicket you claim accumulates towards store unlocks.</div>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-[#1f1d1a] border border-[#36332e] flex items-start gap-2.5">
+          <span class="text-lg">🏆</span>
+          <div>
+            <div class="font-bold text-white">Win Tournament Events (+500 XP per Cup)</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">Enter knockout events in events.html and win the championship trophy.</div>
+          </div>
+        </div>
+      </div>
+
+      <button id="btnEarnXpGotIt" type="button" class="w-full py-2 rounded-xl font-brand font-black text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 transition">
+        Got It, Let's Grind! →
+      </button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT: STORE ENGINE, INVENTORY & XP INTEGRATION -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Storage Keys aligned with OddAndEven ecosystem
+      const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
+      const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
+      const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+      const DESKTOP_ELO_STORAGE_KEY = 'hc_arena_elo_v2';
+      const SCORECARD_HISTORY_KEY = 'hc_arena_match_scorecards_v1';
+      const SIGNED_OUT_FLAG_KEY = 'oddandeven_signed_out_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+
+      // Store Persistence Keys
+      const STORE_INVENTORY_PREFIX = 'oddandeven_store_inventory_';
+      const STORE_SPENT_XP_PREFIX = 'oddandeven_spent_xp_';
+      const STORE_EQUIPPED_CARD_PREFIX = 'oddandeven_equipped_card_';
+      const STORE_CUSTOM_CARD_PREFIX = 'oddandeven_custom_card_';
+
+      // Web Audio API Synthesizer for Store SFX
+      let audioCtx = null;
+      let soundEnabled = true;
+
+      function initAudio() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      }
+
+      const SoundFX = {
+        click() {
+          if (!soundEnabled) return;
+          try {
+            initAudio();
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(480, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(720, audioCtx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+          } catch (e) {}
+        },
+        purchase() {
+          if (!soundEnabled) return;
+          try {
+            initAudio();
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+              const osc = audioCtx.createOscillator();
+              const gain = audioCtx.createGain();
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(freq, now + i * 0.08);
+              gain.gain.setValueAtTime(0.12, now + i * 0.08);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.3);
+              osc.start(now + i * 0.08);
+              osc.stop(now + i * 0.08 + 0.3);
+            });
+          } catch (e) {}
+        },
+        equip() {
+          if (!soundEnabled) return;
+          try {
+            initAudio();
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.start(now);
+            osc.stop(now + 0.12);
+          } catch (e) {}
+        },
+        flip() {
+          if (!soundEnabled) return;
+          try {
+            initAudio();
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(180, now + 0.09);
+            gain.gain.setValueAtTime(0.07, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.start(now);
+            osc.stop(now + 0.09);
+          } catch (e) {}
+        },
+        error() {
+          if (!soundEnabled) return;
+          try {
+            initAudio();
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.setValueAtTime(160, now + 0.08);
+            gain.gain.setValueAtTime(0.09, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+          } catch (e) {}
+        }
+      };
+
+      // FNV1a Hash & Encryption Decoders
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const raw = decodeURIComponent(escape(atob(parts[2])));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      const PLACEHOLDERS = new Set([
+        'AARAV_99', 'KABIR_STRIKER', 'PRIYA_XI', 'DEV_CAPTAIN',
+        'PLAYER', 'PLAYER_1', 'PLAYER_2', 'GUEST', 'YOU', 'FRIEND',
+        'WAITING...', 'WAITING', 'LOGIN REQUIRED', 'UNAUTHENTICATED', 'HOST'
+      ]);
+
+      function isPlaceholderUsername(u) {
+        const clean = String(u || '').trim().toUpperCase();
+        return !clean || PLACEHOLDERS.has(clean);
+      }
+
+      function loadActiveAuthSession() {
+        if (localStorage.getItem(SIGNED_OUT_FLAG_KEY) === '1') return null;
+        const rawLocal = localStorage.getItem(SESSION_STORAGE_KEY);
+        const rawTab = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        const decLocal = rawLocal ? decryptPayload(rawLocal) : null;
+        const decTab = rawTab ? decryptPayload(rawTab) : null;
+        if (decLocal && decTab) {
+          const localTs = decLocal.loggedInAt ? Date.parse(decLocal.loggedInAt) || 0 : 0;
+          const tabTs = decTab.loggedInAt ? Date.parse(decTab.loggedInAt) || 0 : 0;
+          return localTs >= tabTs ? decLocal : decTab;
+        }
+        return decLocal || decTab;
+      }
+
+      function loadWorldwidePlayersMap() {
+        try {
+          const raw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+          return (raw && JSON.parse(raw)) || {};
+        } catch (e) {
+          return {};
+        }
+      }
+
+      // 10 VALUABLE HIGH-TIER STORE ITEMS (STARTING AT 5,000 XP)
+      const STORE_CATALOG = [
+        {
+          id: 'card_gold_elite',
+          category: 'CARDS',
+          name: 'Elite Gold Player Card',
+          tier: 'GOLD',
+          rarity: 'Rare Prestige',
+          badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          cardBorderClass: 'border-amber-400 gold-glow',
+          cardBgGradient: 'from-[#2e2617] via-[#211d15] to-[#171614]',
+          icon: '🏆',
+          price: 5000,
+          tagline: '24K Polished Gold Foil Card Frame',
+          lore: 'The first major prestige milestone. Encased in polished metallic gold foil with an embossed cricket laurel. Rivals instantly recognize your dedication.',
+          perks: ['24K Gold Foil Profile Card', 'Golden Ribbon Cap on Pitch', 'VIP Gold Name in Rooms']
+        },
+        {
+          id: 'vfx_thunder_wicket',
+          category: 'COSMETICS',
+          name: 'Thunderstrike Wicket VFX',
+          tier: 'EPIC',
+          rarity: 'Epic Cosmetic',
+          badgeClass: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
+          icon: '⚡',
+          price: 7500,
+          tagline: 'Crackling Electric Thunder SFX & VFX',
+          lore: 'Strikes pure lightning bolts down across the stumps accompanied by a heavy sonic thunder boom whenever you guess their number and take a wicket.',
+          perks: ['Electric Thunder Wicket Animation', 'Custom Deep Thunder Strike SFX', 'Opponent Stun Screen Flash']
+        },
+        {
+          id: 'card_diamond_vanguard',
+          category: 'CARDS',
+          name: 'Diamond Vanguard Player Card',
+          tier: 'DIAMOND',
+          rarity: 'Legendary',
+          badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+          cardBorderClass: 'border-cyan-400 diamond-glow',
+          cardBgGradient: 'from-[#0e2329] via-[#141d22] to-[#121110]',
+          icon: '💎',
+          price: 12000,
+          tagline: 'Crystalline Diamond Cyan Borders',
+          lore: 'Forged from pressurized crystalline diamond shards. Features continuous cyan holographic particle refraction and bestows the "Diamond Prodigy" prestige title.',
+          perks: ['Crystalline Diamond Prism Border', '"Diamond Prodigy" Unlocked Title', 'Diamond Crown Icon in Leaderboards']
+        },
+        {
+          id: 'theme_lords_pavilion',
+          category: 'COSMETICS',
+          name: 'Lords Royal Pavilion Theme',
+          tier: 'EPIC',
+          rarity: 'Epic Pitch',
+          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          icon: '🏰',
+          price: 16000,
+          tagline: 'Historic English Royal Cricket Turf',
+          lore: 'Replaces the default pitch with pristine historic English county turf green, mahogany scoreboard trim, and brass royal accents.',
+          perks: ['Royal English Turf Green Pitch', 'Mahogany Victorian Scorecard Frame', 'Vintage Crowd Cheer Soundscapes']
+        },
+        {
+          id: 'ball_meteorite_fireball',
+          category: 'COSMETICS',
+          name: 'Meteorite Fireball Match Ball',
+          tier: 'LEGENDARY',
+          rarity: 'Legendary VFX',
+          badgeClass: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+          icon: '🔥',
+          price: 20000,
+          tagline: 'Blazing Meteor Comet Trail Deliveries',
+          lore: 'Ignites every single delivery with a flaming comet tail that bursts into glowing magma embers on wickets. Intimidates any batter stepping up to the crease.',
+          perks: ['Fiery Ball Trajectory Trails', 'Magma Burst Wicket Explosion', 'Blazing Delivery Sounds']
+        },
+        {
+          id: 'card_mythic_immortal',
+          category: 'CARDS',
+          name: 'Mythic Immortal Player Card',
+          tier: 'MYTHIC',
+          rarity: 'Mythic Luxury',
+          badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+          cardBorderClass: 'border-rose-500 mythic-glow',
+          cardBgGradient: 'from-[#2a0e14] via-[#1d1215] to-[#121110]',
+          icon: '👑',
+          price: 30000,
+          tagline: 'Obsidian Gold Encased in Pulsing Magma',
+          lore: 'A card reserved strictly for the hand cricket elite. Pulsing molten magma flames surround an obsidian core with an animated "IMMORTAL" gilded badge.',
+          perks: ['Pulsing Magma Flame Border', 'Gilded "IMMORTAL" Insignia', 'Flaming VIP Entrance in 1v1 Rooms']
+        },
+        {
+          id: 'theme_cyberpunk_neon',
+          category: 'COSMETICS',
+          name: 'Cyberpunk Neon Pitch Theme',
+          tier: 'LEGENDARY',
+          rarity: 'Legendary Arena',
+          badgeClass: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40',
+          icon: '🌆',
+          price: 40000,
+          tagline: 'Synthwave Glowing Grid Arena',
+          lore: 'Transforms the pitch into an electric futuristic grid with neon magenta and cyan scanlines, synth sound effects, and digital keypad animations.',
+          perks: ['Synthwave Neon Grid Turf', 'Holographic Neon Keypad FX', 'Futuristic Cyber Match SFX']
+        },
+        {
+          id: 'card_cosmic_celestial',
+          category: 'CARDS',
+          name: 'Cosmic Celestial Player Card',
+          tier: 'CELESTIAL',
+          rarity: 'Celestial Divine',
+          badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          cardBorderClass: 'border-purple-400 celestial-glow',
+          cardBgGradient: 'from-[#230f2e] via-[#1a1224] to-[#121110]',
+          icon: '🌌',
+          price: 55000,
+          tagline: 'Deep Space Nebula with Astral Dust',
+          lore: 'Infused with the fabric of the cosmos. Shimmers with deep purple nebulae and moving starlight particles. Rivals see you as a master of cosmic hand cricket.',
+          perks: ['Astral Nebula Card Texture', '"Celestial Master" Title', 'Pulsing Violet Void Aura']
+        },
+        {
+          id: 'card_custom_divine',
+          category: 'CUSTOM',
+          name: 'The Divine Custom Player Card',
+          tier: 'CUSTOM',
+          rarity: 'Pinnacle Masterpiece',
+          badgeClass: 'bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 text-slate-950 font-black',
+          cardBorderClass: 'border-amber-400 gold-glow',
+          cardBgGradient: 'from-[#241a2e] via-[#1f1a14] to-[#121110]',
+          icon: '🔱',
+          price: 75000,
+          tagline: 'Unlocks Complete Custom Card Studio',
+          lore: 'The ultimate flex in OddAndEven.in history. Unlocks the Custom Card Studio allowing you to craft your own custom title, signature motto, bespoke aura glow, and gradient palette.',
+          perks: ['Full Custom Card Studio Access', 'Custom Signature Title & Motto', 'Customizable Aura & Palette', 'Official Verified Star Badge ⭐']
+        },
+        {
+          id: 'bat_solid_gold_willow',
+          category: 'CUSTOM',
+          name: 'Solid Gold Willow Bat',
+          tier: 'DIVINE',
+          rarity: 'Pinnacle End-Game',
+          badgeClass: 'bg-amber-400 text-slate-950 font-black',
+          icon: '🏏',
+          price: 100000,
+          tagline: 'Pure 24K Handcrafted Gold Willow',
+          lore: 'The rarest, most difficult item in the entire game. Handcrafted from pure solid 24K gold with divine radiance. Permanent "Cricket Deity" recognition on all scorecards.',
+          perks: ['Pure 24K Solid Gold Bat Icon', '"Cricket Deity" Verified Title', 'Golden Ball Strike VFX']
+        }
+      ];
+
+      // Inventory & Spending Helpers
+      function getUserInventory(uname) {
+        if (!uname) return [];
+        try {
+          const raw = localStorage.getItem(STORE_INVENTORY_PREFIX + uname);
+          const list = raw ? JSON.parse(raw) : [];
+          return Array.isArray(list) ? list : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveUserInventory(uname, list) {
+        if (!uname) return;
+        try {
+          localStorage.setItem(STORE_INVENTORY_PREFIX + uname, JSON.stringify(list));
+        } catch (e) {}
+      }
+
+      function getUserSpentXp(uname) {
+        if (!uname) return 0;
+        try {
+          return parseInt(localStorage.getItem(STORE_SPENT_XP_PREFIX + uname) || '0', 10) || 0;
+        } catch (e) {
+          return 0;
+        }
+      }
+
+      function saveUserSpentXp(uname, spent) {
+        if (!uname) return;
+        try {
+          localStorage.setItem(STORE_SPENT_XP_PREFIX + uname, String(spent));
+        } catch (e) {}
+      }
+
+      function getEquippedCardId(uname) {
+        if (!uname) return 'card_default';
+        try {
+          return localStorage.getItem(STORE_EQUIPPED_CARD_PREFIX + uname) || 'card_default';
+        } catch (e) {
+          return 'card_default';
+        }
+      }
+
+      function setEquippedCardId(uname, id) {
+        if (!uname) return;
+        try {
+          localStorage.setItem(STORE_EQUIPPED_CARD_PREFIX + uname, id);
+        } catch (e) {}
+      }
+
+      function getCustomCardConfig(uname) {
+        if (!uname) return { title: 'Hand Cricket Aspirant', motto: 'Every number counts on the pitch.', aura: 'gold', palette: 'obsidian' };
+        try {
+          const raw = localStorage.getItem(STORE_CUSTOM_CARD_PREFIX + uname);
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return { title: 'Sixer King', motto: 'Every number counts on the pitch.', aura: 'gold', palette: 'obsidian' };
+      }
+
+      function saveCustomCardConfig(uname, cfg) {
+        if (!uname) return;
+        try {
+          localStorage.setItem(STORE_CUSTOM_CARD_PREFIX + uname, JSON.stringify(cfg));
+        } catch (e) {}
+      }
+
+      // Achievement & XP Evaluation Engine
+      function computeTotalUserXp(username, playerRec) {
+        const cleanMe = String(username || '').trim().toUpperCase();
+        if (!cleanMe || isPlaceholderUsername(cleanMe)) {
+          return { availableXp: 0, totalEarnedXp: 0, achXp: 0, matchXp: 0, spentXp: 0 };
+        }
+
+        const rec = playerRec || {};
+        const totalMatches = Math.max(rec.matches || 0, (rec.wins || 0) + (rec.losses || 0));
+        const totalWins = rec.wins || 0;
+        const totalRuns = rec.totalRuns || 0;
+        const highScore = rec.highScore || 0;
+        const totalWickets = rec.wicketsTaken || 0;
+        const peakElo = Math.max(rec.peak || 1500, rec.elo || 1500);
+
+        let tourneyWins = rec.tournamentWins || 0;
+        try {
+          const localTourneyWins = parseInt(localStorage.getItem('oddandeven_tourney_wins_' + cleanMe) || '0', 10);
+          tourneyWins = Math.max(tourneyWins, localTourneyWins);
+        } catch (e) {}
+
+        let activeDays = 1;
+        try {
+          const rawDays = localStorage.getItem('oddandeven_active_days_' + cleanMe);
+          if (rawDays) {
+            const arr = JSON.parse(rawDays);
+            if (Array.isArray(arr)) activeDays = Math.max(1, arr.length);
+          }
+        } catch (e) {}
+
+        // Compute Achievement XP directly from unlocked criteria (up to 6,625 XP)
+        const achList = [
+          { current: totalMatches, target: 1, xp: 50 },
+          { current: totalRuns, target: 50, xp: 75 },
+          { current: highScore, target: 50, xp: 125 },
+          { current: totalRuns, target: 250, xp: 150 },
+          { current: totalWickets, target: 1, xp: 50 },
+          { current: totalWickets, target: 5, xp: 100 },
+          { current: totalWickets, target: 15, xp: 150 },
+          { current: totalWins, target: 1, xp: 100 },
+          { current: totalWins, target: 5, xp: 120 },
+          { current: totalMatches, target: 10, xp: 80 },
+          { current: peakElo, target: 1600, xp: 175 },
+          { current: peakElo, target: 1800, xp: 250 },
+          { current: totalRuns, target: 500, xp: 200 },
+          { current: totalRuns, target: 1000, xp: 300 },
+          { current: totalWickets, target: 25, xp: 250 },
+          { current: totalWickets, target: 50, xp: 300 },
+          { current: totalWins, target: 10, xp: 225 },
+          { current: totalWins, target: 25, xp: 350 },
+          { current: totalMatches, target: 25, xp: 150 },
+          { current: totalMatches, target: 50, xp: 250 },
+          { current: highScore, target: 100, xp: 400 },
+          { current: tourneyWins, target: 1, xp: 400 },
+          { current: activeDays, target: 5, xp: 200 },
+          { current: activeDays, target: 10, xp: 250 },
+          { current: peakElo, target: 1700, xp: 250 },
+          { current: totalRuns, target: 750, xp: 225 },
+          { current: totalWins, target: 15, xp: 250 },
+          { current: activeDays, target: 3, xp: 100 },
+          { current: totalMatches, target: 35, xp: 300 },
+          { current: peakElo, target: 2000, xp: 500 }
+        ];
+
+        const achXp = achList.reduce((sum, item) => {
+          return item.current >= item.target ? sum + item.xp : sum;
+        }, 0);
+
+        // Career Match XP: Earned from runs, wickets, tournament victories & active participation
+        const matchXp = (totalRuns * 2) + (totalWickets * 25) + (totalWins * 50) + (totalMatches * 15) + (activeDays * 100) + (tourneyWins * 500);
+
+        const totalEarnedXp = achXp + matchXp;
+        const spentXp = getUserSpentXp(cleanMe);
+        const availableXp = Math.max(0, totalEarnedXp - spentXp);
+
+        return { availableXp, totalEarnedXp, achXp, matchXp, spentXp };
+      }
+
+      // UI State Management
+      let currentFilter = 'ALL';
+      let activeUser = null;
+      let activeXpInfo = { availableXp: 0, totalEarnedXp: 0, achXp: 0, matchXp: 0, spentXp: 0 };
+      let activeRec = {};
+
+      const dom = {
+        guestNoticeCard: document.getElementById('guestNoticeCard'),
+        walletAvailableXpNum: document.getElementById('walletAvailableXpNum'),
+        walletAchXp: document.getElementById('walletAchXp'),
+        walletMatchXp: document.getElementById('walletMatchXp'),
+        walletSpentXp: document.getElementById('walletSpentXp'),
+        walletProgressToNext: document.getElementById('walletProgressToNext'),
+        btnHowToEarnXp: document.getElementById('btnHowToEarnXp'),
+        earnXpModal: document.getElementById('earnXpModal'),
+        btnCloseEarnXp: document.getElementById('btnCloseEarnXp'),
+        btnEarnXpGotIt: document.getElementById('btnEarnXpGotIt'),
+        btnStoreSound: document.getElementById('btnStoreSound'),
+        storeMuteIcon: document.getElementById('storeMuteIcon'),
+        cardPreviewContainer: document.getElementById('cardPreviewContainer'),
+        card3dInner: document.getElementById('card3dInner'),
+        cardFrontFace: document.getElementById('cardFrontFace'),
+        cardUserFlag: document.getElementById('cardUserFlag'),
+        cardUsernameDisplay: document.getElementById('cardUsernameDisplay'),
+        cardVerifiedBadge: document.getElementById('cardVerifiedBadge'),
+        cardDialCodeDisplay: document.getElementById('cardDialCodeDisplay'),
+        cardTierBadge: document.getElementById('cardTierBadge'),
+        cardCustomTitleDisplay: document.getElementById('cardCustomTitleDisplay'),
+        cardEloDisplay: document.getElementById('cardEloDisplay'),
+        cardRunsDisplay: document.getElementById('cardRunsDisplay'),
+        cardWicketsDisplay: document.getElementById('cardWicketsDisplay'),
+        cardWinRatioDisplay: document.getElementById('cardWinRatioDisplay'),
+        cardMottoDisplay: document.getElementById('cardMottoDisplay'),
+        cardBackIdDisplay: document.getElementById('cardBackIdDisplay'),
+        cardBackPeakElo: document.getElementById('cardBackPeakElo'),
+        cardBackAchCount: document.getElementById('cardBackAchCount'),
+        cardBackFavNum: document.getElementById('cardBackFavNum'),
+        cardBackTourneyWins: document.getElementById('cardBackTourneyWins'),
+        customStudioPrompt: document.getElementById('customStudioPrompt'),
+        btnOpenStudio: document.getElementById('btnOpenStudio'),
+        customCardModal: document.getElementById('customCardModal'),
+        btnCloseStudio: document.getElementById('btnCloseStudio'),
+        btnCancelStudio: document.getElementById('btnCancelStudio'),
+        btnSaveStudio: document.getElementById('btnSaveStudio'),
+        inputCustomTitle: document.getElementById('inputCustomTitle'),
+        inputCustomMotto: document.getElementById('inputCustomMotto'),
+        studioPreviewName: document.getElementById('studioPreviewName'),
+        studioPreviewTitle: document.getElementById('studioPreviewTitle'),
+        studioPreviewMotto: document.getElementById('studioPreviewMotto'),
+        studioPreviewCard: document.getElementById('studioPreviewCard'),
+        storeItemsContainer: document.getElementById('storeItemsContainer'),
+        btnTabAll: document.getElementById('btnTabAll'),
+        btnTabCards: document.getElementById('btnTabCards'),
+        btnTabCustom: document.getElementById('btnTabCustom'),
+        btnTabCosmetics: document.getElementById('btnTabCosmetics')
+      };
+
+      // Render Active Player Card Showcase
+      function renderPlayerCardShowcase() {
+        const clean = activeUser || 'PLAYER';
+        const isGuest = isPlaceholderUsername(clean);
+        const equippedId = getEquippedCardId(clean);
+        const inventory = getUserInventory(clean);
+        const customCfg = getCustomCardConfig(clean);
+
+        // Find equipped item details
+        const equippedItem = STORE_CATALOG.find((it) => it.id === equippedId) || {
+          tier: 'DEFAULT',
+          cardBorderClass: 'border-[#36332e]',
+          cardBgGradient: 'from-[#1b1a17] via-[#161513] to-[#121110]'
+        };
+
+        const runs = activeRec.totalRuns || 0;
+        const w = activeRec.wicketsTaken || 0;
+        const matches = Math.max(activeRec.matches || 0, (activeRec.wins || 0) + (activeRec.losses || 0));
+        const wins = activeRec.wins || 0;
+        const winPct = matches > 0 ? Math.round((wins / matches) * 100) : 0;
+        const elo = activeRec.elo || 1500;
+        const peak = Math.max(activeRec.peak || 1500, elo);
+
+        // Card Front Updates
+        dom.cardUserFlag.textContent = activeRec.countryFlag || '🇮🇳';
+        dom.cardUsernameDisplay.firstElementChild.textContent = isGuest ? 'PLAYER (GUEST)' : clean;
+        dom.cardDialCodeDisplay.textContent = activeRec.countryCode || '+91';
+        dom.cardEloDisplay.textContent = `${elo} ELO`;
+        dom.cardRunsDisplay.textContent = runs.toLocaleString();
+        dom.cardWicketsDisplay.textContent = w.toLocaleString();
+        dom.cardWinRatioDisplay.textContent = `${winPct}%`;
+
+        // Card Back Updates
+        dom.cardBackIdDisplay.textContent = `ID: #${(Math.abs(fnv1aHash(clean).charCodeAt(0) * 123) % 9999).toString().padStart(4, '0')}`;
+        dom.cardBackPeakElo.textContent = `${peak} ELO`;
+        dom.cardBackTourneyWins.textContent = `${activeRec.tournamentWins || 0} Cups`;
+
+        // Verified Star & Custom Features
+        const ownsCustomCard = inventory.includes('card_custom_divine');
+        if (ownsCustomCard) {
+          dom.cardVerifiedBadge.classList.remove('hidden');
+          dom.customStudioPrompt.classList.remove('hidden');
+        } else {
+          dom.cardVerifiedBadge.classList.add('hidden');
+          dom.customStudioPrompt.classList.add('hidden');
+        }
+
+        // Apply Card Theme Styling
+        if (equippedId === 'card_custom_divine' && customCfg) {
+          dom.cardTierBadge.textContent = '🔱 DIVINE CUSTOM';
+          dom.cardTierBadge.className = 'px-2 py-0.5 rounded-full text-[9px] font-brand font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-purple-400 text-slate-950';
+          dom.cardCustomTitleDisplay.textContent = customCfg.title || 'Cricket Deity';
+          dom.cardMottoDisplay.textContent = `"${customCfg.motto || 'Unmatched on the pitch.'}"`;
+
+          // Custom Aura
+          let auraCls = 'gold-glow border-amber-400';
+          if (customCfg.aura === 'diamond') auraCls = 'diamond-glow border-cyan-400';
+          else if (customCfg.aura === 'mythic') auraCls = 'mythic-glow border-rose-500';
+          else if (customCfg.aura === 'celestial') auraCls = 'celestial-glow border-purple-400';
+
+          let bgCls = 'bg-gradient-to-br from-[#261e11] via-[#1a1714] to-[#121110]';
+          if (customCfg.palette === 'cyber') bgCls = 'bg-gradient-to-br from-[#0c1f24] via-[#131b1f] to-[#121110]';
+          else if (customCfg.palette === 'celestial') bgCls = 'bg-gradient-to-br from-[#210d2b] via-[#18121f] to-[#121110]';
+          else if (customCfg.palette === 'pavilion') bgCls = 'bg-gradient-to-br from-[#122111] via-[#141b13] to-[#121110]';
+
+          dom.cardFrontFace.className = `card-face-front w-full rounded-2xl p-4 transition-all duration-300 border ${auraCls} ${bgCls}`;
+        } else if (equippedItem.tier !== 'DEFAULT') {
+          dom.cardTierBadge.textContent = equippedItem.name.toUpperCase();
+          dom.cardTierBadge.className = `px-2 py-0.5 rounded-full text-[9px] font-brand font-black uppercase tracking-wider ${equippedItem.badgeClass}`;
+          dom.cardCustomTitleDisplay.textContent = equippedItem.tagline;
+          dom.cardMottoDisplay.textContent = `"${equippedItem.lore.slice(0, 48)}..."`;
+          dom.cardFrontFace.className = `card-face-front w-full rounded-2xl p-4 transition-all duration-300 border bg-gradient-to-br ${equippedItem.cardBorderClass || 'border-amber-400'} ${equippedItem.cardBgGradient || 'from-[#2e2617] to-[#121110]'}`;
+        } else {
+          dom.cardTierBadge.textContent = 'Default Rookie Card';
+          dom.cardTierBadge.className = 'px-2 py-0.5 rounded-full text-[9px] font-brand font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-600';
+          dom.cardCustomTitleDisplay.textContent = 'Hand Cricket Aspirant';
+          dom.cardMottoDisplay.textContent = '"Every number counts on the pitch."';
+          dom.cardFrontFace.className = 'card-face-front w-full rounded-2xl p-4 transition-all duration-300 border border-[#36332e] bg-[#181715]';
+        }
+      }
+
+      // Render Store Items Grid
+      function renderStoreCatalog() {
+        const clean = activeUser || 'PLAYER';
+        const isGuest = isPlaceholderUsername(clean);
+        const inventory = getUserInventory(clean);
+        const equippedId = getEquippedCardId(clean);
+
+        const visibleItems = STORE_CATALOG.filter((item) => {
+          if (currentFilter === 'ALL') return true;
+          if (currentFilter === 'CARDS') return item.category === 'CARDS';
+          if (currentFilter === 'CUSTOM') return item.category === 'CUSTOM';
+          if (currentFilter === 'COSMETICS') return item.category === 'COSMETICS';
+          return true;
+        });
+
+        dom.storeItemsContainer.innerHTML = visibleItems.map((item) => {
+          const isOwned = inventory.includes(item.id);
+          const isEquipped = isOwned && equippedId === item.id;
+          const canAfford = activeXpInfo.availableXp >= item.price;
+          const missingXp = Math.max(0, item.price - activeXpInfo.availableXp);
+
+          // Card Action Button HTML
+          let actionBtnHtml = '';
+          if (isGuest) {
+            actionBtnHtml = `
+              <a href="mobile.html" class="w-full py-2 rounded-xl text-center font-brand font-black text-xs bg-[#24221f] text-amber-300 border border-amber-500/30 flex items-center justify-center gap-1">
+                <span>🔐</span><span>Login to Unlock (${item.price.toLocaleString()} XP)</span>
+              </a>
+            `;
+          } else if (isEquipped) {
+            actionBtnHtml = `
+              <button type="button" class="btnEquipItem w-full py-2 rounded-xl text-center font-brand font-black text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center justify-center gap-1 shadow-sm" data-id="${item.id}" data-action="unequip">
+                <span>✓</span><span>Active on Pitch</span>
+              </button>
+            `;
+          } else if (isOwned) {
+            actionBtnHtml = `
+              <button type="button" class="btnEquipItem w-full py-2 rounded-xl text-center font-brand font-black text-xs bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 flex items-center justify-center gap-1 shadow active:scale-95 transition" data-id="${item.id}" data-action="equip">
+                <span>⚡</span><span>Equip to Player Card</span>
+              </button>
+            `;
+          } else if (canAfford) {
+            actionBtnHtml = `
+              <button type="button" class="btnBuyItem w-full py-2 rounded-xl text-center font-brand font-black text-xs bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:from-[#92cb57] hover:to-emerald-300 text-slate-950 flex items-center justify-center gap-1 shadow active:scale-95 transition" data-id="${item.id}" data-price="${item.price}" data-name="${item.name}">
+                <span>🪙</span><span>Unlock for ${item.price.toLocaleString()} XP</span>
+              </button>
+            `;
+          } else {
+            actionBtnHtml = `
+              <button type="button" class="btnNeedXp w-full py-2 rounded-xl text-center font-brand font-bold text-xs bg-[#1f1d1a] text-slate-400 border border-[#36332e] hover:border-amber-500/40 hover:text-amber-300 flex items-center justify-between px-3 transition" data-missing="${missingXp}">
+                <span class="flex items-center gap-1"><span>🔒</span><span>${item.price.toLocaleString()} XP</span></span>
+                <span class="text-[10px] text-amber-400/90 font-mono-num font-bold">Need ${missingXp.toLocaleString()} more</span>
+              </button>
+            `;
+          }
+
+          return `
+            <div class="glass-card rounded-2xl p-3.5 space-y-3 transition duration-200 border ${isEquipped ? 'border-emerald-500/50 bg-emerald-500/5' : 'hover:border-amber-500/40'}">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-[#262420] border border-[#3d3a34] flex items-center justify-center text-xl shrink-0 shadow-sm">
+                    ${item.icon}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-brand font-black text-xs text-white truncate">${item.name}</span>
+                      <span class="px-1.5 py-0.2 rounded-full text-[8px] font-brand font-black uppercase tracking-wider ${item.badgeClass || 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">
+                        ${item.rarity}
+                      </span>
+                    </div>
+                    <div class="text-[10px] text-amber-300/90 font-medium truncate mt-0.5">${item.tagline}</div>
+                  </div>
+                </div>
+
+                <div class="text-right shrink-0">
+                  <span class="font-mono-num font-black text-xs text-amber-300 block">${item.price.toLocaleString()}</span>
+                  <span class="text-[9px] font-mono-num text-slate-400 uppercase">XP Cost</span>
+                </div>
+              </div>
+
+              <!-- Lore & Storytelling -->
+              <p class="text-[11px] text-slate-300 leading-relaxed bg-black/20 p-2.5 rounded-xl border border-white/5">
+                ${item.lore}
+              </p>
+
+              <!-- Perks Checklist -->
+              <div class="grid grid-cols-1 gap-1 text-[10px] text-slate-300 px-0.5">
+                ${item.perks.map((p) => `<div class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span><span>${p}</span></div>`).join('')}
+              </div>
+
+              <!-- Action Button -->
+              <div class="pt-1 border-t border-[#262420]">
+                ${actionBtnHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        attachStoreCardListeners();
+      }
+
+      function attachStoreCardListeners() {
+        // Buy Item Buttons
+        document.querySelectorAll('.btnBuyItem').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            const itemId = btn.getAttribute('data-id');
+            const price = parseInt(btn.getAttribute('data-price'), 10);
+            const name = btn.getAttribute('data-name');
+            handlePurchase(itemId, price, name);
+          });
+        });
+
+        // Equip / Unequip Item Buttons
+        document.querySelectorAll('.btnEquipItem').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            const itemId = btn.getAttribute('data-id');
+            const action = btn.getAttribute('data-action');
+            handleEquipToggle(itemId, action);
+          });
+        });
+
+        // Need XP Buttons (Opens Tips)
+        document.querySelectorAll('.btnNeedXp').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            SoundFX.click();
+            dom.earnXpModal.classList.remove('hidden');
+          });
+        });
+      }
+
+      function handlePurchase(itemId, price, name) {
+        const clean = activeUser;
+        if (!clean || isPlaceholderUsername(clean)) {
+          alert('Please sign in to OddAndEven.in to purchase items.');
+          return;
+        }
+
+        if (activeXpInfo.availableXp < price) {
+          SoundFX.error();
+          alert(`You need ${price.toLocaleString()} XP to unlock this item. Grind achievements and career matches to earn more!`);
+          return;
+        }
+
+        const confirmBuy = confirm(`Unlock "${name}" for ${price.toLocaleString()} XP?`);
+        if (!confirmBuy) return;
+
+        // Deduct XP & Add to Inventory
+        const inventory = getUserInventory(clean);
+        if (!inventory.includes(itemId)) {
+          inventory.push(itemId);
+          saveUserInventory(clean, inventory);
+        }
+
+        const spent = getUserSpentXp(clean) + price;
+        saveUserSpentXp(clean, spent);
+
+        // Auto-equip if it is a card
+        if (itemId.startsWith('card_')) {
+          setEquippedCardId(clean, itemId);
+        }
+
+        SoundFX.purchase();
+        broadcastStoreUpdate();
+        refreshAllStoreData();
+
+        if (itemId === 'card_custom_divine') {
+          dom.customCardModal.classList.remove('hidden');
+        }
+      }
+
+      function handleEquipToggle(itemId, action) {
+        const clean = activeUser;
+        if (!clean) return;
+
+        if (action === 'equip') {
+          if (itemId.startsWith('card_')) {
+            setEquippedCardId(clean, itemId);
+          }
+          SoundFX.equip();
+        } else {
+          setEquippedCardId(clean, 'card_default');
+          SoundFX.click();
+        }
+
+        broadcastStoreUpdate();
+        refreshAllStoreData();
+      }
+
+      function broadcastStoreUpdate() {
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('oddandeven_store_sync');
+            bc.postMessage({ type: 'STORE_INVENTORY_UPDATED', username: activeUser, timestamp: Date.now() });
+          }
+          // Also set a storage key to trigger cross-tab listeners in mobile.html
+          localStorage.setItem('oddandeven_store_bus', JSON.stringify({ type: 'SYNC', time: Date.now(), user: activeUser }));
+        } catch (e) {}
+      }
+
+      function refreshAllStoreData() {
+        const session = loadActiveAuthSession();
+        const worldMap = loadWorldwidePlayersMap();
+
+        let username = session && session.username ? session.username.trim().toUpperCase() : '';
+        if (!username || isPlaceholderUsername(username)) {
+          const lastUname = localStorage.getItem('oddandeven_last_user_v1');
+          if (lastUname && !isPlaceholderUsername(lastUname)) {
+            username = lastUname.trim().toUpperCase();
+          }
+        }
+
+        activeUser = username;
+        const isGuest = !activeUser || isPlaceholderUsername(activeUser);
+
+        if (isGuest) {
+          dom.guestNoticeCard.classList.remove('hidden');
+        } else {
+          dom.guestNoticeCard.classList.add('hidden');
+        }
+
+        activeRec = (!isGuest && worldMap[activeUser]) || {};
+        activeXpInfo = computeTotalUserXp(activeUser, activeRec);
+
+        // Update Wallet UI
+        dom.walletAvailableXpNum.textContent = activeXpInfo.availableXp.toLocaleString();
+        dom.walletAchXp.textContent = `${activeXpInfo.achXp.toLocaleString()} XP`;
+        dom.walletMatchXp.textContent = `${activeXpInfo.matchXp.toLocaleString()} XP`;
+        dom.walletSpentXp.textContent = `${activeXpInfo.spentXp.toLocaleString()} XP`;
+
+        if (activeXpInfo.availableXp >= 5000) {
+          dom.walletProgressToNext.textContent = '🎉 You can unlock starting items!';
+          dom.walletProgressToNext.className = 'font-bold text-emerald-300';
+        } else {
+          const need = 5000 - activeXpInfo.availableXp;
+          dom.walletProgressToNext.textContent = `Need ${need.toLocaleString()} XP more for entry item`;
+          dom.walletProgressToNext.className = 'font-bold text-amber-300';
+        }
+
+        renderPlayerCardShowcase();
+        renderStoreCatalog();
+      }
+
+      // Filter Tabs Handling
+      function setupTabs() {
+        const tabs = [
+          { btn: dom.btnTabAll, filter: 'ALL' },
+          { btn: dom.btnTabCards, filter: 'CARDS' },
+          { btn: dom.btnTabCustom, filter: 'CUSTOM' },
+          { btn: dom.btnTabCosmetics, filter: 'COSMETICS' }
+        ];
+
+        tabs.forEach((t) => {
+          t.btn.addEventListener('click', () => {
+            SoundFX.click();
+            currentFilter = t.filter;
+            tabs.forEach((x) => {
+              if (x.filter === currentFilter) {
+                x.btn.className = 'py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black transition';
+              } else {
+                x.btn.className = 'py-1.5 rounded-xl bg-[#1e1c19] text-slate-400 border border-[#36332e] hover:text-white transition';
+              }
+            });
+            renderStoreCatalog();
+          });
+        });
+      }
+
+      // 3D Card Interactive Tilt & Flip
+      function setupCardInteractivity() {
+        let isFlipped = false;
+        dom.cardPreviewContainer.addEventListener('click', () => {
+          SoundFX.flip();
+          isFlipped = !isFlipped;
+          if (isFlipped) {
+            dom.card3dInner.classList.add('flipped');
+          } else {
+            dom.card3dInner.classList.remove('flipped');
+          }
+        });
+
+        // Custom Card Studio Modal
+        dom.btnOpenStudio.addEventListener('click', () => {
+          SoundFX.click();
+          const cfg = getCustomCardConfig(activeUser);
+          dom.inputCustomTitle.value = cfg.title || '';
+          dom.inputCustomMotto.value = cfg.motto || '';
+          updateStudioLivePreview();
+          dom.customCardModal.classList.remove('hidden');
+        });
+
+        dom.btnCloseStudio.addEventListener('click', () => dom.customCardModal.classList.add('hidden'));
+        dom.btnCancelStudio.addEventListener('click', () => dom.customCardModal.classList.add('hidden'));
+
+        // Preset Title Click
+        document.querySelectorAll('.btnPresetTitle').forEach((b) => {
+          b.addEventListener('click', () => {
+            SoundFX.click();
+            dom.inputCustomTitle.value = b.getAttribute('data-title');
+            updateStudioLivePreview();
+          });
+        });
+
+        dom.inputCustomTitle.addEventListener('input', updateStudioLivePreview);
+        dom.inputCustomMotto.addEventListener('input', updateStudioLivePreview);
+
+        let selectedAura = 'gold';
+        document.querySelectorAll('.btnStudioAura').forEach((b) => {
+          b.addEventListener('click', () => {
+            SoundFX.click();
+            selectedAura = b.getAttribute('data-aura');
+            updateStudioLivePreview();
+          });
+        });
+
+        let selectedPalette = 'obsidian';
+        document.querySelectorAll('.btnStudioPalette').forEach((b) => {
+          b.addEventListener('click', () => {
+            SoundFX.click();
+            selectedPalette = b.getAttribute('data-palette');
+            updateStudioLivePreview();
+          });
+        });
+
+        function updateStudioLivePreview() {
+          const t = dom.inputCustomTitle.value.trim() || 'Sixer King';
+          const m = dom.inputCustomMotto.value.trim() || "Can't break this defense.";
+          dom.studioPreviewName.textContent = activeUser || 'PLAYER';
+          dom.studioPreviewTitle.textContent = t;
+          dom.studioPreviewMotto.textContent = `"${m}"`;
+
+          let auraBorder = 'border-amber-400 gold-glow';
+          if (selectedAura === 'diamond') auraBorder = 'border-cyan-400 diamond-glow';
+          else if (selectedAura === 'mythic') auraBorder = 'border-rose-500 mythic-glow';
+          else if (selectedAura === 'celestial') auraBorder = 'border-purple-400 celestial-glow';
+
+          let palBg = 'bg-[#1b1a17]';
+          if (selectedPalette === 'cyber') palBg = 'bg-[#0f1d24]';
+          else if (selectedPalette === 'celestial') palBg = 'bg-[#1e0f2b]';
+          else if (selectedPalette === 'pavilion') palBg = 'bg-[#122111]';
+
+          dom.studioPreviewCard.className = `p-3 rounded-xl border ${auraBorder} ${palBg}`;
+        }
+
+        dom.btnSaveStudio.addEventListener('click', () => {
+          const cfg = {
+            title: dom.inputCustomTitle.value.trim() || 'Sixer King',
+            motto: dom.inputCustomMotto.value.trim() || 'Every number counts on the pitch.',
+            aura: selectedAura,
+            palette: selectedPalette
+          };
+          saveCustomCardConfig(activeUser, cfg);
+          setEquippedCardId(activeUser, 'card_custom_divine');
+          SoundFX.equip();
+          dom.customCardModal.classList.add('hidden');
+          broadcastStoreUpdate();
+          refreshAllStoreData();
+        });
+
+        // Earn XP Modal
+        dom.btnHowToEarnXp.addEventListener('click', () => {
+          SoundFX.click();
+          dom.earnXpModal.classList.remove('hidden');
+        });
+        dom.btnCloseEarnXp.addEventListener('click', () => dom.earnXpModal.classList.add('hidden'));
+        dom.btnEarnXpGotIt.addEventListener('click', () => dom.earnXpModal.classList.add('hidden'));
+
+        // Sound Toggle
+        dom.btnStoreSound.addEventListener('click', () => {
+          soundEnabled = !soundEnabled;
+          dom.storeMuteIcon.textContent = soundEnabled ? '🔊' : '🔇';
+        });
+      }
+
+      // Initialize Everything on Load
+      document.addEventListener('DOMContentLoaded', () => {
+        setupTabs();
+        setupCardInteractivity();
+        refreshAllStoreData();
+
+        // Cross-tab storage synchronization
+        window.addEventListener('storage', (ev) => {
+          if (!ev || !ev.key) return;
+          if (ev.key.startsWith('oddandeven_') || ev.key === SCORECARD_HISTORY_KEY || ev.key === WORLDWIDE_PLAYERS_KEY) {
+            refreshAllStoreData();
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
