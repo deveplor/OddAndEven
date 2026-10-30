@@ -128,7 +128,7 @@
   </header>
 
   <!-- MAIN PROFILE VIEWPORT CONTAINER -->
-  <main class="flex-1 max-w-md mx-auto w-full p-3.5 space-y-4">
+  <main class="flex-1 max-w-md md:max-w-3xl lg:max-w-4xl mx-auto w-full p-3.5 sm:p-6 space-y-5">
 
     <!-- UNAUTHENTICATED GUEST BANNER (Hidden when logged in) -->
     <section id="guestNoticeCard" class="hidden glass-card rounded-2xl p-4 border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-transparent space-y-3">
@@ -790,6 +790,144 @@
       'use strict';
 
       // Storage keys aligned with OddAndEven.in ecosystem
+      
+      // =========================================================================
+      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // =========================================================================
+      
+      // Smart Arena Return Link (Desktop hand_cricket.html vs Mobile mobile.html)
+      (function() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const ref = (document.referrer || '').toLowerCase();
+          const pref = localStorage.getItem('oddandeven_preferred_device_view');
+          const isDesktopOrigin = params.get('from') === 'desktop' || ref.includes('hand_cricket') || ref.includes('handcricket') || (!ref.includes('mobile.html') && window.innerWidth >= 1024 && pref !== 'mobile');
+          if (isDesktopOrigin) {
+            document.querySelectorAll('a[href^="mobile.html"]').forEach((a) => {
+              const href = a.getAttribute('href') || 'mobile.html';
+              if (href === 'mobile.html') a.setAttribute('href', 'hand_cricket.html');
+              else if (href === 'mobile.html#achievements') a.setAttribute('href', 'hand_cricket.html?screen=ACHIEVEMENTS');
+              else if (href.startsWith('mobile.html#bot_')) a.setAttribute('href', 'hand_cricket.html?screen=BOT_SETUP');
+            });
+          }
+        } catch (e) {}
+      })();
+
+      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
+
+      function sanitizeRecordForFreshEpoch(rec) {
+        if (!rec || typeof rec !== 'object') return rec;
+        if (rec.statsEpoch === STATS_RESET_EPOCH) {
+          if (typeof rec.v2Matches === 'number') {
+            rec.matches = rec.v2Matches;
+          }
+          return rec;
+        }
+        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
+        return Object.assign({}, rec, {
+          statsEpoch: STATS_RESET_EPOCH,
+          cloudMatchesFloor: legacyCloudMatches,
+          v2Matches: 0,
+          elo: 1500,
+          peak: 1500,
+          wins: 0,
+          losses: 0,
+          matches: 0,
+          rankedMatches: 0,
+          totalRuns: 0,
+          totalBalls: 0,
+          highScore: 0,
+          centuriesCount: 0,
+          sr500Count: 0,
+          wicketsTaken: 0,
+          wicketsLost: 0,
+          ballsBowled: 0,
+          weeklyEloGain: 0,
+          weeklyWins: 0,
+          weeklyLosses: 0,
+          weeklyMatches: 0,
+          weeklyRuns: 0,
+          weeklyWickets: 0,
+          tournamentWins: 0,
+          xp: 0,
+          maxWinStreak: 0,
+          currentWinStreak: 0,
+          maxBoundariesInMatch: 0,
+          defendedMatches: 0,
+          updatedAt: Date.now()
+        });
+      }
+      try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
+
+      (function executeAuthoritativeV2FreshReset() {
+        try {
+          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
+            const prefixesToRemove = [
+              'oddandeven_store_inventory_',
+              'oddandeven_spent_xp_',
+              'oddandeven_equipped_card_',
+              'oddandeven_equipped_theme_',
+              'oddandeven_equipped_vfx_',
+              'oddandeven_equipped_bat_',
+              'oddandeven_custom_card_',
+              'oddandeven_active_days_',
+              'oddandeven_tourney_wins_',
+              'oddandeven_number_frequency_',
+              'oddandeven_ai_tier_stats_'
+            ];
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (!k) continue;
+              if (prefixesToRemove.some((p) => k.startsWith(p))) {
+                keysToRemove.push(k);
+              }
+            }
+            keysToRemove.forEach((k) => localStorage.removeItem(k));
+            localStorage.removeItem('hc_arena_match_scorecards_v1');
+            localStorage.removeItem('hc_arena_stats_v1');
+            localStorage.removeItem('oddandeven_event_regs_v1');
+            localStorage.removeItem('oddandeven_event_regs_map_v1');
+
+            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
+              try {
+                const raw = localStorage.getItem(mapKey);
+                if (raw) {
+                  const parsed = JSON.parse(raw);
+                  if (parsed && typeof parsed === 'object') {
+                    Object.keys(parsed).forEach((u) => {
+                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
+                    });
+                    localStorage.setItem(mapKey, JSON.stringify(parsed));
+                  }
+                }
+              } catch (e) {}
+            });
+
+            try {
+              const rawElo = localStorage.getItem('hc_arena_elo_v2');
+              if (rawElo) {
+                const parsedElo = JSON.parse(rawElo);
+                if (parsedElo && typeof parsedElo === 'object') {
+                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
+                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
+                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
+                    });
+                  }
+                  parsedElo.eloRating = 1500;
+                  parsedElo.peakElo = 1500;
+                  parsedElo.eloHistory = [];
+                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
+                }
+              }
+            } catch (e) {}
+
+            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
+          }
+        } catch (e) {}
+      })();
+
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
       const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
       const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
@@ -857,7 +995,14 @@
       function loadWorldwidePlayersMap() {
         try {
           const raw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
-          return raw ? JSON.parse(raw) : {};
+          const parsed = raw ? JSON.parse(raw) : {};
+          if (parsed && typeof parsed === 'object') {
+            Object.keys(parsed).forEach(k => {
+              parsed[k] = sanitizeRecordForFreshEpoch(parsed[k]);
+            });
+            return parsed;
+          }
+          return {};
         } catch (e) {
           return {};
         }
@@ -985,16 +1130,11 @@
           }
         } catch (e) {}
 
-        // If newly joined user without stored frequency, initialize baseline realistic frequency
         const totalNumsRecorded = Object.values(numFreq).reduce((a, b) => a + b, 0);
-        if (totalNumsRecorded === 0) {
-          // Provide realistic dynamic distribution centered around power numbers
-          numFreq = { 1: 3, 2: 5, 3: 6, 4: 12, 5: 4, 6: 18, 7: 7, 8: 5, 9: 4, 10: 9 };
-        }
 
-        // Determine Favorite Number
-        let favNum = 6;
-        let maxCount = -1;
+        // Determine Favorite Number (0 if no balls played yet)
+        let favNum = 0;
+        let maxCount = 0;
         for (let i = 1; i <= 10; i++) {
           if (numFreq[i] > maxCount) {
             maxCount = numFreq[i];
@@ -1007,33 +1147,75 @@
         const sixesHit = numFreq[6] || 0;
         const tensHit = numFreq[10] || 0;
 
-        // Matches, Wins, Losses
-        const totalMatches = Math.max(playerRec.matches || 0, (playerRec.wins || 0) + (playerRec.losses || 0), scorecards.length);
-        const wins = playerRec.wins || scorecards.filter(s => s && s.didIWin).length || 0;
-        const losses = playerRec.losses || (totalMatches - wins > 0 ? totalMatches - wins : 0);
+        // Matches, Wins, Losses (Strictly real 0-based counts from fresh epoch)
+        const totalMatches = Math.max(playerRec.matches || 0, (playerRec.wins || 0) + (playerRec.losses || 0));
+        const wins = playerRec.wins || 0;
+        const losses = playerRec.losses || 0;
         const winRatio = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(1) : '0.0';
 
-        const totalRuns = playerRec.totalRuns || (totalMatches * 38) || 0;
-        const totalBalls = playerRec.totalBalls || Math.round(totalRuns / 1.45) || (totalMatches * 26) || 0;
-        const highScore = Math.max(playerRec.highScore || 0, 48);
-        const wicketsTaken = playerRec.wicketsTaken || Math.round(totalMatches * 1.2) || 0;
+        const totalRuns = playerRec.totalRuns || 0;
+        const totalBalls = playerRec.totalBalls || 0;
+        const highScore = playerRec.highScore || 0;
+        const wicketsTaken = playerRec.wicketsTaken || 0;
         const centuries = playerRec.centuriesCount || (highScore >= 100 ? 1 : 0);
 
-        const strikeRate = totalBalls > 0 ? ((totalRuns / totalBalls) * 100).toFixed(1) : '142.5';
-        const bowlingEconomy = totalMatches > 0 ? (totalRuns / (totalMatches * 4.5 || 1)).toFixed(2) : '4.80';
+        const strikeRate = totalBalls > 0 ? ((totalRuns / totalBalls) * 100).toFixed(1) : '0.0';
+        const bowlingEconomy = (playerRec.ballsBowled || 0) > 0 ? ((totalRuns / Math.max(1, (playerRec.ballsBowled || 6) / 6))).toFixed(2) : '0.00';
 
-        // Active Days & Achievements
-        let activeDays = 1;
+        // Active Days & Real 30 Achievements Evaluation
+        let activeDays = (totalMatches > 0 || totalRuns > 0 || wicketsTaken > 0) ? 1 : 0;
         try {
           const rawDays = localStorage.getItem('oddandeven_active_days_' + username);
-          if (rawDays) {
+          if (rawDays && activeDays > 0) {
             const arr = JSON.parse(rawDays);
             if (Array.isArray(arr)) activeDays = Math.max(1, arr.length);
           }
         } catch (e) {}
 
-        const unlockedAchievements = Math.min(30, Math.max(4, Math.floor(totalMatches / 2) + (wins > 3 ? 2 : 0)));
-        const totalXp = unlockedAchievements * 150;
+        let tourneyWins = playerRec.tournamentWins || 0;
+        try {
+          tourneyWins = Math.max(tourneyWins, parseInt(localStorage.getItem('oddandeven_tourney_wins_' + username) || '0', 10) || 0);
+        } catch (e) {}
+
+        const achCriteria = [
+          { cur: totalMatches, tgt: 1, xp: 50 },
+          { cur: totalRuns, tgt: 50, xp: 75 },
+          { cur: highScore, tgt: 50, xp: 125 },
+          { cur: totalRuns, tgt: 250, xp: 150 },
+          { cur: wicketsTaken, tgt: 1, xp: 50 },
+          { cur: wicketsTaken, tgt: 5, xp: 100 },
+          { cur: wicketsTaken, tgt: 15, xp: 150 },
+          { cur: wins, tgt: 5, xp: 100 },
+          { cur: Math.max(0, peak - 1500), tgt: 24, xp: 120 },
+          { cur: totalMatches, tgt: 10, xp: 80 },
+          { cur: highScore, tgt: 100, xp: 175 },
+          { cur: centuries, tgt: 5, xp: 250 },
+          { cur: totalRuns, tgt: 500, xp: 200 },
+          { cur: totalRuns, tgt: 1000, xp: 300 },
+          { cur: playerRec.sr500Count || 0, tgt: 5, xp: 250 },
+          { cur: wicketsTaken, tgt: 30, xp: 225 },
+          { cur: wicketsTaken, tgt: 50, xp: 300 },
+          { cur: wins, tgt: 25, xp: 250 },
+          { cur: Math.max(0, peak - 1500), tgt: 100, xp: 225 },
+          { cur: Math.max(0, peak - 1500), tgt: 200, xp: 350 },
+          { cur: activeDays, tgt: 5, xp: 150 },
+          { cur: activeDays, tgt: 10, xp: 250 },
+          { cur: tourneyWins, tgt: 1, xp: 400 },
+          { cur: Math.max(0, peak - 1500), tgt: 300, xp: 400 },
+          { cur: foursHit + sixesHit + tensHit, tgt: 5, xp: 150 },
+          { cur: wins, tgt: 3, xp: 200 },
+          { cur: wins, tgt: 10, xp: 300 },
+          { cur: totalMatches, tgt: 50, xp: 350 }
+        ];
+        const baseAchXp = achCriteria.filter(a => a.cur >= a.tgt).reduce((s, a) => s + a.xp, 0);
+        const matchBonusXp = (totalRuns * 2) + (wicketsTaken * 25) + (wins * 50) + (totalMatches * 15) + (tourneyWins * 500);
+        const combinedXpBeforeMilestones = baseAchXp + matchBonusXp;
+        achCriteria.push({ cur: combinedXpBeforeMilestones, tgt: 3000, xp: 300 });
+        achCriteria.push({ cur: combinedXpBeforeMilestones + (combinedXpBeforeMilestones >= 3000 ? 300 : 0), tgt: 5000, xp: 500 });
+
+        const unlockedAchievements = achCriteria.filter(a => a.cur >= a.tgt).length;
+        const totalAchXp = achCriteria.filter(a => a.cur >= a.tgt).reduce((s, a) => s + a.xp, 0);
+        const totalXp = totalAchXp + matchBonusXp;
 
         return {
           isGuest,
@@ -1440,11 +1622,12 @@
         document.getElementById('kpiBowlingEconomy').textContent = `${data.bowlingEconomy} rpo`;
 
         // 4. Favorite Number to Play & Histogram
-        const totalSum = Object.values(data.numFreq).reduce((a, b) => a + b, 0) || 1;
-        const favPct = Math.round((data.favCount / totalSum) * 100);
+        const rawTotalSum = Object.values(data.numFreq).reduce((a, b) => a + b, 0);
+        const totalSum = rawTotalSum || 1;
+        const favPct = rawTotalSum > 0 ? Math.round((data.favCount / totalSum) * 100) : 0;
 
-        document.getElementById('favNumberBadge').textContent = `Fav: #${data.favNum}`;
-        document.getElementById('favNumberDisplay').textContent = data.favNum;
+        document.getElementById('favNumberBadge').textContent = data.favNum > 0 ? `Fav: #${data.favNum}` : 'No Picks Yet';
+        document.getElementById('favNumberDisplay').textContent = data.favNum > 0 ? data.favNum : '—';
         document.getElementById('favNumberCount').textContent = data.favCount;
         document.getElementById('favNumberPct').textContent = `${favPct}%`;
 
@@ -1498,13 +1681,13 @@
         document.getElementById('statSixesHit').textContent = data.sixesHit;
         document.getElementById('statTensHit').textContent = data.tensHit;
 
-        // 5. AI Tier Matrix
+        // 5. AI Tier Matrix (Strictly real 0-based stats from fresh epoch)
         const renderBotRow = (tierKey, prefix) => {
           const t = data.botTiers[tierKey] || { matches: 0, wins: 0, losses: 0 };
-          const winRate = t.matches > 0 ? Math.round((t.wins / t.matches) * 100) : (tierKey === 'ROOKIE' ? 68 : (tierKey === 'TACTICIAN' ? 52 : (tierKey === 'AGGRESSOR' ? 38 : 18)));
-          const matches = Math.max(t.matches, tierKey === 'ROOKIE' ? 6 : (tierKey === 'TACTICIAN' ? 4 : (tierKey === 'AGGRESSOR' ? 3 : 1)));
-          const wins = t.matches > 0 ? t.wins : Math.round(matches * (winRate / 100));
-          const losses = matches - wins;
+          const matches = t.matches || 0;
+          const wins = t.wins || 0;
+          const losses = t.losses || 0;
+          const winRate = matches > 0 ? Math.round((wins / matches) * 100) : 0;
 
           document.getElementById(`tierWinRate${prefix}`).textContent = `${winRate}%`;
           document.getElementById(`tierMatches${prefix}`).textContent = matches;
