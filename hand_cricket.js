@@ -54,6 +54,35 @@
           this.playTone(300, 'sawtooth', 0.18, 0.15, 140);
           setTimeout(() => this.playTone(180, 'sawtooth', 0.28, 0.15, 85), 130);
         },
+        thunderWicket() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            this.playTone(950, 'sawtooth', 0.08, 0.22, 220);
+            setTimeout(() => this.playTone(680, 'square', 0.1, 0.2, 140), 50);
+            setTimeout(() => this.playTone(120, 'sawtooth', 0.45, 0.25, 45), 110);
+          } catch(e) {}
+        },
+        fireballWicket() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            this.playTone(420, 'sawtooth', 0.12, 0.2, 80);
+            setTimeout(() => this.playTone(160, 'sawtooth', 0.35, 0.22, 50), 90);
+          } catch(e) {}
+        },
+        goldChime() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          try {
+            [587.33, 739.99, 880, 1174.66].forEach((f, idx) => {
+              setTimeout(() => this.playTone(f, 'sine', 0.18, 0.12), idx * 60);
+            });
+          } catch(e) {}
+        },
         victory() {
           const notes = [523.25, 659.25, 783.99, 1046.5];
           notes.forEach((n, idx) => {
@@ -74,6 +103,125 @@
       // =========================================================================
       // ENCRYPTED LOCALSTORAGE AUTHENTICATION VAULT (Shared with login.html)
       // =========================================================================
+      
+      // =========================================================================
+      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // =========================================================================
+      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
+
+      function sanitizeRecordForFreshEpoch(rec) {
+        if (!rec || typeof rec !== 'object') return rec;
+        if (rec.statsEpoch === STATS_RESET_EPOCH) {
+          if (typeof rec.v2Matches === 'number') {
+            rec.matches = rec.v2Matches;
+          }
+          return rec;
+        }
+        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
+        return Object.assign({}, rec, {
+          statsEpoch: STATS_RESET_EPOCH,
+          cloudMatchesFloor: legacyCloudMatches,
+          v2Matches: 0,
+          elo: 1500,
+          peak: 1500,
+          wins: 0,
+          losses: 0,
+          matches: 0,
+          rankedMatches: 0,
+          totalRuns: 0,
+          totalBalls: 0,
+          highScore: 0,
+          centuriesCount: 0,
+          sr500Count: 0,
+          wicketsTaken: 0,
+          wicketsLost: 0,
+          ballsBowled: 0,
+          weeklyEloGain: 0,
+          weeklyWins: 0,
+          weeklyLosses: 0,
+          weeklyMatches: 0,
+          weeklyRuns: 0,
+          weeklyWickets: 0,
+          tournamentWins: 0,
+          xp: 0,
+          maxWinStreak: 0,
+          currentWinStreak: 0,
+          maxBoundariesInMatch: 0,
+          defendedMatches: 0,
+          updatedAt: Date.now()
+        });
+      }
+      try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
+
+      (function executeAuthoritativeV2FreshReset() {
+        try {
+          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
+            const prefixesToRemove = [
+              'oddandeven_store_inventory_',
+              'oddandeven_spent_xp_',
+              'oddandeven_equipped_card_',
+              'oddandeven_equipped_theme_',
+              'oddandeven_equipped_vfx_',
+              'oddandeven_equipped_bat_',
+              'oddandeven_custom_card_',
+              'oddandeven_active_days_',
+              'oddandeven_tourney_wins_',
+              'oddandeven_number_frequency_',
+              'oddandeven_ai_tier_stats_'
+            ];
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (!k) continue;
+              if (prefixesToRemove.some((p) => k.startsWith(p))) {
+                keysToRemove.push(k);
+              }
+            }
+            keysToRemove.forEach((k) => localStorage.removeItem(k));
+            localStorage.removeItem('hc_arena_match_scorecards_v1');
+            localStorage.removeItem('hc_arena_stats_v1');
+            localStorage.removeItem('oddandeven_event_regs_v1');
+            localStorage.removeItem('oddandeven_event_regs_map_v1');
+
+            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
+              try {
+                const raw = localStorage.getItem(mapKey);
+                if (raw) {
+                  const parsed = JSON.parse(raw);
+                  if (parsed && typeof parsed === 'object') {
+                    Object.keys(parsed).forEach((u) => {
+                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
+                    });
+                    localStorage.setItem(mapKey, JSON.stringify(parsed));
+                  }
+                }
+              } catch (e) {}
+            });
+
+            try {
+              const rawElo = localStorage.getItem('hc_arena_elo_v2');
+              if (rawElo) {
+                const parsedElo = JSON.parse(rawElo);
+                if (parsedElo && typeof parsedElo === 'object') {
+                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
+                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
+                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
+                    });
+                  }
+                  parsedElo.eloRating = 1500;
+                  parsedElo.peakElo = 1500;
+                  parsedElo.eloHistory = [];
+                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
+                }
+              }
+            } catch (e) {}
+
+            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
+          }
+        } catch (e) {}
+      })();
+
       const RELEASE_CLEAN_SLATE_KEY = 'oddandeven_release_v1_clean_slate';
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
       const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
@@ -84,13 +232,17 @@
         'KABIR_STRIKER',
         'PRIYA_XI',
         'DEV_CAPTAIN',
+        'PLAYER',
         'PLAYER_1',
+        'PLAYER_2',
         'GUEST',
         'YOU',
         'FRIEND',
         'WAITING...',
+        'WAITING',
         'LOGIN REQUIRED',
-        'UNAUTHENTICATED'
+        'UNAUTHENTICATED',
+        'HOST'
       ];
 
       function isSandboxedPreviewIframe() {
@@ -260,7 +412,7 @@
         if (!clean) return false;
         try {
           const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
-          return ts > 0 && (Date.now() - ts) < 25000;
+          return ts > 0 && (Date.now() - ts) < 120000;
         } catch (e) {
           return false;
         }
@@ -271,6 +423,14 @@
         if (!clean) return;
         try {
           localStorage.setItem('oddandeven_recent_signup_' + clean, String(Date.now()));
+          const rawCols = localStorage.getItem('oddandeven_cloud_synced_cols_v1');
+          if (rawCols) {
+            const colsMap = JSON.parse(rawCols) || {};
+            if (colsMap[clean]) {
+              delete colsMap[clean];
+              localStorage.setItem('oddandeven_cloud_synced_cols_v1', JSON.stringify(colsMap));
+            }
+          }
         } catch (e) {}
       }
 
@@ -325,6 +485,7 @@
         }
       }
 
+      window.__loadLocalVaultForCloud = loadEncryptedUsersMap;
       function saveEncryptedUsersMap(usersMap) {
         try {
           const enc = encryptPayload(usersMap);
@@ -425,6 +586,7 @@
         friendRequestsMap: {}, // { [targetUser]: [{ from, fromFlag, fromCode, fromElo, timestamp }] }
         friendSearchQuery: '',
         incomingFriendInvite: null, // { fromUser, fromFlag, roomCode, timestamp }
+        incomingFriendRequestPending: null, // { fromUser, fromFlag, fromCode, fromElo, timestamp }
         activeOpenRooms: {}, // { [hostUser]: { roomCode, hostUser, timestamp } }
         leaderboardTab: 'GLOBAL', // 'GLOBAL' | 'WEEKLY' | 'RUNS'
         eloHistory: [],
@@ -609,6 +771,8 @@
               totalRuns: 0,
               totalBalls: 0,
               highScore: 0,
+              centuriesCount: 0,
+              sr500Count: 0,
               wicketsTaken: 0,
               wicketsLost: 0,
               ballsBowled: 0,
@@ -625,9 +789,14 @@
           return STATE._guestTransientRec;
         }
 
+        if (STATE.humanPlayers[clean] && STATE.humanPlayers[clean].statsEpoch !== STATS_RESET_EPOCH) {
+          STATE.humanPlayers[clean] = sanitizeRecordForFreshEpoch(STATE.humanPlayers[clean]);
+        }
         if (!STATE.humanPlayers[clean]) {
           STATE.humanPlayers[clean] = {
             name: clean,
+            statsEpoch: STATS_RESET_EPOCH,
+            v2Matches: 0,
             countryCode: (countryMeta && countryMeta.countryCode) || (clean === STATE.p1Name ? STATE.p1CountryCode : '+91'),
             countryFlag: (countryMeta && countryMeta.countryFlag) || (clean === STATE.p1Name ? STATE.p1CountryFlag : '🇮🇳'),
             countryName: (countryMeta && countryMeta.countryName) || (clean === STATE.p1Name ? STATE.p1CountryName : 'India'),
@@ -641,6 +810,8 @@
             totalRuns: 0,
             totalBalls: 0,
             highScore: 0,
+            centuriesCount: 0,
+            sr500Count: 0,
             wicketsTaken: 0,
             wicketsLost: 0,
             ballsBowled: 0,
@@ -674,6 +845,8 @@
           if (typeof rec.totalRuns !== 'number') rec.totalRuns = 0;
           if (typeof rec.totalBalls !== 'number') rec.totalBalls = 0;
           if (typeof rec.highScore !== 'number') rec.highScore = 0;
+          if (typeof rec.centuriesCount !== 'number') rec.centuriesCount = 0;
+          if (typeof rec.sr500Count !== 'number') rec.sr500Count = 0;
           if (typeof rec.wicketsTaken !== 'number') rec.wicketsTaken = 0;
           if (typeof rec.wicketsLost !== 'number') rec.wicketsLost = 0;
           if (typeof rec.ballsBowled !== 'number') rec.ballsBowled = 0;
@@ -697,7 +870,9 @@
       }
 
       // Deterministic, conflict-free player record merger across Phone, Computer, LocalStorage, Cloud & P2P
-      function mergeSinglePlayerRecord(existing, inc) {
+      function mergeSinglePlayerRecord(rawExisting, rawInc) {
+        const existing = rawExisting ? sanitizeRecordForFreshEpoch(rawExisting) : rawExisting;
+        const inc = rawInc ? sanitizeRecordForFreshEpoch(rawInc) : rawInc;
         const wk = getMondaySundayWeekInfo().weekKey;
         if (!existing) {
           const copy = Object.assign({}, inc, { isRealRegisteredUser: true });
@@ -705,12 +880,12 @@
           if (typeof copy.peak !== 'number' || isNaN(copy.peak)) copy.peak = Math.max(1500, copy.elo);
           if (copy.weekKey !== wk) {
             copy.weekKey = wk;
-            copy.weeklyEloGain = copy.weeklyEloGain || 0;
-            copy.weeklyWins = copy.weeklyWins || 0;
-            copy.weeklyLosses = copy.weeklyLosses || 0;
-            copy.weeklyMatches = copy.weeklyMatches || 0;
-            copy.weeklyRuns = copy.weeklyRuns || 0;
-            copy.weeklyWickets = copy.weeklyWickets || 0;
+            copy.weeklyEloGain = 0;
+            copy.weeklyWins = 0;
+            copy.weeklyLosses = 0;
+            copy.weeklyMatches = 0;
+            copy.weeklyRuns = 0;
+            copy.weeklyWickets = 0;
           }
           return { record: copy, changed: true };
         }
@@ -764,6 +939,8 @@
         const nextTotalRuns = Math.max(existing.totalRuns || 0, inc.totalRuns || 0);
         const nextTotalBalls = Math.max(existing.totalBalls || 0, inc.totalBalls || 0);
         const nextHighScore = Math.max(existing.highScore || 0, inc.highScore || 0);
+        const nextCenturiesCount = Math.max(existing.centuriesCount || 0, inc.centuriesCount || 0);
+        const nextSr500Count = Math.max(existing.sr500Count || 0, inc.sr500Count || 0);
         const nextWicketsTaken = Math.max(existing.wicketsTaken || 0, inc.wicketsTaken || 0);
         const nextWicketsLost = Math.max(existing.wicketsLost || 0, inc.wicketsLost || 0);
         const nextBallsBowled = Math.max(existing.ballsBowled || 0, inc.ballsBowled || 0);
@@ -793,6 +970,7 @@
         const nextUpdatedAt = Math.max(exTime, incTime);
 
         const hasMeaningfulChange = (
+          existing.weekKey !== wk ||
           existing.elo !== nextElo ||
           existing.peak !== nextPeak ||
           existing.wins !== nextWins ||
@@ -801,6 +979,8 @@
           existing.totalRuns !== nextTotalRuns ||
           existing.totalBalls !== nextTotalBalls ||
           existing.highScore !== nextHighScore ||
+          existing.centuriesCount !== nextCenturiesCount ||
+          existing.sr500Count !== nextSr500Count ||
           existing.wicketsTaken !== nextWicketsTaken ||
           existing.wicketsLost !== nextWicketsLost ||
           existing.weeklyEloGain !== nextWeeklyEloGain ||
@@ -819,6 +999,9 @@
 
         const merged = Object.assign({}, existing, inc, {
           name: (existing.name || inc.name || '').trim().toUpperCase(),
+          statsEpoch: STATS_RESET_EPOCH,
+          v2Matches: nextMatches,
+          cloudMatchesFloor: Math.max(Number(existing.cloudMatchesFloor) || 0, Number(inc.cloudMatchesFloor) || 0),
           isRealRegisteredUser: true,
           countryCode: nextCountryCode,
           countryFlag: nextCountryFlag,
@@ -832,6 +1015,8 @@
           totalRuns: nextTotalRuns,
           totalBalls: nextTotalBalls,
           highScore: nextHighScore,
+          centuriesCount: nextCenturiesCount,
+          sr500Count: nextSr500Count,
           wicketsTaken: nextWicketsTaken,
           wicketsLost: nextWicketsLost,
           ballsBowled: nextBallsBowled,
@@ -967,8 +1152,21 @@
           });
         } catch (e) {}
 
-        if (!signedOutExplicitly && sessUser && !isPlaceholderUsername(sessUser) && isAccountAllowedByCloud(sessUser) && ((encryptedUsers[sessUser] && encryptedUsers[sessUser].encryptedAuth) || (sess.loggedInAt && (!window.__cloudAccountsLoaded || encryptedUsers[sessUser])))) {
-          const verifiedAccount = encryptedUsers[sessUser];
+        if (!signedOutExplicitly && sessUser && !isPlaceholderUsername(sessUser) && isAccountAllowedByCloud(sessUser) && (encryptedUsers[sessUser] || (sess && sess.loggedInAt))) {
+          const verifiedAccount = encryptedUsers[sessUser] || sess || {};
+          if (!encryptedUsers[sessUser] && sess) {
+            encryptedUsers[sessUser] = {
+              username: sessUser,
+              countryCode: sess.countryCode || '+91',
+              countryName: sess.countryName || 'India',
+              countryFlag: sess.countryFlag || '🇮🇳',
+              encryptedAuth: sess.encryptedAuth || null,
+              authProvider: sess.authProvider || 'pin',
+              googleUid: sess.googleUid || null,
+              createdAt: sess.loggedInAt || new Date().toISOString()
+            };
+            saveEncryptedUsersMap(encryptedUsers);
+          }
           STATE.myUsername = sessUser;
           STATE.myCountryCode = verifiedAccount.countryCode || sess.countryCode || '+91';
           STATE.myCountryFlag = verifiedAccount.countryFlag || sess.countryFlag || '🇮🇳';
@@ -1204,9 +1402,15 @@
       try {
         const justLogged = localStorage.getItem('oddandeven_just_logged_in');
         const urlParams = new URLSearchParams(window.location.search);
-        if (justLogged === '1' || urlParams.get('from') === 'login') {
+        const fromLogin = justLogged === '1' || urlParams.get('from') === 'login';
+        const targetScreen = (urlParams.get('screen') || '').trim().toUpperCase();
+        if (fromLogin) {
           localStorage.removeItem('oddandeven_just_logged_in');
-          STATE.activeScreen = 'PITCH';
+          sessionStorage.setItem('oddandeven_show_v2_box', '1');
+          window.__enteredFromLogin = true;
+          STATE.activeScreen = (targetScreen && targetScreen !== 'LEADERBOARD') ? targetScreen : 'PITCH';
+        } else if (targetScreen === 'LEADERBOARD' || targetScreen === 'EVENTS' || targetScreen === 'ACHIEVEMENTS' || targetScreen === 'PROFILE' || targetScreen === 'STORE' || targetScreen === 'PITCH') {
+          STATE.activeScreen = targetScreen;
         }
       } catch (e) {}
 
@@ -1259,6 +1463,21 @@
         btnHeaderRemoveAccount: document.getElementById('btnHeaderRemoveAccount'),
         btnSidebarSignOut: document.getElementById('btnSidebarSignOut'),
         btnSidebarRemoveAccount: document.getElementById('btnSidebarRemoveAccount'),
+        btnHeaderProfile: document.getElementById('btnHeaderProfile'),
+        btnHeaderStore: document.getElementById('btnHeaderStore'),
+        sideNavProfile: document.getElementById('sideNavProfile'),
+        sideNavProfileSub: document.getElementById('sideNavProfileSub'),
+        sideNavStore: document.getElementById('sideNavStore'),
+        sideNavStoreSub: document.getElementById('sideNavStoreSub'),
+        sideNavStoreBadge: document.getElementById('sideNavStoreBadge'),
+        sidebarPlayerCard: document.getElementById('sidebarPlayerCard'),
+        sidebarCardFlag: document.getElementById('sidebarCardFlag'),
+        sidebarCardUsername: document.getElementById('sidebarCardUsername'),
+        sidebarCardStar: document.getElementById('sidebarCardStar'),
+        sidebarCardDial: document.getElementById('sidebarCardDial'),
+        sidebarCardTierPill: document.getElementById('sidebarCardTierPill'),
+        sidebarCardTitle: document.getElementById('sidebarCardTitle'),
+        sidebarCardRunsWkts: document.getElementById('sidebarCardRunsWkts'),
         modalAuthTitle: document.getElementById('modalAuthTitle'),
         modalAuthSubtitle: document.getElementById('modalAuthSubtitle'),
         modalRemoveConfirmBox: document.getElementById('modalRemoveConfirmBox'),
@@ -1319,6 +1538,12 @@
         globalFriendInviteSub: document.getElementById('globalFriendInviteSub'),
         btnAcceptGlobalFriendInvite: document.getElementById('btnAcceptGlobalFriendInvite'),
         btnDismissGlobalFriendInvite: document.getElementById('btnDismissGlobalFriendInvite'),
+        globalFriendRequestToast: document.getElementById('globalFriendRequestToast'),
+        globalFriendRequestFromPill: document.getElementById('globalFriendRequestFromPill'),
+        globalFriendRequestTitle: document.getElementById('globalFriendRequestTitle'),
+        globalFriendRequestSub: document.getElementById('globalFriendRequestSub'),
+        btnAcceptGlobalFriendRequest: document.getElementById('btnAcceptGlobalFriendRequest'),
+        btnDismissGlobalFriendRequest: document.getElementById('btnDismissGlobalFriendRequest'),
         sideNavEvents: document.getElementById('sideNavEvents'),
         screenEvents: document.getElementById('screenEvents'),
         btnBackFromEvents: document.getElementById('btnBackFromEvents'),
@@ -2189,8 +2414,23 @@
           };
         }
 
+        // Listen for store & equipped item broadcasts across tabs
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const storeBc = new BroadcastChannel('oddandeven_store_sync');
+            storeBc.onmessage = () => {
+              renderAll();
+              drawArenaFrame();
+            };
+          }
+        } catch(e) {}
+
         window.addEventListener('storage', (ev) => {
           if (!ev || !ev.key) return;
+          if (ev.key.startsWith('oddandeven_equipped_') || ev.key === 'oddandeven_store_bus' || ev.key.startsWith('oddandeven_store_inventory_')) {
+            renderAll();
+            drawArenaFrame();
+          }
           if (ev.key === 'oddandeven_friend_invite_bus' && ev.newValue) {
             try {
               const data = JSON.parse(ev.newValue);
@@ -2232,6 +2472,37 @@
         window.__onCloudRoomMessage = function (msg) {
           handleNetMessage(msg);
         };
+        window.__onCloudFriendRequest = function (req) {
+          if (!req || typeof req !== 'object') return;
+          handleIncomingFriendRequestPacket({
+            type: 'FRIEND_REQUEST_SEND',
+            fromUser: req.from || req.fromUser,
+            fromFlag: req.fromFlag || '🇮🇳',
+            fromCode: req.fromCode || '+91',
+            fromElo: req.fromElo || 1500,
+            toUser: (STATE.myUsername || '').trim().toUpperCase(),
+            timestamp: req.timestamp || Date.now()
+          });
+        };
+        window.__getActiveUsername = function () {
+          return (typeof STATE !== 'undefined' && STATE.myUsername) ? STATE.myUsername.trim().toUpperCase() : (localStorage.getItem('oddandeven_last_user_v1') || 'PLAYER');
+        };
+        window.__decryptPayload = decryptPayload;
+
+      function showGlobalFriendRequestToast(req) {
+        if (!el.globalFriendRequestToast) return;
+        STATE.incomingFriendRequestPending = req;
+        const fromUser = String(req && (req.fromUser || req.from) || 'PLAYER').trim().toUpperCase();
+        if (el.globalFriendRequestFromPill) el.globalFriendRequestFromPill.textContent = '@' + fromUser;
+        if (el.globalFriendRequestTitle) el.globalFriendRequestTitle.textContent = '🤝 @' + fromUser + ' sent you a Friend Request!';
+        if (el.globalFriendRequestSub) el.globalFriendRequestSub.textContent = 'Accept to add @' + fromUser + ' as a friend and challenge each other to live 1v1 matches anytime.';
+        el.globalFriendRequestToast.classList.remove('hidden');
+      }
+
+      function hideGlobalFriendRequestToast() {
+        STATE.incomingFriendRequestPending = null;
+        if (el.globalFriendRequestToast) el.globalFriendRequestToast.classList.add('hidden');
+      }
 
         function scrubAccountCompletelyFromWebsite(uname, notifyIfCurrentUser = true) {
           const clean = String(uname || '').trim().toUpperCase();
@@ -2383,21 +2654,9 @@
 
           if (isAuthoritative && cloudAccountsMap && typeof cloudAccountsMap === 'object') {
             const localVault = loadEncryptedUsersMap();
-            const allLocalCandidates = new Set([
-              ...Object.keys(localVault || {}),
-              ...Object.keys(STATE.humanPlayers || {})
-            ]);
-            if (STATE.isAuthenticated && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-              allLocalCandidates.add(String(STATE.myUsername).trim().toUpperCase());
+            if (typeof window.__syncCloudLeaderboard === 'function' && Object.keys(localVault || {}).length > 0) {
+              window.__syncCloudLeaderboard(null, localVault, STATE.myUsername);
             }
-            allLocalCandidates.forEach((u) => {
-              const clean = String(u || '').trim().toUpperCase();
-              if (clean && !isPlaceholderUsername(clean) && !cloudAccountsMap[clean] && !isRecentSignup(clean)) {
-                if (scrubAccountCompletelyFromWebsite(clean, true)) {
-                  changed = true;
-                }
-              }
-            });
           }
 
           if (cloudAccountsMap && typeof cloudAccountsMap === 'object') {
@@ -3216,7 +3475,8 @@
           }
           if (toUser === me) {
             SoundFX.click();
-            showFriendFeedback(`📩 New Friend Request from @${fromUser}! Accept or Decline below.`, true);
+            showGlobalFriendRequestToast(packet);
+            showFriendFeedback('📩 New Friend Request from @' + fromUser + '! Accept or Decline below.', true);
           }
           renderAll();
           return;
@@ -3340,6 +3600,7 @@
         const me = (STATE.myUsername || '').trim().toUpperCase();
         if (!fromClean || !me || fromClean === me) return;
 
+        hideGlobalFriendRequestToast();
         linkMutualFriendsLocal(me, fromClean);
         saveSessionStats(true);
 
@@ -3366,6 +3627,7 @@
         const me = (STATE.myUsername || '').trim().toUpperCase();
         if (!fromClean || !me) return;
 
+        hideGlobalFriendRequestToast();
         syncFriendsAndRequestsStorage();
         if (Array.isArray(STATE.friendRequestsMap[me])) {
           STATE.friendRequestsMap[me] = STATE.friendRequestsMap[me].filter((r) => String(r && r.from || '').trim().toUpperCase() !== fromClean);
@@ -3738,10 +4000,23 @@
           if (el.modalAuthSubtitle) {
             el.modalAuthSubtitle.textContent = `Connected as ${STATE.myCountryFlag} ${STATE.myUsername} (${STATE.myCountryCode})`;
           }
+          if (!window.__v2ShownThisPageLoad) {
+            window.__v2ShownThisPageLoad = true;
+            try {
+              localStorage.removeItem('oddandeven_just_logged_in');
+              sessionStorage.removeItem('oddandeven_show_v2_box');
+            } catch (e) {}
+            if (typeof window.openVersion2Showcase === 'function') {
+              window.openVersion2Showcase();
+            }
+          }
           return true;
         }
 
-        // User is NOT authenticated: stop timer & lock screen with mandatory Login / Sign Up modal
+        // User is NOT authenticated: hide Version 2 showcase box, stop timer & lock screen with mandatory Login / Sign Up modal
+        if (typeof window.closeVersion2Showcase === 'function') {
+          window.closeVersion2Showcase();
+        }
         stopTurnTimer();
         if (el.authModal) {
           el.authModal.classList.remove('hidden');
@@ -4086,6 +4361,9 @@
         }
 
         SoundFX.click();
+        if (STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2') {
+          recordNumberPickTelemetry(num);
+        }
         const lockedSec = STATE.turnSecondsLeft;
         if (mySlot === 'P1') {
           STATE.pendingP1Num = num;
@@ -4265,6 +4543,18 @@
         startTurnTimer(true);
       }
 
+      function recordNumberPickTelemetry(num) {
+        const clean = (STATE.myUsername || '').trim().toUpperCase();
+        if (!clean || isPlaceholderUsername(clean)) return;
+        try {
+          const key = 'oddandeven_number_frequency_' + clean;
+          const raw = localStorage.getItem(key);
+          const freq = raw ? JSON.parse(raw) : {};
+          freq[num] = (Number(freq[num]) || 0) + 1;
+          localStorage.setItem(key, JSON.stringify(freq));
+        } catch (e) {}
+      }
+
       function handleGameplayTurn(userNum) {
         if (!requireAccountAndPassword()) return;
         if (STATE.phase !== 'INNINGS_1' && STATE.phase !== 'INNINGS_2') return;
@@ -4272,6 +4562,7 @@
           submitPlayerInput(userNum);
           return;
         }
+        recordNumberPickTelemetry(userNum);
         const isBotBatting = STATE.currentBatter === 'AI';
         const botNum = generateBotNumber(isBotBatting, userNum);
         STATE.userNumHistory.push(userNum);
@@ -4304,12 +4595,12 @@
 
         if (isUserBatting) {
           STATE.userBalls += 1;
-          if (mpMatch) p1Rec.totalBalls += 1;
-          if (p2Rec) p2Rec.ballsBowled += 1;
+          if (p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
+          if (p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
         } else {
           STATE.aiBalls += 1;
-          if (mpMatch) p1Rec.ballsBowled += 1;
-          if (p2Rec) p2Rec.totalBalls += 1;
+          if (p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
+          if (p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
         }
 
         const ballNumber = isUserBatting ? STATE.userBalls : STATE.aiBalls;
@@ -4320,39 +4611,95 @@
 
         // CASE A: WICKET (Both numbers matched!)
         if (isOut) {
-          SoundFX.wicket();
+          const cleanActor = String(STATE.myUsername || '').trim().toUpperCase();
+          const eqVfx = (function() {
+            try { return localStorage.getItem('oddandeven_equipped_vfx_' + cleanActor) || ''; } catch(e) { return ''; }
+          })();
+          const eqCard = (function() {
+            try { return localStorage.getItem('oddandeven_equipped_card_' + cleanActor) || ''; } catch(e) { return ''; }
+          })();
+
+          if (eqVfx === 'vfx_thunder_wicket') {
+            SoundFX.thunderWicket ? SoundFX.thunderWicket() : SoundFX.wicket();
+            STATE.anim.flashColor = '#38bdf8';
+            STATE.anim.flashAlpha = 0.9;
+            for (let i = 0; i < 35; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 2 + Math.random() * 6;
+              STATE.anim.particles.push({
+                x: el.arenaCanvas ? el.arenaCanvas.width / 2 : 200,
+                y: el.arenaCanvas ? el.arenaCanvas.height * 0.5 : 120,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                alpha: 1,
+                radius: 2 + Math.random() * 3,
+                color: Math.random() > 0.4 ? '#38bdf8' : '#facc15'
+              });
+            }
+          } else if (eqVfx === 'ball_meteorite_fireball') {
+            SoundFX.fireballWicket ? SoundFX.fireballWicket() : SoundFX.wicket();
+            STATE.anim.flashColor = '#f97316';
+            STATE.anim.flashAlpha = 0.9;
+            for (let i = 0; i < 35; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 2 + Math.random() * 6;
+              STATE.anim.particles.push({
+                x: el.arenaCanvas ? el.arenaCanvas.width / 2 : 200,
+                y: el.arenaCanvas ? el.arenaCanvas.height * 0.5 : 120,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                alpha: 1,
+                radius: 2 + Math.random() * 3.5,
+                color: Math.random() > 0.3 ? '#f97316' : '#ef4444'
+              });
+            }
+          } else if (eqCard === 'card_mythic_immortal') {
+            SoundFX.wicket();
+            STATE.anim.flashColor = '#ff4d6d';
+            STATE.anim.flashAlpha = 0.85;
+            for (let i = 0; i < 30; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 2 + Math.random() * 5;
+              STATE.anim.particles.push({
+                x: el.arenaCanvas ? el.arenaCanvas.width / 2 : 200,
+                y: el.arenaCanvas ? el.arenaCanvas.height * 0.5 : 120,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                alpha: 1,
+                radius: 2 + Math.random() * 3,
+                color: '#ff4d6d'
+              });
+            }
+          } else {
+            SoundFX.wicket();
+          }
           STATE.currentStreak = 0;
 
-          if (mpMatch) {
-            if (isUserBatting) {
-              p1Rec.wicketsLost += 1;
+          if (isUserBatting) {
+            if (p1Rec) {
+              p1Rec.wicketsLost = (p1Rec.wicketsLost || 0) + 1;
               p1Rec.updatedAt = Date.now();
-              if (p2Rec) {
-                p2Rec.wicketsTaken += 1;
-                p2Rec.weeklyWickets += 1;
-                p2Rec.updatedAt = Date.now();
-                STATE.aiMatchWickets += 1;
-              }
-            } else {
-              p1Rec.wicketsTaken += 1;
-              p1Rec.weeklyWickets += 1;
-              p1Rec.updatedAt = Date.now();
-              STATE.userMatchWickets += 1;
-              if (p2Rec) {
-                p2Rec.wicketsLost += 1;
-                p2Rec.updatedAt = Date.now();
-              }
             }
-            saveLocalStatsOnly();
-            scheduleDebouncedGlobalSync();
+            STATE.aiMatchWickets += 1;
+            if (mpMatch && p2Rec) {
+              p2Rec.wicketsTaken = (p2Rec.wicketsTaken || 0) + 1;
+              p2Rec.weeklyWickets = (p2Rec.weeklyWickets || 0) + 1;
+              p2Rec.updatedAt = Date.now();
+            }
           } else {
-            // When playing with bots: do NOT register runs or wickets in leaderboard!
-            if (!isUserBatting) {
-              STATE.userMatchWickets += 1;
-            } else {
-              STATE.aiMatchWickets += 1;
+            if (p1Rec) {
+              p1Rec.wicketsTaken = (p1Rec.wicketsTaken || 0) + 1;
+              p1Rec.weeklyWickets = (p1Rec.weeklyWickets || 0) + 1;
+              p1Rec.updatedAt = Date.now();
+            }
+            STATE.userMatchWickets += 1;
+            if (mpMatch && p2Rec) {
+              p2Rec.wicketsLost = (p2Rec.wicketsLost || 0) + 1;
+              p2Rec.updatedAt = Date.now();
             }
           }
+          saveLocalStatsOnly();
+          scheduleDebouncedGlobalSync();
 
           const wComm = buildEngagingCommentary('WICKET', {
             u: userNum,
@@ -4413,16 +4760,16 @@
         // CASE B: RUNS SCORED
         if (isUserBatting) {
           STATE.userScore += batterNum;
-          if (mpMatch) {
-            p1Rec.totalRuns += batterNum;
-            p1Rec.weeklyRuns += batterNum;
-            if (STATE.userScore > p1Rec.highScore) {
+          if (p1Rec) {
+            p1Rec.totalRuns = (p1Rec.totalRuns || 0) + batterNum;
+            p1Rec.weeklyRuns = (p1Rec.weeklyRuns || 0) + batterNum;
+            if (STATE.userScore > (p1Rec.highScore || 0)) {
               p1Rec.highScore = STATE.userScore;
             }
             p1Rec.updatedAt = Date.now();
-            saveLocalStatsOnly();
-            scheduleDebouncedGlobalSync();
           }
+          saveLocalStatsOnly();
+          scheduleDebouncedGlobalSync();
         } else {
           STATE.aiScore += batterNum;
           if (mpMatch && p2Rec) {
@@ -4439,7 +4786,28 @@
 
         const currentBatScore = isUserBatting ? STATE.userScore : STATE.aiScore;
         STATE.currentStreak += 1;
-        SoundFX.runScored(batterNum);
+        const cleanRunner = String(STATE.myUsername || '').trim().toUpperCase();
+        const eqBat = (function() {
+          try { return localStorage.getItem('oddandeven_equipped_bat_' + cleanRunner) || ''; } catch(e) { return ''; }
+        })();
+        if (eqBat === 'bat_solid_gold_willow' && batterNum >= 4) {
+          SoundFX.goldChime ? SoundFX.goldChime() : SoundFX.runScored(batterNum);
+          for (let i = 0; i < 25; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const spd = 1.5 + Math.random() * 5;
+            STATE.anim.particles.push({
+              x: el.arenaCanvas ? el.arenaCanvas.width * 0.22 : 100,
+              y: el.arenaCanvas ? el.arenaCanvas.height * 0.54 : 120,
+              vx: Math.cos(ang) * spd,
+              vy: Math.sin(ang) * spd,
+              alpha: 1,
+              radius: 2 + Math.random() * 2.5,
+              color: Math.random() > 0.5 ? '#f5b83d' : '#ffd166'
+            });
+          }
+        } else {
+          SoundFX.runScored(batterNum);
+        }
 
         const needNow = STATE.currentInnings === 2 ? Math.max(0, STATE.target - currentBatScore) : null;
         const rComm = buildEngagingCommentary('RUNS', {
@@ -4551,11 +4919,29 @@
           countryFlag: STATE.p1CountryFlag
         }, true);
 
+        if (!STATE.isTossForfeit) {
+          if (STATE.userScore >= 100) {
+            p1Rec.centuriesCount = (p1Rec.centuriesCount || 0) + 1;
+          }
+          if (STATE.userBalls > 0 && STATE.userScore > 0 && ((STATE.userScore / STATE.userBalls) * 100) >= 500) {
+            p1Rec.sr500Count = (p1Rec.sr500Count || 0) + 1;
+          }
+        }
+
         if (mpMatch) {
           const p2Rec = ensureHumanPlayerRecord(p2, amIGuest ? 1500 : STATE.friendEloRating, {
             countryCode: STATE.p2CountryCode,
             countryFlag: STATE.p2CountryFlag
           }, true);
+
+          if (!STATE.isTossForfeit) {
+            if (STATE.aiScore >= 100) {
+              p2Rec.centuriesCount = (p2Rec.centuriesCount || 0) + 1;
+            }
+            if (STATE.aiBalls > 0 && STATE.aiScore > 0 && ((STATE.aiScore / STATE.aiBalls) * 100) >= 500) {
+              p2Rec.sr500Count = (p2Rec.sr500Count || 0) + 1;
+            }
+          }
 
           if (STATE.isTossForfeit) {
             // Toss countdown expired before the match started -> Match Forfeited
@@ -4729,14 +5115,50 @@
           p1Rec.elo = frozenElo;
           p1Rec.peak = frozenPeak;
           p1Rec.weeklyEloGain = frozenWeeklyElo;
+          if (!STATE.isTossForfeit) {
+            p1Rec.matches = (p1Rec.matches || 0) + 1;
+            p1Rec.v2Matches = p1Rec.matches;
+            p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
+            if (!isDraw) {
+              if (winner === 'USER') {
+                p1Rec.wins = (p1Rec.wins || 0) + 1;
+                p1Rec.weeklyWins = (p1Rec.weeklyWins || 0) + 1;
+              } else {
+                p1Rec.losses = (p1Rec.losses || 0) + 1;
+                p1Rec.weeklyLosses = (p1Rec.weeklyLosses || 0) + 1;
+              }
+            }
+            if (STATE.userScore > (p1Rec.highScore || 0)) {
+              p1Rec.highScore = STATE.userScore;
+            }
+          }
+          p1Rec.statsEpoch = STATS_RESET_EPOCH;
           p1Rec.updatedAt = Date.now();
           if (STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
             STATE.humanPlayers[STATE.myUsername.trim().toUpperCase()] = p1Rec;
           }
+          saveLocalStatsOnly();
+          scheduleDebouncedGlobalSync();
 
           STATE.eloRating = frozenElo;
           STATE.peakElo = frozenPeak;
           STATE.lastEloDelta = null;
+
+          const cleanUserForAi = (STATE.myUsername || '').trim().toUpperCase();
+          if (cleanUserForAi && !isPlaceholderUsername(cleanUserForAi) && !STATE.isTossForfeit) {
+            try {
+              const diffKey = STATE.botDifficulty || 'TACTICIAN';
+              const aiKey = 'oddandeven_ai_tier_stats_' + cleanUserForAi;
+              const rawAi = localStorage.getItem(aiKey);
+              const aiStats = rawAi ? JSON.parse(rawAi) : {};
+              if (!aiStats[diffKey]) aiStats[diffKey] = { matches: 0, wins: 0, losses: 0, draws: 0 };
+              aiStats[diffKey].matches = (aiStats[diffKey].matches || 0) + 1;
+              if (isDraw) aiStats[diffKey].draws = (aiStats[diffKey].draws || 0) + 1;
+              else if (winner === 'USER') aiStats[diffKey].wins = (aiStats[diffKey].wins || 0) + 1;
+              else aiStats[diffKey].losses = (aiStats[diffKey].losses || 0) + 1;
+              localStorage.setItem(aiKey, JSON.stringify(aiStats));
+            } catch (e) {}
+          }
 
           if (isDraw) {
             STATE.eloHistory.unshift({
@@ -4935,7 +5357,28 @@
         const p2Flag = STATE.p2CountryFlag || '🇮🇳';
         const p2Dial = STATE.p2CountryCode || '+91';
 
-        el.p1CardTitle.textContent = mpActive ? `${p1Flag} ${p1Name} (P1)` : `${myFlag} ${p1Name} (${myDial})`;
+        let equippedCardTag = '';
+        try {
+          const cleanMeTag = String(STATE.myUsername || '').trim().toUpperCase();
+          if (cleanMeTag && !isPlaceholderUsername(cleanMeTag)) {
+            const eqId = localStorage.getItem('oddandeven_equipped_card_' + cleanMeTag);
+            if (eqId === 'card_custom_divine') {
+              const rawC = localStorage.getItem('oddandeven_custom_card_' + cleanMeTag);
+              const cObj = rawC ? JSON.parse(rawC) : null;
+              equippedCardTag = ` [🔱 ${(cObj && cObj.title) || 'DIVINE'}]`;
+            } else if (eqId === 'card_cosmic_celestial') {
+              equippedCardTag = ' [🌌 COSMIC]';
+            } else if (eqId === 'card_mythic_immortal') {
+              equippedCardTag = ' [👑 IMMORTAL]';
+            } else if (eqId === 'card_diamond_vanguard') {
+              equippedCardTag = ' [💎 DIAMOND]';
+            } else if (eqId === 'card_gold_elite') {
+              equippedCardTag = ' [🏆 GOLD]';
+            }
+          }
+        } catch(e) {}
+
+        el.p1CardTitle.textContent = mpActive ? `${p1Flag} ${p1Name} (P1)${equippedCardTag}` : `${myFlag} ${p1Name} (${myDial})${equippedCardTag}`;
         el.p2CardTitle.textContent = mpActive ? `${p2Flag} ${p2Name} (P2)` : `${botProf.badge}`;
 
         // Update Multiplayer Lobby Matchup & Room Lock Controls (Inline & Modal)
@@ -5066,6 +5509,81 @@
         if (el.sidebarCareerWickets) {
           el.sidebarCareerWickets.textContent = `${myRec.wicketsTaken || 0}`;
         }
+
+        // Populate Sidebar Player Card (Redirects to profile.html on click)
+        if (el.sidebarCardUsername) {
+          const isGuest = isPlaceholderUsername(myCleanName);
+          el.sidebarCardUsername.textContent = isGuest ? 'PLAYER (GUEST)' : myCleanName;
+          if (el.sidebarCardFlag) el.sidebarCardFlag.textContent = myFlag;
+          if (el.sidebarCardDial) el.sidebarCardDial.textContent = `${myDial} • ${myRec.elo || 1500} ELO`;
+          if (el.sidebarCardRunsWkts) {
+            el.sidebarCardRunsWkts.textContent = `${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`;
+          }
+
+          let cardTierName = 'Rookie Card';
+          let cardTierClass = 'bg-slate-800 text-slate-300 border-slate-600';
+          let cardTitle = 'Hand Cricket Aspirant';
+          let cardBorderCls = 'border-amber-500/40 bg-gradient-to-br from-[#1c1811] via-[#161410] to-[#121110]';
+          let showStar = false;
+
+          try {
+            const eqCard = localStorage.getItem('oddandeven_equipped_card_' + myCleanName);
+            if (eqCard === 'card_custom_divine') {
+              cardTierName = '🔱 CUSTOM';
+              cardTierClass = 'bg-gradient-to-r from-amber-400 to-purple-400 text-slate-950 font-black';
+              const rawC = localStorage.getItem('oddandeven_custom_card_' + myCleanName);
+              const cObj = rawC ? JSON.parse(rawC) : null;
+              cardTitle = (cObj && cObj.title) || 'Cricket Deity';
+              cardBorderCls = 'border-amber-400 bg-gradient-to-br from-[#261e11] via-[#1a1714] to-[#121110] shadow-[0_0_20px_rgba(245,184,61,0.25)]';
+              showStar = true;
+            } else if (eqCard === 'card_cosmic_celestial') {
+              cardTierName = '🌌 COSMIC';
+              cardTierClass = 'bg-purple-500/20 text-purple-300 border-purple-500/40 font-bold';
+              cardTitle = 'Celestial Master';
+              cardBorderCls = 'border-purple-400 bg-gradient-to-br from-[#230f2e] via-[#1a1224] to-[#121110] shadow-[0_0_20px_rgba(168,85,247,0.25)]';
+            } else if (eqCard === 'card_mythic_immortal') {
+              cardTierName = '👑 MYTHIC';
+              cardTierClass = 'bg-rose-500/20 text-rose-300 border-rose-500/40 font-bold';
+              cardTitle = 'Obsidian Magma Sovereign';
+              cardBorderCls = 'border-rose-500 bg-gradient-to-br from-[#2a0e14] via-[#1d1215] to-[#121110] shadow-[0_0_20px_rgba(255,77,109,0.25)]';
+            } else if (eqCard === 'card_diamond_vanguard') {
+              cardTierName = '💎 DIAMOND';
+              cardTierClass = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-bold';
+              cardTitle = 'Diamond Prodigy';
+              cardBorderCls = 'border-cyan-400 bg-gradient-to-br from-[#0e2329] via-[#141d22] to-[#121110] shadow-[0_0_20px_rgba(56,189,248,0.25)]';
+            } else if (eqCard === 'card_gold_elite') {
+              cardTierName = '🏆 GOLD';
+              cardTierClass = 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold';
+              cardTitle = '24K Gold Cap Holder';
+              cardBorderCls = 'border-amber-400 bg-gradient-to-br from-[#2e2617] via-[#211d15] to-[#121110] shadow-[0_0_20px_rgba(245,184,61,0.25)]';
+            }
+          } catch(e) {}
+
+          if (el.sidebarCardTierPill) {
+            el.sidebarCardTierPill.textContent = cardTierName;
+            el.sidebarCardTierPill.className = `px-1.5 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider ${cardTierClass}`;
+          }
+          if (el.sidebarCardTitle) el.sidebarCardTitle.textContent = cardTitle;
+          if (el.sidebarCardStar) el.sidebarCardStar.classList.toggle('hidden', !showStar);
+          if (el.sidebarPlayerCard) {
+            el.sidebarPlayerCard.className = `block w-full p-2.5 sm:p-3 rounded-2xl border transition-all duration-300 relative overflow-hidden group active:scale-95 shadow-md ${cardBorderCls}`;
+          }
+        }
+
+        // Update Store Tab Subtitle with Available XP
+        if (el.sideNavStoreSub && !isPlaceholderUsername(myCleanName)) {
+          try {
+            const spent = parseInt(localStorage.getItem('oddandeven_spent_xp_' + myCleanName) || '0', 10);
+            const achs = computePlayerAchievements(myRec);
+            const aXp = achs.filter(a => a.current >= a.target).reduce((s, a) => s + a.xp, 0);
+            const mXp = ((myRec.totalRuns || 0) * 2) + ((myRec.wicketsTaken || 0) * 25) + ((myRec.wins || 0) * 50) + ((myRec.matches || 0) * 15);
+            const avail = Math.max(0, aXp + mXp - spent);
+            el.sideNavStoreSub.textContent = `${avail.toLocaleString()} XP • Cards & Flex`;
+            if (el.sideNavStoreBadge) {
+              el.sideNavStoreBadge.textContent = avail >= 5000 ? 'UNLOCKED' : `${avail} XP`;
+            }
+          } catch(e) {}
+        }
         if (el.botSetupPlayerName) {
           el.botSetupPlayerName.value = STATE.isAuthenticated ? myCleanName : 'LOGIN REQUIRED';
         }
@@ -5125,6 +5643,12 @@
         if (el.sideNavLeaderboard) {
           el.sideNavLeaderboard.className = STATE.activeScreen === 'LEADERBOARD' ? navActiveCls : navIdleCls;
         }
+        if (el.sideNavProfile) {
+          el.sideNavProfile.className = STATE.activeScreen === 'PROFILE' ? navActiveCls : navIdleCls;
+        }
+        if (el.sideNavStore) {
+          el.sideNavStore.className = STATE.activeScreen === 'STORE' ? navActiveCls : navIdleCls;
+        }
 
         el.sideBotSubLabel.textContent = botProf.name;
         el.sidebarOpponentBadge.innerHTML = mpActive
@@ -5170,10 +5694,30 @@
           }
         }
 
-        // Show/Hide Center Screens cleanly
-        el.centerShowcasePanel.classList.toggle('hidden', STATE.activeScreen !== 'SHOWCASE');
-        el.screenBotSetup.classList.toggle('hidden', STATE.activeScreen !== 'BOT_SETUP');
-        el.screenMpSetup.classList.toggle('hidden', STATE.activeScreen !== 'MP_SETUP');
+        // Show/Hide Center Screens & Full-Width Dashboard Alignment cleanly
+        const isFullWidthView = STATE.activeScreen === 'PROFILE' || STATE.activeScreen === 'STORE';
+        const mainCenterCol = document.getElementById('mainCenterStageCol');
+        const rightScoreCol = document.getElementById('rightMatchScorecardCol');
+        if (mainCenterCol) {
+          mainCenterCol.className = isFullWidthView
+            ? 'xl:col-span-12 flex flex-col gap-4 min-w-0 w-full'
+            : 'xl:col-span-8 flex flex-col gap-4 min-w-0';
+        }
+        if (rightScoreCol) {
+          rightScoreCol.classList.toggle('hidden', isFullWidthView);
+        }
+        if (el.activePitchWrapper) {
+          el.activePitchWrapper.classList.toggle('hidden', STATE.activeScreen !== 'PITCH');
+        }
+        if (el.centerShowcasePanel) {
+          el.centerShowcasePanel.classList.toggle('hidden', STATE.activeScreen !== 'SHOWCASE');
+        }
+        if (el.screenBotSetup) {
+          el.screenBotSetup.classList.toggle('hidden', STATE.activeScreen !== 'BOT_SETUP');
+        }
+        if (el.screenMpSetup) {
+          el.screenMpSetup.classList.toggle('hidden', STATE.activeScreen !== 'MP_SETUP');
+        }
         if (el.screenFriends) {
           el.screenFriends.classList.toggle('hidden', STATE.activeScreen !== 'FRIENDS');
         }
@@ -5186,8 +5730,18 @@
         if (el.screenLeaderboard) {
           el.screenLeaderboard.classList.toggle('hidden', STATE.activeScreen !== 'LEADERBOARD');
         }
-        renderEventsTabAndCountdowns();
-        renderAchievementsSection();
+        const scrProfile = document.getElementById('screenProfile');
+        if (scrProfile) {
+          scrProfile.classList.toggle('hidden', STATE.activeScreen !== 'PROFILE');
+        }
+        const scrStore = document.getElementById('screenStore');
+        if (scrStore) {
+          scrStore.classList.toggle('hidden', STATE.activeScreen !== 'STORE');
+        }
+        try { renderEventsTabAndCountdowns(); } catch (e) { console.error(e); }
+        try { renderAchievementsSection(); } catch (e) { console.error(e); }
+        try { renderProfileSection(); } catch (e) { console.error(e); }
+        try { renderStoreSection(); } catch (e) { console.error(e); }
 
         // Render Large Incoming Friend Match Call Banner & Sidebar Badge
         const myFriends = getMyFriendsList();
@@ -5511,9 +6065,33 @@
           const allHumans = Object.values(STATE.humanPlayers).filter((p) => {
             if (!p || !p.name) return false;
             const cleanN = String(p.name).trim().toUpperCase();
-            if (isPlaceholderUsername(cleanN)) return false;
+            if (!cleanN || cleanN.length < 3 || isPlaceholderUsername(cleanN) || FAKE_SEED_NAMES.includes(cleanN)) return false;
             p.name = cleanN;
             p.elo = typeof p.elo === 'number' && !isNaN(p.elo) ? p.elo : (Number(p.elo) || 1500);
+            p.peak = Math.max(1500, p.elo, Number(p.peak) || 1500);
+            p.wins = Number(p.wins) || 0;
+            p.losses = Number(p.losses) || 0;
+            p.matches = Math.max(Number(p.matches) || 0, p.wins + p.losses);
+            p.totalRuns = Number(p.totalRuns) || 0;
+            p.wicketsTaken = Number(p.wicketsTaken) || 0;
+
+            // Strictly enforce weekly cycle reset (Monday to Sunday)
+            if (p.weekKey !== weekInfo.weekKey) {
+              p.weekKey = weekInfo.weekKey;
+              p.weeklyEloGain = 0;
+              p.weeklyWins = 0;
+              p.weeklyLosses = 0;
+              p.weeklyMatches = 0;
+              p.weeklyRuns = 0;
+              p.weeklyWickets = 0;
+            } else {
+              p.weeklyEloGain = typeof p.weeklyEloGain === 'number' ? p.weeklyEloGain : 0;
+              p.weeklyWins = Number(p.weeklyWins) || 0;
+              p.weeklyLosses = Number(p.weeklyLosses) || 0;
+              p.weeklyMatches = Math.max(Number(p.weeklyMatches) || 0, p.weeklyWins + p.weeklyLosses);
+              p.weeklyRuns = Number(p.weeklyRuns) || 0;
+              p.weeklyWickets = Number(p.weeklyWickets) || 0;
+            }
             return true;
           });
 
@@ -5574,12 +6152,12 @@
                 `;
               };
 
-              const top10 = sortedGlobal.slice(0, 10);
               const myIdx = sortedGlobal.findIndex((p) => p.name === myCleanName);
               const myRank = myIdx >= 0 ? myIdx + 1 : sortedGlobal.length + 1;
               const myEnt = myIdx >= 0 ? sortedGlobal[myIdx] : Object.assign({}, myRec, { name: myCleanName });
+              const top10Global = sortedGlobal.slice(0, 10);
 
-              el.leaderboardStandingsList.innerHTML = top10.map((ent, idx) => renderGlobalRow(ent, idx + 1)).join('') + `
+              el.leaderboardStandingsList.innerHTML = top10Global.map((ent, idx) => renderGlobalRow(ent, idx + 1)).join('') + `
                 <div class="pt-3 mt-2 border-t-2 border-dashed border-[#81b64c]/50 space-y-2">
                   <div class="flex items-center justify-between text-xs font-mono-num font-black uppercase text-[#a3d96c] px-1">
                     <span class="flex items-center gap-1.5"><span>📌</span><span>Your Rank in Leaderboard</span></span>
@@ -5645,12 +6223,12 @@
                 `;
               };
 
-              const top10 = sortedWeekly.slice(0, 10);
               const myIdx = sortedWeekly.findIndex((p) => p.name === myCleanName);
               const myRank = myIdx >= 0 ? myIdx + 1 : sortedWeekly.length + 1;
               const myEnt = myIdx >= 0 ? sortedWeekly[myIdx] : Object.assign({}, myRec, { name: myCleanName });
+              const top10Weekly = sortedWeekly.slice(0, 10);
 
-              el.leaderboardStandingsList.innerHTML = top10.map((ent, idx) => renderWeeklyRow(ent, idx + 1)).join('') + `
+              el.leaderboardStandingsList.innerHTML = top10Weekly.map((ent, idx) => renderWeeklyRow(ent, idx + 1)).join('') + `
                 <div class="pt-3 mt-2 border-t-2 border-dashed border-[#81b64c]/50 space-y-2">
                   <div class="flex items-center justify-between text-xs font-mono-num font-black uppercase text-[#a3d96c] px-1">
                     <span class="flex items-center gap-1.5"><span>📌</span><span>Your Rank in Leaderboard</span></span>
@@ -5709,12 +6287,12 @@
                 `;
               };
 
-              const top10 = sortedRuns.slice(0, 10);
               const myIdx = sortedRuns.findIndex((p) => p.name === myCleanName);
               const myRank = myIdx >= 0 ? myIdx + 1 : sortedRuns.length + 1;
               const myEnt = myIdx >= 0 ? sortedRuns[myIdx] : Object.assign({}, myRec, { name: myCleanName });
+              const top10Runs = sortedRuns.slice(0, 10);
 
-              el.leaderboardStandingsList.innerHTML = top10.map((ent, idx) => renderRunsRow(ent, idx + 1)).join('') + `
+              el.leaderboardStandingsList.innerHTML = top10Runs.map((ent, idx) => renderRunsRow(ent, idx + 1)).join('') + `
                 <div class="pt-3 mt-2 border-t-2 border-dashed border-[#81b64c]/50 space-y-2">
                   <div class="flex items-center justify-between text-xs font-mono-num font-black uppercase text-[#a3d96c] px-1">
                     <span class="flex items-center gap-1.5"><span>📌</span><span>Your Rank in Leaderboard</span></span>
@@ -6319,25 +6897,62 @@
         ctx.save();
         ctx.scale(dpr, dpr);
 
-        // 1. Stadium Night Sky & Turf Gradient
+        // 1. Dynamic Pitch Themes (Default, Lords Royal Pavilion, Cyberpunk Neon)
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        let equippedTheme = '';
+        let equippedCard = 'card_default';
+        try {
+          if (cleanMe && !isPlaceholderUsername(cleanMe)) {
+            equippedTheme = localStorage.getItem('oddandeven_equipped_theme_' + cleanMe) || '';
+            equippedCard = localStorage.getItem('oddandeven_equipped_card_' + cleanMe) || 'card_default';
+          }
+        } catch(e) {}
+
         const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-        bgGrad.addColorStop(0, '#06101e');
-        bgGrad.addColorStop(0.62, '#0b1e33');
-        bgGrad.addColorStop(1, '#092e26');
+        let turfStroke = 'rgba(16, 185, 129, 0.12)';
+        let pitchFill = 'rgba(217, 183, 122, 0.10)';
+
+        if (equippedTheme === 'theme_lords_pavilion') {
+          bgGrad.addColorStop(0, '#061a0d');
+          bgGrad.addColorStop(0.62, '#0a2313');
+          bgGrad.addColorStop(1, '#0d3319');
+          turfStroke = 'rgba(245, 184, 61, 0.45)';
+          pitchFill = 'rgba(245, 184, 61, 0.15)';
+        } else if (equippedTheme === 'theme_cyberpunk_neon') {
+          bgGrad.addColorStop(0, '#05111a');
+          bgGrad.addColorStop(0.62, '#0c0f20');
+          bgGrad.addColorStop(1, '#160824');
+          turfStroke = 'rgba(56, 189, 248, 0.65)';
+          pitchFill = 'rgba(217, 70, 239, 0.18)';
+        } else {
+          bgGrad.addColorStop(0, '#06101e');
+          bgGrad.addColorStop(0.62, '#0b1e33');
+          bgGrad.addColorStop(1, '#092e26');
+          turfStroke = 'rgba(16, 185, 129, 0.12)';
+          pitchFill = 'rgba(217, 183, 122, 0.10)';
+        }
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, w, h);
 
-        // Subtle turf perspective ellipses
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.12)';
+        // Turf perspective ellipses
+        ctx.strokeStyle = turfStroke;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.ellipse(w / 2, h * 0.88, w * 0.42, h * 0.22, 0, 0, Math.PI * 2);
         ctx.stroke();
 
+        if (equippedTheme === 'theme_cyberpunk_neon') {
+          ctx.strokeStyle = 'rgba(217, 70, 239, 0.4)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.ellipse(w / 2, h * 0.88, w * 0.3, h * 0.15, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
         // Center pitch strip
         const pitchW = Math.min(180, w * 0.3);
         const pitchH = h * 0.36;
-        ctx.fillStyle = 'rgba(217, 183, 122, 0.10)';
+        ctx.fillStyle = pitchFill;
         drawRoundedRect(ctx, w / 2 - pitchW / 2, h * 0.56, pitchW, pitchH, 8);
         ctx.fill();
 
@@ -6374,17 +6989,46 @@
         ctx.scale(scalePop, scalePop);
         ctx.translate(-(leftX + cardW / 2), -(cardY + cardH / 2));
 
-        ctx.fillStyle = isMatchedOut ? 'rgba(244, 63, 94, 0.18)' : 'rgba(16, 185, 129, 0.13)';
-        ctx.strokeStyle = isMatchedOut ? 'rgba(244, 63, 94, 0.7)' : 'rgba(16, 185, 129, 0.55)';
-        ctx.lineWidth = 2;
+        let p1CardFill = 'rgba(16, 185, 129, 0.13)';
+        let p1CardStroke = 'rgba(16, 185, 129, 0.55)';
+        let p1Crown = '';
+        if (isMatchedOut) {
+          p1CardFill = 'rgba(244, 63, 94, 0.18)';
+          p1CardStroke = 'rgba(244, 63, 94, 0.7)';
+        } else if (equippedCard === 'card_custom_divine') {
+          p1CardFill = 'rgba(255, 209, 102, 0.22)';
+          p1CardStroke = '#ffd166';
+          p1Crown = '🔱';
+        } else if (equippedCard === 'card_cosmic_celestial') {
+          p1CardFill = 'rgba(192, 132, 252, 0.22)';
+          p1CardStroke = '#c084fc';
+          p1Crown = '🌌';
+        } else if (equippedCard === 'card_mythic_immortal') {
+          p1CardFill = 'rgba(255, 77, 109, 0.22)';
+          p1CardStroke = '#ff4d6d';
+          p1Crown = '👑';
+        } else if (equippedCard === 'card_diamond_vanguard') {
+          p1CardFill = 'rgba(56, 189, 248, 0.22)';
+          p1CardStroke = '#38bdf8';
+          p1Crown = '💎';
+        } else if (equippedCard === 'card_gold_elite') {
+          p1CardFill = 'rgba(245, 184, 61, 0.22)';
+          p1CardStroke = '#f5b83d';
+          p1Crown = '🏆';
+        }
+
+        ctx.fillStyle = p1CardFill;
+        ctx.strokeStyle = p1CardStroke;
+        ctx.lineWidth = p1Crown ? 2.5 : 2;
         drawRoundedRect(ctx, leftX, cardY, cardW, cardH, 16);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = p1Crown ? '#ffd166' : '#94a3b8';
         ctx.font = '700 10px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(isMultiplayer() ? getP1Label().toUpperCase() + ' HAND' : 'YOUR HAND', leftX + cardW / 2, cardY + 20);
+        const p1CardLabel = (p1Crown ? `${p1Crown} ` : '') + (isMultiplayer() ? getP1Label().toUpperCase() + ' HAND' : 'YOUR HAND');
+        ctx.fillText(p1CardLabel, leftX + cardW / 2, cardY + 20);
 
         ctx.fillStyle = '#ecfdf5';
         ctx.font = '900 40px "JetBrains Mono", monospace';
@@ -6649,6 +7293,60 @@
         });
       }
 
+      function recordPlayerActiveDay(username) {
+        try {
+          const clean = String(username || (typeof STATE !== 'undefined' && STATE.myUsername) || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean)) return 1;
+          const storageKey = 'oddandeven_active_days_' + clean;
+          const todayStr = new Date().toISOString().slice(0, 10);
+          let days = [];
+          const raw = localStorage.getItem(storageKey);
+          if (raw) days = JSON.parse(raw);
+          if (!Array.isArray(days)) days = [];
+          if (!days.includes(todayStr)) {
+            days.push(todayStr);
+            localStorage.setItem(storageKey, JSON.stringify(days));
+          }
+          return Math.max(1, days.length);
+        } catch (e) {
+          return 1;
+        }
+      }
+
+      function getActiveDaysCount(username, rec) { return getPlayerActiveDaysCount(username, rec); }
+      function getPlayerActiveDaysCount(username, rec) {
+        try {
+          const clean = String(username || (rec && rec.name) || (typeof STATE !== 'undefined' && STATE.myUsername) || '').trim().toUpperCase();
+          let localCount = 1;
+          if (clean && !isPlaceholderUsername(clean)) {
+            const raw = localStorage.getItem('oddandeven_active_days_' + clean);
+            if (raw) {
+              const arr = JSON.parse(raw);
+              if (Array.isArray(arr)) localCount = Math.max(localCount, arr.length);
+            }
+          }
+          if (rec && typeof rec.activeDays === 'number') {
+            localCount = Math.max(localCount, rec.activeDays);
+          }
+          return Math.max(1, localCount);
+        } catch (e) {
+          return 1;
+        }
+      }
+
+      function recordTournamentWin(username) {
+        try {
+          const clean = String(username || (typeof STATE !== 'undefined' && STATE.myUsername) || '').trim().toUpperCase();
+          if (!clean || isPlaceholderUsername(clean)) return;
+          const storageKey = 'oddandeven_tourney_wins_' + clean;
+          const current = parseInt(localStorage.getItem(storageKey) || '0', 10);
+          localStorage.setItem(storageKey, String(current + 1));
+          const rec = ensureHumanPlayerRecord(clean);
+          if (rec) rec.tournamentWins = (rec.tournamentWins || 0) + 1;
+        } catch (e) {}
+      }
+      try { window.recordTournamentWin = recordTournamentWin; } catch (e) {}
+
       function computePlayerAchievements(myRec) {
         const rec = myRec || {};
         const totalMatches = Math.max(rec.matches || 0, (rec.wins || 0) + (rec.losses || 0));
@@ -6657,10 +7355,94 @@
         const highScore = Math.max(rec.highScore || 0, STATE.userScore || 0);
         const totalWickets = Math.max(rec.wicketsTaken || 0, STATE.userMatchWickets || 0);
         const peakElo = Math.max(rec.peak || 1500, rec.elo || 1500, STATE.peakElo || 1500);
-        const friendsCount = getMyFriendsList().length;
-        const regsCount = loadEventRegistrations().length;
+        const friendsCount = (typeof getMyFriendsList === 'function' ? getMyFriendsList() : []).length;
+        const regsCount = (typeof loadEventRegistrations === 'function' ? loadEventRegistrations() : []).length;
 
-        return [
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+
+        // 1. Active calendar days (only counts once player has started playing matches/runs/wickets in this epoch)
+        const hasActivityInEpoch = totalMatches > 0 || totalRuns > 0 || totalWickets > 0;
+        if (hasActivityInEpoch) recordPlayerActiveDay(cleanMe);
+        const activeDaysCount = hasActivityInEpoch ? getPlayerActiveDaysCount(cleanMe, rec) : 0;
+
+        // 2. Tournament wins
+        let tourneyWins = rec.tournamentWins || 0;
+        try {
+          const localTourneyWins = parseInt(localStorage.getItem('oddandeven_tourney_wins_' + cleanMe) || '0', 10);
+          tourneyWins = Math.max(tourneyWins, localTourneyWins);
+        } catch (e) {}
+
+        // 3. Derive fallback 100+ score count & 500+ SR count from matchScorecards + career record
+        let scCenturies = 0;
+        let scSr500 = 0;
+        if (Array.isArray(STATE.matchScorecards)) {
+          STATE.matchScorecards.forEach((sc) => {
+            if (!sc) return;
+            const checkInnings = (teamName, summaryStr) => {
+              if (!teamName || !summaryStr) return;
+              if (String(teamName).trim().toUpperCase() !== cleanMe) return;
+              const m = String(summaryStr).match(/^(\d+)\/\d+\s*\((\d+)b\)/);
+              if (m) {
+                const r = parseInt(m[1], 10) || 0;
+                const b = parseInt(m[2], 10) || 0;
+                if (r >= 100) scCenturies += 1;
+                if (b > 0 && r > 0 && ((r / b) * 100) >= 500) scSr500 += 1;
+              }
+            };
+            checkInnings(sc.inn1Team, sc.inn1Summary);
+            checkInnings(sc.inn2Team, sc.inn2Summary);
+          });
+        }
+        const liveCenturies = (STATE.phase !== 'GAME_OVER' && (STATE.userScore || 0) >= 100) ? 1 : 0;
+        const centuriesCount = Math.max(
+          rec.centuriesCount || 0,
+          scCenturies + liveCenturies,
+          highScore >= 100 ? 1 : 0
+        );
+        const sr500Count = Math.max(
+          rec.sr500Count || 0,
+          scSr500
+        );
+
+        // 4. Consecutive win streak
+        let derivedStreak = Math.max(rec.maxWinStreak || 0, rec.currentWinStreak || 0);
+        if (Array.isArray(STATE.eloHistory) && STATE.eloHistory.length > 0) {
+          let curS = 0;
+          let maxS = 0;
+          for (const h of STATE.eloHistory) {
+            if (h && (h.result === 'WIN' || String(h.delta || '').startsWith('+'))) {
+              curS += 1;
+              if (curS > maxS) maxS = curS;
+            } else if (h && h.result !== 'FORFEIT' && h.delta !== 'FROZEN') {
+              curS = 0;
+            }
+          }
+          derivedStreak = Math.max(derivedStreak, maxS);
+        }
+        if (totalWins >= 10) derivedStreak = Math.max(derivedStreak, 10);
+        else if (totalWins > 0) derivedStreak = Math.max(derivedStreak, Math.min(totalWins, 5));
+
+        // 5. Boundaries in a single match (4s, 6s, 10s)
+        let maxBoundariesInMatch = rec.maxBoundariesInMatch || 0;
+        if (Array.isArray(STATE.userNumHistory)) {
+          const liveBoundaries = STATE.userNumHistory.filter((n) => n === 4 || n === 6 || n === 10).length;
+          maxBoundariesInMatch = Math.max(maxBoundariesInMatch, liveBoundaries);
+        }
+        if (highScore >= 50) maxBoundariesInMatch = Math.max(maxBoundariesInMatch, 5);
+        else if (highScore >= 30) maxBoundariesInMatch = Math.max(maxBoundariesInMatch, 3);
+
+        // 6. Target defended matches in innings 2
+        let defendedMatches = rec.defendedMatches || 0;
+        if (Array.isArray(STATE.eloHistory)) {
+          const defCount = STATE.eloHistory.filter((h) => h && h.result === 'WIN' && (h.wicketsTaken || 0) >= 1).length;
+          defendedMatches = Math.max(defendedMatches, defCount);
+        }
+        if (totalWickets >= 5 && totalWins >= 3) {
+          defendedMatches = Math.max(defendedMatches, 1);
+        }
+
+        const baseList = [
+          // --- EXISTING 10 CORE ACHIEVEMENTS ---
           {
             id: 'first_cap',
             category: 'RANKED',
@@ -6767,13 +7549,257 @@
             category: 'RANKED',
             icon: '🎟️',
             title: 'Tournament & Squad Ready',
-            desc: 'Register for the Season 1 Championship on 7 Nov or add a Friend.',
-            current: regsCount + friendsCount,
+            desc: 'Play at least 1 match and register for Season 1 Championship or add a Friend.',
+            current: totalMatches > 0 ? (regsCount + friendsCount) : 0,
             target: 1,
             unit: 'Entry / Friend',
             xp: 80
+          },
+          // --- EXISTING 10 ELITE & GRANDMASTER ACHIEVEMENTS ---
+          {
+            id: 'century_blaster',
+            category: 'BATTING',
+            icon: '💯',
+            title: 'Century Blaster (100* Club)',
+            desc: 'Score 100 or more runs in a single explosive innings.',
+            current: highScore,
+            target: 100,
+            unit: 'High Score',
+            xp: 175
+          },
+          {
+            id: 'centurion_5x',
+            category: 'BATTING',
+            icon: '🏅',
+            title: '100+ Score 5 Times (5x Centurion)',
+            desc: 'Smash a 100+ score in an innings 5 times across your career.',
+            current: centuriesCount,
+            target: 5,
+            unit: '100+ Scores',
+            xp: 250
+          },
+          {
+            id: 'five_hundred_runs',
+            category: 'BATTING',
+            icon: '🚀',
+            title: '500 Career Runs Titan',
+            desc: 'Accumulate 500+ cumulative runs across intense Arena battles.',
+            current: totalRuns,
+            target: 500,
+            unit: 'Runs',
+            xp: 200
+          },
+          {
+            id: 'thousand_runs_club',
+            category: 'BATTING',
+            icon: '🌟',
+            title: '1000 Career Runs Legend',
+            desc: 'Cross the iconic 1,000+ career runs milestone under your username.',
+            current: totalRuns,
+            target: 1000,
+            unit: 'Runs',
+            xp: 300
+          },
+          {
+            id: 'strike_rate_500_5x',
+            category: 'BATTING',
+            icon: '💥',
+            title: '500+ Strike Rate 5 Times',
+            desc: 'Finish an innings with an explosive 500+ Strike Rate at least 5 times.',
+            current: sr500Count,
+            target: 5,
+            unit: '500+ SR Innings',
+            xp: 250
+          },
+          {
+            id: 'mp_wickets_30',
+            category: 'BOWLING',
+            icon: '🎳',
+            title: '30 Multiplayer Wickets Ace',
+            desc: 'Claim 30 wickets by outsmarting batters in Multiplayer matches.',
+            current: totalWickets,
+            target: 30,
+            unit: 'Wickets',
+            xp: 225
+          },
+          {
+            id: 'mp_wickets_50',
+            category: 'BOWLING',
+            icon: '💀',
+            title: '50 Multiplayer Wickets Warlord',
+            desc: 'Claim 50 wickets in Ranked Multiplayer matches.',
+            current: totalWickets,
+            target: 50,
+            unit: 'Multiplayer Wkts',
+            xp: 300
+          },
+          {
+            id: 'match_winner_25',
+            category: 'RANKED',
+            icon: '🥇',
+            title: '25 Arena Wins Champion',
+            desc: 'Win 25 matches in the Hand Cricket Arena.',
+            current: totalWins,
+            target: 25,
+            unit: 'Wins',
+            xp: 250
+          },
+          {
+            id: 'elo_1600_master',
+            category: 'RANKED',
+            icon: '💎',
+            title: 'Crossed 1600 Elo (Diamond Tier)',
+            desc: 'Reach 1600+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 100,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1600 Elo',
+            unit: 'Elo',
+            xp: 225
+          },
+          {
+            id: 'elo_1700_grandmaster',
+            category: 'RANKED',
+            icon: '👑',
+            title: 'Crossed 1700 Elo (Grandmaster)',
+            desc: 'Cross 1700+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 200,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1700 Elo',
+            unit: 'Elo',
+            xp: 350
+          },
+          // --- 10 NEW ACHIEVEMENTS (TOTAL 30) ---
+          {
+            id: 'active_5_days',
+            category: 'RANKED',
+            icon: '📅',
+            title: '5-Day Dedicated Arena Player',
+            desc: 'Log in and play across 5 separate active days in the Hand Cricket Arena.',
+            current: activeDaysCount,
+            target: 5,
+            unit: 'Days',
+            xp: 150
+          },
+          {
+            id: 'active_10_days',
+            category: 'RANKED',
+            icon: '🗓️',
+            title: '10-Day Arena Loyalist',
+            desc: 'Maintain competitive presence by playing across 10 active calendar days.',
+            current: activeDaysCount,
+            target: 10,
+            unit: 'Days',
+            xp: 250
+          },
+          {
+            id: 'tourney_champion_1',
+            category: 'RANKED',
+            icon: '👑',
+            title: 'Tournament Champion (1st Place)',
+            desc: 'Win 1 official Double-Elimination Championship bracket or Tournament Final.',
+            current: tourneyWins,
+            target: 1,
+            unit: 'Tourney Win',
+            xp: 400
+          },
+          {
+            id: 'elo_1800_legend',
+            category: 'RANKED',
+            icon: '🔱',
+            title: 'Crossed 1800 Elo (Apex Legend)',
+            desc: 'Ascend to 1800+ Peak Elo in Ranked 1v1 Multiplayer Rooms.',
+            current: Math.max(0, peakElo - 1500),
+            target: 300,
+            displayCurrent: `${peakElo} Elo`,
+            displayTarget: '1800 Elo',
+            unit: 'Elo',
+            xp: 400
+          },
+          {
+            id: 'boundary_blitz_5',
+            category: 'BATTING',
+            icon: '💥',
+            title: 'Boundary Blitz (5 in a Match)',
+            desc: 'Hit 5 boundaries (4s, 6s, or 10s) in a single high-intensity match innings.',
+            current: maxBoundariesInMatch,
+            target: 5,
+            unit: 'Boundaries',
+            xp: 200
+          },
+          {
+            id: 'clutch_defender',
+            category: 'BOWLING',
+            icon: '🛡️',
+            title: 'Clutch Target Defender',
+            desc: 'Successfully defend a target score in Innings 2 by bowling out the opponent.',
+            current: defendedMatches,
+            target: 1,
+            unit: 'Target Defended',
+            xp: 250
+          },
+          {
+            id: 'win_streak_10',
+            category: 'RANKED',
+            icon: '🔥',
+            title: 'Unstoppable 10-Win Streak',
+            desc: 'String together 10 consecutive match victories without a defeat.',
+            current: derivedStreak,
+            target: 10,
+            unit: 'Consecutive Wins',
+            xp: 300
+          },
+          {
+            id: 'arena_veteran_50',
+            category: 'RANKED',
+            icon: '🎖️',
+            title: 'Arena Veteran (50 Matches)',
+            desc: 'Complete 50 competitive matches across Ranked Multiplayer and Arena play.',
+            current: totalMatches,
+            target: 50,
+            unit: 'Matches',
+            xp: 350
           }
         ];
+
+        // XP Milestones (3000 XP & 5000 XP)
+        const earnedBaseXp = baseList.filter((a) => a.current >= a.target).reduce((sum, a) => sum + a.xp, 0);
+        const careerMatchXp = totalMatches * 20 + totalWins * 40 + Math.floor(totalRuns * 1.5) + totalWickets * 30 + (centuriesCount * 100);
+        const totalPlayerXp = Math.max(rec.xp || 0, careerMatchXp + earnedBaseXp);
+
+        const ach3000 = {
+          id: 'xp_hunter_3000',
+          category: 'RANKED',
+          icon: '⚡',
+          title: 'Crossed 3000 XP (XP Hunter)',
+          desc: 'Reach 3,000+ Career XP through match triumphs and achievement mastery.',
+          current: totalPlayerXp,
+          target: 3000,
+          displayCurrent: `${totalPlayerXp} XP`,
+          displayTarget: '3000 XP',
+          unit: 'XP',
+          xp: 300
+        };
+        baseList.push(ach3000);
+
+        const totalPlayerXpWith3000 = totalPlayerXp + (totalPlayerXp >= 3000 ? 300 : 0);
+        const ach5000 = {
+          id: 'xp_titan_5000',
+          category: 'RANKED',
+          icon: '🌌',
+          title: 'Crossed 5000 XP (XP Titan)',
+          desc: 'Attain the prestigious 5,000+ Career XP summit across all game modes.',
+          current: totalPlayerXpWith3000,
+          target: 5000,
+          displayCurrent: `${totalPlayerXpWith3000} XP`,
+          displayTarget: '5000 XP',
+          unit: 'XP',
+          xp: 500
+        };
+        baseList.push(ach5000);
+
+        return baseList;
       }
 
       function renderAchievementsSection() {
@@ -6794,9 +7820,11 @@
         }
 
         let rankTitle = 'Rookie Striker';
-        if (unlockedCount >= 9) rankTitle = '👑 Hall of Fame Legend';
-        else if (unlockedCount >= 6) rankTitle = '🔥 Grandmaster All-Rounder';
-        else if (unlockedCount >= 3) rankTitle = '⚡ Rising Contender';
+        if (unlockedCount >= 28) rankTitle = '🐐 Immortal Hand Cricket GOAT';
+        else if (unlockedCount >= 22) rankTitle = '👑 Hall of Fame Legend';
+        else if (unlockedCount >= 16) rankTitle = '💎 Diamond Grandmaster';
+        else if (unlockedCount >= 10) rankTitle = '🔥 Grandmaster All-Rounder';
+        else if (unlockedCount >= 5) rankTitle = '⚡ Rising Contender';
         else if (unlockedCount >= 1) rankTitle = '🏏 Cap Holder';
 
         if (el.achRankTierBadge) el.achRankTierBadge.textContent = rankTitle;
@@ -6818,7 +7846,10 @@
         const filter = STATE.achievementFilter || 'ALL';
         const activeTabCls = 'py-2 px-3 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate';
         const idleTabCls = 'py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate';
-        if (el.btnAchFilterAll) el.btnAchFilterAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+        if (el.btnAchFilterAll) {
+          el.btnAchFilterAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+          el.btnAchFilterAll.textContent = `All (${totalCount})`;
+        }
         if (el.btnAchFilterBatting) el.btnAchFilterBatting.className = filter === 'BATTING' ? activeTabCls : idleTabCls;
         if (el.btnAchFilterBowling) el.btnAchFilterBowling.className = filter === 'BOWLING' ? activeTabCls : idleTabCls;
         if (el.btnAchFilterRanked) el.btnAchFilterRanked.className = filter === 'RANKED' ? activeTabCls : idleTabCls;
@@ -6873,6 +7904,647 @@
                     isUnlocked ? 'bg-gradient-to-r from-[#81b64c] to-yellow-300' : 'bg-amber-400/70'
                   }" style="width: ${progPct}%"></div>
                 </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const DESKTOP_STORE_CATALOG = [
+        {
+          id: 'card_gold_elite',
+          category: 'CARDS',
+          type: 'card',
+          name: 'Elite Gold Player Card',
+          tier: 'GOLD',
+          rarity: 'Rare Prestige',
+          badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          icon: '🏆',
+          price: 5000,
+          tagline: '24K Polished Gold Foil Card Frame',
+          lore: 'The first major prestige milestone. Encased in polished metallic gold foil with an embossed cricket laurel.',
+          perks: ['24K Gold Foil Profile Card', 'Golden Ribbon Cap on Pitch', 'VIP Gold Name in Rooms']
+        },
+        {
+          id: 'vfx_thunder_wicket',
+          category: 'COSMETICS',
+          type: 'vfx',
+          name: 'Thunderstrike Wicket VFX',
+          tier: 'EPIC',
+          rarity: 'Epic Cosmetic',
+          badgeClass: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
+          icon: '⚡',
+          price: 7500,
+          tagline: 'Crackling Electric Thunder SFX & VFX',
+          lore: 'Strikes pure lightning bolts down across the stumps accompanied by a sonic thunder boom whenever you take a wicket.',
+          perks: ['Electric Thunder Wicket Animation', 'Custom Deep Thunder Strike SFX', 'Opponent Stun Screen Flash']
+        },
+        {
+          id: 'card_diamond_vanguard',
+          category: 'CARDS',
+          type: 'card',
+          name: 'Diamond Vanguard Player Card',
+          tier: 'DIAMOND',
+          rarity: 'Legendary',
+          badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+          icon: '💎',
+          price: 12000,
+          tagline: 'Crystalline Diamond Cyan Borders',
+          lore: 'Forged from pressurized crystalline diamond shards. Features cyan holographic refraction and the "Diamond Prodigy" title.',
+          perks: ['Crystalline Diamond Prism Border', '"Diamond Prodigy" Unlocked Title', 'Diamond Crown Icon in Arena']
+        },
+        {
+          id: 'theme_lords_pavilion',
+          category: 'COSMETICS',
+          type: 'theme',
+          name: 'Lords Royal Pavilion Theme',
+          tier: 'EPIC',
+          rarity: 'Epic Pitch',
+          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          icon: '🏰',
+          price: 16000,
+          tagline: 'Historic English Royal Cricket Turf',
+          lore: 'Replaces the default pitch with pristine English county turf green, mahogany trim, and brass royal accents.',
+          perks: ['Royal English Turf Green Pitch', 'Mahogany Victorian Scorecard Frame', 'Golden Stump Highlights']
+        },
+        {
+          id: 'ball_meteorite_fireball',
+          category: 'COSMETICS',
+          type: 'vfx',
+          name: 'Meteorite Fireball Match Ball',
+          tier: 'LEGENDARY',
+          rarity: 'Legendary VFX',
+          badgeClass: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+          icon: '🔥',
+          price: 20000,
+          tagline: 'Blazing Magma Burst Wicket Explosion',
+          lore: 'Ignites the pitch with an inferno fireball explosion and molten ember particles on every wicket.',
+          perks: ['Inferno Fireball Stump Explosion', 'Custom Fireball Roar SFX', 'Molten Ember Particle Trail']
+        },
+        {
+          id: 'card_mythic_immortal',
+          category: 'CARDS',
+          type: 'card',
+          name: 'Mythic Immortal Player Card',
+          tier: 'MYTHIC',
+          rarity: 'Mythic Luxury',
+          badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+          icon: '👑',
+          price: 30000,
+          tagline: 'Obsidian Gold Encased in Pulsing Magma',
+          lore: 'Reserved strictly for the hand cricket elite. Pulsing molten magma flames surround an obsidian core with an "IMMORTAL" badge.',
+          perks: ['Pulsing Magma Flame Border', 'Gilded "IMMORTAL" Insignia', 'Crimson Wicket Flash Aura']
+        },
+        {
+          id: 'theme_cyberpunk_neon',
+          category: 'COSMETICS',
+          type: 'theme',
+          name: 'Cyberpunk Neon Pitch Theme',
+          tier: 'LEGENDARY',
+          rarity: 'Legendary Arena',
+          badgeClass: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40',
+          icon: '🌆',
+          price: 40000,
+          tagline: 'Synthwave Glowing Grid Arena',
+          lore: 'Transforms the pitch into an electric futuristic grid with neon magenta and cyan scanlines.',
+          perks: ['Synthwave Neon Grid Turf', 'Holographic Cyan & Magenta Stumps', 'Futuristic Cyber Arena Lighting']
+        },
+        {
+          id: 'card_cosmic_celestial',
+          category: 'CARDS',
+          type: 'card',
+          name: 'Cosmic Celestial Player Card',
+          tier: 'CELESTIAL',
+          rarity: 'Celestial Divine',
+          badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          icon: '🌌',
+          price: 55000,
+          tagline: 'Deep Space Nebula with Astral Dust',
+          lore: 'Infused with the fabric of the cosmos. Shimmers with deep purple nebulae and bestows the "Celestial Master" title.',
+          perks: ['Astral Nebula Card Texture', '"Celestial Master" Title', 'Pulsing Violet Void Aura']
+        },
+        {
+          id: 'card_custom_divine',
+          category: 'CUSTOM',
+          type: 'card',
+          name: 'The Divine Custom Player Card',
+          tier: 'CUSTOM',
+          rarity: 'Pinnacle Masterpiece',
+          badgeClass: 'bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 text-slate-950 font-black',
+          icon: '🔱',
+          price: 75000,
+          tagline: 'Unlocks Complete Custom Card Studio',
+          lore: 'The ultimate flex in OddAndEven.in history. Unlocks the Custom Card Studio allowing you to craft your own custom title, motto & verified star ⭐.',
+          perks: ['Full Custom Card Studio Access', 'Custom Signature Title & Motto', 'Official Verified Star Badge ⭐']
+        },
+        {
+          id: 'bat_solid_gold_willow',
+          category: 'CUSTOM',
+          type: 'bat',
+          name: 'Solid Gold Willow Bat',
+          tier: 'DIVINE',
+          rarity: 'Pinnacle End-Game',
+          badgeClass: 'bg-amber-400 text-slate-950 font-black',
+          icon: '🏏',
+          price: 100000,
+          tagline: 'Pure 24K Handcrafted Gold Willow',
+          lore: 'Handcrafted from pure solid 24K gold with divine radiance. Triggers golden star bursts and harmonic chimes on every boundary (4, 6, 10).',
+          perks: ['Pure 24K Solid Gold Bat Icon', '"Cricket Deity" Verified Title', 'Golden Boundary Star Burst & Chime']
+        }
+      ];
+
+      function computeDesktopStoreWallet(myRec) {
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        if (!cleanMe || isPlaceholderUsername(cleanMe)) {
+          return { availableXp: 0, totalEarnedXp: 0, achXp: 0, matchXp: 0, spentXp: 0, unlockedAchCount: 0, totalAchCount: 30 };
+        }
+        const rec = myRec || ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+        const achs = computePlayerAchievements(rec);
+        const unlockedAch = achs.filter((a) => a.current >= a.target);
+        const achXp = unlockedAch.reduce((s, a) => s + a.xp, 0);
+        const totalMatches = Math.max(rec.matches || 0, (rec.wins || 0) + (rec.losses || 0));
+        const totalWins = rec.wins || 0;
+        const totalRuns = rec.totalRuns || 0;
+        const totalWickets = rec.wicketsTaken || 0;
+        let tourneyWins = rec.tournamentWins || 0;
+        try {
+          tourneyWins = Math.max(tourneyWins, parseInt(localStorage.getItem('oddandeven_tourney_wins_' + cleanMe) || '0', 10) || 0);
+        } catch (e) {}
+        const activeDays = typeof getPlayerActiveDaysCount === "function" ? getPlayerActiveDaysCount(cleanMe, rec) : 0;
+        const matchXp = (totalRuns * 2) + (totalWickets * 25) + (totalWins * 50) + (totalMatches * 15) + (tourneyWins * 500);
+        const totalEarnedXp = achXp + matchXp;
+        let spentXp = 0;
+        try {
+          spentXp = parseInt(localStorage.getItem('oddandeven_spent_xp_' + cleanMe) || '0', 10) || 0;
+        } catch (e) {}
+        const availableXp = Math.max(0, totalEarnedXp - spentXp);
+        return {
+          availableXp,
+          totalEarnedXp,
+          achXp,
+          matchXp,
+          spentXp,
+          unlockedAchCount: unlockedAch.length,
+          totalAchCount: achs.length
+        };
+      }
+
+      function broadcastDesktopStoreSync(cleanMe) {
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('oddandeven_store_sync');
+            bc.postMessage({ type: 'STORE_INVENTORY_UPDATED', username: cleanMe, timestamp: Date.now() });
+          }
+          localStorage.setItem('oddandeven_store_bus', JSON.stringify({ type: 'SYNC', time: Date.now(), user: cleanMe }));
+        } catch (e) {}
+      }
+
+      function handleDesktopEquipToggle(itemId, itemType, action) {
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        if (!cleanMe || isPlaceholderUsername(cleanMe)) return;
+        SoundFX.click();
+        try {
+          if (action === 'equip') {
+            if (itemType === 'card' || itemId.startsWith('card_')) {
+              localStorage.setItem('oddandeven_equipped_card_' + cleanMe, itemId);
+            } else if (itemType === 'theme' || itemId.startsWith('theme_')) {
+              localStorage.setItem('oddandeven_equipped_theme_' + cleanMe, itemId);
+            } else if (itemType === 'vfx' || itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
+              localStorage.setItem('oddandeven_equipped_vfx_' + cleanMe, itemId);
+            } else if (itemType === 'bat' || itemId.startsWith('bat_')) {
+              localStorage.setItem('oddandeven_equipped_bat_' + cleanMe, itemId);
+            }
+          } else {
+            if (itemType === 'card' || itemId.startsWith('card_')) {
+              localStorage.setItem('oddandeven_equipped_card_' + cleanMe, 'card_default');
+            } else if (itemType === 'theme' || itemId.startsWith('theme_')) {
+              localStorage.removeItem('oddandeven_equipped_theme_' + cleanMe);
+            } else if (itemType === 'vfx' || itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
+              localStorage.removeItem('oddandeven_equipped_vfx_' + cleanMe);
+            } else if (itemType === 'bat' || itemId.startsWith('bat_')) {
+              localStorage.removeItem('oddandeven_equipped_bat_' + cleanMe);
+            }
+          }
+        } catch (e) {}
+        broadcastDesktopStoreSync(cleanMe);
+        renderAll();
+      }
+
+      function handleDesktopStorePurchase(itemId) {
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        if (!cleanMe || isPlaceholderUsername(cleanMe)) {
+          requireAccountAndPassword();
+          return;
+        }
+        const item = DESKTOP_STORE_CATALOG.find((x) => x.id === itemId);
+        if (!item) return;
+        const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+        const wallet = computeDesktopStoreWallet(myRec);
+        if (wallet.availableXp < item.price) {
+          SoundFX.wicket();
+          alert(`You need ${item.price.toLocaleString()} XP to unlock "${item.name}" (Available: ${wallet.availableXp.toLocaleString()} XP). Complete more achievements and matches!`);
+          return;
+        }
+        let inv = [];
+        try {
+          const raw = localStorage.getItem('oddandeven_store_inventory_' + cleanMe);
+          inv = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(inv)) inv = [];
+        } catch (e) { inv = []; }
+        if (!inv.includes(item.id)) {
+          inv.push(item.id);
+          try {
+            localStorage.setItem('oddandeven_store_inventory_' + cleanMe, JSON.stringify(inv));
+            localStorage.setItem('oddandeven_spent_xp_' + cleanMe, String(wallet.spentXp + item.price));
+          } catch (e) {}
+        }
+        handleDesktopEquipToggle(item.id, item.type, 'equip');
+        if (SoundFX.goldChime) SoundFX.goldChime();
+      }
+
+      function renderProfileSection() {
+        const scrProfile = document.getElementById('screenProfile');
+        if (!scrProfile) return;
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+        const wallet = computeDesktopStoreWallet(myRec);
+
+        let inv = [];
+        let eqCard = 'card_default';
+        let eqTheme = '';
+        let eqVfx = '';
+        let eqBat = '';
+        let customCfg = { title: 'Divine Sovereign', motto: 'Every number counts on the pitch.' };
+        try {
+          if (cleanMe) {
+            const rawInv = localStorage.getItem('oddandeven_store_inventory_' + cleanMe);
+            inv = rawInv ? JSON.parse(rawInv) : [];
+            if (!Array.isArray(inv)) inv = [];
+            eqCard = localStorage.getItem('oddandeven_equipped_card_' + cleanMe) || 'card_default';
+            eqTheme = localStorage.getItem('oddandeven_equipped_theme_' + cleanMe) || '';
+            eqVfx = localStorage.getItem('oddandeven_equipped_vfx_' + cleanMe) || '';
+            eqBat = localStorage.getItem('oddandeven_equipped_bat_' + cleanMe) || '';
+            const rawCustom = localStorage.getItem('oddandeven_custom_card_' + cleanMe);
+            if (rawCustom) {
+              const parsed = JSON.parse(rawCustom);
+              if (parsed && typeof parsed === 'object') customCfg = Object.assign(customCfg, parsed);
+            }
+          }
+        } catch (e) {}
+
+        // Hero Card styling
+        const heroCard = document.getElementById('hcProfileHeroCard');
+        const profFlag = document.getElementById('hcProfFlag');
+        const profUser = document.getElementById('hcProfUsername');
+        const profStar = document.getElementById('hcProfVerifiedStar');
+        const profDial = document.getElementById('hcProfDialCode');
+        const profTitle = document.getElementById('hcProfEquippedTitle');
+        const profMotto = document.getElementById('hcProfEquippedMotto');
+        const profTierBadge = document.getElementById('hcProfTierBadge');
+
+        let cardBorder = 'border-[#3d3a34] bg-gradient-to-br from-[#211f1c] via-[#1a1816] to-[#121110]';
+        let badgeHtml = '🏏 STANDARD CARD';
+        let badgeCls = 'bg-slate-800 text-slate-300 border-slate-600';
+        let titleText = 'Hand Cricket Contender';
+        let mottoText = '"Every number counts on the pitch."';
+        let showStar = false;
+
+        if (eqCard === 'card_custom_divine' && inv.includes('card_custom_divine')) {
+          cardBorder = 'border-amber-400 bg-gradient-to-br from-[#2d1b3d] via-[#1f1912] to-[#121110] shadow-[0_0_30px_rgba(245,184,61,0.22)]';
+          badgeHtml = '🔱 DIVINE CUSTOM';
+          badgeCls = 'bg-gradient-to-r from-amber-400 to-purple-400 text-slate-950 border-amber-300';
+          titleText = customCfg.title || 'Divine Sovereign';
+          mottoText = `"${customCfg.motto || 'Unstoppable on the pitch.'}"`;
+          showStar = true;
+        } else if (eqCard === 'card_cosmic_celestial' && inv.includes('card_cosmic_celestial')) {
+          cardBorder = 'border-purple-400 bg-gradient-to-br from-[#230f2e] via-[#1a1224] to-[#121110] shadow-[0_0_25px_rgba(168,85,247,0.2)]';
+          badgeHtml = '🌌 CELESTIAL';
+          badgeCls = 'bg-purple-500/20 text-purple-300 border-purple-400/50';
+          titleText = 'Celestial Grandmaster';
+          mottoText = '"Infused with the fabric of the cosmos."';
+          showStar = true;
+        } else if (eqCard === 'card_mythic_immortal' && inv.includes('card_mythic_immortal')) {
+          cardBorder = 'border-rose-500 bg-gradient-to-br from-[#2a0e14] via-[#1d1215] to-[#121110] shadow-[0_0_25px_rgba(244,63,94,0.2)]';
+          badgeHtml = '👑 MYTHIC IMMORTAL';
+          badgeCls = 'bg-rose-500/20 text-rose-300 border-rose-400/50';
+          titleText = 'Immortal Legend';
+          mottoText = '"Forged in molten stadium magma."';
+          showStar = true;
+        } else if (eqCard === 'card_diamond_vanguard' && inv.includes('card_diamond_vanguard')) {
+          cardBorder = 'border-cyan-400 bg-gradient-to-br from-[#0e2329] via-[#141d22] to-[#121110] shadow-[0_0_25px_rgba(34,211,238,0.2)]';
+          badgeHtml = '💎 DIAMOND VANGUARD';
+          badgeCls = 'bg-cyan-500/20 text-cyan-300 border-cyan-400/50';
+          titleText = 'Diamond Prodigy';
+          mottoText = '"Precision under high-pressure chases."';
+        } else if (eqCard === 'card_gold_elite' && inv.includes('card_gold_elite')) {
+          cardBorder = 'border-amber-400 bg-gradient-to-br from-[#2e2617] via-[#211d15] to-[#171614] shadow-[0_0_25px_rgba(245,158,11,0.2)]';
+          badgeHtml = '🏆 GOLD ELITE';
+          badgeCls = 'bg-amber-500/20 text-amber-300 border-amber-400/50';
+          titleText = '24K Gold Contender';
+          mottoText = '"Polished championship pedigree."';
+        }
+        if (eqBat === 'bat_solid_gold_willow' && inv.includes('bat_solid_gold_willow')) {
+          titleText = '🏏 Cricket Deity • ' + titleText;
+          showStar = true;
+        }
+
+        if (heroCard) heroCard.className = `rounded-2xl p-5 border-2 relative overflow-hidden flex flex-col justify-between transition-all duration-300 min-w-0 ${cardBorder}`;
+        if (profFlag) profFlag.textContent = STATE.myCountryFlag || myRec.countryFlag || '🇮🇳';
+        if (profUser) profUser.textContent = cleanMe || 'PLAYER';
+        if (profStar) profStar.classList.toggle('hidden', !showStar);
+        if (profDial) profDial.textContent = STATE.myCountryCode || myRec.countryCode || '+91';
+        if (profTitle) profTitle.textContent = titleText;
+        if (profMotto) profMotto.textContent = mottoText;
+        if (profTierBadge) {
+          profTierBadge.className = `px-2.5 py-1 rounded-lg text-[10px] font-brand font-black uppercase tracking-wider border shrink-0 ${badgeCls}`;
+          profTierBadge.textContent = badgeHtml;
+        }
+
+        const elHeroElo = document.getElementById('hcProfHeroElo');
+        const elHeroPeak = document.getElementById('hcProfHeroPeak');
+        const elHeroRuns = document.getElementById('hcProfHeroRuns');
+        const elHeroWickets = document.getElementById('hcProfHeroWickets');
+        if (elHeroElo) elHeroElo.textContent = `${myRec.elo || STATE.eloRating || 1500}`;
+        if (elHeroPeak) elHeroPeak.textContent = `${Math.max(myRec.peak || 1500, myRec.elo || 1500)}`;
+        if (elHeroRuns) elHeroRuns.textContent = `${(myRec.totalRuns || 0).toLocaleString()}`;
+        if (elHeroWickets) elHeroWickets.textContent = `${myRec.wicketsTaken || 0}`;
+
+        // Account Info Box
+        const elAccHandle = document.getElementById('hcProfAccHandle');
+        const elAccCountry = document.getElementById('hcProfAccCountry');
+        const elAccXp = document.getElementById('hcProfAccXp');
+        const elAccAch = document.getElementById('hcProfAccAch');
+        if (elAccHandle) elAccHandle.textContent = `@${cleanMe || 'PLAYER'}`;
+        if (elAccCountry) elAccCountry.textContent = `${STATE.myCountryFlag || '🇮🇳'} ${STATE.myCountryName || 'India'} (${STATE.myCountryCode || '+91'})`;
+        if (elAccXp) elAccXp.textContent = `${wallet.availableXp.toLocaleString()} XP Available`;
+        if (elAccAch) elAccAch.textContent = `${wallet.unlockedAchCount}/${wallet.totalAchCount} Unlocked`;
+
+        // AI Tier Stats & Total Matches
+        let aiStats = {};
+        try {
+          if (cleanMe) {
+            const rawAi = localStorage.getItem('oddandeven_ai_tier_stats_' + cleanMe);
+            if (rawAi) aiStats = JSON.parse(rawAi) || {};
+          }
+        } catch (e) {}
+        const botTiers = [
+          { key: 'ROOKIE', name: 'Rookie Striker', icon: '🌱', elo: 1150, color: 'emerald' },
+          { key: 'TACTICIAN', name: 'Tempo Tactician', icon: '🧠', elo: 1450, color: 'cyan' },
+          { key: 'AGGRESSOR', name: 'Boundary Aggressor', icon: '🔥', elo: 1650, color: 'amber' },
+          { key: 'WALL', name: 'The Wall (GM AI)', icon: '🧱', elo: 1850, color: 'purple' }
+        ];
+        let totalBotMatches = 0;
+        let totalBotWins = 0;
+        let totalBotLosses = 0;
+        botTiers.forEach((t) => {
+          const st = aiStats[t.key] || { matches: 0, wins: 0, losses: 0, draws: 0 };
+          totalBotMatches += st.matches || 0;
+          totalBotWins += st.wins || 0;
+          totalBotLosses += st.losses || 0;
+        });
+
+        const combinedMatches = Math.max(myRec.matches || 0, (myRec.wins || 0) + (myRec.losses || 0), totalBotMatches);
+        const combinedWins = Math.max(myRec.wins || 0, totalBotWins);
+        const combinedLosses = Math.max(myRec.losses || 0, totalBotLosses);
+        const rankedMatches = Math.max(0, combinedMatches - totalBotMatches);
+        const wlRatio = combinedLosses > 0 ? (combinedWins / combinedLosses).toFixed(2) : (combinedWins > 0 ? `${combinedWins}.00` : '0.00');
+        const winPct = combinedMatches > 0 ? Math.round((combinedWins / combinedMatches) * 100) : 0;
+
+        const elKpiMatches = document.getElementById('hcProfKpiMatches');
+        const elKpiMatchesSub = document.getElementById('hcProfKpiMatchesSub');
+        const elKpiWinRatio = document.getElementById('hcProfKpiWinRatio');
+        const elKpiWinSub = document.getElementById('hcProfKpiWinSub');
+        const elKpiHigh = document.getElementById('hcProfKpiHighScore');
+        const elKpiHighSub = document.getElementById('hcProfKpiHighSub');
+        if (elKpiMatches) elKpiMatches.textContent = `${combinedMatches}`;
+        if (elKpiMatchesSub) elKpiMatchesSub.textContent = `${rankedMatches} Ranked • ${totalBotMatches} vs Bots`;
+        if (elKpiWinRatio) elKpiWinRatio.textContent = wlRatio;
+        if (elKpiWinSub) elKpiWinSub.textContent = `${combinedWins}W – ${combinedLosses}L (${winPct}% Win)`;
+        if (elKpiHigh) elKpiHigh.textContent = `${Math.max(myRec.highScore || 0, STATE.userScore || 0)}*`;
+        if (elKpiHighSub) elKpiHighSub.textContent = `${myRec.centuriesCount || 0} Centuries • ${myRec.sr500Count || 0} SR 500+`;
+
+        // Number Frequency Telemetry (1-10)
+        let numFreq = {};
+        try {
+          if (cleanMe) {
+            const rawFreq = localStorage.getItem('oddandeven_number_frequency_' + cleanMe);
+            if (rawFreq) numFreq = JSON.parse(rawFreq) || {};
+          }
+        } catch (e) {}
+        STATE.userNumHistory.forEach((n) => {
+          if (numFreq[n] === undefined) numFreq[n] = (numFreq[n] || 0) + 1;
+        });
+
+        let totalPicks = 0;
+        let favNum = 6;
+        let maxCount = 0;
+        for (let n = 1; n <= 10; n++) {
+          const c = Number(numFreq[n]) || 0;
+          totalPicks += c;
+          if (c > maxCount) {
+            maxCount = c;
+            favNum = n;
+          }
+        }
+        const favPct = totalPicks > 0 ? Math.round((maxCount / totalPicks) * 100) : 0;
+        const elKpiFavNum = document.getElementById('hcProfKpiFavNum');
+        const elKpiFavSub = document.getElementById('hcProfKpiFavSub');
+        const elTotalPicksBadge = document.getElementById('hcProfTotalPicksBadge');
+        if (elKpiFavNum) elKpiFavNum.textContent = totalPicks > 0 ? `#${favNum}` : '—';
+        if (elKpiFavSub) elKpiFavSub.textContent = totalPicks > 0 ? `Picked ${maxCount}x (${favPct}% of balls)` : 'Play a match to log picks';
+        if (elTotalPicksBadge) elTotalPicksBadge.textContent = `${totalPicks} Deliveries`;
+
+        const numGrid = document.getElementById('hcProfNumTelemetryGrid');
+        if (numGrid) {
+          numGrid.innerHTML = Array.from({ length: 10 }, (_, idx) => {
+            const n = idx + 1;
+            const c = Number(numFreq[n]) || 0;
+            const pct = totalPicks > 0 ? Math.round((c / totalPicks) * 100) : 0;
+            const barH = maxCount > 0 ? Math.max(8, Math.round((c / maxCount) * 100)) : 8;
+            const isFav = totalPicks > 0 && n === favNum;
+            return `
+              <div class="p-2 rounded-xl bg-black/35 border ${isFav ? 'border-amber-400/70 bg-amber-500/10' : 'border-white/5'} flex flex-col items-center justify-end gap-1">
+                <span class="text-[9px] font-mono-num ${isFav ? 'text-amber-300 font-black' : 'text-slate-400'}">${pct}%</span>
+                <div class="w-full h-14 bg-black/50 rounded-lg flex items-end p-0.5 overflow-hidden">
+                  <div class="w-full rounded ${isFav ? 'bg-gradient-to-t from-amber-500 to-yellow-300' : 'bg-cyan-500/60'}" style="height:${barH}%"></div>
+                </div>
+                <span class="text-xs font-mono-num font-black ${isFav ? 'text-amber-300' : 'text-white'}">#${n}</span>
+                <span class="text-[8px] font-mono-num text-slate-400">${c}x</span>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // AI Tiers Grid
+        const aiGrid = document.getElementById('hcProfAiTiersGrid');
+        if (aiGrid) {
+          aiGrid.innerHTML = botTiers.map((t) => {
+            const st = aiStats[t.key] || { matches: 0, wins: 0, losses: 0, draws: 0 };
+            const m = st.matches || 0;
+            const w = st.wins || 0;
+            const l = st.losses || 0;
+            const pct = m > 0 ? Math.round((w / m) * 100) : 0;
+            return `
+              <div class="p-3 rounded-xl bg-black/35 border border-white/10 flex flex-col justify-between gap-2">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-lg">${t.icon}</span>
+                    <div class="min-w-0">
+                      <div class="text-xs font-black text-white truncate">${t.name}</div>
+                      <div class="text-[10px] font-mono-num text-slate-400">${t.elo} Bot Elo • ${w}W–${l}L</div>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono-num font-black text-[#a3d96c]">${pct}% Win</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-black/60 overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-[#81b64c] to-cyan-400" style="width:${pct}%"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // Unlocked Cards & Cosmetics Shelf
+        const shelfEl = document.getElementById('hcProfCardsShelfList');
+        const countBadge = document.getElementById('hcProfUnlockedCountBadge');
+        const unlockedStoreCount = DESKTOP_STORE_CATALOG.filter((it) => inv.includes(it.id)).length;
+        if (countBadge) countBadge.textContent = `${unlockedStoreCount}/${DESKTOP_STORE_CATALOG.length} Unlocked`;
+        if (shelfEl) {
+          shelfEl.innerHTML = DESKTOP_STORE_CATALOG.map((item) => {
+            const isOwned = inv.includes(item.id);
+            let isEquipped = false;
+            if (item.type === 'card') isEquipped = isOwned && eqCard === item.id;
+            else if (item.type === 'theme') isEquipped = isOwned && eqTheme === item.id;
+            else if (item.type === 'vfx') isEquipped = isOwned && eqVfx === item.id;
+            else if (item.type === 'bat') isEquipped = isOwned && eqBat === item.id;
+
+            let btnHtml = '';
+            if (isEquipped) {
+              btnHtml = `<button type="button" data-prof-equip="${item.id}" data-prof-type="${item.type}" data-prof-action="unequip" class="px-2.5 py-1.5 rounded-xl text-[10px] font-brand font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">✓ Equipped</button>`;
+            } else if (isOwned) {
+              btnHtml = `<button type="button" data-prof-equip="${item.id}" data-prof-type="${item.type}" data-prof-action="equip" class="px-2.5 py-1.5 rounded-xl text-[10px] font-brand font-black bg-amber-500 hover:bg-amber-400 text-slate-950 shrink-0 shadow">⚡ Equip</button>`;
+            } else {
+              btnHtml = `<button type="button" data-prof-goto-store="${item.id}" class="px-2.5 py-1.5 rounded-xl text-[10px] font-mono-num font-bold bg-black/40 hover:bg-black/60 text-amber-300 border border-amber-500/30 shrink-0">🔒 ${item.price.toLocaleString()} XP</button>`;
+            }
+
+            return `
+              <div class="p-3 rounded-xl bg-black/35 border ${isEquipped ? 'border-emerald-400/60 bg-emerald-500/5' : isOwned ? 'border-amber-400/40' : 'border-white/10'} flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-9 h-9 rounded-xl bg-black/50 border border-white/10 flex items-center justify-center text-lg shrink-0">${item.icon}</span>
+                  <div class="min-w-0">
+                    <div class="text-xs font-black text-white truncate">${item.name}</div>
+                    <div class="text-[10px] text-slate-400 truncate">${item.tagline}</div>
+                  </div>
+                </div>
+                ${btnHtml}
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      function renderStoreSection() {
+        const scrStore = document.getElementById('screenStore');
+        if (!scrStore) return;
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
+        const wallet = computeDesktopStoreWallet(myRec);
+
+        let inv = [];
+        let eqCard = 'card_default';
+        let eqTheme = '';
+        let eqVfx = '';
+        let eqBat = '';
+        try {
+          if (cleanMe) {
+            const rawInv = localStorage.getItem('oddandeven_store_inventory_' + cleanMe);
+            inv = rawInv ? JSON.parse(rawInv) : [];
+            if (!Array.isArray(inv)) inv = [];
+            eqCard = localStorage.getItem('oddandeven_equipped_card_' + cleanMe) || 'card_default';
+            eqTheme = localStorage.getItem('oddandeven_equipped_theme_' + cleanMe) || '';
+            eqVfx = localStorage.getItem('oddandeven_equipped_vfx_' + cleanMe) || '';
+            eqBat = localStorage.getItem('oddandeven_equipped_bat_' + cleanMe) || '';
+          }
+        } catch (e) {}
+
+        const elAvail = document.getElementById('hcStoreAvailXp');
+        const elAch = document.getElementById('hcStoreAchXp');
+        const elMatch = document.getElementById('hcStoreMatchXp');
+        const elSpent = document.getElementById('hcStoreSpentXp');
+        if (elAvail) elAvail.textContent = `${wallet.availableXp.toLocaleString()} XP`;
+        if (elAch) elAch.textContent = `${wallet.achXp.toLocaleString()} / 6,625 XP`;
+        if (elMatch) elMatch.textContent = `+${wallet.matchXp.toLocaleString()} XP`;
+        const unlockedCount = DESKTOP_STORE_CATALOG.filter((it) => inv.includes(it.id)).length;
+        if (elSpent) elSpent.textContent = `${wallet.spentXp.toLocaleString()} XP (${unlockedCount}/${DESKTOP_STORE_CATALOG.length})`;
+
+        const studioBadge = document.getElementById('hcCustomStudioStatusBadge');
+        const hasDivine = inv.includes('card_custom_divine');
+        if (studioBadge) {
+          studioBadge.textContent = hasDivine ? '✓ STUDIO UNLOCKED' : 'REQUIRES 75,000 XP DIVINE CARD';
+          studioBadge.className = hasDivine
+            ? 'px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+            : 'px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-amber-500/20 text-amber-300 border border-amber-500/35';
+        }
+
+        const filter = STATE.storeFilter || 'ALL';
+        const activeTabCls = 'py-2 px-3 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition truncate';
+        const idleTabCls = 'py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate';
+        const fAll = document.getElementById('btnStoreFilterAll');
+        const fCards = document.getElementById('btnStoreFilterCards');
+        const fCustom = document.getElementById('btnStoreFilterCustom');
+        const fCosm = document.getElementById('btnStoreFilterCosmetics');
+        if (fAll) fAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+        if (fCards) fCards.className = filter === 'CARDS' ? activeTabCls : idleTabCls;
+        if (fCustom) fCustom.className = filter === 'CUSTOM' ? activeTabCls : idleTabCls;
+        if (fCosm) fCosm.className = filter === 'COSMETICS' ? activeTabCls : idleTabCls;
+
+        const gridEl = document.getElementById('hcStoreItemsGrid');
+        if (!gridEl) return;
+        const visible = filter === 'ALL' ? DESKTOP_STORE_CATALOG : DESKTOP_STORE_CATALOG.filter((it) => it.category === filter);
+        gridEl.innerHTML = visible.map((item) => {
+          const isOwned = inv.includes(item.id);
+          let isEquipped = false;
+          if (item.type === 'card') isEquipped = isOwned && eqCard === item.id;
+          else if (item.type === 'theme') isEquipped = isOwned && eqTheme === item.id;
+          else if (item.type === 'vfx') isEquipped = isOwned && eqVfx === item.id;
+          else if (item.type === 'bat') isEquipped = isOwned && eqBat === item.id;
+          const canAfford = wallet.availableXp >= item.price;
+          const missing = Math.max(0, item.price - wallet.availableXp);
+
+          let actionHtml = '';
+          if (isEquipped) {
+            actionHtml = `<button type="button" data-store-equip="${item.id}" data-store-type="${item.type}" data-store-action="unequip" class="w-full py-2 rounded-xl text-xs font-brand font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">✓ Active on Pitch (Click to Unequip)</button>`;
+          } else if (isOwned) {
+            actionHtml = `<button type="button" data-store-equip="${item.id}" data-store-type="${item.type}" data-store-action="equip" class="w-full py-2 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 shadow">⚡ Equip to Arena</button>`;
+          } else if (canAfford) {
+            actionHtml = `<button type="button" data-store-buy="${item.id}" class="w-full py-2 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:opacity-95 text-slate-950 shadow">🪙 Unlock for ${item.price.toLocaleString()} XP</button>`;
+          } else {
+            actionHtml = `<button type="button" data-store-buy="${item.id}" class="w-full py-2 px-3 rounded-xl text-xs font-mono-num font-bold bg-black/40 text-slate-400 border border-white/10 flex items-center justify-between"><span>🔒 ${item.price.toLocaleString()} XP</span><span class="text-[10px] text-amber-300">Need ${missing.toLocaleString()} XP</span></button>`;
+          }
+
+          return `
+            <div class="p-4 rounded-2xl bg-[#1c1a17] border ${isEquipped ? 'border-emerald-400/60 bg-emerald-500/5' : isOwned ? 'border-amber-400/40' : 'border-[#36332e]'} flex flex-col justify-between gap-3">
+              <div class="space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span class="w-10 h-10 rounded-xl bg-black/50 border border-white/10 flex items-center justify-center text-xl shrink-0">${item.icon}</span>
+                    <div class="min-w-0">
+                      <div class="text-xs font-black text-white truncate">${item.name}</div>
+                      <span class="inline-block px-1.5 py-0.5 rounded text-[8px] font-brand font-black uppercase ${item.badgeClass}">${item.rarity}</span>
+                    </div>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <div class="font-mono-num font-black text-xs text-amber-300">${item.price.toLocaleString()}</div>
+                    <div class="text-[9px] text-slate-400 uppercase font-mono-num">XP</div>
+                  </div>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-snug bg-black/25 p-2 rounded-xl border border-white/5">${item.lore}</p>
+                <div class="space-y-0.5 text-[10px] text-slate-300">
+                  ${item.perks.map((p) => `<div class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span><span>${p}</span></div>`).join('')}
+                </div>
+              </div>
+              <div class="pt-2 border-t border-white/10">
+                ${actionHtml}
               </div>
             </div>
           `;
@@ -6991,7 +8663,6 @@
 
         // Sidebar & Inline Setup Screen Navigation
         function switchCenterScreen(screenName) {
-          if (screenName !== 'LEADERBOARD' && !requireAccountAndPassword()) return;
           SoundFX.click();
           if (screenName === 'PITCH' && isMultiplayer() && !isMultiplayerReadyToPlay()) {
             // If user started multiplayer mode and friend hasn't joined yet, do not start the match on the pitch!
@@ -7019,6 +8690,7 @@
           }
           renderAll();
         }
+        try { window.switchCenterScreen = switchCenterScreen; } catch (e) {}
 
         function highlightBotCard(botKey) {
           SoundFX.click();
@@ -7047,6 +8719,124 @@
         }
         if (el.btnBackFromAchievements) {
           el.btnBackFromAchievements.addEventListener('click', () => switchCenterScreen('PITCH'));
+        }
+        const bindInlineScreenLink = (elem, screenTarget) => {
+          if (!elem) return;
+          elem.addEventListener('click', (e) => {
+            if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+            e.preventDefault();
+            switchCenterScreen(screenTarget);
+          });
+        };
+        bindInlineScreenLink(el.sideNavProfile, 'PROFILE');
+        bindInlineScreenLink(el.btnHeaderProfile, 'PROFILE');
+        bindInlineScreenLink(el.sidebarPlayerCard, 'PROFILE');
+        bindInlineScreenLink(el.sideNavStore, 'STORE');
+        bindInlineScreenLink(el.btnHeaderStore, 'STORE');
+        bindInlineScreenLink(document.getElementById('btnAchOpenStoreInline'), 'STORE');
+
+        const btnBackFromProfile = document.getElementById('btnBackFromProfile');
+        if (btnBackFromProfile) btnBackFromProfile.addEventListener('click', () => switchCenterScreen('PITCH'));
+        const btnBackFromStore = document.getElementById('btnBackFromStore');
+        if (btnBackFromStore) btnBackFromStore.addEventListener('click', () => switchCenterScreen('PITCH'));
+        const btnProfileGoToStore = document.getElementById('btnProfileGoToStore');
+        if (btnProfileGoToStore) btnProfileGoToStore.addEventListener('click', () => switchCenterScreen('STORE'));
+        const btnProfOpenStoreBottom = document.getElementById('btnProfOpenStoreBottom');
+        if (btnProfOpenStoreBottom) btnProfOpenStoreBottom.addEventListener('click', () => switchCenterScreen('STORE'));
+        const btnStoreGoToProfile = document.getElementById('btnStoreGoToProfile');
+        if (btnStoreGoToProfile) btnStoreGoToProfile.addEventListener('click', () => switchCenterScreen('PROFILE'));
+
+        const btnProfileSignOut = document.getElementById('btnProfileSignOut');
+        if (btnProfileSignOut && el.btnHeaderSignOut) {
+          btnProfileSignOut.addEventListener('click', () => el.btnHeaderSignOut.click());
+        }
+        const btnProfileRemoveAccount = document.getElementById('btnProfileRemoveAccount');
+        if (btnProfileRemoveAccount && el.btnHeaderRemoveAccount) {
+          btnProfileRemoveAccount.addEventListener('click', () => el.btnHeaderRemoveAccount.click());
+        }
+
+        const setDesktopStoreFilter = (fKey) => {
+          SoundFX.click();
+          STATE.storeFilter = fKey;
+          renderStoreSection();
+        };
+        const fAllBtn = document.getElementById('btnStoreFilterAll');
+        const fCardsBtn = document.getElementById('btnStoreFilterCards');
+        const fCustomBtn = document.getElementById('btnStoreFilterCustom');
+        const fCosmBtn = document.getElementById('btnStoreFilterCosmetics');
+        if (fAllBtn) fAllBtn.addEventListener('click', () => setDesktopStoreFilter('ALL'));
+        if (fCardsBtn) fCardsBtn.addEventListener('click', () => setDesktopStoreFilter('CARDS'));
+        if (fCustomBtn) fCustomBtn.addEventListener('click', () => setDesktopStoreFilter('CUSTOM'));
+        if (fCosmBtn) fCosmBtn.addEventListener('click', () => setDesktopStoreFilter('COSMETICS'));
+
+        const btnSaveCustom = document.getElementById('btnHcSaveCustomCard');
+        if (btnSaveCustom) {
+          btnSaveCustom.addEventListener('click', () => {
+            const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+            if (!cleanMe || isPlaceholderUsername(cleanMe)) {
+              requireAccountAndPassword();
+              return;
+            }
+            let inv = [];
+            try {
+              const raw = localStorage.getItem('oddandeven_store_inventory_' + cleanMe);
+              inv = raw ? JSON.parse(raw) : [];
+            } catch (e) {}
+            if (!Array.isArray(inv) || !inv.includes('card_custom_divine')) {
+              SoundFX.wicket();
+              alert('Unlock "The Divine Custom Player Card" (75,000 XP) in the Store first to save custom titles and mottos!');
+              return;
+            }
+            const tInput = document.getElementById('hcCustomTitleInput');
+            const mInput = document.getElementById('hcCustomMottoInput');
+            const title = (tInput && tInput.value.trim()) || 'Divine Sovereign';
+            const motto = (mInput && mInput.value.trim()) || 'Every number counts on the pitch.';
+            try {
+              localStorage.setItem('oddandeven_custom_card_' + cleanMe, JSON.stringify({ title, motto, aura: 'gold', palette: 'obsidian' }));
+              localStorage.setItem('oddandeven_equipped_card_' + cleanMe, 'card_custom_divine');
+            } catch (e) {}
+            if (SoundFX.goldChime) SoundFX.goldChime();
+            broadcastDesktopStoreSync(cleanMe);
+            renderAll();
+          });
+        }
+
+        const scrProfEl = document.getElementById('screenProfile');
+        if (scrProfEl) {
+          scrProfEl.addEventListener('click', (e) => {
+            const eqBtn = e.target.closest('[data-prof-equip]');
+            if (eqBtn) {
+              handleDesktopEquipToggle(
+                eqBtn.getAttribute('data-prof-equip'),
+                eqBtn.getAttribute('data-prof-type'),
+                eqBtn.getAttribute('data-prof-action')
+              );
+              return;
+            }
+            const storeJump = e.target.closest('[data-prof-goto-store]');
+            if (storeJump) {
+              switchCenterScreen('STORE');
+            }
+          });
+        }
+
+        const scrStoreEl = document.getElementById('screenStore');
+        if (scrStoreEl) {
+          scrStoreEl.addEventListener('click', (e) => {
+            const buyBtn = e.target.closest('[data-store-buy]');
+            if (buyBtn) {
+              handleDesktopStorePurchase(buyBtn.getAttribute('data-store-buy'));
+              return;
+            }
+            const eqBtn = e.target.closest('[data-store-equip]');
+            if (eqBtn) {
+              handleDesktopEquipToggle(
+                eqBtn.getAttribute('data-store-equip'),
+                eqBtn.getAttribute('data-store-type'),
+                eqBtn.getAttribute('data-store-action')
+              );
+            }
+          });
         }
         const setDesktopAchFilter = (filterKey) => {
           SoundFX.click();
@@ -7205,6 +8995,26 @@
               try { window.__clearCloudFriendInvite(me); } catch (e) {}
             }
             renderAll();
+          });
+        }
+        if (el.btnAcceptGlobalFriendRequest) {
+          el.btnAcceptGlobalFriendRequest.addEventListener('click', () => {
+            const req = STATE.incomingFriendRequestPending;
+            hideGlobalFriendRequestToast();
+            if (req) {
+              const fromUser = String(req.fromUser || req.from || '').trim().toUpperCase();
+              if (fromUser) acceptFriendRequest(fromUser);
+            }
+          });
+        }
+        if (el.btnDismissGlobalFriendRequest) {
+          el.btnDismissGlobalFriendRequest.addEventListener('click', () => {
+            const req = STATE.incomingFriendRequestPending;
+            hideGlobalFriendRequestToast();
+            if (req) {
+              const fromUser = String(req.fromUser || req.from || '').trim().toUpperCase();
+              if (fromUser) declineFriendRequest(fromUser);
+            }
           });
         }
         el.sideNavShowcase.addEventListener('click', () => switchCenterScreen('SHOWCASE'));
@@ -7510,7 +9320,7 @@
                   if (cloudCheck.exists && cloudCheck.data) {
                     usersMap[uname] = Object.assign({}, usersMap[uname] || {}, cloudCheck.data, { username: uname });
                     saveEncryptedUsersMap(usersMap);
-                  } else {
+                  } else if (cloudCheck.deleted) {
                     if (typeof window.__scrubAccountCompletelyFromWebsite === 'function') {
                       window.__scrubAccountCompletelyFromWebsite(uname, false);
                     }
@@ -7614,9 +9424,13 @@
             if (typeof window.__syncCloudLeaderboard === 'function') {
               try { window.__syncCloudLeaderboard(STATE.humanPlayers, usersMap, STATE.myUsername); } catch (e) {}
             }
+            window.__v2ShownThisPageLoad = true;
             enforceMandatoryAuthGate();
             closeAuthModal();
             switchCenterScreen('PITCH');
+            if (typeof window.openVersion2Showcase === 'function') {
+              window.openVersion2Showcase();
+            }
           });
         }
 
@@ -7645,6 +9459,9 @@
                 }
                 STATE.activeScreen = 'PITCH';
                 renderAll();
+                if (typeof window.openVersion2Showcase === 'function') {
+                  window.openVersion2Showcase();
+                }
               }
             };
           } catch (e) {}
@@ -7852,9 +9669,14 @@
         setInterval(renderEventsTabAndCountdowns, 1000);
         try {
           const urlParams = new URLSearchParams(window.location.search);
+          const fromLogin = urlParams.get('from') === 'login';
           const reqScreen = (urlParams.get('screen') || '').trim().toUpperCase();
-          if (reqScreen === 'EVENTS' || reqScreen === 'ACHIEVEMENTS' || reqScreen === 'LEADERBOARD') {
+          if (fromLogin) {
+            switchCenterScreen(reqScreen && reqScreen !== 'LEADERBOARD' ? reqScreen : 'PITCH');
+          } else if (reqScreen === 'LEADERBOARD' || reqScreen === 'EVENTS' || reqScreen === 'ACHIEVEMENTS' || reqScreen === 'PROFILE' || reqScreen === 'STORE' || reqScreen === 'PITCH') {
             switchCenterScreen(reqScreen);
+          } else {
+            switchCenterScreen('PITCH');
           }
         } catch (e) {}
       };
@@ -7925,15 +9747,37 @@
         if (!clean) return false;
         try {
           const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
-          return ts > 0 && (Date.now() - ts) < 25000;
+          return ts > 0 && (Date.now() - ts) < 120000;
         } catch (e) {
           return false;
         }
       };
 
+      const loadCloudSyncedCols = () => {
+        try {
+          const raw = localStorage.getItem('oddandeven_cloud_synced_cols_v1');
+          return raw ? (JSON.parse(raw) || {}) : {};
+        } catch (e) {
+          return {};
+        }
+      };
+
+      const saveCloudSyncedCols = (map) => {
+        try {
+          localStorage.setItem('oddandeven_cloud_synced_cols_v1', JSON.stringify(map || {}));
+        } catch (e) {}
+      };
+
       const deleteAllCloudAccountMirrors = async (uname) => {
         const clean = String(uname || '').trim().toUpperCase();
         if (!db || !clean || isRecentCloudSignup(clean)) return;
+        try {
+          const colsMap = loadCloudSyncedCols();
+          if (colsMap[clean]) {
+            delete colsMap[clean];
+            saveCloudSyncedCols(colsMap);
+          }
+        } catch (e) {}
         try {
           await Promise.allSettled([
             deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
@@ -7948,24 +9792,37 @@
         if (!artAccLoaded && !rootAccLoaded) return;
         cloudPurged = Array.from(new Set([...artPurged, ...rootPurged])).filter((u) => !isRecentCloudSignup(u));
 
-        let knownLbUsers = [];
+        const syncedColsMap = loadCloudSyncedCols();
+        let localVault = {};
         try {
-          const rawKnown = localStorage.getItem('oddandeven_known_lb_users_v1');
-          if (rawKnown) knownLbUsers = JSON.parse(rawKnown) || [];
+          if (typeof window.__loadLocalVaultForCloud === 'function') {
+            localVault = window.__loadLocalVaultForCloud() || {};
+          }
         } catch (e) {}
-        const knownLbSet = new Set(Array.isArray(knownLbUsers) ? knownLbUsers : []);
+
+        FAKE_SEED_NAMES.forEach((fakeName) => {
+          deleteAllCloudAccountMirrors(fakeName);
+          delete artAccounts[fakeName];
+          delete rootAccounts[fakeName];
+          delete artPlayers[fakeName];
+          delete rootPlayers[fakeName];
+          delete localVault[fakeName];
+        });
 
         const allSeen = new Set([
           ...Object.keys(artAccounts),
           ...Object.keys(rootAccounts),
           ...Object.keys(artPlayers),
-          ...Object.keys(rootPlayers)
+          ...Object.keys(rootPlayers),
+          ...Object.keys(localVault)
         ]);
 
         const nextAccounts = {};
         const nextPlayers = {};
+        let needsReseedSync = false;
 
         allSeen.forEach((clean) => {
+          if (!clean) return;
           if (cloudPurged.includes(clean) && !isRecentCloudSignup(clean)) {
             deleteAllCloudAccountMirrors(clean);
             return;
@@ -7974,49 +9831,84 @@
           const inRootAcc = Boolean(rootAccounts[clean]);
           const inArtLb = Boolean(artPlayers[clean]);
           const inRootLb = Boolean(rootPlayers[clean]);
+          const hasAnyAcc = inArtAcc || inRootAcc || inArtLb || inRootLb || Boolean(localVault[clean]);
 
-          let validInAcc = false;
-          if (artAccLoaded && rootAccLoaded) {
-            validInAcc = (inArtAcc && inRootAcc) || (isRecentCloudSignup(clean) && (inArtAcc || inRootAcc));
-          } else if (artAccLoaded) {
-            validInAcc = inArtAcc;
-          } else if (rootAccLoaded) {
-            validInAcc = inRootAcc;
-          }
-
-          let deletedFromLb = false;
-          if (knownLbSet.has(clean) && !isRecentCloudSignup(clean)) {
-            if (artLbLoaded && !inArtLb) deletedFromLb = true;
-            if (rootLbLoaded && !inRootLb) deletedFromLb = true;
-          }
-
-          if (validInAcc && !deletedFromLb) {
-            nextAccounts[clean] = Object.assign({}, rootAccounts[clean] || {}, artAccounts[clean] || {}, { username: clean });
-            if (inArtLb || inRootLb) {
-              nextPlayers[clean] = Object.assign({}, rootPlayers[clean] || {}, artPlayers[clean] || {}, { name: clean });
+          if (hasAnyAcc) {
+            nextAccounts[clean] = Object.assign({}, localVault[clean] || {}, rootAccounts[clean] || {}, artAccounts[clean] || {}, { username: clean });
+            const rawBasePlayer = Object.assign({}, rootPlayers[clean] || {}, artPlayers[clean] || {});
+            const basePlayer = typeof window.__sanitizeRecordForFreshEpoch === 'function'
+              ? window.__sanitizeRecordForFreshEpoch(rawBasePlayer)
+              : rawBasePlayer;
+            const curWk = getMondaySundayWeekInfo().weekKey;
+            const sanitizedBasePlayer = Object.assign({}, basePlayer);
+            if (sanitizedBasePlayer.weekKey !== curWk) {
+              sanitizedBasePlayer.weekKey = curWk;
+              sanitizedBasePlayer.weeklyEloGain = 0;
+              sanitizedBasePlayer.weeklyWins = 0;
+              sanitizedBasePlayer.weeklyLosses = 0;
+              sanitizedBasePlayer.weeklyMatches = 0;
+              sanitizedBasePlayer.weeklyRuns = 0;
+              sanitizedBasePlayer.weeklyWickets = 0;
             }
-          } else if (!isRecentCloudSignup(clean)) {
-            deleteAllCloudAccountMirrors(clean);
-            if (typeof window.__scrubAccountCompletelyFromWebsite === 'function') {
-              window.__scrubAccountCompletelyFromWebsite(clean, true);
+            nextPlayers[clean] = Object.assign({
+              name: clean,
+              countryCode: nextAccounts[clean].countryCode || '+91',
+              countryFlag: nextAccounts[clean].countryFlag || '🇮🇳',
+              countryName: nextAccounts[clean].countryName || 'India',
+              isRealRegisteredUser: true,
+              elo: 1500,
+              peak: 1500,
+              wins: 0,
+              losses: 0,
+              matches: 0,
+              totalRuns: 0,
+              totalBalls: 0,
+              highScore: 0,
+              wicketsTaken: 0,
+              weekKey: curWk,
+              weeklyEloGain: 0,
+              weeklyWins: 0,
+              weeklyLosses: 0,
+              weeklyMatches: 0,
+              weeklyRuns: 0,
+              weeklyWickets: 0,
+              updatedAt: Date.now()
+            }, sanitizedBasePlayer);
+
+            syncedColsMap[clean] = {
+              artAcc: inArtAcc,
+              rootAcc: inRootAcc,
+              artLb: inArtLb,
+              rootLb: inRootLb,
+              updatedAt: Date.now()
+            };
+
+            // If account was missing from leaderboard collection in cloud, seed it!
+            if (!inArtLb || !inRootLb) {
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), nextPlayers[clean], { merge: true }).catch(() => {});
+              setDoc(doc(db, 'leaderboard', clean), nextPlayers[clean], { merge: true }).catch(() => {});
+            }
+            if (localVault[clean] && (!inArtAcc || !inRootAcc)) {
+              needsReseedSync = true;
             }
           }
         });
 
-        if (artLbLoaded && rootLbLoaded) {
-          const nextKnownLb = Object.keys(nextAccounts).filter((u) => artPlayers[u] && rootPlayers[u]);
-          try {
-            localStorage.setItem('oddandeven_known_lb_users_v1', JSON.stringify(nextKnownLb));
-          } catch (e) {}
-        }
+        saveCloudSyncedCols(syncedColsMap);
 
         cloudAccounts = nextAccounts;
         cloudPlayers = nextPlayers;
-        window.__cloudAccountsLoaded = Boolean(artAccLoaded && rootAccLoaded);
+        window.__cloudAccountsLoaded = Boolean(artAccLoaded || rootAccLoaded);
         window.__cloudAuthoritativeAccounts = cloudAccounts;
 
         if (typeof window.__onCloudLeaderboardUpdate === 'function') {
           window.__onCloudLeaderboardUpdate(cloudPlayers, cloudAccounts, cloudPurged, window.__cloudAccountsLoaded);
+        }
+
+        if (needsReseedSync && typeof window.__syncCloudLeaderboard === 'function') {
+          try {
+            window.__syncCloudLeaderboard(null, localVault, null);
+          } catch (e) {}
         }
       };
 
@@ -8146,21 +10038,34 @@
         const clean = String(username || '').trim().toUpperCase();
         if (!db || !clean) return { checked: false, exists: false, data: null };
         try {
-          const [sArt, sRoot, pArt, pRoot] = await Promise.all([
+          const [rArt, rRoot, rPArt, rPRoot] = await Promise.allSettled([
             getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
             getDoc(doc(db, 'accounts', clean)),
             getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean)),
             getDoc(doc(db, 'purged_accounts', clean))
           ]);
-          const isPurged = (pArt && pArt.exists()) || (pRoot && pRoot.exists());
-          const existsInBoth = Boolean(sArt && sArt.exists() && sRoot && sRoot.exists()) && !isPurged;
-          if (!existsInBoth) {
+          const sArt = rArt.status === 'fulfilled' ? rArt.value : null;
+          const sRoot = rRoot.status === 'fulfilled' ? rRoot.value : null;
+          const pArt = rPArt.status === 'fulfilled' ? rPArt.value : null;
+          const pRoot = rPRoot.status === 'fulfilled' ? rPRoot.value : null;
+          const inArt = Boolean(sArt && sArt.exists());
+          const inRoot = Boolean(sRoot && sRoot.exists());
+          const isPurged = ((pArt && pArt.exists()) || (pRoot && pRoot.exists())) && !isRecentCloudSignup(clean);
+          const syncedCols = (loadCloudSyncedCols()[clean]) || {};
+          const wasDeleted = !isRecentCloudSignup(clean) && (
+            (syncedCols.artAcc && rArt.status === 'fulfilled' && !inArt) ||
+            (syncedCols.rootAcc && rRoot.status === 'fulfilled' && !inRoot)
+          );
+          if (isPurged || wasDeleted) {
             await deleteAllCloudAccountMirrors(clean);
-            return { checked: true, exists: false, data: null };
+            return { checked: true, exists: false, deleted: true, data: null };
           }
-          return { checked: true, exists: true, data: sArt.data() || sRoot.data() };
+          if (inArt || inRoot) {
+            return { checked: true, exists: true, deleted: false, data: (inArt ? sArt.data() : null) || (inRoot ? sRoot.data() : null) };
+          }
+          return { checked: true, exists: false, deleted: false, data: null };
         } catch (e) {
-          return { checked: false, exists: false, data: null };
+          return { checked: false, exists: false, deleted: false, data: null };
         }
       };
 
@@ -8182,10 +10087,8 @@
         if (!db) return;
         try {
           const canPushUser = (clean) => {
-            if (!clean || clean.length < 3 || clean === 'GUEST' || clean === 'PLAYER_1' || clean === 'WAITING...' || clean === 'HOST') return false;
-            if (isRecentCloudSignup(clean)) return true;
+            if (!clean || clean.length < 3 || isPlaceholderUsername(clean)) return false;
             if (cloudPurged.includes(clean)) return false;
-            if (window.__cloudAccountsLoaded && (!cloudAccounts || !cloudAccounts[clean])) return false;
             return true;
           };
 
@@ -8244,16 +10147,25 @@
               const clean = (k || '').trim().toUpperCase();
               const localRec = humanPlayersMap[k];
               if (!localRec || !localRec.isRealRegisteredUser || !canPushUser(clean)) continue;
+              const rawCloudDoc = Object.assign({}, rootPlayers[clean] || {}, artPlayers[clean] || {});
+              const cloudFloor = Math.max(Number(rawCloudDoc.matches) || 0, Number(localRec.cloudMatchesFloor) || 0);
               const cloudRec = cloudPlayers[clean];
               const mergedRec = typeof window.__mergeSinglePlayerRecord === 'function' && cloudRec
                 ? window.__mergeSinglePlayerRecord(cloudRec, localRec).record
                 : localRec;
+              mergedRec.statsEpoch = '{RESET_EPOCH}';
+              mergedRec.v2Matches = mergedRec.matches || 0;
+              mergedRec.cloudMatchesFloor = cloudFloor;
               artPlayers[clean] = mergedRec;
               rootPlayers[clean] = mergedRec;
               cloudPlayers[clean] = mergedRec;
+              const firestorePayload = Object.assign({}, mergedRec, {
+                v2Matches: mergedRec.matches || 0,
+                matches: Math.max(mergedRec.matches || 0, cloudFloor + (mergedRec.matches || 0))
+              });
               await Promise.allSettled([
-                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), mergedRec, { merge: true }),
-                setDoc(doc(db, 'leaderboard', clean), mergedRec, { merge: true })
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), firestorePayload, { merge: true }),
+                setDoc(doc(db, 'leaderboard', clean), firestorePayload, { merge: true })
               ]);
             }
           }
@@ -8465,17 +10377,69 @@
         } catch (e) {}
       };
 
+            function getAuthoritativeLocalUsername() {
+        try {
+          if (typeof window.__getActiveUsername === 'function') {
+            const u = window.__getActiveUsername();
+            if (u && !isPlaceholder(u)) return u.trim().toUpperCase();
+          }
+          const lastU = localStorage.getItem('oddandeven_last_user_v1');
+          if (lastU && !isPlaceholder(lastU)) return lastU.trim().toUpperCase();
+          const rawSess = sessionStorage.getItem('oddandeven_active_session_v1')
+            || localStorage.getItem('oddandeven_active_session_v1')
+            || sessionStorage.getItem('oddandeven_active_session_v2')
+            || localStorage.getItem('oddandeven_active_session_v2');
+          if (rawSess && typeof window.__decryptPayload === 'function') {
+            const dec = window.__decryptPayload(rawSess);
+            if (dec && dec.username && !isPlaceholder(dec.username)) return dec.username.trim().toUpperCase();
+          }
+        } catch (e) {}
+        return 'PLAYER';
+      }
+
       window.__sendCloudFriendRequest = async function (targetUser, reqObj) {
         if (!db || !targetUser || !reqObj) return;
         const cleanTarget = String(targetUser).trim().toUpperCase();
         try {
-          const rawR = localStorage.getItem('oddandeven_friend_requests_v1');
-          const mapR = rawR ? JSON.parse(rawR) : {};
-          const list = Array.isArray(mapR[cleanTarget]) ? mapR[cleanTarget] : [reqObj];
-          const docPayload = { username: cleanTarget, requests: list, updatedAt: Date.now() };
+          let currentList = [];
+          try {
+            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget)).catch(() => null)
+              || await getDoc(doc(db, 'friend_requests', cleanTarget)).catch(() => null);
+            if (snap && snap.exists() && Array.isArray(snap.data().requests)) {
+              currentList = snap.data().requests;
+            }
+          } catch (e) {}
+
+          if (currentList.length === 0) {
+            const rawR = localStorage.getItem('oddandeven_friend_requests_v1');
+            const mapR = rawR ? JSON.parse(rawR) : {};
+            if (Array.isArray(mapR[cleanTarget])) currentList = mapR[cleanTarget];
+          }
+
+          const fromU = String(reqObj.from || '').trim().toUpperCase();
+          const idx = currentList.findIndex((r) => r && String(r.from || '').trim().toUpperCase() === fromU);
+          if (idx >= 0) currentList[idx] = reqObj;
+          else currentList.unshift(reqObj);
+
+          const docPayload = {
+            username: cleanTarget,
+            requests: currentList,
+            latestRequest: {
+              from: reqObj.from,
+              to: cleanTarget,
+              fromFlag: reqObj.fromFlag || '🇮🇳',
+              fromCode: reqObj.fromCode || '+91',
+              fromElo: reqObj.fromElo || 1500,
+              timestamp: reqObj.timestamp || Date.now()
+            },
+            updatedAt: Date.now()
+          };
+
           await Promise.allSettled([
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget), docPayload),
-            setDoc(doc(db, 'friend_requests', cleanTarget), docPayload)
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget), docPayload, { merge: true }),
+            setDoc(doc(db, 'friend_requests', cleanTarget), docPayload, { merge: true }),
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), docPayload),
+            setDoc(doc(db, 'friend_requests', 'GLOBAL_LATEST'), docPayload)
           ]);
         } catch (e) {}
       };
@@ -8488,24 +10452,49 @@
           const rawR = localStorage.getItem('oddandeven_friend_requests_v1');
           const mapR = rawR ? JSON.parse(rawR) : {};
           const nextReqs = Array.isArray(mapR[cleanResp]) ? mapR[cleanResp] : [];
-          const reqDocPayload = { username: cleanResp, requests: nextReqs, updatedAt: Date.now() };
+          const reqDocPayload = {
+            username: cleanResp,
+            requests: nextReqs,
+            latestResponse: {
+              action: action,
+              fromUser: cleanResp,
+              toUser: cleanReq,
+              timestamp: Date.now()
+            },
+            updatedAt: Date.now()
+          };
           await Promise.allSettled([
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanResp), reqDocPayload),
-            setDoc(doc(db, 'friend_requests', cleanResp), reqDocPayload)
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanResp), reqDocPayload, { merge: true }),
+            setDoc(doc(db, 'friend_requests', cleanResp), reqDocPayload, { merge: true }),
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), reqDocPayload),
+            setDoc(doc(db, 'friend_requests', 'GLOBAL_LATEST'), reqDocPayload)
           ]);
 
           if (action === 'ACCEPT') {
+            const friendsPayloadResp = {
+              username: cleanResp,
+              friends: Array.isArray(responderFriends) ? responderFriends : [],
+              updatedAt: Date.now()
+            };
+            const friendsPayloadReq = {
+              username: cleanReq,
+              friends: Array.isArray(requesterFriends) ? requesterFriends : [],
+              updatedAt: Date.now()
+            };
+            const globalFriendsPayload = {
+              type: 'FRIEND_REQUEST_RESPONSE',
+              action: 'ACCEPT',
+              fromUser: cleanResp,
+              toUser: cleanReq,
+              timestamp: Date.now()
+            };
             await Promise.allSettled([
-              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanResp), {
-                username: cleanResp,
-                friends: Array.isArray(responderFriends) ? responderFriends : [],
-                updatedAt: Date.now()
-              }),
-              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanReq), {
-                username: cleanReq,
-                friends: Array.isArray(requesterFriends) ? requesterFriends : [],
-                updatedAt: Date.now()
-              })
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanResp), friendsPayloadResp, { merge: true }),
+              setDoc(doc(db, 'friends', cleanResp), friendsPayloadResp, { merge: true }),
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanReq), friendsPayloadReq, { merge: true }),
+              setDoc(doc(db, 'friends', cleanReq), friendsPayloadReq, { merge: true }),
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), globalFriendsPayload),
+              setDoc(doc(db, 'friends', 'GLOBAL_LATEST'), globalFriendsPayload)
             ]);
           }
         } catch (e) {}
@@ -8543,52 +10532,105 @@
         const handleReqSnap = (docSnap) => {
           if (!docSnap || !docSnap.exists()) return;
           const data = docSnap.data();
-          if (data && Array.isArray(data.requests)) {
-            try {
-              const rawR = localStorage.getItem('oddandeven_friend_requests_v1');
-              const mapR = rawR ? JSON.parse(rawR) : {};
-              mapR[clean] = data.requests;
+          if (!data) return;
+
+          let updated = false;
+          let newReqForMe = null;
+          try {
+            const rawR = localStorage.getItem('oddandeven_friend_requests_v1');
+            const mapR = rawR ? JSON.parse(rawR) : {};
+            if (!Array.isArray(mapR[clean])) mapR[clean] = [];
+
+            if (data.latestRequest && String(data.latestRequest.to || '').trim().toUpperCase() === clean) {
+              const req = data.latestRequest;
+              const exists = mapR[clean].some((r) => r && String(r.from || '').trim().toUpperCase() === String(req.from || '').trim().toUpperCase());
+              if (!exists) {
+                mapR[clean].unshift(req);
+                updated = true;
+                newReqForMe = req;
+              }
+            }
+            if (Array.isArray(data.requests) && String(data.username || docSnap.id).trim().toUpperCase() === clean) {
+              const existingSenders = new Set(mapR[clean].map((r) => String(r && r.from || '').trim().toUpperCase()));
+              data.requests.forEach((r) => {
+                const sName = String(r && r.from || '').trim().toUpperCase();
+                if (sName && !existingSenders.has(sName)) {
+                  mapR[clean].unshift(r);
+                  existingSenders.add(sName);
+                  updated = true;
+                  if (!newReqForMe) newReqForMe = r;
+                }
+              });
+            }
+
+            if (updated) {
               localStorage.setItem('oddandeven_friend_requests_v1', JSON.stringify(mapR));
               window.dispatchEvent(new StorageEvent('storage', { key: 'oddandeven_friend_requests_v1', newValue: JSON.stringify(mapR) }));
-            } catch (e) {}
-          }
+            }
+            if (newReqForMe && typeof window.__onCloudFriendRequest === 'function') {
+              try { window.__onCloudFriendRequest(newReqForMe); } catch (e) {}
+            }
+          } catch (e) {}
         };
 
         const handleFriendsSnap = (docSnap) => {
           if (!docSnap || !docSnap.exists()) return;
           const data = docSnap.data();
-          if (data && Array.isArray(data.friends)) {
-            try {
-              const rawF = localStorage.getItem('oddandeven_friends_map_v1');
-              const mapF = rawF ? JSON.parse(rawF) : {};
-              mapF[clean] = Array.from(new Set([...(mapF[clean] || []), ...data.friends]));
+          if (!data) return;
+          try {
+            const rawF = localStorage.getItem('oddandeven_friends_map_v1');
+            const mapF = rawF ? JSON.parse(rawF) : {};
+            let friendsChanged = false;
+            if (Array.isArray(data.friends) && String(data.username || docSnap.id).trim().toUpperCase() === clean) {
+              const combined = Array.from(new Set([...(mapF[clean] || []), ...data.friends]));
+              if (combined.length !== (mapF[clean] || []).length) {
+                mapF[clean] = combined;
+                friendsChanged = true;
+              }
+            }
+            if (data.type === 'FRIEND_REQUEST_RESPONSE' && data.action === 'ACCEPT' && String(data.toUser || '').trim().toUpperCase() === clean) {
+              const newFriend = String(data.fromUser || '').trim().toUpperCase();
+              if (newFriend) {
+                const combined = Array.from(new Set([...(mapF[clean] || []), newFriend]));
+                if (combined.length !== (mapF[clean] || []).length) {
+                  mapF[clean] = combined;
+                  friendsChanged = true;
+                }
+              }
+            }
+            if (friendsChanged) {
               localStorage.setItem('oddandeven_friends_map_v1', JSON.stringify(mapF));
               localStorage.setItem('oddandeven_friends_' + clean, JSON.stringify(mapF[clean]));
               window.dispatchEvent(new StorageEvent('storage', { key: 'oddandeven_friends_map_v1', newValue: JSON.stringify(mapF) }));
-            } catch (e) {}
-          }
+            }
+          } catch (e) {}
         };
 
-        const u1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean), handleSnap, () => {});
-        const u2 = onSnapshot(doc(db, 'invites', clean), handleSnap, () => {});
-        const u3 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
-        const u4 = onSnapshot(doc(db, 'invites', 'GLOBAL_LATEST'), handleSnap, () => {});
-        const u5 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', clean), handleReqSnap, () => {});
-        const u6 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', clean), handleFriendsSnap, () => {});
+        const unsubs = [
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean), handleSnap, () => {}),
+          onSnapshot(doc(db, 'invites', clean), handleSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), handleSnap, () => {}),
+          onSnapshot(doc(db, 'invites', 'GLOBAL_LATEST'), handleSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', clean), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'friend_requests', clean), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'friend_requests', 'GLOBAL_LATEST'), handleReqSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', clean), handleFriendsSnap, () => {}),
+          onSnapshot(doc(db, 'friends', clean), handleFriendsSnap, () => {}),
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), handleFriendsSnap, () => {}),
+          onSnapshot(doc(db, 'friends', 'GLOBAL_LATEST'), handleFriendsSnap, () => {})
+        ];
         inviteUnsub = () => {
-          try { u1(); } catch (e) {}
-          try { u2(); } catch (e) {}
-          try { u3(); } catch (e) {}
-          try { u4(); } catch (e) {}
-          try { u5(); } catch (e) {}
-          try { u6(); } catch (e) {}
+          unsubs.forEach((u) => { try { u(); } catch (e) {} });
         };
       };
 
-      // Auto-bind current user to listen for invites immediately
+      // Auto-bind current authoritative user to listen for invites & friend requests immediately
       try {
-        const u = (typeof STATE !== 'undefined' && STATE.myUsername) ? STATE.myUsername : 'PLAYER';
-        window.__bindCloudInviteListener(u);
+        const u = getAuthoritativeLocalUsername();
+        if (u && !isPlaceholder(u)) {
+          window.__bindCloudInviteListener(u);
+        }
       } catch (e) {}
 
       // Flush any pending room messages
@@ -8600,19 +10642,201 @@
         pendingRoomOutboundQueue = [];
         q.forEach((item) => window.__sendCloudRoomMessage(item.roomCode, item.msgObj));
       }
-
-      // Auto-bind current session user if already authenticated
-      try {
-        const rawSess = sessionStorage.getItem('oddandeven_active_session_v1') || localStorage.getItem('oddandeven_active_session_v1');
-        if (rawSess) {
-          const dec = typeof decryptPayload === 'function' ? decryptPayload(rawSess) : null;
-          if (dec && dec.username) {
-            window.__bindCloudInviteListener(dec.username);
-          }
-        }
-      } catch (e) {}
     })
     .catch((err) => {
-      console.error('Firebase Cloud Module Load Error:', err);
+        console.error('Firebase Cloud Module Load Error:', err);
     });
+})();
+
+
+/* ============================================================================
+ * VERSION 2.0 INTERACTIVE SHOWCASE MODAL CONTROLLER (Close & Try Out Integration)
+ * ============================================================================ */
+(function initVersion2ShowcaseEngine() {
+  if (typeof window === 'undefined') return;
+
+  const V2_FEATURES = {
+    roast: {
+      index: 1,
+      icon: '💀',
+      badge: '💀 ROAST MODE',
+      badgeClass: 'bg-rose-500/25 text-rose-200 border-rose-400/40',
+      caption: 'Savage stadium humiliation & Golden Duck roasts on every wicket!',
+      title: 'New Roast Commentary Mode (Savage Wicket Humiliation)',
+      tag: 'AUDIO + SCOREBOARD ROASTS',
+      tagClass: 'bg-rose-500/20 text-rose-300 border-rose-400/30',
+      desc: 'Switch your announcer to <strong class="text-rose-300">💀 Roast</strong> mode for zero-mercy commentary whenever a batter gets dismissed—complete with dedicated Golden Duck (0-run) humiliation lines and live voice synthesis!',
+      tryHint: '💀 Roast Commentary Mode',
+      tryBtn: '🔥 Try Out Roast Mode',
+      tabActiveClass: 'bg-rose-500/15 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.2)]'
+    },
+    security: {
+      index: 2,
+      icon: '🛡️',
+      badge: '🛡️ SECURITY 2.0',
+      badgeClass: 'bg-emerald-500/25 text-emerald-200 border-emerald-400/40',
+      caption: 'Upgraded Firebase API Key, OAE1 Vault & full account removal across Cloud + Auth.',
+      title: 'Security Update & Complete Account Removal',
+      tag: 'FIREBASE AUTH + FIRESTORE WIPE',
+      tagClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30',
+      desc: 'Powered by the upgraded Firebase security configuration, salted OAE1 password protection, and 1-click <strong class="text-emerald-300">Remove Account</strong> that permanently purges your profile from the website, Firestore, and Firebase Authentication so your username can be freshly re-registered anytime.',
+      tryHint: '🛡️ Account & Security Controls',
+      tryBtn: '🛡️ Try Out Security Controls',
+      tabActiveClass: 'bg-emerald-500/15 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
+    },
+    cloud: {
+      index: 3,
+      icon: '☁️',
+      badge: '☁️ CLOUD SYNC 2.0',
+      badgeClass: 'bg-cyan-500/25 text-cyan-200 border-cyan-400/40',
+      caption: 'Instant real-time cross-device sync for Global Elo, Weekly Rankings & Friends.',
+      title: 'Real-Time Cloud Sync Across Desktop & Mobile',
+      tag: 'DUAL-COLLECTION FIRESTORE',
+      tagClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30',
+      desc: 'Every run, wicket, achievement, friend invite, and Elo rating change syncs automatically across <code class="text-cyan-300">handcricket_users</code> and <code class="text-cyan-300">profiles</code> in real time—with instant deleted-account detection.',
+      tryHint: '☁️ Live Cloud Sync & Leaderboard',
+      tryBtn: '☁️ Try Out Cloud Sync',
+      tabActiveClass: 'bg-cyan-500/15 border-cyan-400/60 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
+    },
+    google: {
+      index: 4,
+      icon: '🔑',
+      badge: '🔑 GOOGLE SIGN-IN',
+      badgeClass: 'bg-amber-500/25 text-amber-200 border-amber-400/40',
+      caption: '1-Tap Continue with Google authentication with smart username reservation.',
+      title: '1-Tap Google Sign-In & Smart Player Portal',
+      tag: 'OAUTH 2.0 INSTANT LOGIN',
+      tagClass: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
+      desc: 'Skip passwords with one-tap <strong class="text-amber-300">Continue with Google</strong> sign-in, automatic account linking, custom player username reservation, and device-aware routing between Desktop and Mobile.',
+      tryHint: '🔑 Google Sign-In & Account Portal',
+      tryBtn: '🔑 Try Out Google Sign-In',
+      tabActiveClass: 'bg-amber-500/15 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
+    },
+    gameplay: {
+      index: 5,
+      icon: '🤝',
+      badge: '🤝 FAIR AI & DRAWS',
+      badgeClass: 'bg-purple-500/25 text-purple-200 border-purple-400/40',
+      caption: 'Official Match Drawn tie rules (0 Elo delta) & non-tracking Predictive Master Bot.',
+      title: 'Match Drawn Rules & Fair Predictive Master Bot',
+      tag: 'COMPETITIVE FAIR PLAY',
+      tagClass: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
+      desc: 'When 2nd-innings scores level (score === target - 1), the match officially finishes as <strong class="text-purple-300">MATCH DRAWN</strong> across Bot &amp; Multiplayer modes. Plus, Master Bot now uses fair predictive pattern psychology instead of reading your camera fingers!',
+      tryHint: '🤝 Fair Master Bot & Match Drawn Engine',
+      tryBtn: '🏏 Try Out In Arena',
+      tabActiveClass: 'bg-purple-500/15 border-purple-400/60 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+    }
+  };
+
+  window.openVersion2Showcase = function() {
+    const modal = document.getElementById('version2ShowcaseModal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  };
+
+  window.closeVersion2Showcase = function() {
+    const modal = document.getElementById('version2ShowcaseModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  };
+
+  window.selectVersion2Feature = function(key) {
+    const feat = V2_FEATURES[key] || V2_FEATURES.roast;
+    window.__currentV2Feature = key;
+
+    const tabs = document.querySelectorAll('[data-v2-tab]');
+    tabs.forEach((t) => {
+      const k = t.getAttribute('data-v2-tab');
+      t.className = 'v2-feature-tab ' + (k === 'gameplay' ? 'col-span-2 sm:col-span-1 ' : '') +
+        'group text-left p-2.5 rounded-2xl border transition-all ' +
+        (k === key ? feat.tabActiveClass : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06]');
+    });
+
+    const imgBadge = document.getElementById('v2ImageLiveBadge');
+    if (imgBadge) {
+      imgBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase border shrink-0 ' + feat.badgeClass;
+      imgBadge.textContent = feat.badge;
+    }
+    const imgCap = document.getElementById('v2ImageLiveCaption');
+    if (imgCap) imgCap.textContent = feat.caption;
+
+    const counter = document.getElementById('v2FeatureCounter');
+    if (counter) counter.textContent = feat.index + ' / 5 Selected';
+    const icon = document.getElementById('v2DetailIcon');
+    if (icon) icon.textContent = feat.icon;
+    const title = document.getElementById('v2DetailTitle');
+    if (title) title.textContent = feat.title;
+    const tag = document.getElementById('v2DetailTag');
+    if (tag) {
+      tag.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black border ' + feat.tagClass;
+      tag.textContent = feat.tag;
+    }
+    const desc = document.getElementById('v2DetailDesc');
+    if (desc) desc.innerHTML = feat.desc;
+
+    const hint = document.getElementById('v2TryOutHint');
+    if (hint) hint.innerHTML = 'Ready to activate: <strong class="text-white">' + feat.tryHint + '</strong>';
+    const btnLbl = document.getElementById('btnTryOutV2Label');
+    if (btnLbl) btnLbl.textContent = feat.tryBtn;
+
+    const subWidget = document.getElementById('v2InteractiveSubWidget');
+    if (subWidget) {
+      if (key === 'roast') subWidget.classList.remove('hidden');
+      else subWidget.classList.add('hidden');
+    }
+  };
+
+  window.tryOutVersion2Feature = function() {
+    const key = window.__currentV2Feature || 'roast';
+    window.closeVersion2Showcase();
+
+    if (key === 'roast') {
+      try {
+        if (typeof state !== 'undefined' && state) {
+          state.commentaryStyle = 'roast';
+        }
+      } catch (e) {}
+      const sel = document.getElementById('selectCommentaryStyle');
+      if (sel) {
+        sel.value = 'roast';
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        try { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      }
+      if (typeof setCommentary === 'function') {
+        setCommentary('💀 ROAST MODE ARMED! Every wicket will now trigger savage stadium humiliation!', 'wicket');
+      }
+      if (typeof window.triggerVersion2Sample === 'function') {
+        window.triggerVersion2Sample();
+      }
+      return;
+    }
+
+    if (key === 'security') {
+      const sideAcct = document.getElementById('sideNavAccount') || document.getElementById('drawerNavAccount') || document.getElementById('btnOpenAuthModal');
+      if (sideAcct) sideAcct.click();
+      return;
+    }
+
+    if (key === 'cloud') {
+      if (typeof syncUserProfileToCloud === 'function') {
+        try { syncUserProfileToCloud(); } catch (e) {}
+      }
+      const sideLb = document.getElementById('sideNavLeaderboard') || document.getElementById('drawerNavLeaderboard');
+      if (sideLb) sideLb.click();
+      return;
+    }
+
+    if (key === 'google') {
+      const googleBtn = document.getElementById('btnGoogleSignIn') || document.getElementById('btnOpenAuthModal') || document.getElementById('sideNavAccount');
+      if (googleBtn) googleBtn.click();
+      return;
+    }
+
+    const playBtn = document.getElementById('sideNavPlayBot') || document.getElementById('btnStartMatch') || document.getElementById('selectCommentaryStyle');
+    if (playBtn) {
+      try { playBtn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    }
+  };
 })();
