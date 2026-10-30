@@ -5,6 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="google-site-verification" content="ClxrPShB46PFCfYNrHOBWlMxRk_KvOXx5sxsEDGtzxA" />
   <title>OddAndEven.in — Official Hand Cricket Arena</title>
+  <meta name="description" content="Play the fast-paced Odd Even hand cricket game online against friends or AI. Track your score, play turns, and test your quick reflexes right in your browser." />
+
+  <!-- Canonical URL (Prevents duplicate content issues) -->
+  <link rel="canonical" href="https://oddeven-two.vercel.app/" />
+
+  <!-- Open Graph / Facebook (Controls how your link looks when shared) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://oddeven-two.vercel.app/" />
+  <meta property="og:title" content="Odd Even Game Online | Play Hand Cricket & Odd-Even" />
+  <meta property="og:description" content="Play the fast-paced Odd Even hand cricket game online. Challenge AI or friends and see who wins!" />
+  <meta property="og:image" content="https://oddeven-two.vercel.app/preview-thumbnail.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Odd Even Game Online" />
+  <meta name="twitter:description" content="Play the classic Odd Even game online against AI or friends." />
+  <meta name="twitter:image" content="https://oddeven-two.vercel.app/preview-thumbnail.png" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -126,7 +143,31 @@
       </div>
 
       <!-- Navigation Buttons (Compact horizontal strip on mobile, full rail on desktop) -->
-      <div class="grid grid-cols-4 sm:grid-cols-7 lg:flex lg:flex-col gap-1 sm:gap-1.5">
+      <div class="grid grid-cols-3 sm:grid-cols-5 lg:flex lg:flex-col gap-1 sm:gap-1.5">
+        <!-- Sidebar: Career Profile -->
+        <button id="sideNavProfile" type="button" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
+          <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-xs sm:text-base">👤</span>
+          <div class="min-w-0 flex-1">
+            <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white flex items-center justify-center lg:justify-start gap-1.5 truncate">
+              <span>Profile</span>
+              <span class="hidden lg:inline px-1.5 py-0.2 rounded text-[8px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">STATS</span>
+            </div>
+            <div class="hidden lg:block text-[10px] text-blue-300/80 truncate" id="sideNavProfileSub">Career Dashboard &amp; Acc Info</div>
+          </div>
+        </button>
+
+        <!-- Sidebar: XP Store -->
+        <button id="sideNavStore" type="button" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
+          <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-xs sm:text-base shadow-sm">🛍️</span>
+          <div class="min-w-0 flex-1">
+            <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white flex items-center justify-center lg:justify-start gap-1.5 truncate">
+              <span>Store</span>
+              <span class="hidden lg:inline px-1.5 py-0.2 rounded text-[8px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono-num" id="sideNavStoreBadge">0 XP</span>
+            </div>
+            <div class="hidden lg:block text-[10px] text-amber-300/80 truncate" id="sideNavStoreSub">0 XP • Cards &amp; Flex</div>
+          </div>
+        </button>
+
         <!-- Sidebar 1: Play Bot (Unrated Practice vs 250-2800 Bots) -->
         <button id="sideNavBot" type="button" class="w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800">
           <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-xs sm:text-base">🤖</span>
@@ -172,7 +213,7 @@
           <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-yellow-500/10 border border-yellow-400/30 flex items-center justify-center text-xs sm:text-base">🎖️</span>
           <div class="min-w-0 flex-1">
             <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white truncate">Achievements</div>
-            <div class="hidden lg:block text-[10px] text-yellow-300/90 font-mono-num truncate" id="sideNavAchievementsSub">0/10 Unlocked</div>
+            <div class="hidden lg:block text-[10px] text-yellow-300/90 font-mono-num truncate" id="sideNavAchievementsSub">0/30 Unlocked</div>
           </div>
           <span id="sideNavAchievementsXpPill" class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-yellow-500/10 text-yellow-300 border border-yellow-400/30">0 XP</span>
         </button>
@@ -192,9 +233,9 @@
           <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/40 flex items-center justify-center text-xs sm:text-base group-hover:scale-105 transition-transform">🚀</span>
           <div class="min-w-0 flex-1">
             <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white group-hover:text-[#a3d96c] truncate">Updates &amp; Notes</div>
-            <div class="hidden lg:block text-[10px] text-[#a3d96c] truncate">v1.8 Changelog</div>
+            <div class="hidden lg:block text-[10px] text-[#a3d96c] truncate">v2.0 Changelog</div>
           </div>
-          <span class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v1.8</span>
+          <span class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v2.0</span>
         </a>
       </div>
     </div>
@@ -228,20 +269,48 @@
           🎙️ Hype Broadcast
         </div>
       </div>
-      <div class="pt-1 flex flex-col gap-1.5">
-        <div class="flex gap-1.5">
-          <button id="btnSidebarAuth" type="button" class="flex-1 py-1.5 px-2 rounded-lg text-[10px] font-extrabold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 transition text-center">
-            🔐 Account
-          </button>
-          <button id="btnSidebarSignOut" type="button" class="py-1.5 px-2.5 rounded-lg text-[10px] font-extrabold bg-amber-500/10 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition" title="Sign Out and Redirect to index.html">
-            🚪 Sign Out
-          </button>
+      <!-- INTERACTIVE SIDEBAR PLAYER CARD (Redirects to profile.html on Click) -->
+      <a href="profile.html" id="sidebarPlayerCard" class="block w-full p-2.5 sm:p-3 rounded-2xl border transition-all duration-300 relative overflow-hidden bg-gradient-to-br from-[#1c1811] via-[#161410] to-[#121110] border-amber-500/40 hover:border-amber-400 hover:shadow-[0_0_20px_rgba(245,184,61,0.25)] group active:scale-95 shadow-md" title="Click to view Career Profile &amp; Stats">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xl sm:text-2xl" id="sidebarCardFlag">🇮🇳</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1 font-brand font-black text-xs text-white truncate">
+                <span id="sidebarCardUsername">PLAYER</span>
+                <span id="sidebarCardStar" class="hidden text-amber-300 text-xs">⭐</span>
+              </div>
+              <div class="text-[9px] font-mono-num text-slate-400 truncate" id="sidebarCardDial">+91 • 1500 ELO</div>
+            </div>
+          </div>
+          <span id="sidebarCardTierPill" class="px-1.5 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-600 shrink-0">
+            Rookie Card
+          </span>
         </div>
-        <button id="btnSidebarRemoveAccount" type="button" class="w-full py-1.5 px-2 rounded-lg text-[10px] font-extrabold bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition text-center" title="Permanently Remove Current Account">
-          🗑️ Remove Account
-        </button>
-        <button id="btnGoLoginPage1" type="button" class="hidden py-1.5 px-2 rounded-lg text-[10px] font-extrabold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Account Modal">
-          ↗
+
+        <!-- Equipped Title & Stats -->
+        <div class="mt-2 p-1.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between text-[9px]">
+          <div class="truncate">
+            <span class="text-[7px] uppercase tracking-wider text-slate-400 block font-bold">Equipped Title</span>
+            <span class="text-[10px] font-black text-amber-300 font-brand truncate" id="sidebarCardTitle">Hand Cricket Aspirant</span>
+          </div>
+          <span class="text-[8px] text-cyan-300 font-bold bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/30 shrink-0 flex items-center gap-1">
+            <span>Profile</span>
+            <span>→</span>
+          </span>
+        </div>
+
+        <!-- Sub stats & tap hint -->
+        <div class="mt-1.5 flex items-center justify-between text-[8px] text-slate-400 pt-1 border-t border-white/5">
+          <span id="sidebarCardRunsWkts">0 Runs • 0 Wkts</span>
+          <span class="text-amber-400 font-bold group-hover:underline">View Career Stats 👤</span>
+        </div>
+      </a>
+
+      <!-- Quick Account Switch / Auth Trigger -->
+      <div class="pt-0.5">
+        <button id="btnSidebarAuth" type="button" class="w-full py-1.5 px-2 rounded-lg text-[10px] font-extrabold bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] flex items-center justify-center gap-1 transition">
+          <span>🔐</span>
+          <span>Switch / Manage Account</span>
         </button>
       </div>
     </div>
@@ -250,7 +319,7 @@
   <!-- RIGHT OF SIDEBAR: MAIN WORKSPACE AREA (Top Invite Banner + Top Bar + Clean Middle Column + Right Scorecard & Commentary Sidebar) -->
   <div class="flex-1 min-w-0 flex flex-col min-h-screen">
 
-    <!-- AESTHETIC NEW UPDATE VERSION 1.8 BANNER (Redirects to updates.html) -->
+    <!-- AESTHETIC NEW UPDATE VERSION 2.0 BANNER (Redirects to updates.html) -->
     <div
       id="newUpdateBanner"
       class="w-full relative overflow-hidden bg-gradient-to-r from-[#0c140d]/95 via-[#0e1a22]/95 to-[#1a1226]/95 backdrop-blur-xl border-b border-[#a3d96c]/30 px-3 sm:px-6 py-2.5 transition-all shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-30 group/banner"
@@ -265,8 +334,9 @@
         <a
           id="btnBannerNewUpdate"
           href="updates.html"
+          onclick="if(window.openVersion2Showcase){event.preventDefault();window.openVersion2Showcase();}"
           class="flex-1 flex items-center gap-3 text-left min-w-0 group"
-          aria-label="View Version 1.8 release notes and changelog"
+          aria-label="Open Version 2.0 Interactive Showcase"
         >
           <!-- Glowing Animated Rocket Icon Pill -->
           <div class="relative shrink-0">
@@ -281,11 +351,11 @@
           <div class="min-w-0 flex-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono-num font-black uppercase tracking-wider bg-gradient-to-r from-[#81b64c] via-emerald-400 to-[#a3d96c] text-slate-950 shadow-sm shrink-0">
               <span>⚡</span>
-              <span>VERSION 1.8 LIVE</span>
+              <span>VERSION 2.0 LIVE</span>
             </span>
 
             <span class="font-brand text-xs sm:text-sm font-black text-white group-hover:text-[#a3d96c] transition-colors truncate">
-              What's New in Version 1.8
+              What's New in Version 2.0 — Roast Mode, Security 2.0 & More
             </span>
 
             <!-- Feature Tags -->
@@ -308,7 +378,7 @@
 
           <!-- CTA Pill -->
           <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-extrabold bg-[#81b64c]/15 hover:bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/40 group-hover:border-[#a3d96c] transition-all shrink-0 ml-auto mr-1">
-            <span>Read Changelog</span>
+            <span>Open v2.0 Box</span>
             <span class="group-hover:translate-x-0.5 transition-transform font-black">→</span>
           </span>
         </a>
@@ -389,6 +459,18 @@
             <span id="headerEloDelta" class="text-[10px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-300 hidden">+8</span>
           </button>
 
+          <!-- Profile Link -->
+          <button type="button" id="btnHeaderProfile" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-brand font-black bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 flex items-center gap-1.5 active:scale-95 transition shadow-sm" title="Career Profile Dashboard">
+            <span>👤</span>
+            <span>Profile</span>
+          </button>
+
+          <!-- XP Store Link -->
+          <button type="button" id="btnHeaderStore" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-brand font-black bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 active:scale-95 transition shadow-sm" title="XP Store &amp; Player Cards">
+            <span>🛍️</span>
+            <span>Store</span>
+          </button>
+
           <!-- 2. Username -->
           <button id="btnOpenAuthModal" type="button" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 transition flex items-center gap-1" title="Username & Account">
             <span id="headerAuthFlag">🇮🇳</span>
@@ -430,7 +512,7 @@
     <main class="w-full max-w-[1520px] mx-auto flex-1 px-3 sm:px-6 py-4 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
 
       <!-- CLEAN MIDDLE PORTION (Uncluttered Single-View Center Stage) -->
-      <div class="xl:col-span-8 flex flex-col gap-4">
+      <div id="mainCenterStageCol" class="xl:col-span-8 flex flex-col gap-4 min-w-0">
 
       <!-- CLEAN STARTING UI (Two Hero Buttons: Play Bot & Play Multiplayer + Game Features) -->
       <section id="centerShowcasePanel" class="glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-cyan-500/35 animate-pop">
@@ -741,7 +823,7 @@
             <span id="lbTableLeftHeader">Global Human Standings (Ranked by Elo)</span>
             <span id="lbTableRightHeader">Elo Rating</span>
           </div>
-          <div id="leaderboardStandingsList" class="space-y-2"></div>
+          <div id="leaderboardStandingsList" class="space-y-2 max-h-[65vh] overflow-y-auto pr-1"></div>
         </div>
 
         <!-- Recent Elo & Match History Log -->
@@ -868,6 +950,10 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <a href="t1.html" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 shadow transition flex items-center gap-1.5">
+              <span>📺 View as Spectator</span>
+              <span>↗</span>
+            </a>
             <a href="events.html" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 shadow transition flex items-center gap-1">
               <span>events.html</span>
               <span>↗</span>
@@ -885,12 +971,17 @@
             <a href="events.html" class="text-xs font-mono-num text-zinc-400 hover:text-white underline">Full Schedule in events.html →</a>
           </div>
           <div class="grid grid-cols-1 gap-2 text-xs">
-            <div class="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5">
+            <div class="flex flex-wrap items-center justify-between gap-2 p-2 rounded-lg bg-white/[0.02] border border-white/5">
               <div class="flex items-center gap-2">
                 <span class="font-mono-num font-bold text-[#f5b83d]">7 Nov</span>
                 <a href="events.html" class="font-bold text-white hover:underline">Who will be the first ever Odd and Even champion on 7 nov</a>
               </div>
-              <span id="hcCalRelSolo" class="font-mono-num text-[11px] text-zinc-400">upcoming</span>
+              <div class="flex items-center gap-2">
+                <span id="hcCalRelSolo" class="font-mono-num text-[11px] text-zinc-400">upcoming</span>
+                <a href="t1.html" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 transition">
+                  📺 View as Spectator
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -973,6 +1064,10 @@
               <button id="btnJoinEventSolo" type="button" class="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs bg-[#0d0c12] hover:bg-[#1a1824] text-white transition shadow">
                 Register for tournament
               </button>
+              <button id="btnViewAsSpectatorSolo" type="button" onclick="window.location.href='t1.html'" class="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs bg-[#16151c] hover:bg-[#23212d] text-[#a3d96c] border border-[#0d0c12]/40 transition shadow flex items-center justify-center gap-1.5 text-center">
+                <span>📺 View as Spectator</span>
+                <span>→</span>
+              </button>
             </div>
           </article>
         </div>
@@ -1011,8 +1106,8 @@
               </div>
             </div>
             <div class="text-right shrink-0">
-              <div id="achUnlockedSummaryText" class="text-base font-black font-mono-num text-yellow-300">0/10 (0%)</div>
-              <div id="achTotalXpText" class="text-xs font-mono-num text-emerald-300 font-bold">0 / 1000 XP</div>
+              <div id="achUnlockedSummaryText" class="text-base font-black font-mono-num text-yellow-300">0/30 (0%)</div>
+              <div id="achTotalXpText" class="text-xs font-mono-num text-emerald-300 font-bold">0 / 3525 XP</div>
             </div>
           </div>
           <div class="w-full h-2.5 rounded-full bg-[#12110f] overflow-hidden border border-[#302e2b]">
@@ -1020,16 +1115,322 @@
           </div>
         </div>
 
+        <!-- XP Store Marketplace Banner -->
+        <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border border-amber-500/35 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="text-2xl">🛍️</span>
+            <div class="min-w-0">
+              <div class="text-sm font-black text-amber-300 font-brand">XP Store &amp; Player Cards</div>
+              <div class="text-xs text-slate-300">Buy Elite Player Cards, Custom Cards &amp; VFX from 5,000 XP</div>
+            </div>
+          </div>
+          <a href="store.html" id="btnAchOpenStoreInline" class="px-3.5 py-1.5 rounded-xl text-xs font-brand font-black bg-amber-500 hover:bg-amber-400 text-slate-950 shrink-0 shadow active:scale-95 transition">
+            Open Store →
+          </a>
+        </div>
+
         <!-- Category Filter Tabs -->
         <div class="grid grid-cols-4 gap-1.5 p-1.5 rounded-xl bg-[#211f1c] border border-[#45423e] text-xs font-bold">
-          <button id="btnAchFilterAll" type="button" class="py-2 px-3 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate">All (10)</button>
+          <button id="btnAchFilterAll" type="button" class="py-2 px-3 rounded-lg bg-[#81b64c] text-white font-extrabold transition truncate">All (30)</button>
           <button id="btnAchFilterBatting" type="button" class="py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🏏 Batting</button>
           <button id="btnAchFilterBowling" type="button" class="py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">⚾ Bowling</button>
           <button id="btnAchFilterRanked" type="button" class="py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🏆 Ranked</button>
         </div>
 
-        <!-- Dynamic 10-Achievement Cards Grid -->
+        <!-- Dynamic 30-Achievement Cards Grid -->
         <div id="achievementsGridList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[36rem] overflow-y-auto pr-1"></div>
+      </section>
+
+      <!-- INLINE SCREEN 7: DETAILED CAREER PROFILE DASHBOARD (Connected with profile.html) -->
+      <section id="screenProfile" class="hidden glass-card rounded-2xl p-5 sm:p-6 border border-blue-500/40 space-y-5 animate-pop w-full">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#45423e] pb-3.5">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-11 h-11 rounded-2xl bg-blue-500/15 border border-blue-400/40 flex items-center justify-center text-2xl shadow shrink-0">
+              👤
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-lg sm:text-xl font-black text-white font-brand">Career Profile &amp; Stats Dashboard</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-blue-500/20 text-blue-300 border border-blue-400/40">LIVE TELEMETRY</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">Complete career analytics, unlocked player cards, favorite number telemetry &amp; AI tier win rates</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button id="btnProfileGoToStore" type="button" class="px-3.5 py-2 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 shadow transition flex items-center gap-1.5">
+              <span>🛍️</span>
+              <span>Open XP Store</span>
+            </button>
+            <a href="profile.html?from=desktop" class="px-3 py-2 rounded-xl text-xs font-extrabold bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-400/40 shadow transition flex items-center gap-1">
+              <span>Full Page</span>
+              <span>↗</span>
+            </a>
+            <button id="btnBackFromProfile" type="button" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              ← Back to Pitch
+            </button>
+          </div>
+        </div>
+
+        <!-- Row 1: Live Equipped Hero Player Card & Account Overview (Clean 2-Column Balanced Grid) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+          <!-- Hero Equipped Player Card -->
+          <div id="hcProfileHeroCard" class="rounded-2xl p-5 border-2 border-[#3d3a34] bg-gradient-to-br from-[#211f1c] via-[#1a1816] to-[#121110] relative overflow-hidden flex flex-col justify-between shadow-xl min-w-0">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3.5 min-w-0">
+                <div class="w-14 h-14 rounded-2xl bg-black/50 border border-white/15 flex items-center justify-center text-3xl shrink-0 shadow-md" id="hcProfFlag">
+                  🇮🇳
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span id="hcProfUsername" class="font-brand font-black text-xl text-white tracking-tight truncate">PLAYER</span>
+                    <span id="hcProfVerifiedStar" class="hidden text-amber-400 text-sm" title="Verified Custom Card Holder">⭐</span>
+                    <span id="hcProfDialCode" class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-bold bg-black/40 text-slate-300 border border-white/10">+91</span>
+                  </div>
+                  <div id="hcProfEquippedTitle" class="text-xs font-extrabold text-amber-300 tracking-wide mt-0.5 truncate">Hand Cricket Contender</div>
+                  <div id="hcProfEquippedMotto" class="text-[11px] text-slate-400 italic mt-0.5 truncate">"Every number counts on the pitch."</div>
+                </div>
+              </div>
+              <span id="hcProfTierBadge" class="px-2.5 py-1 rounded-lg text-[10px] font-brand font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-600 shrink-0">
+                🏏 STANDARD CARD
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 mt-4 border-t border-white/10 text-center">
+              <div class="p-2.5 rounded-xl bg-black/35 border border-white/5">
+                <span class="text-[9px] uppercase text-slate-400 font-bold block">Official Elo</span>
+                <strong id="hcProfHeroElo" class="font-mono-num text-sm sm:text-base font-black text-amber-300">1500</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-black/35 border border-white/5">
+                <span class="text-[9px] uppercase text-slate-400 font-bold block">Peak Elo</span>
+                <strong id="hcProfHeroPeak" class="font-mono-num text-sm sm:text-base font-black text-cyan-300">1500</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-black/35 border border-white/5">
+                <span class="text-[9px] uppercase text-slate-400 font-bold block">Career Runs</span>
+                <strong id="hcProfHeroRuns" class="font-mono-num text-sm sm:text-base font-black text-emerald-400">0</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-black/35 border border-white/5">
+                <span class="text-[9px] uppercase text-slate-400 font-bold block">Wickets</span>
+                <strong id="hcProfHeroWickets" class="font-mono-num text-sm sm:text-base font-black text-purple-300">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account & Security Info Hub -->
+          <div class="rounded-2xl p-5 bg-[#1c1a17] border border-[#3d3a34] flex flex-col justify-between space-y-3 min-w-0">
+            <div>
+              <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
+                <span class="text-xs font-black uppercase tracking-wider text-blue-300 font-brand">🔐 Account &amp; Security Info</span>
+                <span id="hcProfAuthBadge" class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">VERIFIED SESSION</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div class="flex items-center justify-between py-1 border-b border-white/5">
+                  <span class="text-slate-400">Active Handle</span>
+                  <strong id="hcProfAccHandle" class="font-mono-num text-white">@PLAYER</strong>
+                </div>
+                <div class="flex items-center justify-between py-1 border-b border-white/5">
+                  <span class="text-slate-400">Country / Region</span>
+                  <strong id="hcProfAccCountry" class="text-slate-200">🇮🇳 India (+91)</strong>
+                </div>
+                <div class="flex items-center justify-between py-1 border-b border-white/5">
+                  <span class="text-slate-400">Career XP Wallet</span>
+                  <strong id="hcProfAccXp" class="font-mono-num text-amber-300">0 XP Available</strong>
+                </div>
+                <div class="flex items-center justify-between py-1">
+                  <span class="text-slate-400">Achievements</span>
+                  <strong id="hcProfAccAch" class="font-mono-num text-[#a3d96c]">0/30 Unlocked</strong>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5 pt-2 border-t border-white/10">
+              <button id="btnProfileSignOut" type="button" class="py-2.5 px-3 rounded-xl text-xs font-extrabold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition">
+                🚪 Sign Out
+              </button>
+              <button id="btnProfileRemoveAccount" type="button" class="py-2.5 px-3 rounded-xl text-xs font-extrabold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/35 transition">
+                🗑️ Remove Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: 4 Core Career KPI Stat Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-[#3d3a34] space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Matches</span>
+              <span class="text-base">🏟️</span>
+            </div>
+            <div id="hcProfKpiMatches" class="text-2xl font-black font-mono-num text-white">0</div>
+            <div id="hcProfKpiMatchesSub" class="text-[10px] text-slate-400 font-mono-num">0 Ranked • 0 vs Bots</div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-[#3d3a34] space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Win / Loss Ratio</span>
+              <span class="text-base">⚖️</span>
+            </div>
+            <div id="hcProfKpiWinRatio" class="text-2xl font-black font-mono-num text-emerald-400">0.00</div>
+            <div id="hcProfKpiWinSub" class="text-[10px] text-slate-400 font-mono-num">0W – 0L (0% Win)</div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-[#3d3a34] space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Highest Score</span>
+              <span class="text-base">🔥</span>
+            </div>
+            <div id="hcProfKpiHighScore" class="text-2xl font-black font-mono-num text-amber-300">0*</div>
+            <div id="hcProfKpiHighSub" class="text-[10px] text-slate-400 font-mono-num">0 Centuries • 0 SR 500+</div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-[#3d3a34] space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Favorite Number</span>
+              <span class="text-base">🎯</span>
+            </div>
+            <div id="hcProfKpiFavNum" class="text-2xl font-black font-mono-num text-cyan-300">—</div>
+            <div id="hcProfKpiFavSub" class="text-[10px] text-slate-400 font-mono-num">Play a match to log picks</div>
+          </div>
+        </div>
+
+        <!-- Row 3: Favorite Number Telemetry (1-10) & Win % Against AI Tiers (Spacious Balanced Layout) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+          <!-- Favorite Number Telemetry (1-10) -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-[#1c1a17] border border-[#3d3a34] flex flex-col justify-between space-y-3 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-xs sm:text-sm font-black text-white font-brand">🔢 Favorite Number Telemetry (1–10)</h3>
+                <p class="text-[11px] text-slate-400">Live frequency distribution of every hand gesture played</p>
+              </div>
+              <span id="hcProfTotalPicksBadge" class="px-2.5 py-1 rounded-lg text-[10px] font-mono-num font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shrink-0">0 Deliveries</span>
+            </div>
+            <div id="hcProfNumTelemetryGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-2 pt-2"></div>
+          </div>
+
+          <!-- Win Percentage Against Specific AI Tiers -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-[#1c1a17] border border-[#3d3a34] flex flex-col justify-between space-y-3 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-xs sm:text-sm font-black text-white font-brand">🤖 Win % vs Specific AI Bot Tiers</h3>
+                <p class="text-[11px] text-slate-400">Head-to-head win rates across all 4 bot difficulty personalities</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg text-[10px] font-mono-num font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">4 AI Tiers</span>
+            </div>
+            <div id="hcProfAiTiersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+          </div>
+        </div>
+
+        <!-- Row 4: Unlocked Player Cards & Cosmetics Trophy Showcase (Clean 2-Column Grid) -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-[#1c1a17] border border-amber-500/35 space-y-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-sm sm:text-base font-black text-white font-brand">🃏 Unlocked Player Cards &amp; Arena Cosmetics</h3>
+                <span id="hcProfUnlockedCountBadge" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">0/10 Unlocked</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">Equip unlocked player cards, stadium pitch themes, wicket VFX &amp; the 24K Gold Willow Bat directly to your desktop arena</p>
+            </div>
+            <button id="btnProfOpenStoreBottom" type="button" class="px-3.5 py-2 rounded-xl text-xs font-brand font-black bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow shrink-0">
+              🛍️ Unlock Items in XP Store →
+            </button>
+          </div>
+          <div id="hcProfCardsShelfList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </div>
+      </section>
+
+      <!-- INLINE SCREEN 8: XP STORE & MARKETPLACE (Connected with store.html) -->
+      <section id="screenStore" class="hidden glass-card rounded-2xl p-5 sm:p-6 border border-amber-500/40 space-y-5 animate-pop w-full">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#45423e] pb-3.5">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-center text-2xl shadow shrink-0">
+              🛍️
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-lg sm:text-xl font-black text-white font-brand">XP Store &amp; Prestige Marketplace</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">STARTING AT 5,000 XP</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">Redeem achievement &amp; career match XP for luxury Player Cards, Custom Divine Cards, Pitch Themes &amp; Wicket VFX</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button id="btnStoreGoToProfile" type="button" class="px-3.5 py-2 rounded-xl text-xs font-brand font-bold bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-400/40 transition flex items-center gap-1.5">
+              <span>👤</span>
+              <span>View Profile</span>
+            </button>
+            <a href="store.html?from=desktop" class="px-3 py-2 rounded-xl text-xs font-extrabold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 shadow transition flex items-center gap-1">
+              <span>Full Page</span>
+              <span>↗</span>
+            </a>
+            <button id="btnBackFromStore" type="button" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              ← Back to Pitch
+            </button>
+          </div>
+        </div>
+
+        <!-- XP Wallet & Balance Overview Strip -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-[#241d11] to-[#171614] border border-amber-500/40">
+            <span class="text-[10px] font-mono-num uppercase tracking-wider text-amber-300 font-bold block">Available XP Balance</span>
+            <div id="hcStoreAvailXp" class="text-2xl font-black font-mono-num text-amber-300 mt-1">0 XP</div>
+            <span class="text-[10px] text-slate-400">Ready to spend</span>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-[#3d3a34]">
+            <span class="text-[10px] font-mono-num uppercase tracking-wider text-slate-400 font-bold block">Achievement XP (30)</span>
+            <div id="hcStoreAchXp" class="text-xl font-black font-mono-num text-[#a3d96c] mt-1">0 / 6,625 XP</div>
+            <span class="text-[10px] text-slate-400">From unlocked trophies</span>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-[#3d3a34]">
+            <span class="text-[10px] font-mono-num uppercase tracking-wider text-slate-400 font-bold block">Career Match Bonus XP</span>
+            <div id="hcStoreMatchXp" class="text-xl font-black font-mono-num text-cyan-300 mt-1">+0 XP</div>
+            <span class="text-[10px] text-slate-400">Runs, wickets &amp; wins</span>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-[#3d3a34]">
+            <span class="text-[10px] font-mono-num uppercase tracking-wider text-slate-400 font-bold block">Total Spent / Unlocked</span>
+            <div id="hcStoreSpentXp" class="text-xl font-black font-mono-num text-purple-300 mt-1">0 XP (0/10)</div>
+            <span class="text-[10px] text-slate-400">Synced with Profile &amp; Pitch</span>
+          </div>
+        </div>
+
+        <!-- Custom Divine Card Studio (Interactive Forger) -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#24182e] via-[#1d1722] to-[#17151a] border border-purple-500/40 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🔱</span>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="text-sm font-black text-white font-brand">Custom Divine Player Card Studio</h3>
+                  <span id="hcCustomStudioStatusBadge" class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-amber-500/20 text-amber-300 border border-amber-500/35">REQUIRES 75,000 XP DIVINE CARD</span>
+                </div>
+                <p class="text-[11px] text-slate-300">Craft your own custom title, signature battle motto &amp; verified star badge once you unlock The Divine Custom Player Card</p>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1 items-end">
+            <div class="md:col-span-4">
+              <label for="hcCustomTitleInput" class="text-[10px] font-bold uppercase text-slate-300 block mb-1">Custom Prestige Title (Max 24 chars)</label>
+              <input id="hcCustomTitleInput" type="text" maxlength="24" placeholder="e.g. Immortal Sixer King" class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-xs font-bold text-white focus:outline-none focus:border-amber-400" />
+            </div>
+            <div class="md:col-span-5">
+              <label for="hcCustomMottoInput" class="text-[10px] font-bold uppercase text-slate-300 block mb-1">Signature Battle Motto (Max 48 chars)</label>
+              <input id="hcCustomMottoInput" type="text" maxlength="48" placeholder="e.g. Every number counts on the pitch." class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-xs text-slate-200 focus:outline-none focus:border-amber-400" />
+            </div>
+            <div class="md:col-span-3">
+              <button id="btnHcSaveCustomCard" type="button" class="w-full py-2.5 px-4 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 hover:opacity-95 text-slate-950 shadow transition">
+                ✨ Save &amp; Apply Card
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store Category Filter Tabs -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 rounded-xl bg-[#211f1c] border border-[#45423e] text-xs font-bold">
+          <button id="btnStoreFilterAll" type="button" class="py-2.5 px-3 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition truncate">All Items (10)</button>
+          <button id="btnStoreFilterCards" type="button" class="py-2.5 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🃏 Player Cards (4)</button>
+          <button id="btnStoreFilterCustom" type="button" class="py-2.5 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🔱 Divine &amp; Gold (2)</button>
+          <button id="btnStoreFilterCosmetics" type="button" class="py-2.5 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🏟️ Themes &amp; VFX (4)</button>
+        </div>
+
+        <!-- Store Catalog Grid (Clean 2-Column Responsive Grid) -->
+        <div id="hcStoreItemsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-1"></div>
       </section>
 
       <!-- LARGE INCOMING FRIEND MATCH CALL BANNER (Fixed High-Visibility Overlay & Inline Alert with Accept or Decline) -->
@@ -1063,6 +1464,44 @@
               <span>Accept &amp; Start</span>
             </button>
             <button id="btnDismissGlobalFriendInvite" type="button" class="px-4 py-3 rounded-2xl text-xs sm:text-sm font-extrabold bg-rose-500/10 hover:bg-rose-500/35 text-rose-200 border border-rose-400/50 transition flex items-center justify-center gap-1.5">
+              <span>✕</span>
+              <span>Decline</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- INCOMING FRIEND REQUEST TOAST (Fixed High-Visibility Overlay with Accept or Decline) -->
+      <div id="globalFriendRequestToast" role="dialog" aria-live="assertive" aria-label="Incoming Friend Request" class="hidden fixed top-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-2xl z-50 rounded-3xl p-5 sm:p-6 border-2 border-cyan-400 bg-gradient-to-r from-[#0d222e] via-[#12242b] to-[#1c1b2f] shadow-[0_24px_60px_rgba(0,0,0,0.92)] animate-pop">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+            <div class="relative shrink-0">
+              <span class="w-14 h-14 rounded-2xl bg-cyan-500/15 border-2 border-cyan-400 flex items-center justify-center text-3xl shadow-lg">📩</span>
+              <span class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping absolute -top-1 -right-1"></span>
+            </div>
+            <div class="min-w-0 space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase tracking-widest bg-cyan-400 text-slate-950 animate-pulse">
+                  NEW FRIEND REQUEST
+                </span>
+                <span id="globalFriendRequestFromPill" class="px-2.5 py-0.5 rounded-lg text-[11px] font-mono-num font-extrabold bg-slate-950/90 text-cyan-300 border border-cyan-400/40">
+                  @PLAYER
+                </span>
+              </div>
+              <div id="globalFriendRequestTitle" class="text-base sm:text-xl font-black text-white tracking-tight truncate">
+                🤝 Player sent you a Friend Request!
+              </div>
+              <div id="globalFriendRequestSub" class="text-xs sm:text-sm text-cyan-200 font-semibold leading-snug">
+                Accept to add each other as mutual friends and challenge each other to live 1v1 matches anytime.
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:flex items-center gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
+            <button id="btnAcceptGlobalFriendRequest" type="button" class="px-5 py-3 rounded-2xl text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 shadow-lg shadow-emerald-500/30 transition pulse-cta flex items-center justify-center gap-1.5">
+              <span>✓</span>
+              <span>Accept</span>
+            </button>
+            <button id="btnDismissGlobalFriendRequest" type="button" class="px-4 py-3 rounded-2xl text-xs sm:text-sm font-extrabold bg-rose-500/10 hover:bg-rose-500/35 text-rose-200 border border-rose-400/50 transition flex items-center justify-center gap-1.5">
               <span>✕</span>
               <span>Decline</span>
             </button>
@@ -1520,7 +1959,7 @@
     </div>
 
       <!-- RIGHT SIDEBAR: INNINGS SCORECARD & COMMENTARY OPTIONS + FEED -->
-      <aside class="xl:col-span-4 flex flex-col gap-4">
+      <aside id="rightMatchScorecardCol" class="xl:col-span-4 flex flex-col gap-4 min-w-0">
 
         <!-- 1. Innings Scorecard Summary Box -->
         <div class="glass-card rounded-2xl p-4 space-y-3">
@@ -1677,7 +2116,7 @@
       </aside>
     </main>
 
-    <!-- Official Footer with Version 1.8 -->
+    <!-- Official Footer with Version 2 -->
     <footer class="w-full bg-[#191816] border-t border-[#383531] px-4 sm:px-6 py-3 mt-auto">
       <div class="max-w-[1520px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
         <div class="flex items-center gap-2">
@@ -1686,7 +2125,7 @@
         </div>
         <div class="flex items-center gap-3">
           <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
-            Version 1.8
+            Version 2
           </span>
         </div>
       </div>
@@ -1898,6 +2337,10 @@
               <option value="+94" data-country="SL" data-flag="🇱🇰">🇱🇰 SL (+94)</option>
               <option value="+880" data-country="BAN" data-flag="🇧🇩">🇧🇩 BAN (+880)</option>
               <option value="+977" data-country="NEP" data-flag="🇳🇵">🇳🇵 NEP (+977)</option>
+              <option value="+49" data-country="Germany" data-flag="🇩🇪">🇩🇪 GER (+49)</option>
+              <option value="+33" data-country="France" data-flag="🇫🇷">🇫🇷 FRA (+33)</option>
+              <option value="+34" data-country="Spain" data-flag="🇪🇸">🇪🇸 ESP (+34)</option>
+              <option value="+1" data-country="Canada" data-flag="🇨🇦">🇨🇦 CAN (+1)</option>
             </select>
             <input id="modalInputPin5" type="password" inputmode="numeric" maxlength="5" placeholder="5-Digit PIN" class="col-span-7 px-3 py-2 rounded-xl bg-[#1d1c19] border border-[#45423e] text-white font-mono-num text-sm font-black tracking-widest focus:outline-none focus:border-[#81b64c]" />
           </div>
@@ -1930,6 +2373,125 @@
   <script>
     (function () {
       'use strict';
+      
+      // =========================================================================
+      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // =========================================================================
+      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
+
+      function sanitizeRecordForFreshEpoch(rec) {
+        if (!rec || typeof rec !== 'object') return rec;
+        if (rec.statsEpoch === STATS_RESET_EPOCH) {
+          if (typeof rec.v2Matches === 'number') {
+            rec.matches = rec.v2Matches;
+          }
+          return rec;
+        }
+        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
+        return Object.assign({}, rec, {
+          statsEpoch: STATS_RESET_EPOCH,
+          cloudMatchesFloor: legacyCloudMatches,
+          v2Matches: 0,
+          elo: 1500,
+          peak: 1500,
+          wins: 0,
+          losses: 0,
+          matches: 0,
+          rankedMatches: 0,
+          totalRuns: 0,
+          totalBalls: 0,
+          highScore: 0,
+          centuriesCount: 0,
+          sr500Count: 0,
+          wicketsTaken: 0,
+          wicketsLost: 0,
+          ballsBowled: 0,
+          weeklyEloGain: 0,
+          weeklyWins: 0,
+          weeklyLosses: 0,
+          weeklyMatches: 0,
+          weeklyRuns: 0,
+          weeklyWickets: 0,
+          tournamentWins: 0,
+          xp: 0,
+          maxWinStreak: 0,
+          currentWinStreak: 0,
+          maxBoundariesInMatch: 0,
+          defendedMatches: 0,
+          updatedAt: Date.now()
+        });
+      }
+      try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
+
+      (function executeAuthoritativeV2FreshReset() {
+        try {
+          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
+            const prefixesToRemove = [
+              'oddandeven_store_inventory_',
+              'oddandeven_spent_xp_',
+              'oddandeven_equipped_card_',
+              'oddandeven_equipped_theme_',
+              'oddandeven_equipped_vfx_',
+              'oddandeven_equipped_bat_',
+              'oddandeven_custom_card_',
+              'oddandeven_active_days_',
+              'oddandeven_tourney_wins_',
+              'oddandeven_number_frequency_',
+              'oddandeven_ai_tier_stats_'
+            ];
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (!k) continue;
+              if (prefixesToRemove.some((p) => k.startsWith(p))) {
+                keysToRemove.push(k);
+              }
+            }
+            keysToRemove.forEach((k) => localStorage.removeItem(k));
+            localStorage.removeItem('hc_arena_match_scorecards_v1');
+            localStorage.removeItem('hc_arena_stats_v1');
+            localStorage.removeItem('oddandeven_event_regs_v1');
+            localStorage.removeItem('oddandeven_event_regs_map_v1');
+
+            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
+              try {
+                const raw = localStorage.getItem(mapKey);
+                if (raw) {
+                  const parsed = JSON.parse(raw);
+                  if (parsed && typeof parsed === 'object') {
+                    Object.keys(parsed).forEach((u) => {
+                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
+                    });
+                    localStorage.setItem(mapKey, JSON.stringify(parsed));
+                  }
+                }
+              } catch (e) {}
+            });
+
+            try {
+              const rawElo = localStorage.getItem('hc_arena_elo_v2');
+              if (rawElo) {
+                const parsedElo = JSON.parse(rawElo);
+                if (parsedElo && typeof parsedElo === 'object') {
+                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
+                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
+                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
+                    });
+                  }
+                  parsedElo.eloRating = 1500;
+                  parsedElo.peakElo = 1500;
+                  parsedElo.eloHistory = [];
+                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
+                }
+              }
+            } catch (e) {}
+
+            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
+          }
+        } catch (e) {}
+      })();
+
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
       const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
       const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
@@ -2019,7 +2581,7 @@
             if (!clean) return false;
             try {
               const ts = Number(localStorage.getItem('oddandeven_recent_signup_' + clean)) || 0;
-              return ts > 0 && (Date.now() - ts) < 25000;
+              return ts > 0 && (Date.now() - ts) < 120000;
             } catch (e) {
               return false;
             }
@@ -2039,7 +2601,6 @@
           const isAllowedAccount = (clean) => {
             if (!isRealUsername(clean)) return false;
             if (purgedSet.has(clean) && !isRecentSignup(clean)) return false;
-            if (cloudLoaded && !cloudAuthMap[clean] && !isRecentSignup(clean)) return false;
             return true;
           };
 
@@ -2058,10 +2619,11 @@
 
           // Merge existing records from both worldMap and eloSaved.humanPlayers
           const combined = {};
-          const ingestRecord = (rawKey, rec, fallbackMeta) => {
+          const ingestRecord = (rawKey, rawRec, fallbackMeta) => {
+            const rec = rawRec ? sanitizeRecordForFreshEpoch(rawRec) : rawRec;
             const clean = String((rec && rec.name) ? rec.name : rawKey || '').trim().toUpperCase();
             if (!isAllowedAccount(clean)) return;
-            const prev = combined[clean] || {};
+            const prev = combined[clean] ? sanitizeRecordForFreshEpoch(combined[clean]) : {};
             const eloVal = (rec && typeof rec.elo === 'number' && !isNaN(rec.elo))
               ? rec.elo
               : ((prev && typeof prev.elo === 'number' && !isNaN(prev.elo)) ? prev.elo : (Number(rec && rec.elo) || 1500));
@@ -2077,12 +2639,25 @@
             const totalRuns = Math.max(Number(rec && rec.totalRuns) || 0, Number(prev && prev.totalRuns) || 0);
             const totalBalls = Math.max(Number(rec && rec.totalBalls) || 0, Number(prev && prev.totalBalls) || 0);
             const highScore = Math.max(Number(rec && rec.highScore) || 0, Number(prev && prev.highScore) || 0);
+            const centuriesCount = Math.max(Number(rec && rec.centuriesCount) || 0, Number(prev && prev.centuriesCount) || 0);
+            const sr500Count = Math.max(Number(rec && rec.sr500Count) || 0, Number(prev && prev.sr500Count) || 0);
             const wicketsTaken = Math.max(Number(rec && rec.wicketsTaken) || 0, Number(prev && prev.wicketsTaken) || 0);
             const wicketsLost = Math.max(Number(rec && rec.wicketsLost) || 0, Number(prev && prev.wicketsLost) || 0);
             const ballsBowled = Math.max(Number(rec && rec.ballsBowled) || 0, Number(prev && prev.ballsBowled) || 0);
 
+            const recSameWk = Boolean(rec && rec.weekKey === wk);
+            const prevSameWk = Boolean(prev && prev.weekKey === wk);
+            const wkElo = recSameWk ? (Number(rec.weeklyEloGain) || 0) : (prevSameWk ? (Number(prev.weeklyEloGain) || 0) : 0);
+            const wkWins = Math.max(recSameWk ? (Number(rec.weeklyWins) || 0) : 0, prevSameWk ? (Number(prev.weeklyWins) || 0) : 0);
+            const wkLosses = Math.max(recSameWk ? (Number(rec.weeklyLosses) || 0) : 0, prevSameWk ? (Number(prev.weeklyLosses) || 0) : 0);
+            const wkMatches = Math.max(recSameWk ? (Number(rec.weeklyMatches) || 0) : 0, prevSameWk ? (Number(prev.weeklyMatches) || 0) : 0, wkWins + wkLosses);
+            const wkRuns = Math.max(recSameWk ? (Number(rec.weeklyRuns) || 0) : 0, prevSameWk ? (Number(prev.weeklyRuns) || 0) : 0);
+            const wkWickets = Math.max(recSameWk ? (Number(rec.weeklyWickets) || 0) : 0, prevSameWk ? (Number(prev.weeklyWickets) || 0) : 0);
+
             combined[clean] = Object.assign({}, prev, rec || {}, {
               name: clean,
+              statsEpoch: STATS_RESET_EPOCH,
+              v2Matches: matches,
               isRealRegisteredUser: true,
               countryCode: (rec && rec.countryCode) || (prev && prev.countryCode) || (fallbackMeta && fallbackMeta.countryCode) || '+91',
               countryFlag: (rec && rec.countryFlag) || (prev && prev.countryFlag) || (fallbackMeta && fallbackMeta.countryFlag) || '🇮🇳',
@@ -2096,16 +2671,18 @@
               totalRuns: totalRuns,
               totalBalls: totalBalls,
               highScore: highScore,
+              centuriesCount: centuriesCount,
+              sr500Count: sr500Count,
               wicketsTaken: wicketsTaken,
               wicketsLost: wicketsLost,
               ballsBowled: ballsBowled,
-              weekKey: (rec && rec.weekKey) || prev.weekKey || wk,
-              weeklyEloGain: Number(rec && rec.weeklyEloGain) || Number(prev && prev.weeklyEloGain) || 0,
-              weeklyWins: Math.max(Number(rec && rec.weeklyWins) || 0, Number(prev && prev.weeklyWins) || 0),
-              weeklyLosses: Math.max(Number(rec && rec.weeklyLosses) || 0, Number(prev && prev.weeklyLosses) || 0),
-              weeklyMatches: Math.max(Number(rec && rec.weeklyMatches) || 0, Number(prev && prev.weeklyMatches) || 0),
-              weeklyRuns: Math.max(Number(rec && rec.weeklyRuns) || 0, Number(prev && prev.weeklyRuns) || 0),
-              weeklyWickets: Math.max(Number(rec && rec.weeklyWickets) || 0, Number(prev && prev.weeklyWickets) || 0),
+              weekKey: wk,
+              weeklyEloGain: wkElo,
+              weeklyWins: wkWins,
+              weeklyLosses: wkLosses,
+              weeklyMatches: wkMatches,
+              weeklyRuns: wkRuns,
+              weeklyWickets: wkWickets,
               updatedAt: Math.max(Number(rec && rec.updatedAt) || 0, Number(prev && prev.updatedAt) || 0, Date.now())
             });
           };
@@ -2168,5 +2745,611 @@
     })();
   </script>
   <script src="hand_cricket.js"></script>
+
+  <!-- =========================================================================
+       CENTERED INTERACTIVE VERSION 2.0 SHOWCASE BOX (#version2ShowcaseModal)
+       ========================================================================= -->
+  <div
+    id="version2ShowcaseModal"
+    class="fixed inset-0 z-[70] hidden items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="v2ShowcaseTitle"
+  >
+    <!-- Ambient Outer Glow -->
+    <div class="relative w-full max-w-2xl rounded-3xl bg-gradient-to-b from-[#171c22] via-[#12161b] to-[#0c0f13] border border-[#a3d96c]/45 shadow-[0_25px_90px_rgba(0,0,0,0.9),0_0_50px_rgba(129,182,76,0.22)] overflow-hidden text-zinc-100 animate-pop max-h-[92vh] flex flex-col">
+      <!-- Top Shimmer Accent Line -->
+      <div class="h-1.5 w-full bg-gradient-to-r from-[#81b64c] via-cyan-400 to-amber-400 shrink-0"></div>
+
+      <!-- Scrollable Interior -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+        <!-- 1. HEADER & VERSION 2 TITLE -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono-num font-black uppercase tracking-widest bg-[#81b64c]/20 text-[#a3d96c] border border-[#a3d96c]/40 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-ping"></span>
+              <span>🚀 OFFICIAL RELEASE • VERSION 2</span>
+            </div>
+            <h2 id="v2ShowcaseTitle" class="font-brand text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
+              OddAndEven.in <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Version 2</span> Arena Update
+            </h2>
+            <p class="text-xs sm:text-sm text-zinc-400">
+              Explore our biggest upgrade yet — click any feature card below to preview &amp; test it live.
+            </p>
+          </div>
+
+          <button
+            id="btnTopCloseV2Modal"
+            type="button"
+            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
+            aria-label="Close Version 2 box"
+            class="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-400/40 flex items-center justify-center text-sm font-bold transition shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- 2. HERO IMAGE IN BETWEEN -->
+        <div class="relative rounded-2xl overflow-hidden border border-white/15 bg-[#090d12] shadow-inner group">
+          <img
+            id="v2HeroIllustration"
+            src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20800%20250%22%20width%3D%22800%22%20height%3D%22250%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bgGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307130d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2245%25%22%20stop-color%3D%22%230d1b24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231c1126%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22stadiumGlow%22%20cx%3D%2250%25%22%20cy%3D%2255%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.38%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2322d3ee%22%20stop-opacity%3D%220.14%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23000000%22%20stop-opacity%3D%220%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22v2TextGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23d9f99d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%2381b64c%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2322d3ee%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22goldGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fde047%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23f97316%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22pitchGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%220%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.28%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2315803d%22%20stop-opacity%3D%220.05%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22glow%22%20x%3D%22-20%25%22%20y%3D%22-20%25%22%20width%3D%22140%25%22%20height%3D%22140%25%22%3E%0A%20%20%20%20%20%20%3CfeGaussianBlur%20stdDeviation%3D%226%22%20result%3D%22blur%22/%3E%0A%20%20%20%20%20%20%3CfeComposite%20in%3D%22SourceGraphic%22%20in2%3D%22blur%22%20operator%3D%22over%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%0A%20%20%3C%21--%20Background%20--%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23bgGrad%29%22/%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23stadiumGlow%29%22/%3E%0A%0A%20%20%3C%21--%20Perspective%20Arena%20Grid%20/%20Turf%20Rings%20--%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22340%22%20ry%3D%2252%22%20fill%3D%22url%28%23pitchGrad%29%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22230%22%20ry%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.25%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%226%206%22/%3E%0A%20%20%3Cline%20x1%3D%2260%22%20y1%3D%22215%22%20x2%3D%22740%22%20y2%3D%22215%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.2%22%20stroke-width%3D%221%22/%3E%0A%0A%20%20%3C%21--%20Center%20Championship%20Emblem%3A%20VERSION%202%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%28400%2C%20108%29%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2276%22%20fill%3D%22%230d1512%22%20stroke%3D%22url%28%23v2TextGrad%29%22%20stroke-width%3D%223%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2266%22%20fill%3D%22%23131f18%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.2%22%20stroke-dasharray%3D%224%204%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%22-8%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2211%22%20fill%3D%22%23a3d96c%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%223%22%3EODD%20%26amp%3B%20EVEN%20ARENA%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2224%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2233%22%20fill%3D%22url%28%23v2TextGrad%29%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221%22%3EV2.0%3C/text%3E%0A%20%20%20%20%3Crect%20x%3D%22-48%22%20y%3D%2234%22%20width%3D%2296%22%20height%3D%2219%22%20rx%3D%229.5%22%20fill%3D%22url%28%23goldGrad%29%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2247%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%229.5%22%20fill%3D%22%23090d16%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221.2%22%3EMAJOR%20UPDATE%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E"
+            alt="Version 2 Hand Cricket Arena Showcase Graphic"
+            class="w-full h-36 sm:h-44 object-cover object-center select-none transition-transform duration-500 group-hover:scale-[1.02]"
+          />
+          <!-- Dynamic Live Feature Overlay Strip at Bottom of Image -->
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-3.5 py-2.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span id="v2ImageLiveBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase bg-amber-500/25 text-amber-200 border border-amber-400/40 shrink-0">
+                🛍️ XP STORE
+              </span>
+              <span id="v2ImageLiveCaption" class="text-xs font-bold text-white truncate">
+                High-tier marketplace starting at 5,000 XP floor with Player Cards &amp; Custom Studio.
+              </span>
+            </div>
+            <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono-num font-bold text-[#a3d96c] shrink-0">
+              <span>Interactive Preview</span>
+              <span>●</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 3. INTERACTIVE FEATURE LAYOUT -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-[11px] font-mono-num uppercase tracking-wider text-zinc-400">
+            <span>✨ Select a Version 2 Feature to Inspect</span>
+            <span id="v2FeatureCounter" class="text-[#a3d96c] font-bold">1 / 5 Selected</span>
+          </div>
+
+          <!-- Interactive Feature Pills Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" role="tablist" aria-label="Version 2 Features">
+            <button
+              type="button"
+              data-v2-tab="store"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('store')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-amber-500/20 border-amber-400/60 shadow-[0_0_20px_rgba(245,184,61,0.25)]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🛍️</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-amber-500/30 text-amber-200">5k+ XP</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">XP Store</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Marketplace &amp; Cards</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="profile"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('profile')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">👤</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">STATS</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Career Profile</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">1-10 Freq &amp; Acc Info</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="cards"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('cards')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🎴</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">CUSTOM</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Player Cards</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Custom Card Studio</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="themes"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('themes')"
+              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">🏰</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">THEMES</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Pitch &amp; VFX</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Lords Turf &amp; Thunder</div>
+            </button>
+
+            <button
+              type="button"
+              data-v2-tab="roast"
+              onclick="window.selectVersion2Feature && window.selectVersion2Feature('roast')"
+              class="v2-feature-tab col-span-2 sm:col-span-1 group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-lg">💀</span>
+                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">ROAST</span>
+              </div>
+              <div class="text-xs font-extrabold text-white leading-tight">Roast Mode</div>
+              <div class="text-[10px] text-zinc-400 truncate mt-0.5">30 Badges &amp; Audio</div>
+            </button>
+          </div>
+
+          <!-- Dynamic Interactive Feature Detail Card -->
+          <div id="v2FeatureDetailBox" class="rounded-2xl bg-[#181c22]/95 border border-white/10 p-3.5 sm:p-4 space-y-2.5 transition-all">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span id="v2DetailIcon" class="text-xl">🛍️</span>
+                <h3 id="v2DetailTitle" class="font-brand text-sm sm:text-base font-extrabold text-white">
+                  XP Store &amp; Marketplace (5,000+ XP Starting Floor)
+                </h3>
+              </div>
+              <span id="v2DetailTag" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                5,000+ XP FLOOR • PRESTIGE ECONOMY
+              </span>
+            </div>
+
+            <p id="v2DetailDesc" class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+              Redeem your achievement and match XP for valuable flex cosmetics. With a strict <strong class="text-amber-300">5,000 XP entry price floor</strong>, every unlock reflects genuine dedication across the 30 career milestones and ranked matches.
+            </p>
+
+            <!-- Interactive Live Feature Sub-Widget -->
+            <div id="v2InteractiveSubWidget" class="pt-2 border-t border-white/10">
+
+              <!-- Sub-Widget 1: Live Card Simulator (Visible on Store & Cards tabs) -->
+              <div id="v2CardSimulatorBox" class="space-y-2">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-slate-300">🎮 Interactive Live Card Simulator:</span>
+                  <span class="text-[10px] text-amber-300 font-mono-num font-bold" id="v2SimPrice">75,000 XP</span>
+                </div>
+                <!-- Card Preview Container -->
+                <div class="p-3 rounded-2xl border transition-all duration-300 bg-gradient-to-br from-[#261e11] via-[#1a1714] to-[#121110] border-amber-400 shadow-[0_0_20px_rgba(245,184,61,0.2)]" id="v2SimCardPreview">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xl">🇮🇳</span>
+                      <div>
+                        <div class="font-brand font-black text-xs text-white flex items-center gap-1">
+                          <span>PLAYER</span>
+                          <span id="v2SimStar" class="text-amber-300 text-xs">⭐</span>
+                        </div>
+                        <div class="text-[9px] font-mono-num text-slate-400">+91</div>
+                      </div>
+                    </div>
+                    <span id="v2SimTierBadge" class="px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-purple-400 text-slate-950">
+                      🔱 DIVINE CUSTOM
+                    </span>
+                  </div>
+                  <div class="mt-2 p-1.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
+                    <span class="text-[10px] font-black text-amber-300 font-brand" id="v2SimTitle">Sixer King</span>
+                    <span class="text-[10px] font-mono-num font-bold text-cyan-300">1850 ELO</span>
+                  </div>
+                  <div class="mt-1.5 text-[9px] text-slate-300 italic" id="v2SimMotto">"Can't break this defense on the pitch."</div>
+                </div>
+                <!-- Tier Buttons Selector -->
+                <div class="grid grid-cols-5 gap-1 text-[9px] font-bold">
+                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-amber-300 border border-amber-500/30" data-tier="gold">🏆 Gold</button>
+                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-cyan-300 border border-cyan-500/30" data-tier="diamond">💎 Diamond</button>
+                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-rose-300 border border-rose-500/30" data-tier="mythic">👑 Mythic</button>
+                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-purple-300 border border-purple-500/30" data-tier="cosmic">🌌 Cosmic</button>
+                  <button type="button" class="btnSimTier py-1 rounded-lg bg-amber-500/30 text-amber-200 border border-amber-400 font-black" data-tier="custom">🔱 Custom</button>
+                </div>
+              </div>
+
+              <!-- Sub-Widget 2: Live Roast Sampler (Visible on Roast tab) -->
+              <div id="v2RoastSamplerBox" class="hidden flex flex-wrap items-center justify-between gap-2">
+                <div id="v2SampleRoastText" class="text-[11px] italic text-amber-200/95 flex-1 min-w-[200px]">
+                  "💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!"
+                </div>
+                <button
+                  id="btnV2SampleAction"
+                  type="button"
+                  onclick="window.triggerVersion2Sample && window.triggerVersion2Sample()"
+                  class="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 transition active:scale-95 shrink-0"
+                >
+                  🎲 Another Savage Roast
+                </button>
+              </div>
+
+              <!-- Sub-Widget 3: Profile Stats Mini Preview (Visible on Profile tab) -->
+              <div id="v2ProfilePreviewBox" class="hidden space-y-2">
+                <div class="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
+                    <span class="text-slate-400 block text-[8px]">Matches</span>
+                    <span class="font-bold text-white font-mono-num">48 Played</span>
+                  </div>
+                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
+                    <span class="text-slate-400 block text-[8px]">Win Ratio</span>
+                    <span class="font-bold text-emerald-300 font-mono-num">73% Win</span>
+                  </div>
+                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
+                    <span class="text-slate-400 block text-[8px]">Fav Hand</span>
+                    <span class="font-bold text-cyan-300 font-mono-num">#6 (38%)</span>
+                  </div>
+                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
+                    <span class="text-slate-400 block text-[8px]">Peak Rating</span>
+                    <span class="font-bold text-amber-300 font-mono-num">1850 ELO</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sub-Widget 4: Turf Theme Mini Preview (Visible on Themes tab) -->
+              <div id="v2ThemePreviewBox" class="hidden grid grid-cols-2 gap-2 text-[10px]">
+                <div class="p-2.5 rounded-xl border border-emerald-500/40 bg-gradient-to-br from-[#071a0e] to-[#0f2b18] text-emerald-200">
+                  <div class="font-bold text-white flex items-center gap-1"><span>🏰</span><span>Lords Royal Pavilion</span></div>
+                  <div class="text-[9px] text-emerald-300/80 mt-0.5">Lush county green turf with golden brass creases</div>
+                </div>
+                <div class="p-2.5 rounded-xl border border-fuchsia-500/40 bg-gradient-to-br from-[#05111a] to-[#160824] text-fuchsia-200">
+                  <div class="font-bold text-white flex items-center gap-1"><span>🌆</span><span>Cyberpunk Neon Arena</span></div>
+                  <div class="text-[9px] text-fuchsia-300/80 mt-0.5">Synthwave grid night with glowing cyan lines</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. FOOTER WITH TWO OPTIONS: CLOSE & TRY OUT -->
+      <div class="px-4 sm:px-6 py-3.5 bg-[#090b0e]/95 border-t border-white/10 flex items-center justify-between gap-3 shrink-0">
+        <div class="hidden sm:flex items-center gap-2 text-[11px] text-zinc-400">
+          <span class="w-2 h-2 rounded-full bg-[#a3d96c]"></span>
+          <span id="v2TryOutHint">Ready to activate: <strong class="text-white">🛍️ XP Store &amp; Marketplace (store.html)</strong></span>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 w-full sm:w-auto">
+          <button
+            id="btnCloseV2Modal"
+            type="button"
+            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
+            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-white/15 transition active:scale-95"
+          >
+            Close
+          </button>
+          <button
+            id="btnTryOutV2Modal"
+            type="button"
+            onclick="window.tryOutVersion2Feature && window.tryOutVersion2Feature()"
+            class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-[#81b64c] via-emerald-400 to-[#a3d96c] hover:brightness-110 text-slate-950 shadow-[0_6px_25px_rgba(129,182,76,0.45)] transition active:scale-95 flex items-center justify-center gap-1.5"
+          >
+            <span id="btnTryOutV2Label">🛍️ Open XP Store</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- VERSION 2.0 INTERACTIVE SHOWCASE CONTROLLER -->
+<script>
+(function() {
+  var V2_FEATURES = {
+    store: {
+      index: 1,
+      icon: "🛍️",
+      badge: "🛍️ XP STORE & MARKETPLACE",
+      badgeClass: "bg-amber-500/25 text-amber-200 border-amber-400/40",
+      caption: "High-tier marketplace starting at 5,000 XP floor with Player Cards & Custom Studio.",
+      title: "XP Store & Marketplace (5,000+ XP Starting Floor)",
+      tag: "5,000+ XP FLOOR • PRESTIGE ECONOMY",
+      tagClass: "bg-amber-500/20 text-amber-300 border-amber-400/30",
+      desc: "Redeem your achievement and match XP for valuable flex cosmetics. With a strict <strong class=\"text-amber-300\">5,000 XP entry price floor</strong>, every unlock reflects genuine dedication across the 30 career milestones and ranked matches.",
+      tryHint: "🛍️ XP Store & Marketplace (store.html)",
+      tryBtn: "🛍️ Open XP Store",
+      actionUrl: "store.html",
+      tabActiveClass: "bg-amber-500/20 border-amber-400/60 shadow-[0_0_20px_rgba(245,184,61,0.25)]"
+    },
+    profile: {
+      index: 2,
+      icon: "👤",
+      badge: "👤 CAREER PROFILE DASHBOARD",
+      badgeClass: "bg-blue-500/25 text-blue-200 border-blue-400/40",
+      caption: "Dedicated analytics dashboard with 1–10 number frequency graph & bot tier win rates.",
+      title: "Career Profile Dashboard & Top Navigation Tab",
+      tag: "1–10 FREQ GRAPH • 4 AI TIERS",
+      tagClass: "bg-blue-500/20 text-blue-300 border-blue-400/30",
+      desc: "Track every career metric in one unified dashboard: favorite number 1–10 frequency bar chart, win rates across Sunny (450), Rohan (1100), Vikram (1850) and Apex Oracle (2650), peak Elo, and verified account credentials.",
+      tryHint: "👤 Career Profile Dashboard (profile.html)",
+      tryBtn: "👤 View Profile Dashboard",
+      actionUrl: "profile.html",
+      tabActiveClass: "bg-blue-500/20 border-blue-400/60 shadow-[0_0_20px_rgba(59,130,246,0.25)]"
+    },
+    cards: {
+      index: 3,
+      icon: "🎴",
+      badge: "🎴 PLAYER CARDS & STUDIO",
+      badgeClass: "bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 text-slate-950 font-black",
+      caption: "5 Tiers of Player Cards (Gold, Diamond, Mythic, Cosmic, Custom) & Custom Card Studio.",
+      title: "Holographic Player Cards & Custom Card Studio",
+      tag: "CUSTOM STUDIO • VERIFIED STAR ⭐",
+      tagClass: "bg-purple-500/20 text-purple-300 border-purple-400/30",
+      desc: "Unlock 5 tiers of cards. The 75,000 XP <strong class=\"text-purple-300\">Divine Custom Card</strong> opens the Custom Card Studio: craft your own title ('Sixer King', 'The Wall', 'Pitch Overlord'), signature motto bio, border aura glow, and verified star badge ⭐!",
+      tryHint: "🎴 Custom Card Studio & Player Cards",
+      tryBtn: "🎴 Open Card Studio in Store",
+      actionUrl: "store.html",
+      tabActiveClass: "bg-purple-500/20 border-purple-400/60 shadow-[0_0_20px_rgba(168,85,247,0.25)]"
+    },
+    themes: {
+      index: 4,
+      icon: "🏰",
+      badge: "🏰 PITCH THEMES & WICKET VFX",
+      badgeClass: "bg-emerald-500/25 text-emerald-200 border-emerald-400/40",
+      caption: "Lords Royal Pavilion Turf, Cyberpunk Neon Grid, and Thunderstrike Wicket lightning FX.",
+      title: "Pitch Themes, Thunderstrike Wicket VFX & Gold Bat",
+      tag: "LORDS TURF • THUNDER VFX",
+      tagClass: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+      desc: "Equip the <strong class=\"text-emerald-300\">Lords Royal Pavilion Theme</strong> for lush county green turf with golden brass creases, or <strong class=\"text-fuchsia-300\">Cyberpunk Neon Grid</strong>. Wickets trigger <strong class=\"text-cyan-300\">⚡ Thunderstrike lightning</strong> or <strong class=\"text-orange-300\">🔥 Meteorite Fireball</strong> explosions!",
+      tryHint: "🏰 Pitch Themes & Wicket VFX",
+      tryBtn: "🏏 Switch to Pitch",
+      actionUrl: null,
+      tabActiveClass: "bg-emerald-500/20 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+    },
+    roast: {
+      index: 5,
+      icon: "💀",
+      badge: "💀 ROAST MODE & 30 ACHIEVEMENTS",
+      badgeClass: "bg-rose-500/25 text-rose-200 border-rose-400/40",
+      caption: "Savage stadium humiliation, 30 career achievements (6,625 XP), and Golden Duck roasts.",
+      title: "Roast Commentary Mode & 30 Career Achievements",
+      tag: "6,625 XP • SAVAGE AUDIO",
+      tagClass: "bg-rose-500/20 text-rose-300 border-rose-400/30",
+      desc: "Zero-mercy announcer roasts on wickets with Golden Duck roasts, paired with a full roster of <strong class=\"text-rose-300\">30 Career Achievements</strong> granting 6,625 XP to fuel your store unlocks!",
+      tryHint: "💀 Roast Commentary & Achievements",
+      tryBtn: "🔥 Test Savage Roast Audio",
+      actionUrl: null,
+      tabActiveClass: "bg-rose-500/20 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.25)]"
+    }
+  };
+
+  var SAMPLE_ROASTS = [
+    "\"💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!\"",
+    "\"🦆 GOLDEN DUCK ROAST! 0 off 1 ball! Came from the dressing room just to check the pitch weather!\"",
+    "\"🤡 Bro thought he was playing 4D chess and walked straight into the most obvious finger trap in history!\"",
+    "\"📉 That batting display just set Hand Cricket back by 10 years. The crowd is demanding a refund!\"",
+    "\"🪦 RIP INNINGS! Even the stadium floodlights dimmed out of second-hand embarrassment for that shot!\""
+  ];
+  var roastIdx = 0;
+  window.__currentV2Feature = "store";
+
+  window.openVersion2Showcase = function() {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  };
+
+  window.closeVersion2Showcase = function() {
+    var modal = document.getElementById("version2ShowcaseModal");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  };
+
+  window.triggerVersion2Sample = function() {
+    roastIdx = (roastIdx + 1) % SAMPLE_ROASTS.length;
+    var el = document.getElementById("v2SampleRoastText");
+    if (el) {
+      el.textContent = SAMPLE_ROASTS[roastIdx];
+    }
+    try {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        var clean = SAMPLE_ROASTS[roastIdx].replace(/[^a-zA-Z0-9 ,.!'-]/g, "");
+        var u = new SpeechSynthesisUtterance(clean);
+        u.rate = 1.05;
+        window.speechSynthesis.speak(u);
+      }
+    } catch (e) {}
+  };
+
+  window.selectVersion2Feature = function(key) {
+    var feat = V2_FEATURES[key] || V2_FEATURES.store;
+    window.__currentV2Feature = key;
+
+    // Update tabs
+    var tabs = document.querySelectorAll("[data-v2-tab]");
+    for (var i = 0; i < tabs.length; i++) {
+      var t = tabs[i];
+      var k = t.getAttribute("data-v2-tab");
+      t.className = "v2-feature-tab " + (k === "roast" ? "col-span-2 sm:col-span-1 " : "") +
+        "group text-left p-2.5 rounded-2xl border transition-all " +
+        (k === key ? feat.tabActiveClass : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]");
+    }
+
+    // Update image live overlay
+    var imgBadge = document.getElementById("v2ImageLiveBadge");
+    if (imgBadge) {
+      imgBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase border shrink-0 " + feat.badgeClass;
+      imgBadge.textContent = feat.badge;
+    }
+    var imgCap = document.getElementById("v2ImageLiveCaption");
+    if (imgCap) imgCap.textContent = feat.caption;
+
+    // Update counter & detail box
+    var counter = document.getElementById("v2FeatureCounter");
+    if (counter) counter.textContent = feat.index + " / 5 Selected";
+    var icon = document.getElementById("v2DetailIcon");
+    if (icon) icon.textContent = feat.icon;
+    var title = document.getElementById("v2DetailTitle");
+    if (title) title.textContent = feat.title;
+    var tag = document.getElementById("v2DetailTag");
+    if (tag) {
+      tag.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black border " + feat.tagClass;
+      tag.textContent = feat.tag;
+    }
+    var desc = document.getElementById("v2DetailDesc");
+    if (desc) desc.innerHTML = feat.desc;
+
+    var hint = document.getElementById("v2TryOutHint");
+    if (hint) hint.innerHTML = "Ready to activate: <strong class=\"text-white\">" + feat.tryHint + "</strong>";
+    var btnLbl = document.getElementById("btnTryOutV2Label");
+    if (btnLbl) btnLbl.textContent = feat.tryBtn;
+
+    // Toggle Sub-Widgets
+    var simBox = document.getElementById("v2CardSimulatorBox");
+    var roastBox = document.getElementById("v2RoastSamplerBox");
+    var profBox = document.getElementById("v2ProfilePreviewBox");
+    var themeBox = document.getElementById("v2ThemePreviewBox");
+
+    if (simBox) simBox.classList.toggle("hidden", key !== "store" && key !== "cards");
+    if (roastBox) roastBox.classList.toggle("hidden", key !== "roast");
+    if (profBox) profBox.classList.toggle("hidden", key !== "profile");
+    if (themeBox) themeBox.classList.toggle("hidden", key !== "themes");
+  };
+
+  window.tryOutVersion2Feature = function() {
+    var key = window.__currentV2Feature || "store";
+    var feat = V2_FEATURES[key] || V2_FEATURES.store;
+    window.closeVersion2Showcase();
+
+    if (key === "store" || key === "cards") {
+      var stBtn = document.getElementById("sideNavStore");
+      if (stBtn) { stBtn.click(); return; }
+    }
+    if (key === "profile" || key === "themes") {
+      var prBtn = document.getElementById("sideNavProfile");
+      if (prBtn) { prBtn.click(); return; }
+    }
+    if (feat.actionUrl) {
+      window.location.href = feat.actionUrl;
+      return;
+    }
+
+    if (key === "roast") {
+      window.triggerVersion2Sample();
+      return;
+    }
+
+    // Default: switch to pitch
+    try {
+      if (typeof window.switchCenterScreen === "function") {
+        window.switchCenterScreen("PITCH");
+      }
+    } catch(e) {}
+  };
+
+  // Attach Card Simulator Tier Buttons Inside Centered Modal
+  document.addEventListener("DOMContentLoaded", function() {
+    var simTiers = {
+      gold: {
+        price: "5,000 XP",
+        border: "border-amber-400 bg-gradient-to-br from-[#2e2617] via-[#211d15] to-[#121110] shadow-[0_0_20px_rgba(245,184,61,0.2)]",
+        badge: "🏆 ELITE GOLD",
+        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40",
+        title: "24K Gold Cap Holder",
+        motto: "\"Polished gold foil card frame on pitch.\"",
+        star: false
+      },
+      diamond: {
+        price: "12,000 XP",
+        border: "border-cyan-400 bg-gradient-to-br from-[#0e2329] via-[#141d22] to-[#121110] shadow-[0_0_20px_rgba(56,189,248,0.2)]",
+        badge: "💎 DIAMOND VANGUARD",
+        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40",
+        title: "Diamond Prodigy",
+        motto: "\"Crystalline diamond particle sheen.\"",
+        star: false
+      },
+      mythic: {
+        price: "30,000 XP",
+        border: "border-rose-500 bg-gradient-to-br from-[#2a0e14] via-[#1d1215] to-[#121110] shadow-[0_0_20px_rgba(255,77,109,0.2)]",
+        badge: "👑 MYTHIC IMMORTAL",
+        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40",
+        title: "Obsidian Magma Sovereign",
+        motto: "\"Pulsing with molten lava flames.\"",
+        star: false
+      },
+      cosmic: {
+        price: "55,000 XP",
+        border: "border-purple-400 bg-gradient-to-br from-[#230f2e] via-[#1a1224] to-[#121110] shadow-[0_0_20px_rgba(168,85,247,0.2)]",
+        badge: "🌌 COSMIC CELESTIAL",
+        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40",
+        title: "Celestial Master",
+        motto: "\"Infused with deep cosmic starlight.\"",
+        star: false
+      },
+      custom: {
+        price: "75,000 XP",
+        border: "border-amber-400 bg-gradient-to-br from-[#261e11] via-[#1a1714] to-[#121110] shadow-[0_0_20px_rgba(245,184,61,0.25)]",
+        badge: "🔱 DIVINE CUSTOM",
+        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-purple-400 text-slate-950",
+        title: "Sixer King (Custom)",
+        motto: "\"Can't break this defense on the pitch.\"",
+        star: true
+      }
+    };
+
+    document.querySelectorAll(".btnSimTier").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var tKey = btn.getAttribute("data-tier");
+        var cfg = simTiers[tKey];
+        if (!cfg) return;
+
+        var priceEl = document.getElementById("v2SimPrice");
+        var cardEl = document.getElementById("v2SimCardPreview");
+        var badgeEl = document.getElementById("v2SimTierBadge");
+        var titleEl = document.getElementById("v2SimTitle");
+        var mottoEl = document.getElementById("v2SimMotto");
+        var starEl = document.getElementById("v2SimStar");
+
+        if (priceEl) priceEl.textContent = cfg.price;
+        if (cardEl) cardEl.className = "p-3 rounded-2xl border transition-all duration-300 " + cfg.border;
+        if (badgeEl) {
+          badgeEl.textContent = cfg.badge;
+          badgeEl.className = cfg.badgeCls;
+        }
+        if (titleEl) titleEl.textContent = cfg.title;
+        if (mottoEl) mottoEl.textContent = cfg.motto;
+        if (starEl) starEl.classList.toggle("hidden", !cfg.star);
+
+        document.querySelectorAll(".btnSimTier").forEach(function(b) {
+          b.className = "btnSimTier py-1 rounded-lg bg-[#24221f] text-slate-300 border border-[#383530]";
+        });
+        btn.className = "btnSimTier py-1 rounded-lg bg-amber-500/30 text-amber-200 border border-amber-400 font-black";
+      });
+    });
+  });
+
+  window.autoShowVersion2IfLoggedIn = function() {
+    if (window.isUserLoggedIntoWebsite()) {
+      try {
+        localStorage.removeItem("oddandeven_just_logged_in");
+        sessionStorage.removeItem("oddandeven_show_v2_box");
+      } catch (e) {}
+      window.openVersion2Showcase();
+    } else {
+      window.closeVersion2Showcase();
+    }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function() {
+      setTimeout(window.autoShowVersion2IfLoggedIn, 60);
+    });
+  } else {
+    setTimeout(window.autoShowVersion2IfLoggedIn, 60);
+  }
+
+})();
+</script>
+
 </body>
 </html>
