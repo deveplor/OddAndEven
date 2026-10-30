@@ -208,7 +208,7 @@
   </header>
 
   <!-- MAIN STORE VIEWPORT CONTAINER -->
-  <main class="flex-1 max-w-md mx-auto w-full p-3.5 space-y-4">
+  <main class="flex-1 max-w-md md:max-w-3xl lg:max-w-4xl mx-auto w-full p-3.5 sm:p-6 space-y-5">
 
     <!-- UNAUTHENTICATED GUEST BANNER (Hidden when logged in) -->
     <section id="guestNoticeCard" class="hidden glass-card rounded-2xl p-4 border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-transparent space-y-3">
@@ -568,6 +568,144 @@
       'use strict';
 
       // Storage Keys aligned with OddAndEven ecosystem
+      
+      // =========================================================================
+      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // =========================================================================
+      
+      // Smart Arena Return Link (Desktop hand_cricket.html vs Mobile mobile.html)
+      (function() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const ref = (document.referrer || '').toLowerCase();
+          const pref = localStorage.getItem('oddandeven_preferred_device_view');
+          const isDesktopOrigin = params.get('from') === 'desktop' || ref.includes('hand_cricket') || ref.includes('handcricket') || (!ref.includes('mobile.html') && window.innerWidth >= 1024 && pref !== 'mobile');
+          if (isDesktopOrigin) {
+            document.querySelectorAll('a[href^="mobile.html"]').forEach((a) => {
+              const href = a.getAttribute('href') || 'mobile.html';
+              if (href === 'mobile.html') a.setAttribute('href', 'hand_cricket.html');
+              else if (href === 'mobile.html#achievements') a.setAttribute('href', 'hand_cricket.html?screen=ACHIEVEMENTS');
+              else if (href.startsWith('mobile.html#bot_')) a.setAttribute('href', 'hand_cricket.html?screen=BOT_SETUP');
+            });
+          }
+        } catch (e) {}
+      })();
+
+      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
+
+      function sanitizeRecordForFreshEpoch(rec) {
+        if (!rec || typeof rec !== 'object') return rec;
+        if (rec.statsEpoch === STATS_RESET_EPOCH) {
+          if (typeof rec.v2Matches === 'number') {
+            rec.matches = rec.v2Matches;
+          }
+          return rec;
+        }
+        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
+        return Object.assign({}, rec, {
+          statsEpoch: STATS_RESET_EPOCH,
+          cloudMatchesFloor: legacyCloudMatches,
+          v2Matches: 0,
+          elo: 1500,
+          peak: 1500,
+          wins: 0,
+          losses: 0,
+          matches: 0,
+          rankedMatches: 0,
+          totalRuns: 0,
+          totalBalls: 0,
+          highScore: 0,
+          centuriesCount: 0,
+          sr500Count: 0,
+          wicketsTaken: 0,
+          wicketsLost: 0,
+          ballsBowled: 0,
+          weeklyEloGain: 0,
+          weeklyWins: 0,
+          weeklyLosses: 0,
+          weeklyMatches: 0,
+          weeklyRuns: 0,
+          weeklyWickets: 0,
+          tournamentWins: 0,
+          xp: 0,
+          maxWinStreak: 0,
+          currentWinStreak: 0,
+          maxBoundariesInMatch: 0,
+          defendedMatches: 0,
+          updatedAt: Date.now()
+        });
+      }
+      try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
+
+      (function executeAuthoritativeV2FreshReset() {
+        try {
+          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
+            const prefixesToRemove = [
+              'oddandeven_store_inventory_',
+              'oddandeven_spent_xp_',
+              'oddandeven_equipped_card_',
+              'oddandeven_equipped_theme_',
+              'oddandeven_equipped_vfx_',
+              'oddandeven_equipped_bat_',
+              'oddandeven_custom_card_',
+              'oddandeven_active_days_',
+              'oddandeven_tourney_wins_',
+              'oddandeven_number_frequency_',
+              'oddandeven_ai_tier_stats_'
+            ];
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (!k) continue;
+              if (prefixesToRemove.some((p) => k.startsWith(p))) {
+                keysToRemove.push(k);
+              }
+            }
+            keysToRemove.forEach((k) => localStorage.removeItem(k));
+            localStorage.removeItem('hc_arena_match_scorecards_v1');
+            localStorage.removeItem('hc_arena_stats_v1');
+            localStorage.removeItem('oddandeven_event_regs_v1');
+            localStorage.removeItem('oddandeven_event_regs_map_v1');
+
+            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
+              try {
+                const raw = localStorage.getItem(mapKey);
+                if (raw) {
+                  const parsed = JSON.parse(raw);
+                  if (parsed && typeof parsed === 'object') {
+                    Object.keys(parsed).forEach((u) => {
+                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
+                    });
+                    localStorage.setItem(mapKey, JSON.stringify(parsed));
+                  }
+                }
+              } catch (e) {}
+            });
+
+            try {
+              const rawElo = localStorage.getItem('hc_arena_elo_v2');
+              if (rawElo) {
+                const parsedElo = JSON.parse(rawElo);
+                if (parsedElo && typeof parsedElo === 'object') {
+                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
+                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
+                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
+                    });
+                  }
+                  parsedElo.eloRating = 1500;
+                  parsedElo.peakElo = 1500;
+                  parsedElo.eloHistory = [];
+                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
+                }
+              }
+            } catch (e) {}
+
+            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
+          }
+        } catch (e) {}
+      })();
+
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
       const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
       const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
@@ -751,7 +889,14 @@
       function loadWorldwidePlayersMap() {
         try {
           const raw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
-          return (raw && JSON.parse(raw)) || {};
+          const parsed = (raw && JSON.parse(raw)) || {};
+          if (parsed && typeof parsed === 'object') {
+            Object.keys(parsed).forEach(k => {
+              parsed[k] = sanitizeRecordForFreshEpoch(parsed[k]);
+            });
+            return parsed;
+          }
+          return {};
         } catch (e) {
           return {};
         }
@@ -989,7 +1134,7 @@
           tourneyWins = Math.max(tourneyWins, localTourneyWins);
         } catch (e) {}
 
-        let activeDays = 1;
+        let activeDays = (totalMatches > 0 || totalRuns > 0 || totalWickets > 0) ? 1 : 0;
         try {
           const rawDays = localStorage.getItem('oddandeven_active_days_' + cleanMe);
           if (rawDays) {
@@ -1037,7 +1182,7 @@
         }, 0);
 
         // Career Match XP: Earned from runs, wickets, tournament victories & active participation
-        const matchXp = (totalRuns * 2) + (totalWickets * 25) + (totalWins * 50) + (totalMatches * 15) + (activeDays * 100) + (tourneyWins * 500);
+        const matchXp = (totalRuns * 2) + (totalWickets * 25) + (totalWins * 50) + (totalMatches * 15) + (tourneyWins * 500);
 
         const totalEarnedXp = achXp + matchXp;
         const spentXp = getUserSpentXp(cleanMe);
@@ -1199,9 +1344,17 @@
           return true;
         });
 
+        const equippedTheme = localStorage.getItem('oddandeven_equipped_theme_' + clean) || '';
+        const equippedVfx = localStorage.getItem('oddandeven_equipped_vfx_' + clean) || '';
+        const equippedBat = localStorage.getItem('oddandeven_equipped_bat_' + clean) || '';
+
         dom.storeItemsContainer.innerHTML = visibleItems.map((item) => {
           const isOwned = inventory.includes(item.id);
-          const isEquipped = isOwned && equippedId === item.id;
+          let isEquipped = false;
+          if (item.id.startsWith('card_')) isEquipped = isOwned && equippedId === item.id;
+          else if (item.id.startsWith('theme_')) isEquipped = isOwned && equippedTheme === item.id;
+          else if (item.id.startsWith('vfx_') || item.id.startsWith('ball_')) isEquipped = isOwned && equippedVfx === item.id;
+          else if (item.id.startsWith('bat_')) isEquipped = isOwned && equippedBat === item.id;
           const canAfford = activeXpInfo.availableXp >= item.price;
           const missingXp = Math.max(0, item.price - activeXpInfo.availableXp);
 
@@ -1340,9 +1493,15 @@
         const spent = getUserSpentXp(clean) + price;
         saveUserSpentXp(clean, spent);
 
-        // Auto-equip if it is a card
+        // Auto-equip newly purchased item to active loadout
         if (itemId.startsWith('card_')) {
           setEquippedCardId(clean, itemId);
+        } else if (itemId.startsWith('theme_')) {
+          localStorage.setItem('oddandeven_equipped_theme_' + clean, itemId);
+        } else if (itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
+          localStorage.setItem('oddandeven_equipped_vfx_' + clean, itemId);
+        } else if (itemId.startsWith('bat_')) {
+          localStorage.setItem('oddandeven_equipped_bat_' + clean, itemId);
         }
 
         SoundFX.purchase();
@@ -1361,10 +1520,24 @@
         if (action === 'equip') {
           if (itemId.startsWith('card_')) {
             setEquippedCardId(clean, itemId);
+          } else if (itemId.startsWith('theme_')) {
+            localStorage.setItem('oddandeven_equipped_theme_' + clean, itemId);
+          } else if (itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
+            localStorage.setItem('oddandeven_equipped_vfx_' + clean, itemId);
+          } else if (itemId.startsWith('bat_')) {
+            localStorage.setItem('oddandeven_equipped_bat_' + clean, itemId);
           }
           SoundFX.equip();
         } else {
-          setEquippedCardId(clean, 'card_default');
+          if (itemId.startsWith('card_')) {
+            setEquippedCardId(clean, 'card_default');
+          } else if (itemId.startsWith('theme_')) {
+            localStorage.removeItem('oddandeven_equipped_theme_' + clean);
+          } else if (itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
+            localStorage.removeItem('oddandeven_equipped_vfx_' + clean);
+          } else if (itemId.startsWith('bat_')) {
+            localStorage.removeItem('oddandeven_equipped_bat_' + clean);
+          }
           SoundFX.click();
         }
 
