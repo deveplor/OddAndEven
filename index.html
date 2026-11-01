@@ -521,6 +521,10 @@
       let fbRunTransaction = null;
       let fbDeleteDoc = null;
       let fbOnSnapshot = null;
+      let fbCreateUserWithEmailAndPassword = null;
+      let fbSignInWithEmailAndPassword = null;
+      let fbSignInAnonymously = null;
+      let fbUpdateProfile = null;
       let fbCorePromise = null;      // Firebase SDK + auth ready (all Google sign-in needs)
       let cloudAuthoritativeAccounts = null;
       let cloudListenersAttached = false;
@@ -1352,13 +1356,27 @@
               import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
             ]);
             const { initializeApp, getApps, getApp } = appMod;
-            const { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult } = authMod;
+            const {
+              getAuth,
+              GoogleAuthProvider,
+              signInWithRedirect,
+              signInWithPopup,
+              getRedirectResult,
+              createUserWithEmailAndPassword,
+              signInWithEmailAndPassword,
+              signInAnonymously,
+              updateProfile
+            } = authMod;
             const { getFirestore, doc, setDoc, getDoc, deleteDoc, onSnapshot, collection, getDocs, query, where, runTransaction } = fsMod;
 
             GoogleAuthProviderCtor = GoogleAuthProvider;
             signInWithRedirectFn = signInWithRedirect;
             fbSignInWithPopupFn = signInWithPopup;
             getRedirectResultFn = getRedirectResult;
+            fbCreateUserWithEmailAndPassword = createUserWithEmailAndPassword;
+            fbSignInWithEmailAndPassword = signInWithEmailAndPassword;
+            fbSignInAnonymously = signInAnonymously;
+            fbUpdateProfile = updateProfile;
             fbDoc = doc;
             fbSetDoc = setDoc;
             fbGetDoc = getDoc;
@@ -1397,13 +1415,13 @@
         return fbCorePromise;
       }
 
-      async function ensureFirebaseReady(timeoutMs = 700) {
-        if (fbReady && fbDb) return true;
+      async function ensureFirebaseReady(timeoutMs = 5000) {
+        if (fbReady && fbDb && fbAuth) return true;
         try {
           await withTimeout(initFirebaseCore(), timeoutMs, 'core-timeout');
-          return Boolean(fbReady && fbDb);
+          return Boolean(fbReady && fbDb && fbAuth);
         } catch (e) {
-          return Boolean(fbReady && fbDb);
+          return Boolean(fbReady && fbDb && fbAuth);
         }
       }
 
@@ -1446,13 +1464,72 @@
         return fbInitPromise;
       }
 
-      async function pushAccountToFirebase(accountRecord) {
-        if (!accountRecord || !accountRecord.username) return;
-        const clean = String(accountRecord.username).trim().toUpperCase();
-        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
+      // Ensures the player is officially registered and active in Firebase Authentication (Users table in Console)
+      async function ensureUserRegisteredInFirebaseAuth(username, pin5) {
+        if (!username) return null;
+        const clean = String(username).trim().toUpperCase();
+        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return null;
 
-        await ensureFirebaseReady(600);
-        if (!fbDb) return;
+        await ensureFirebaseReady(5000);
+        if (!fbAuth) return null;
+
+        // Create standard email and password identifiers for Firebase Authentication Console
+        const authEmail = `${clean.toLowerCase()}@oddandeven.in`;
+        const safePin = pin5 && /^\d{5}$/.test(String(pin5).trim()) ? String(pin5).trim() : '12345';
+        const authPassword = `OAE#${safePin}_${clean.toLowerCase()}`;
+
+        let user = fbAuth.currentUser;
+        if (user && user.email && user.email.toLowerCase() === authEmail.toLowerCase()) {
+          return user;
+        }
+
+        try {
+          if (typeof fbCreateUserWithEmailAndPassword === 'function') {
+            const cred = await fbCreateUserWithEmailAndPassword(fbAuth, authEmail, authPassword);
+            user = cred.user;
+          }
+        } catch (err) {
+          const code = (err && err.code) || '';
+          if (code === 'auth/email-already-in-use') {
+            try {
+              if (typeof fbSignInWithEmailAndPassword === 'function') {
+                const cred = await fbSignInWithEmailAndPassword(fbAuth, authEmail, authPassword);
+                user = cred.user;
+              }
+            } catch (signInErr) {
+              console.warn('Firebase Auth sign in notice:', signInErr);
+            }
+          } else if (code === 'auth/operation-not-allowed') {
+            try {
+              if (typeof fbSignInAnonymously === 'function' && !fbAuth.currentUser) {
+                const cred = await fbSignInAnonymously(fbAuth);
+                user = cred.user;
+              }
+            } catch (e) {}
+          } else {
+            console.warn('Firebase Auth registration notice:', err);
+          }
+        }
+
+        if (user && typeof fbUpdateProfile === 'function') {
+          try {
+            await fbUpdateProfile(user, { displayName: clean });
+          } catch (e) {}
+        }
+
+        return user || fbAuth.currentUser;
+      }
+
+      async function pushAccountToFirebase(accountRecord, authUser = null) {
+        if (!accountRecord || !accountRecord.username) return false;
+        const clean = String(accountRecord.username).trim().toUpperCase();
+        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return false;
+
+        await ensureFirebaseReady(5000);
+        if (!fbDb) return false;
+
+        const currentAuthUser = authUser || (fbAuth && fbAuth.currentUser) || null;
+        const currentUid = currentAuthUser ? currentAuthUser.uid : (accountRecord.googleUid || null);
 
         const payload = {
           username: clean,
@@ -1460,33 +1537,59 @@
           countryName: accountRecord.countryName || 'India',
           countryFlag: accountRecord.countryFlag || '🇮🇳',
           encryptedAuth: accountRecord.encryptedAuth || null,
-          googleUid: accountRecord.googleUid || null,
-          googleEmail: null, // never publish emails to a world-readable collection
+          googleUid: accountRecord.googleUid || (accountRecord.authProvider === 'google' ? currentUid : null),
+          firebaseUid: currentUid,
+          googleEmail: null,
           authProvider: accountRecord.authProvider || (accountRecord.googleUid ? 'google' : 'pin'),
           createdAt: accountRecord.createdAt || new Date().toISOString(),
+          updatedAt: Date.now(),
           migratedAt: Date.now()
         };
         try {
-          const [resArt, resRoot] = await Promise.allSettled([
+          const promises = [
             fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean), payload, { merge: true }),
             fbSetDoc(fbDoc(fbDb, 'accounts', clean), payload, { merge: true })
-          ]);
-          updateCloudSyncedColsForUser(clean, {
-            artAcc: resArt && resArt.status === 'fulfilled',
-            rootAcc: resRoot && resRoot.status === 'fulfilled'
-          });
+          ];
+          if (currentUid) {
+            promises.push(
+              fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', currentUid, 'profile', 'main'), {
+                uid: currentUid,
+                username: clean,
+                authProvider: payload.authProvider,
+                countryCode: payload.countryCode,
+                countryName: payload.countryName,
+                countryFlag: payload.countryFlag,
+                updatedAt: Date.now()
+              }, { merge: true }),
+              fbSetDoc(fbDoc(fbDb, 'users', currentUid), {
+                uid: currentUid,
+                username: clean,
+                authProvider: payload.authProvider,
+                countryCode: payload.countryCode,
+                countryName: payload.countryName,
+                countryFlag: payload.countryFlag,
+                updatedAt: Date.now()
+              }, { merge: true })
+            );
+          }
+          const results = await Promise.allSettled(promises);
+          const artAcc = results[0] && results[0].status === 'fulfilled';
+          const rootAcc = results[1] && results[1].status === 'fulfilled';
+          updateCloudSyncedColsForUser(clean, { artAcc, rootAcc });
+          return artAcc || rootAcc;
         } catch (e) {
           console.warn('pushAccountToFirebase notice:', e);
+          return false;
         }
       }
 
       async function pushLeaderboardSeedToFirebase(uname, profile) {
-        if (!uname) return;
+        if (!uname) return false;
         const clean = String(uname).trim().toUpperCase();
-        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
+        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return false;
 
-        await ensureFirebaseReady(600);
-        if (!fbDb) return;
+        await ensureFirebaseReady(5000);
+        if (!fbDb) return false;
 
         const worldMap = loadWorldwidePlayersMap();
         const localRec = worldMap[clean] || {};
@@ -1514,19 +1617,21 @@
           weeklyMatches: Number(localRec.weeklyMatches) || 0,
           weeklyRuns: Number(localRec.weeklyRuns) || 0,
           weeklyWickets: Number(localRec.weeklyWickets) || 0,
+          statsEpoch: 'v3_mp_only_leaderboard_2026_11_01',
           updatedAt: Date.now()
         };
         try {
-          const [resArtLb, resRootLb] = await Promise.allSettled([
+          const results = await Promise.allSettled([
             fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean), payload, { merge: true }),
             fbSetDoc(fbDoc(fbDb, 'leaderboard', clean), payload, { merge: true })
           ]);
-          updateCloudSyncedColsForUser(clean, {
-            artLb: resArtLb && resArtLb.status === 'fulfilled',
-            rootLb: resRootLb && resRootLb.status === 'fulfilled'
-          });
+          const artLb = results[0] && results[0].status === 'fulfilled';
+          const rootLb = results[1] && results[1].status === 'fulfilled';
+          updateCloudSyncedColsForUser(clean, { artLb, rootLb });
+          return artLb || rootLb;
         } catch (e) {
           console.warn('pushLeaderboardSeedToFirebase notice:', e);
+          return false;
         }
       }
 
@@ -1921,16 +2026,32 @@
           localStorage.setItem('hc_arena_elo_v2', JSON.stringify(desktopObj));
         } catch (e) {}
 
-        // Reliable cloud sync before redirecting so Firebase collections are guaranteed to have the new player
+        showBanner(`✓ Registering ${activeProf.countryFlag || '🇮🇳'} ${uname} with Firebase Authentication & Firestore…`, true);
+
+        // Register in Firebase Authentication & persist account and leaderboard in Firestore
+        let authUser = null;
         try {
-          const syncP = Promise.allSettled([
-            pushAccountToFirebase(activeProf),
+          authUser = await ensureUserRegisteredInFirebaseAuth(uname, activeProf.pin5 || (el.inputAuthPin5 ? el.inputAuthPin5.value : ''));
+          if (authUser && authUser.uid) {
+            activeProf.firebaseUid = authUser.uid;
+            sessObj.firebaseUid = authUser.uid;
+            try {
+              localStorage.setItem(SESSION_STORAGE_KEY, encryptPayload(sessObj));
+              sessionStorage.setItem(SESSION_STORAGE_KEY, encryptPayload(sessObj));
+            } catch (e) {}
+          }
+          await Promise.allSettled([
+            pushAccountToFirebase(activeProf, authUser),
             pushLeaderboardSeedToFirebase(uname, activeProf)
           ]);
-          await withTimeout(syncP, 350, 'nav-sync');
-        } catch (e) {}
+        } catch (e) {
+          console.warn('Pre-navigation cloud sync notice:', e);
+        }
 
-        navigateToHandCricketArena('?from=login&screen=PITCH');
+        showBanner(`✓ Successfully connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena…`, true);
+        setTimeout(() => {
+          navigateToHandCricketArena('?from=login&screen=PITCH');
+        }, 150);
       }
 
       function usernameFromGoogleProfile(user) {
@@ -2701,6 +2822,7 @@
               countryFlag: cFlag,
               encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
               authProvider: 'pin',
+              pin5: pin5,
               createdAt: new Date().toISOString()
             };
             usersMap = loadEncryptedUsersMap();
@@ -2728,6 +2850,7 @@
           }
 
           showBanner('✓ Signed in as ' + cFlag + ' ' + uname + '! Launching Arena…', true);
+          rec.pin5 = pin5;
           await finalizePlayerSession(rec);
           setAuthBusy(false);
 
