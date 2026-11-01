@@ -49,14 +49,15 @@
       font-family: 'Space Grotesk', 'Inter', sans-serif;
     }
     .glass-card {
-      background: #2b2824;
-      border: 1px solid #423e39;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(155deg, #292622 0%, #181613 100%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      contain: layout style;
     }
     .glass-card-active {
-      background: #332f2a;
+      background: linear-gradient(155deg, rgba(51, 47, 42, 0.96), rgba(31, 29, 25, 0.98));
       border: 2px solid #81b64c;
-      box-shadow: 0 4px 18px rgba(129, 182, 76, 0.25);
+      box-shadow: 0 8px 24px rgba(129, 182, 76, 0.28);
     }
     .chess-green-btn {
       background: #81b64c;
@@ -162,46 +163,47 @@
     </div>
   </div>
 
-  <!-- COMPACT MOBILE HEADER (Hamburger + Brand + Match Status + Controls) -->
-  <header class="w-full bg-[#181715] border-b border-[#36332e] px-3 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-md">
-    <div class="flex items-center gap-2">
-      <!-- Hamburger Menu Button to open Left Navigation Sidebar -->
-      <button id="btnOpenSidebar" type="button" aria-label="Open Navigation Menu" class="w-9 h-9 rounded-xl bg-[#262420] border border-[#3d3a34] flex items-center justify-center text-slate-200 active:scale-95 transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-      </button>
+  <!-- SPACIOUS AESTHETIC MOBILE HEADER -->
+  <header class="w-full bg-[#161513]/95 backdrop-blur-md border-b border-white/10 px-3.5 sm:px-5 py-3 sticky top-0 z-40 shadow-lg">
+    <div class="max-w-xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <!-- Hamburger Menu Button -->
+        <button id="btnOpenSidebar" type="button" aria-label="Open Navigation Menu" class="w-9 h-9 rounded-xl bg-[#25231f] hover:bg-[#2f2c27] border border-white/10 flex items-center justify-center text-slate-100 active:scale-95 transition shadow-sm shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
 
-      <!-- Brand Logo -->
-      <div class="flex items-baseline gap-1">
-        <span class="font-brand font-black text-base text-white tracking-tight flex items-baseline">
-          <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span>
-        </span>
-        <span class="text-[9px] font-mono-num font-bold px-1.5 py-0.2 rounded bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">M</span>
+        <!-- Brand Logo -->
+        <div class="flex items-baseline gap-1.5 truncate">
+          <span class="font-brand font-black text-base sm:text-lg text-white tracking-tight flex items-baseline">
+            <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span>
+          </span>
+          <span class="text-[9px] font-mono-num font-bold px-1.5 py-0.5 rounded-md bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">ARENA</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Active Mode & Header Quick Toggles -->
-    <div class="flex items-center gap-1.5">
-      <a href="profile.html" id="btnHeaderProfile" class="px-2 py-1 rounded-lg text-[10px] font-brand font-black bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 flex items-center gap-1 active:scale-95 transition shadow-sm" aria-label="Open Career Profile">
-        <span>👤</span>
-        <span>Profile</span>
-      </a>
-      <a href="store.html" id="btnHeaderStore" class="px-2 py-1 rounded-lg text-[10px] font-brand font-black bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 border border-amber-500/40 flex items-center gap-1 active:scale-95 transition shadow-sm" aria-label="Open XP Store">
-        <span>🛍️</span>
-        <span>Store</span>
-      </a>
-      <span id="phaseBadge" class="px-2 py-0.5 text-[10px] font-mono-num font-extrabold uppercase rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/30">
-        Toss Phase
-      </span>
-
-      <button id="btnMute" type="button" class="w-8 h-8 rounded-lg bg-[#272521] border border-[#3d3a34] flex items-center justify-center text-sm" aria-label="Toggle Sound">
-        <span id="muteIcon">🔊</span>
-      </button>
-
-      <button id="btnQuickRestart" type="button" class="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-rose-500/15 text-rose-300 border border-rose-500/30 active:scale-95 transition">
-        ↺ Reset
-      </button>
+      <!-- Right Quick Actions -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" id="btnHeaderGamerCard" onclick="window.openEsportsGamerCardModal && window.openEsportsGamerCardModal()" class="px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-brand font-black bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 flex items-center gap-1 active:scale-95 transition shadow-sm" aria-label="Open Esports Gamer Card Studio">
+          <span>🪪</span>
+          <span>Card</span>
+        </button>
+        <a href="profile.html" id="btnHeaderProfile" class="px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-brand font-black bg-blue-500/15 hover:bg-blue-500/25 text-blue-200 border border-blue-400/35 flex items-center gap-1 active:scale-95 transition shadow-sm" aria-label="Open Career Profile">
+          <span>👤</span>
+          <span class="hidden xs:inline sm:inline">Profile</span>
+        </a>
+        <a href="store.html" id="btnHeaderStore" class="px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-brand font-black bg-gradient-to-r from-amber-500/25 to-yellow-500/20 hover:from-amber-500/35 hover:to-yellow-500/30 text-amber-200 border border-amber-400/45 flex items-center gap-1 active:scale-95 transition shadow-sm" aria-label="Open XP Store">
+          <span>🛍️</span>
+          <span class="hidden xs:inline sm:inline">Store</span>
+        </a>
+        <button id="btnMute" type="button" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#25231f] border border-white/10 flex items-center justify-center text-sm active:scale-95 transition" aria-label="Toggle Sound">
+          <span id="muteIcon">🔊</span>
+        </button>
+        <button id="btnQuickRestart" type="button" class="px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-extrabold bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border border-rose-500/35 active:scale-95 transition" title="Reset Match">
+          ↺
+        </button>
+      </div>
     </div>
   </header>
 
@@ -215,7 +217,7 @@
     <div class="absolute right-0 -bottom-10 w-40 h-24 bg-cyan-400/15 rounded-full blur-2xl pointer-events-none"></div>
     <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#a3d96c]/60 to-transparent"></div>
 
-    <div class="max-w-md mx-auto flex items-center justify-between gap-2.5 relative z-10">
+    <div class="max-w-xl mx-auto flex items-center justify-between gap-3 relative z-10">
       <a
         id="btnBannerNewUpdate"
         href="updates.html"
@@ -485,18 +487,34 @@
         </div>
       </a>
 
-      <!-- Quick Account Switch / Auth Gate Trigger -->
-      <div class="pt-0.5">
-        <button id="btnOpenAuthModal" type="button" class="w-full py-1.5 rounded-xl text-[10px] font-extrabold bg-[#1f1d1a] hover:bg-[#282622] text-slate-300 border border-[#36332e] flex items-center justify-center gap-1 transition">
-          <span>🔐</span>
-          <span>Switch / Manage Account</span>
+      <!-- Quick Account Switch / Auth Gate Trigger (Log In, Sign Up & Manage Mode) -->
+      <div class="pt-1 space-y-1.5">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-[9px] font-mono-num uppercase tracking-wider text-slate-400 font-bold">Account Mode</span>
+          <span id="sidebarAuthStatusPill" class="px-1.5 py-0.5 rounded-full text-[8px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40">
+            ⚠️ Guest Mode
+          </span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button id="btnSidebarQuickLogin" type="button" class="py-1.5 px-2 rounded-xl text-[10px] font-extrabold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/50 flex items-center justify-center gap-1 transition active:scale-95">
+            <span>🔑</span>
+            <span id="sidebarQuickLoginLabel">Log In</span>
+          </button>
+          <button id="btnSidebarQuickSignup" type="button" class="py-1.5 px-2 rounded-xl text-[10px] font-extrabold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/45 flex items-center justify-center gap-1 transition active:scale-95">
+            <span>✨</span>
+            <span id="sidebarQuickSignupLabel">Sign Up</span>
+          </button>
+        </div>
+        <button id="btnOpenAuthModal" type="button" class="w-full py-1.5 px-2.5 rounded-xl text-[10px] font-extrabold bg-[#1f1d1a] hover:bg-[#2a2723] text-slate-200 border border-[#3d3a34] flex items-center justify-center gap-1.5 transition active:scale-95 shadow-sm">
+          <span>🔄</span>
+          <span id="sidebarManageAccBtnText">Switch / Manage Account</span>
         </button>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN WORKSPACE: Uncluttered Mobile Core (Scorecard, Target, Canvas, 15s Clock & Keypad) -->
-  <main class="flex-1 flex flex-col justify-between p-3 max-w-md mx-auto w-full">
+  <!-- MAIN WORKSPACE: Spacious, Clean & Responsive Mobile Arena -->
+  <main class="flex-1 flex flex-col gap-4 p-3.5 sm:p-5 max-w-xl mx-auto w-full pb-10">
 
     <!-- AUXILIARY INLINE VIEWS (Shown when selected in Sidebar Drawer) -->
 
@@ -705,7 +723,7 @@
               🌍 <span id="lbWorldSyncText">Synced</span>
             </span>
           </div>
-          <p id="lbModeSubNote" class="text-[10px] text-amber-300 truncate">Worldwide Standings • Real Players Only</p>
+          <p id="lbModeSubNote" class="text-[10px] text-amber-300 truncate">Ranked Multiplayer Only • Bot matches not counted</p>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
           <button id="btnSyncGlobalLb" type="button" class="px-2 py-1 rounded-lg text-[10px] font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40 active:scale-95 transition">
@@ -1000,78 +1018,105 @@
       <div id="achievementsGridList" class="space-y-2 max-h-80 overflow-y-auto pr-0.5"></div>
     </section>
 
-    <!-- PRIMARY ACTIVE PITCH (STICKY SCORECARD, TARGET, CANVAS, 15S CLOCK & RUNS KEYPAD) -->
-    <div id="activePitchWrapper" class="flex flex-col gap-2.5 flex-1 justify-between">
+    <!-- PRIMARY ACTIVE PITCH (SPACIOUS SCORECARD, GAMER BANNER, CANVAS, 15S CLOCK & KEYPAD) -->
+    <div id="activePitchWrapper" class="flex flex-col gap-3.5 sm:gap-4 flex-1">
 
-      <!-- 1. FOCUSED CLASH SCORECARD MODULE -->
-      <section class="glass-card rounded-2xl p-3 space-y-2 shrink-0">
-        <!-- Status & Target Equation -->
-        <div class="flex items-center justify-between text-[11px] font-mono-num">
-          <span id="inningsLabel" class="px-2 py-0.5 rounded-md font-bold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/30">
-            TOSS PHASE
-          </span>
-          <div class="text-right">
-            <span class="text-slate-400 font-semibold uppercase text-[10px]">Target: </span>
-            <span id="targetValueDisplay" class="text-amber-300 font-black text-sm">—</span>
+      <!-- GUEST MODE WARNING STRIP (Visible whenever a Guest is playing) -->
+      <div id="guestModeTopBanner" class="hidden p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-[#1f1d1a] border border-amber-400/50 flex flex-wrap items-center justify-between gap-2 shadow-md">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-7 h-7 rounded-xl bg-amber-500/25 border border-amber-400/50 flex items-center justify-center text-sm shrink-0">⚠️</span>
+          <div class="min-w-0">
+            <div class="text-[11px] sm:text-xs font-black text-amber-200 font-brand leading-tight">Playing in Guest Mode — Stats &amp; XP Unsaved</div>
+            <div class="text-[9px] sm:text-[10px] text-slate-300 truncate">Log in or Sign up to save your Runs, Wickets, Elo, Store Cards &amp; 30 Achievements!</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+          <button id="btnGuestBannerLogin" type="button" class="px-2.5 py-1.5 rounded-xl text-[10px] font-brand font-black bg-[#81b64c] hover:bg-[#8ec556] text-white shadow transition active:scale-95">
+            🔑 Log In
+          </button>
+          <button id="btnGuestBannerSignup" type="button" class="px-2.5 py-1.5 rounded-xl text-[10px] font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow transition active:scale-95">
+            ✨ Sign Up
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. SPACIOUS CLASH SCORECARD & GAMER BANNER MODULE -->
+      <section class="glass-card rounded-3xl p-4 sm:p-5 space-y-3.5 shrink-0">
+        <!-- Top Row: Phase Status & Target Equation -->
+        <div class="flex items-center justify-between gap-2 text-xs font-mono-num border-b border-white/10 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span id="inningsLabel" class="px-2.5 py-1 rounded-lg font-extrabold uppercase bg-amber-500/15 text-amber-300 border border-amber-500/35">
+              TOSS PHASE
+            </span>
+            <span id="phaseBadge" class="hidden sm:inline-block px-2.5 py-0.5 text-[10px] font-mono-num font-bold uppercase rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/30">
+              Ready
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5 bg-black/35 px-3 py-1 rounded-xl border border-white/10">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">Target:</span>
+            <span id="targetValueDisplay" class="text-amber-300 font-black text-sm sm:text-base">—</span>
           </div>
         </div>
 
-        <!-- 2-Box Head-to-Head Comparison -->
-        <div class="grid grid-cols-2 gap-2">
-          <!-- Player 1 Card -->
-          <div id="userScoreCard" class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
-            <div class="flex items-center justify-between text-[10px]">
+        <!-- Full-Width Player Esports Gamer Card Banner Strip -->
+        <div id="p1GamerCardMiniStrip" class="p-2.5 sm:p-3 rounded-2xl border border-emerald-400/40 bg-black/40 text-xs flex items-center justify-between gap-2 shadow-inner"></div>
+
+        <!-- Symmetrical 2-Column Head-to-Head Score Boxes -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <!-- Player 1 Score Box -->
+          <div id="userScoreCard" class="p-3.5 sm:p-4 rounded-2xl bg-[#181714]/90 border border-white/10 flex flex-col justify-between space-y-2 shadow-md">
+            <div class="flex items-center justify-between gap-1.5 text-[11px] sm:text-xs">
               <span id="p1CardTitle" class="font-extrabold text-emerald-300 truncate">YOU</span>
-              <span id="userRoleBadge" class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BAT</span>
+              <span id="userRoleBadge" class="px-2 py-0.5 rounded-md text-[9px] font-mono-num font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shrink-0">BAT</span>
             </div>
-            <div class="flex items-baseline justify-between mt-1">
-              <div id="userMainScore" class="text-3xl font-black font-mono-num text-white">0</div>
+            <div class="flex items-baseline justify-between pt-0.5">
+              <div id="userMainScore" class="text-3xl sm:text-4xl font-black font-mono-num text-white tracking-tight">0</div>
               <div class="text-right">
-                <span class="text-[9px] text-slate-400 uppercase block">Last</span>
-                <span id="userLastPlayedBadge" class="font-mono-num font-black text-emerald-400 text-sm">-</span>
+                <span class="text-[9px] text-slate-400 uppercase font-bold block">Hand</span>
+                <span id="userLastPlayedBadge" class="inline-flex items-center justify-center min-w-[28px] px-1.5 py-0.5 rounded-lg bg-emerald-500/15 border border-emerald-400/30 font-mono-num font-black text-emerald-300 text-sm">-</span>
               </div>
             </div>
-            <div id="userSubMeta" class="text-[9px] font-mono-num text-slate-400 mt-0.5">Balls: 0</div>
+            <div id="userSubMeta" class="text-[10px] font-mono-num text-slate-400 pt-1 border-t border-white/5">Balls: 0 • SR 0.0</div>
           </div>
 
-          <!-- Player 2 / Opponent Card -->
-          <div id="aiScoreCard" class="p-2.5 rounded-xl bg-[#1b1a17] border border-[#383530] flex flex-col justify-between">
-            <div class="flex items-center justify-between text-[10px]">
+          <!-- Player 2 / Opponent Score Box -->
+          <div id="aiScoreCard" class="p-3.5 sm:p-4 rounded-2xl bg-[#181714]/90 border border-white/10 flex flex-col justify-between space-y-2 shadow-md">
+            <div class="flex items-center justify-between gap-1.5 text-[11px] sm:text-xs">
               <span id="p2CardTitle" class="font-extrabold text-cyan-300 truncate">OPPONENT</span>
-              <span id="aiRoleBadge" class="px-1.5 py-0.2 rounded text-[9px] font-mono-num font-bold bg-slate-800 text-slate-300">BOWL</span>
+              <span id="aiRoleBadge" class="px-2 py-0.5 rounded-md text-[9px] font-mono-num font-black bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shrink-0">BOWL</span>
             </div>
-            <div class="flex items-baseline justify-between mt-1">
-              <div id="aiMainScore" class="text-3xl font-black font-mono-num text-white">0</div>
+            <div class="flex items-baseline justify-between pt-0.5">
+              <div id="aiMainScore" class="text-3xl sm:text-4xl font-black font-mono-num text-white tracking-tight">0</div>
               <div class="text-right">
-                <span class="text-[9px] text-slate-400 uppercase block">Last</span>
-                <span id="aiLastPlayedBadge" class="font-mono-num font-black text-cyan-400 text-sm">-</span>
+                <span class="text-[9px] text-slate-400 uppercase font-bold block">Hand</span>
+                <span id="aiLastPlayedBadge" class="inline-flex items-center justify-center min-w-[28px] px-1.5 py-0.5 rounded-lg bg-cyan-500/15 border border-cyan-400/30 font-mono-num font-black text-cyan-300 text-sm">-</span>
               </div>
             </div>
-            <div id="aiSubMeta" class="text-[9px] font-mono-num text-slate-400 mt-0.5">Balls: 0</div>
+            <div id="aiSubMeta" class="text-[10px] font-mono-num text-slate-400 pt-1 border-t border-white/5">Balls: 0 • SR 0.0</div>
           </div>
         </div>
 
         <!-- Live Outcome Banner -->
-        <div id="turnOutcomeBanner" class="p-1.5 rounded-xl bg-[#171613] border border-[#33302b] text-[11px] font-semibold text-slate-300 text-center truncate">
+        <div id="turnOutcomeBanner" class="p-2.5 rounded-xl bg-black/40 border border-white/10 text-xs font-semibold text-slate-200 text-center truncate">
           Select Odd or Even to start the Toss!
         </div>
       </section>
 
-      <!-- 2. HAND CLASH CANVAS (Scaled for Mobile) -->
-      <section class="glass-card rounded-2xl p-2 relative overflow-hidden shrink-0">
-        <div class="relative w-full h-36 rounded-xl overflow-hidden bg-slate-950 border border-slate-800/80">
+      <!-- 2. SPACIOUS HAND CLASH ARENA CANVAS -->
+      <section class="glass-card rounded-3xl p-2.5 sm:p-3 relative overflow-hidden shrink-0">
+        <div class="relative w-full h-40 sm:h-48 rounded-2xl overflow-hidden bg-slate-950 border border-white/10 shadow-inner">
           <canvas id="arenaCanvas" class="w-full h-full block"></canvas>
         </div>
       </section>
 
-      <!-- 3. SYNCHRONIZED 15-SECOND TURN TIMER BAR & MULTIPLAYER DUAL CLOCKS -->
-      <div id="turnTimerBar" class="px-1 shrink-0 flex flex-col gap-1.5 text-xs font-mono-num">
+      <!-- 3. SLEEK 15-SECOND SHOT CLOCK CARD -->
+      <div id="turnTimerBar" class="p-3 px-4 rounded-2xl bg-[#1b1a17]/95 border border-white/10 shadow-md shrink-0 flex flex-col gap-2 text-xs font-mono-num">
         <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span>⏱️</span>
-            <span id="timerStatusTitle" class="font-bold text-slate-300 truncate">15s Turn Clock</span>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-7 h-7 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/40 flex items-center justify-center text-sm shrink-0">⏱️</span>
+            <span id="timerStatusTitle" class="font-bold text-slate-200 truncate">15s Shot Clock</span>
           </div>
-          <span id="timerDigitalDisplay" class="px-2.5 py-0.5 rounded-lg font-black text-xs bg-[#12110f] text-[#81b64c] border border-[#3d3a34]">
+          <span id="timerDigitalDisplay" class="px-3 py-1 rounded-xl font-black text-xs sm:text-sm bg-[#12110f] text-[#a3d96c] border border-[#81b64c]/40 shadow-inner">
             00:15
           </span>
         </div>
@@ -1101,36 +1146,36 @@
       </div>
 
       <!-- 4. DYNAMIC INTERACTIVE GAME STAGE (TOSS OR GAMEPLAY) -->
-      <div class="my-auto py-1 flex flex-col gap-2.5">
+      <div class="flex flex-col gap-3.5">
 
         <!-- VIEW 1: TOSS PHASE -->
-        <div id="viewToss" class="glass-card rounded-2xl p-3 space-y-2.5">
+        <div id="viewToss" class="glass-card rounded-3xl p-4 sm:p-5 space-y-3.5">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+            <span class="text-xs sm:text-sm font-extrabold text-white flex items-center gap-2 font-brand">
               <span>🪙</span>
               <span>Toss Decider</span>
             </span>
-            <span id="tossCallIndicator" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/35">
+            <span id="tossCallIndicator" class="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/35">
               Selected Call: ODD
             </span>
           </div>
 
           <!-- Odd / Even Toggle Buttons -->
-          <div class="grid grid-cols-2 gap-2">
-            <button id="btnCallOdd" type="button" class="py-2.5 rounded-xl font-extrabold text-xs bg-[#81b64c] text-white shadow">
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="btnCallOdd" type="button" class="py-3 rounded-xl font-extrabold text-xs sm:text-sm bg-[#81b64c] text-white shadow-md">
               ⚡ CALL ODD
             </button>
-            <button id="btnCallEven" type="button" class="py-2.5 rounded-xl font-bold text-xs bg-[#2b2823] text-slate-300 border border-[#423f38]">
+            <button id="btnCallEven" type="button" class="py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#2b2823] text-slate-300 border border-[#423f38]">
               ⚖️ CALL EVEN
             </button>
           </div>
 
-          <p class="text-[11px] text-center text-slate-400">
+          <p class="text-xs text-center text-slate-300 font-medium">
             Pick your toss number (1–10) below:
           </p>
 
           <!-- 1-10 Toss Number Grid -->
-          <div id="tossNumberGrid" class="grid grid-cols-5 gap-1.5"></div>
+          <div id="tossNumberGrid" class="grid grid-cols-5 gap-2 sm:gap-2.5"></div>
         </div>
 
         <!-- VIEW 2: TOSS DECISION (Bat or Bowl Selection) -->
@@ -1173,14 +1218,14 @@
         </div>
 
         <!-- VIEW 3: ACTIVE GAMEPLAY INNINGS (Keys 1–10) -->
-        <div id="viewGameplay" class="space-y-1.5">
-          <div class="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            <span id="gameplayHeading">Pick Your Hand (1–10)</span>
-            <span id="gameplayRoleNotice" class="text-emerald-400">Batting</span>
+        <div id="viewGameplay" class="glass-card rounded-3xl p-4 sm:p-5 space-y-3">
+          <div class="flex items-center justify-between px-1 text-xs font-extrabold uppercase tracking-wider text-slate-300">
+            <span id="gameplayHeading" class="font-brand">🏏 Pick Your Hand (1–10)</span>
+            <span id="gameplayRoleNotice" class="px-2.5 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px]">Batting</span>
           </div>
 
           <!-- Large 2-Row Thumb Grid (1-5 Top Row, 6-10 Bottom Row) -->
-          <div id="playNumberGrid" class="grid grid-cols-5 gap-1.5"></div>
+          <div id="playNumberGrid" class="grid grid-cols-5 gap-2 sm:gap-2.5"></div>
         </div>
 
         <!-- VIEW 4: INNINGS BREAK -->
@@ -1233,26 +1278,53 @@
         <p><strong>2. Scoring:</strong> Both players pick numbers (1–10). If numbers are different, the batter scores their runs. If numbers match exactly, the batter is <strong>OUT!</strong></p>
         <p><strong>3. The Chase:</strong> In Innings 2, roles swap. If the chasing team reaches the target, they win!</p>
         <p><strong>4. Match Drawn (Tie):</strong> If the chasing team is bowled OUT when their score is <strong>exactly equal</strong> to the 1st Innings score (e.g. 5 vs 5, 1 run away from target 6), the match is an official <strong>MATCH DRAWN</strong>! In Multiplayer, both players' ratings remain unchanged (0 Elo change). In Bot matches, the match is drawn with ratings frozen.</p>
-        <p><strong>5. Ratings:</strong> Multiplayer wins/losses earn or lose ±8 Elo. Matches against bots are <strong>Casual Practice (Ratings Frozen)</strong>!</p>
+        <p><strong>5. Leaderboard &amp; Stats Eligibility:</strong> Matches against bots are <strong>Casual Practice</strong>: runs, wickets, match wins, and losses are <strong>not counted against bots</strong> and are never displayed in the Leaderboard. Only official <strong>1v1 Multiplayer Room matches</strong> count toward career runs, wickets, wins, losses, and Leaderboard standings!</p>
       </div>
       <button id="btnGotItRules" class="w-full py-2.5 rounded-xl font-bold text-xs chess-green-btn">Got It!</button>
     </div>
   </div>
 
-  <!-- AUTHENTICATED ACCOUNT MODAL -->
-  <div id="authModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-md p-4">
-    <div class="glass-card max-w-sm w-full rounded-2xl p-5 border border-[#81b64c]/60 space-y-3">
-      <div class="flex items-center justify-between pb-2 border-b border-[#3d3a34]">
-        <h3 id="modalAuthTitle" class="font-extrabold text-sm text-white">🔐 Player Credentials</h3>
-        <button id="btnCloseAuthModal" class="text-slate-400 font-bold p-1">✕</button>
+  <!-- AUTHENTICATED ACCOUNT & QUICK SWITCH MODAL -->
+  <div id="authModal" class="fixed inset-0 z-[85] hidden items-center justify-center bg-black/90 p-4">
+    <div class="glass-card max-w-sm w-full rounded-3xl p-5 border border-[#81b64c]/60 space-y-3.5 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-2.5 border-b border-[#3d3a34]">
+        <div>
+          <h3 id="modalAuthTitle" class="font-extrabold text-sm sm:text-base text-white font-brand">🔐 Switch / Manage Account</h3>
+          <p id="modalAuthSubtitle" class="text-[10px] text-slate-400">Log in, sign up, or tap a saved account to switch instantly</p>
+        </div>
+        <button id="btnCloseAuthModal" type="button" class="w-7 h-7 rounded-xl bg-[#252320] hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center">✕</button>
       </div>
 
-      <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#1d1c19] text-xs font-bold">
-        <button id="modalTabLogin" class="py-1.5 rounded-lg bg-[#81b64c] text-white">Login</button>
-        <button id="modalTabSignup" class="py-1.5 rounded-lg text-slate-400">Sign Up</button>
+      <!-- Current Active Session Indicator -->
+      <div id="modalCurrentSessionBar" class="p-2.5 rounded-xl bg-[#161513] border border-[#383530] flex items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="modalCurrentSessionIcon" class="text-base shrink-0">⚠️</span>
+          <div class="min-w-0">
+            <div id="modalCurrentSessionName" class="font-extrabold text-white truncate text-[11px]">Guest Mode (Not Signed In)</div>
+            <div id="modalCurrentSessionSub" class="text-[9px] text-slate-400 truncate">Log in or create an account below</div>
+          </div>
+        </div>
+        <span id="modalCurrentSessionBadge" class="px-2 py-0.5 rounded-full text-[8px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+          GUEST
+        </span>
       </div>
 
-      <div id="modalAuthAlert" class="hidden p-2 rounded-xl text-xs font-bold border"></div>
+      <!-- Saved Accounts Quick-Switch Strip -->
+      <div id="modalSavedAccountsWrap" class="hidden space-y-1.5">
+        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <span>⚡ Saved Accounts on Device</span>
+          <button id="btnModalNewAccountQuick" type="button" class="text-[#a3d96c] hover:underline font-extrabold normal-case">+ New Account</button>
+        </div>
+        <div id="modalSavedAccountsList" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-0.5"></div>
+      </div>
+
+      <!-- Mode Switcher Tabs: Login vs Sign Up -->
+      <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#181714] border border-[#383530] text-xs font-extrabold">
+        <button id="modalTabLogin" type="button" class="py-2 rounded-lg bg-[#81b64c] text-white shadow transition">🔑 Log In</button>
+        <button id="modalTabSignup" type="button" class="py-2 rounded-lg text-slate-400 hover:text-white transition">✨ Sign Up</button>
+      </div>
+
+      <div id="modalAuthAlert" class="hidden p-2.5 rounded-xl text-xs font-bold border"></div>
 
       <!-- Remove Account Confirmation Box -->
       <div id="modalRemoveConfirmBox" class="hidden p-3 rounded-xl bg-rose-950/90 border border-rose-500/60 space-y-2">
@@ -1273,15 +1345,15 @@
         </div>
       </div>
 
-      <div class="space-y-2 text-xs">
+      <div class="space-y-2.5 text-xs">
         <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Username</label>
-          <input id="modalInputUsername" type="text" maxlength="16" placeholder="e.g. VIRAT_18" class="w-full px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-extrabold uppercase" />
+          <label for="modalInputUsername" class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Player Username (3–16 chars)</label>
+          <input id="modalInputUsername" type="text" maxlength="16" autocomplete="username" placeholder="e.g. VIRAT_18" class="w-full px-3.5 py-2.5 rounded-xl bg-[#141311] border border-[#3d3a35] focus:border-[#81b64c] focus:outline-none text-white font-extrabold uppercase tracking-wide" />
         </div>
         <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Country &amp; 5-Digit PIN</label>
+          <label for="modalInputPin5" class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Country Code &amp; 5-Digit Secret PIN</label>
           <div class="grid grid-cols-12 gap-1.5">
-            <select id="modalSelectCountry" class="col-span-5 px-2 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white text-[11px] font-bold">
+            <select id="modalSelectCountry" class="col-span-5 px-2 py-2.5 rounded-xl bg-[#141311] border border-[#3d3a35] text-white text-[11px] font-bold focus:outline-none focus:border-[#81b64c]">
               <option value="+91" data-flag="🇮🇳" selected>🇮🇳 +91 (IN)</option>
               <option value="+1" data-flag="🇺🇸">🇺🇸 +1 (US)</option>
               <option value="+44" data-flag="🇬🇧">🇬🇧 +44 (UK)</option>
@@ -1293,21 +1365,77 @@
               <option value="+880" data-flag="🇧🇩">🇧🇩 +880 (BD)</option>
               <option value="+977" data-flag="🇳🇵">🇳🇵 +977 (NP)</option>
             </select>
-            <input id="modalInputPin5" type="password" inputmode="numeric" maxlength="5" placeholder="•••••" class="col-span-7 px-3 py-2 rounded-xl bg-[#141311] border border-[#3d3a35] text-white font-mono-num font-black tracking-widest" />
+            <div class="col-span-7 relative flex items-center">
+              <input id="modalInputPin5" type="password" inputmode="numeric" maxlength="5" placeholder="•••••" class="w-full pl-3 pr-9 py-2.5 rounded-xl bg-[#141311] border border-[#3d3a35] focus:border-[#81b64c] focus:outline-none text-white font-mono-num font-black tracking-widest" />
+              <button id="btnToggleModalPinVis" type="button" class="absolute right-2 text-slate-400 hover:text-white text-xs px-1 py-0.5" title="Show/Hide PIN">👁️</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <button id="btnModalSubmitAuth" class="w-full py-2.5 rounded-xl font-black text-xs chess-green-btn">
-        Save &amp; Enter Arena →
+      <button id="btnModalSubmitAuth" type="button" class="w-full py-3 rounded-xl font-black text-xs sm:text-sm chess-green-btn shadow-lg">
+        🔑 Sign In to Arena →
       </button>
 
       <div id="modalAccountActionsWrap" class="pt-2 border-t border-[#3d3a34] flex items-center justify-between gap-2">
-        <button id="btnModalSignOut" type="button" class="flex-1 py-2 px-2.5 rounded-xl text-[11px] font-extrabold bg-amber-500/15 text-amber-300 border border-amber-500/35">
-          🚪 Sign Out
+        <button id="btnModalSignOut" type="button" class="flex-1 py-2 px-2.5 rounded-xl text-[11px] font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/35 transition">
+          🚪 Sign Out (Guest)
         </button>
-        <button id="btnModalRemoveAccount" type="button" class="flex-1 py-2 px-2.5 rounded-xl text-[11px] font-extrabold bg-rose-500/15 text-rose-300 border border-rose-500/35">
+        <button id="btnModalRemoveAccount" type="button" class="flex-1 py-2 px-2.5 rounded-xl text-[11px] font-extrabold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/35 transition">
           🗑️ Remove Account
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUEST WARNING MODAL (Prompts Guest players with 1-tap Log In or Sign Up) -->
+  <div id="guestWarningModal" class="fixed inset-0 z-[82] hidden items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-labelledby="guestWarningTitle">
+    <div class="glass-card max-w-sm w-full rounded-3xl p-5 border-2 border-amber-400/60 space-y-4 animate-pop shadow-2xl">
+      <div class="flex items-start justify-between gap-2.5 pb-2.5 border-b border-white/10">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-xl shrink-0">⚠️</span>
+          <div>
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase bg-amber-500/25 text-amber-300 border border-amber-400/40">
+              GUEST MODE WARNING
+            </span>
+            <h3 id="guestWarningTitle" class="font-brand font-black text-base text-white mt-0.5">
+              You Are Playing as a Guest!
+            </h3>
+          </div>
+        </div>
+        <button id="btnCloseGuestWarningModal" type="button" class="w-7 h-7 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-bold flex items-center justify-center text-xs">✕</button>
+      </div>
+
+      <p id="guestWarningBodyText" class="text-xs text-slate-300 leading-relaxed">
+        In <strong class="text-amber-300">Guest Mode</strong>, your match runs, wickets, Elo rating, XP coins, Store unlocks, and Esports Gamer Card progress are <strong class="text-rose-300">not saved</strong> to the Worldwide Leaderboard. Log in or create a free account in 5 seconds!
+      </p>
+
+      <div class="p-3 rounded-2xl bg-[#161512] border border-white/10 space-y-1.5 text-[11px] text-slate-300">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Save Career Runs, Wickets &amp; 1500+ Ranked Elo</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Earn XP across 30 Achievements &amp; Unlock Store Cards</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Customize &amp; Export your HD Esports Gamer Card</span>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <button id="btnGuestModalLogin" type="button" class="w-full py-3 rounded-xl font-brand font-black text-xs sm:text-sm chess-green-btn flex items-center justify-center gap-2 shadow-lg">
+          <span>🔑</span>
+          <span>Log In to Existing Account →</span>
+        </button>
+        <button id="btnGuestModalSignup" type="button" class="w-full py-3 rounded-xl font-brand font-black text-xs sm:text-sm bg-gradient-to-r from-amber-400 to-yellow-400 hover:brightness-105 text-slate-950 flex items-center justify-center gap-2 shadow-lg transition active:scale-95">
+          <span>✨</span>
+          <span>Create Free Account (Sign Up) →</span>
+        </button>
+        <button id="btnGuestModalContinue" type="button" class="w-full py-2 rounded-xl font-bold text-[11px] bg-[#1f1d1a] hover:bg-[#292622] text-slate-400 hover:text-slate-200 border border-[#383530] transition">
+          Continue Playing as Guest (Unsaved)
         </button>
       </div>
     </div>
@@ -1325,15 +1453,17 @@
       // =========================================================================
       // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
       // =========================================================================
-      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
       const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
 
       function sanitizeRecordForFreshEpoch(rec) {
         if (!rec || typeof rec !== 'object') return rec;
-        if (rec.statsEpoch === STATS_RESET_EPOCH) {
-          if (typeof rec.v2Matches === 'number') {
-            rec.matches = rec.v2Matches;
-          }
+        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
+        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
+          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
+          rec.matches = mpM;
+          rec.rankedMatches = mpM;
+          rec.v2Matches = mpM;
           return rec;
         }
         const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
@@ -1458,8 +1588,14 @@
         return (h >>> 0).toString(16).padStart(8, '0');
       }
 
+      const _decryptMemoCache = new Map();
       function decryptPayload(cipherText) {
         if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        if (_decryptMemoCache.has(cipherText)) {
+          try {
+            return JSON.parse(_decryptMemoCache.get(cipherText));
+          } catch (e) {}
+        }
         try {
           const parts = cipherText.split('.');
           if (parts.length !== 3) return null;
@@ -1472,6 +1608,8 @@
           }
           const json = chars.join('');
           if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          if (_decryptMemoCache.size > 50) _decryptMemoCache.clear();
+          _decryptMemoCache.set(cipherText, json);
           return JSON.parse(json);
         } catch (e) {
           return null;
@@ -1921,8 +2059,14 @@
         return `OAE1.${sig}.${b64}`;
       }
 
+      const _decryptMemoCache = new Map();
       function decryptPayload(cipherText) {
         if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        if (_decryptMemoCache.has(cipherText)) {
+          try {
+            return JSON.parse(_decryptMemoCache.get(cipherText));
+          } catch (e) {}
+        }
         try {
           const parts = cipherText.split('.');
           if (parts.length !== 3) return null;
@@ -1935,6 +2079,8 @@
           }
           const json = chars.join('');
           if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          if (_decryptMemoCache.size > 50) _decryptMemoCache.clear();
+          _decryptMemoCache.set(cipherText, json);
           return JSON.parse(json);
         } catch (e) {
           return null;
@@ -2139,10 +2285,15 @@
         if (!db || !cleanName || !uRecord) return;
         const clean = cleanName.trim().toUpperCase();
         if (isPlaceholderUsername(clean)) return;
+        const payload = Object.assign({}, uRecord, {
+          username: clean,
+          authProvider: uRecord.authProvider || (uRecord.googleUid ? 'google' : 'pin'),
+          googleUid: uRecord.googleUid || null
+        });
         try {
           await Promise.allSettled([
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uRecord, { merge: true }),
-            setDoc(doc(db, 'accounts', clean), uRecord, { merge: true })
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), payload, { merge: true }),
+            setDoc(doc(db, 'accounts', clean), payload, { merge: true })
           ]);
         } catch (e) {}
       }
@@ -3055,6 +3206,9 @@
           let rootAccLoaded = false;
           let artLbLoaded = false;
           let rootLbLoaded = false;
+          let fakeSeedsCleanedOnce = false;
+          const seededArtLbUsers = new Set();
+          const seededArtAccUsers = new Set();
 
           const handleSnapshotRemovals = (snapshot) => {
             if (!snapshot || typeof snapshot.docChanges !== 'function') return;
@@ -3068,7 +3222,6 @@
                   delete rootAcc[clean];
                   delete artLb[clean];
                   delete rootLb[clean];
-                  deleteAllMobileCloudMirrors(clean);
                   scrubAccountFromMobileWebsite(clean, false, true);
                 }
               }
@@ -3076,7 +3229,7 @@
           };
 
           const recomputeMobileCloudState = () => {
-            if (!artAccLoaded && !rootAccLoaded) return;
+            if (!artAccLoaded && !artLbLoaded) return;
             cloudPurgedList = cloudPurgedList.filter((u) => !isRecentMobileSignup(u));
 
             let syncedColsMap = {};
@@ -3091,6 +3244,17 @@
               if (rawAuth) localAuth = decryptPayload(rawAuth) || {};
             } catch (e) {}
 
+            if (!fakeSeedsCleanedOnce) {
+              fakeSeedsCleanedOnce = true;
+              FAKE_SEED_NAMES.forEach((fakeName) => {
+                delete artAcc[fakeName];
+                delete rootAcc[fakeName];
+                delete artLb[fakeName];
+                delete rootLb[fakeName];
+                delete localAuth[fakeName];
+              });
+            }
+
             const allCandidates = new Set([
               ...Object.keys(artAcc),
               ...Object.keys(rootAcc),
@@ -3099,23 +3263,13 @@
               ...Object.keys(localAuth)
             ]);
 
-            FAKE_SEED_NAMES.forEach((fakeName) => {
-              deleteAllMobileCloudMirrors(fakeName);
-              delete artAcc[fakeName];
-              delete rootAcc[fakeName];
-              delete artLb[fakeName];
-              delete rootLb[fakeName];
-              delete localAuth[fakeName];
-            });
-
             const nextAcc = {};
             const nextLb = {};
 
             allCandidates.forEach((clean) => {
-              if (!clean || isPlaceholderUsername(clean)) return;
+              if (!clean || isPlaceholderUsername(clean) || FAKE_SEED_NAMES.includes(clean)) return;
               if (cloudPurgedList.includes(clean) && !isRecentMobileSignup(clean)) {
                 delete syncedColsMap[clean];
-                deleteAllMobileCloudMirrors(clean);
                 return;
               }
               const inArt = Boolean(artAcc[clean]);
@@ -3125,7 +3279,11 @@
               const hasAnyAcc = inArt || inRoot || inArtL || inRootL || Boolean(localAuth[clean]);
 
               if (hasAnyAcc) {
-                nextAcc[clean] = Object.assign({}, localAuth[clean] || {}, rootAcc[clean] || {}, artAcc[clean] || {}, { username: clean });
+                nextAcc[clean] = Object.assign({}, localAuth[clean] || {}, rootAcc[clean] || {}, artAcc[clean] || {}, {
+                  username: clean,
+                  authProvider: (artAcc[clean] && artAcc[clean].authProvider) || (rootAcc[clean] && rootAcc[clean].authProvider) || (localAuth[clean] && localAuth[clean].authProvider) || 'pin',
+                  googleUid: (artAcc[clean] && artAcc[clean].googleUid) || (rootAcc[clean] && rootAcc[clean].googleUid) || (localAuth[clean] && localAuth[clean].googleUid) || null
+                });
                 const rawBaseLb = Object.assign({}, rootLb[clean] || {}, artLb[clean] || {});
                 const baseLb = typeof window.__sanitizeRecordForFreshEpoch === 'function'
                   ? window.__sanitizeRecordForFreshEpoch(rawBaseLb)
@@ -3148,23 +3306,26 @@
                   weeklyEloGain: 0,
                   weeklyRuns: 0,
                   weeklyWickets: 0,
-                  updatedAt: Date.now()
+                  updatedAt: baseLb && baseLb.updatedAt ? baseLb.updatedAt : 0
                 }, baseLb);
 
                 syncedColsMap[clean] = {
                   artAcc: inArt,
-                  rootAcc: inRoot,
+                  rootAcc: inArt,
                   artLb: inArtL,
-                  rootLb: inRootL,
-                  updatedAt: Date.now()
+                  rootLb: inArtL,
+                  updatedAt: nextLb[clean].updatedAt || 0
                 };
 
-                // Auto-sync missing leaderboard entries to Firestore
-                if (!inArtL || !inRootL) {
+                // Seed missing or bot-polluted pre-v3 leaderboard entry once per session
+                const needsV3Purge = Boolean(rawBaseLb && rawBaseLb.statsEpoch !== 'v3_mp_only_leaderboard_2026_11_01');
+                if (artLbLoaded && (!inArtL || needsV3Purge) && !seededArtLbUsers.has(clean)) {
+                  seededArtLbUsers.add(clean);
                   setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), nextLb[clean], { merge: true }).catch(() => {});
                   setDoc(doc(db, 'leaderboard', clean), nextLb[clean], { merge: true }).catch(() => {});
                 }
-                if (localAuth[clean] && (!inArt || !inRoot)) {
+                if (artAccLoaded && localAuth[clean] && !inArt && !seededArtAccUsers.has(clean)) {
+                  seededArtAccUsers.add(clean);
                   pushUserAccountToCloud(clean, nextAcc[clean]);
                 }
               }
@@ -3176,11 +3337,9 @@
 
             cloudAccounts = nextAcc;
             cloudLeaderboard = nextLb;
-            window.__cloudAccountsLoaded = Boolean(artAccLoaded || rootAccLoaded);
+            window.__cloudAccountsLoaded = Boolean(artAccLoaded);
             window.__cloudAccounts = cloudAccounts;
             window.__cloudLeaderboard = cloudLeaderboard;
-
-            // Local account cloud sync reconciled
 
             scheduleDebouncedCloudSync();
           };
@@ -3242,17 +3401,20 @@
           }, () => {});
 
           const handlePurgedSnapshot = (snapshot) => {
+            let changed = false;
             snapshot.forEach((docSnap) => {
               if (docSnap.exists()) {
                 const pId = docSnap.id.toUpperCase();
-                if (!isRecentMobileSignup(pId) && !cloudPurgedList.includes(pId)) cloudPurgedList.push(pId);
+                if (!isRecentMobileSignup(pId) && !cloudPurgedList.includes(pId)) {
+                  cloudPurgedList.push(pId);
+                  changed = true;
+                }
               }
             });
-            recomputeMobileCloudState();
+            if (changed) recomputeMobileCloudState();
           };
 
           onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts'), handlePurgedSnapshot, () => {});
-          onSnapshot(collection(db, 'purged_accounts'), handlePurgedSnapshot, () => {});
 
           if (boundRoomCode) {
             bindCloudRoom(boundRoomCode);
@@ -5619,7 +5781,1006 @@
         return baseList;
       }
 
-      function renderAchievementsSection() {
+
+      // =========================================================================
+      // CUSTOMIZABLE ESPORTS GAMER CARD ENGINE, SKIN UNLOCKER & HD PNG EXPORTER
+      // =========================================================================
+      const ESPORTS_CARD_SKINS = [
+        {
+          id: 'skin_stadium_classic',
+          storeItemId: null,
+          name: 'Stadium Emerald',
+          subtitle: 'Pro Turf Floodlight Banner (Default)',
+          icon: '🏟️',
+          coinCost: 0,
+          xpCost: 0,
+          eloMilestone: 0,
+          bgStops: ['#071710', '#0c291c', '#050c09'],
+          accentHex: '#81b64c',
+          secondaryHex: '#34d399',
+          borderCls: 'border-[#81b64c]',
+          bgCls: 'bg-gradient-to-br from-[#0b2217] via-[#0f1d16] to-[#090d0b]',
+          pillCls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        },
+        {
+          id: 'skin_neon_cyber',
+          storeItemId: 'banner_neon_cyber',
+          name: 'Neon Cyber',
+          subtitle: 'Synthwave Grid & Laser Cyan Banner',
+          icon: '🌆',
+          coinCost: 5000,
+          xpCost: 5000,
+          eloMilestone: 1550,
+          bgStops: ['#06152d', '#1b0b2e', '#050714'],
+          accentHex: '#22d3ee',
+          secondaryHex: '#f43f5e',
+          borderCls: 'border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.28)]',
+          bgCls: 'bg-gradient-to-br from-[#091e3a] via-[#1f0d38] to-[#090814]',
+          pillCls: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40'
+        },
+        {
+          id: 'skin_golden_trophy',
+          storeItemId: 'banner_golden_trophy',
+          name: 'Golden Trophy',
+          subtitle: '24K Championship Gold Foil Banner',
+          icon: '🏆',
+          coinCost: 9000,
+          xpCost: 9000,
+          eloMilestone: 1650,
+          bgStops: ['#291d06', '#3d2b08', '#120d04'],
+          accentHex: '#fbbf24',
+          secondaryHex: '#f59e0b',
+          borderCls: 'border-amber-400 shadow-[0_0_22px_rgba(251,191,36,0.3)]',
+          bgCls: 'bg-gradient-to-br from-[#2e2107] via-[#1f1708] to-[#110d06]',
+          pillCls: 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+        },
+        {
+          id: 'skin_emerald_matrix',
+          storeItemId: 'banner_emerald_matrix',
+          name: 'Emerald Matrix',
+          subtitle: 'Cybernetic Hex-Grid & Bio-Lime Banner',
+          icon: '🟢',
+          coinCost: 12500,
+          xpCost: 12500,
+          eloMilestone: 1700,
+          bgStops: ['#041f14', '#063322', '#020f0a'],
+          accentHex: '#10b981',
+          secondaryHex: '#a3e635',
+          borderCls: 'border-emerald-400 shadow-[0_0_22px_rgba(16,185,129,0.3)]',
+          bgCls: 'bg-gradient-to-br from-[#05291a] via-[#071f15] to-[#030d09]',
+          pillCls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        },
+        {
+          id: 'skin_obsidian_void',
+          storeItemId: 'banner_obsidian_void',
+          name: 'Obsidian Void',
+          subtitle: 'Deep Space Dark-Matter & Astral Nebula',
+          icon: '🌌',
+          coinCost: 15000,
+          xpCost: 15000,
+          eloMilestone: 1750,
+          bgStops: ['#160729', '#0d071c', '#05030a'],
+          accentHex: '#c084fc',
+          secondaryHex: '#ec4899',
+          borderCls: 'border-purple-400 shadow-[0_0_24px_rgba(192,132,252,0.32)]',
+          bgCls: 'bg-gradient-to-br from-[#1d0936] via-[#110921] to-[#07050c]',
+          pillCls: 'bg-purple-500/20 text-purple-300 border-purple-400/40'
+        },
+        {
+          id: 'skin_solar_inferno',
+          storeItemId: 'banner_solar_inferno',
+          name: 'Solar Inferno',
+          subtitle: 'Master 2000 Apex Magma Banner',
+          icon: '🔥',
+          coinCost: 35000,
+          xpCost: 35000,
+          eloMilestone: 2000,
+          bgStops: ['#2e0810', '#381207', '#120506'],
+          accentHex: '#fb7185',
+          secondaryHex: '#f97316',
+          borderCls: 'border-rose-500 shadow-[0_0_26px_rgba(244,63,94,0.35)]',
+          bgCls: 'bg-gradient-to-br from-[#330912] via-[#240e08] to-[#120607]',
+          pillCls: 'bg-rose-500/20 text-rose-300 border-rose-400/40'
+        },
+        {
+          id: 'skin_royal_amethyst',
+          storeItemId: 'banner_royal_amethyst',
+          name: 'Royal Amethyst',
+          subtitle: 'Imperial Diamond Prism & Crown Banner',
+          icon: '👑',
+          coinCost: 45000,
+          xpCost: 45000,
+          eloMilestone: 2000,
+          bgStops: ['#240736', '#3b0a45', '#0d0417'],
+          accentHex: '#e879f9',
+          secondaryHex: '#38bdf8',
+          borderCls: 'border-fuchsia-400 shadow-[0_0_26px_rgba(232,121,249,0.35)]',
+          bgCls: 'bg-gradient-to-br from-[#2a083d] via-[#1c0829] to-[#0a0312]',
+          pillCls: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-400/40'
+        }
+      ];
+
+      function getEsportsRankTierInfo(eloVal, peakVal) {
+        const curElo = Number(eloVal) || 1500;
+        const bestElo = Math.max(curElo, Number(peakVal) || 1500);
+        // Master is unlocked at 2000+ Elo; Grandmaster is explicitly On Wait!
+        if (curElo >= 2000 || bestElo >= 2000) {
+          return {
+            tier: 'MASTER',
+            badgeText: '🎖️ MASTER (2000+ ELO)',
+            shortBadge: '🎖️ MASTER',
+            gmWaitText: '⏳ Grandmaster: On Wait',
+            nextTierText: 'Pinnacle Active Rank (Grandmaster On Wait)',
+            colorHex: '#fbbf24',
+            pillClass: 'bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-400 text-slate-950 font-black border-amber-300'
+          };
+        }
+        if (curElo >= 1850) {
+          return {
+            tier: 'DIAMOND',
+            badgeText: '💎 DIAMOND ELITE',
+            shortBadge: '💎 DIAMOND',
+            gmWaitText: `🎯 Master at 2000 ELO (${2000 - curElo} to go) • ⏳ GM: On Wait`,
+            nextTierText: `${2000 - curElo} ELO to Master (2000)`,
+            colorHex: '#38bdf8',
+            pillClass: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/50'
+          };
+        }
+        if (curElo >= 1700) {
+          return {
+            tier: 'PLATINUM',
+            badgeText: '⚡ PLATINUM VANGUARD',
+            shortBadge: '⚡ PLATINUM',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1850 - curElo} ELO to Diamond • Master at 2000`,
+            colorHex: '#a855f7',
+            pillClass: 'bg-purple-500/20 text-purple-200 border-purple-400/50'
+          };
+        }
+        if (curElo >= 1600) {
+          return {
+            tier: 'GOLD',
+            badgeText: '🥇 GOLD CHALLENGER',
+            shortBadge: '🥇 GOLD',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1700 - curElo} ELO to Platinum • Master at 2000`,
+            colorHex: '#f59e0b',
+            pillClass: 'bg-amber-500/20 text-amber-200 border-amber-400/50'
+          };
+        }
+        if (curElo >= 1525) {
+          return {
+            tier: 'SILVER',
+            badgeText: '🥈 SILVER STRIKER',
+            shortBadge: '🥈 SILVER',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1600 - curElo} ELO to Gold • Master at 2000`,
+            colorHex: '#e2e8f0',
+            pillClass: 'bg-slate-700/60 text-slate-200 border-slate-500/50'
+          };
+        }
+        return {
+          tier: 'CONTENDER',
+          badgeText: '🥉 ARENA CONTENDER',
+          shortBadge: '🥉 CONTENDER',
+          gmWaitText: '🎖️ Master: 2000 ELO • ⏳ GM: On Wait',
+          nextTierText: `${Math.max(1, 2000 - curElo)} ELO to Master (2000 ELO) • GM On Wait`,
+          colorHex: '#34d399',
+          pillClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        };
+      }
+
+      function getActiveEsportsPlayerStats() {
+        let uname = 'PLAYER';
+        let flag = '🇮🇳';
+        let dial = '+91';
+        let countryName = 'India';
+        let rec = {};
+
+        try {
+          if (typeof STATE !== 'undefined' && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+            uname = String(STATE.myUsername).trim().toUpperCase();
+            flag = STATE.myCountryFlag || '🇮🇳';
+            dial = STATE.myCountryCode || '+91';
+            countryName = STATE.myCountryName || 'India';
+          } else {
+            const lastU = (localStorage.getItem('oddandeven_last_user_v1') || '').trim().toUpperCase();
+            if (lastU && lastU !== 'GUEST' && lastU !== 'PLAYER' && lastU !== 'YOU') {
+              uname = lastU;
+            }
+          }
+          const wRaw = localStorage.getItem('oddandeven_worldwide_players_v1');
+          const wMap = wRaw ? JSON.parse(wRaw) : {};
+          if (wMap && wMap[uname]) {
+            rec = typeof sanitizeRecordForFreshEpoch === 'function' ? sanitizeRecordForFreshEpoch(wMap[uname]) : wMap[uname];
+          } else if (typeof STATE !== 'undefined' && STATE.humanPlayers && STATE.humanPlayers[uname]) {
+            rec = STATE.humanPlayers[uname];
+          }
+        } catch (e) {}
+
+        const elo = Number(rec.elo) || (typeof STATE !== 'undefined' && Number(STATE.eloRating)) || 1500;
+        const peak = Math.max(elo, Number(rec.peak) || 1500);
+        const wins = Number(rec.wins) || 0;
+        const losses = Number(rec.losses) || 0;
+        const matches = Math.max(Number(rec.matches) || 0, wins + losses);
+        const wlRatio = losses > 0 ? (wins / losses).toFixed(2) : (wins > 0 ? `${wins}.00` : '0.00');
+        const winPct = matches > 0 ? Math.round((wins / matches) * 100) : 0;
+        const totalRuns = Number(rec.totalRuns) || 0;
+        const highScore = Number(rec.highScore) || 0;
+        const wicketsTaken = Number(rec.wicketsTaken) || 0;
+
+        // Win streak
+        let winStreak = Math.max(Number(rec.currentWinStreak) || 0, Number(rec.maxWinStreak) || 0);
+        if (winStreak === 0 && wins > 0 && losses === 0) winStreak = wins;
+
+        // Favorite number from telemetry
+        let favNum = 0;
+        let favCount = 0;
+        let totalPicks = 0;
+        try {
+          const fRaw = localStorage.getItem('oddandeven_number_frequency_' + uname);
+          if (fRaw) {
+            const freq = JSON.parse(fRaw) || {};
+            for (let n = 1; n <= 10; n++) {
+              const c = Number(freq[n]) || 0;
+              totalPicks += c;
+              if (c > favCount) {
+                favCount = c;
+                favNum = n;
+              }
+            }
+          }
+        } catch (e) {}
+
+        // Achievements & Match Coins
+        let achUnlocked = 0;
+        let achXp = 0;
+        try {
+          if (typeof computePlayerAchievements === 'function') {
+            const list = computePlayerAchievements(rec);
+            const unl = list.filter((a) => a.current >= a.target);
+            achUnlocked = unl.length;
+            achXp = unl.reduce((s, a) => s + a.xp, 0);
+          }
+        } catch (e) {}
+
+        const earnedCoins = (totalRuns * 2) + (wicketsTaken * 25) + (wins * 50) + (matches * 20) + achXp;
+        let spentCoins = 0;
+        try {
+          spentCoins = parseInt(localStorage.getItem('oddandeven_spent_coins_' + uname) || '0', 10) || 0;
+        } catch (e) {}
+        const availableCoins = Math.max(0, earnedCoins - spentCoins);
+
+        // Unlocked & Equipped Skins (Synced with XP Store BANNERS inventory)
+        let unlockedSkins = ['skin_stadium_classic'];
+        try {
+          const uRaw = localStorage.getItem('oddandeven_gamercard_unlocked_' + uname);
+          if (uRaw) {
+            const parsed = JSON.parse(uRaw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((s) => { if (!unlockedSkins.includes(s)) unlockedSkins.push(s); });
+            }
+          }
+          const rawStoreInv = localStorage.getItem('oddandeven_store_inventory_' + uname);
+          if (rawStoreInv) {
+            const invArr = JSON.parse(rawStoreInv);
+            if (Array.isArray(invArr)) {
+              ESPORTS_CARD_SKINS.forEach((sk) => {
+                if (sk.storeItemId && invArr.includes(sk.storeItemId) && !unlockedSkins.includes(sk.id)) {
+                  unlockedSkins.push(sk.id);
+                }
+              });
+            }
+          }
+        } catch (e) {}
+        // Auto-unlock any skin whose Elo milestone is met!
+        ESPORTS_CARD_SKINS.forEach((sk) => {
+          if (peak >= sk.eloMilestone && !unlockedSkins.includes(sk.id)) {
+            unlockedSkins.push(sk.id);
+          }
+        });
+
+        let equippedSkinId = 'skin_stadium_classic';
+        try {
+          const eq = localStorage.getItem('oddandeven_gamercard_skin_' + uname);
+          if (eq && unlockedSkins.includes(eq)) equippedSkinId = eq;
+        } catch (e) {}
+        const equippedSkin = ESPORTS_CARD_SKINS.find((s) => s.id === equippedSkinId) || ESPORTS_CARD_SKINS[0];
+
+        // Custom Callsign & Emblem
+        let customMeta = { callsign: 'ARENA STRIKER', emblem: '🏏' };
+        try {
+          const mRaw = localStorage.getItem('oddandeven_gamercard_meta_' + uname);
+          if (mRaw) {
+            const parsedM = JSON.parse(mRaw);
+            if (parsedM && typeof parsedM === 'object') {
+              customMeta = Object.assign(customMeta, parsedM);
+            }
+          }
+          // Also check custom divine card title if set
+          const cRaw = localStorage.getItem('oddandeven_custom_card_' + uname);
+          if (cRaw && customMeta.callsign === 'ARENA STRIKER') {
+            const parsedC = JSON.parse(cRaw);
+            if (parsedC && parsedC.title) customMeta.callsign = parsedC.title;
+          }
+        } catch (e) {}
+
+        const rankInfo = getEsportsRankTierInfo(elo, peak);
+
+        return {
+          username: uname,
+          flag: rec.countryFlag || flag,
+          dial: rec.countryCode || dial,
+          countryName: rec.countryName || countryName,
+          elo,
+          peak,
+          wins,
+          losses,
+          matches,
+          wlRatio,
+          winPct,
+          winStreak,
+          totalRuns,
+          totalBalls: Number(rec.totalBalls) || 0,
+          highScore,
+          wicketsTaken,
+          favNum,
+          favCount,
+          totalPicks,
+          achUnlocked,
+          earnedCoins,
+          spentCoins,
+          availableCoins,
+          unlockedSkins,
+          equippedSkinId,
+          equippedSkin,
+          callsign: customMeta.callsign || 'ARENA STRIKER',
+          emblem: customMeta.emblem || '🏏',
+          rankInfo
+        };
+      }
+
+      function renderEsportsCardToCanvas(canvasEl, overrideSkinId) {
+        if (!canvasEl || typeof canvasEl.getContext !== 'function') return;
+        const ctx = canvasEl.getContext('2d');
+        if (!ctx) return;
+
+        const st = getActiveEsportsPlayerStats();
+        const skin = (overrideSkinId && ESPORTS_CARD_SKINS.find((s) => s.id === overrideSkinId)) || st.equippedSkin || ESPORTS_CARD_SKINS[0];
+        const W = canvasEl.width || 1200;
+        const H = canvasEl.height || 675;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // 1. Multi-Stop Rich Background Gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+        bgGrad.addColorStop(0, skin.bgStops[0]);
+        bgGrad.addColorStop(0.52, skin.bgStops[1]);
+        bgGrad.addColorStop(1, skin.bgStops[2]);
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // 2. Skin-Specific Procedural Esports Artwork & Holographic Light Beams
+        ctx.save();
+        const primaryGlow = ctx.createRadialGradient(W * 0.82, H * 0.24, 15, W * 0.82, H * 0.24, 480);
+        primaryGlow.addColorStop(0, skin.accentHex + '44');
+        primaryGlow.addColorStop(0.5, (skin.secondaryHex || skin.accentHex) + '18');
+        primaryGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = primaryGlow;
+        ctx.fillRect(0, 0, W, H);
+
+        const secondaryGlow = ctx.createRadialGradient(W * 0.16, H * 0.82, 10, W * 0.16, H * 0.82, 380);
+        secondaryGlow.addColorStop(0, (skin.secondaryHex || skin.accentHex) + '30');
+        secondaryGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = secondaryGlow;
+        ctx.fillRect(0, 0, W, H);
+
+        if (skin.id === 'skin_neon_cyber' || skin.id === 'skin_emerald_matrix') {
+          ctx.strokeStyle = skin.id === 'skin_emerald_matrix' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(34, 211, 238, 0.15)';
+          ctx.lineWidth = 1.25;
+          for (let x = 0; x <= W; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, H);
+            ctx.stroke();
+          }
+          for (let y = 0; y <= H; y += 42) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(W, y);
+            ctx.stroke();
+          }
+        } else if (skin.id === 'skin_golden_trophy' || skin.id === 'skin_royal_amethyst') {
+          ctx.strokeStyle = skin.id === 'skin_royal_amethyst' ? 'rgba(232, 121, 249, 0.14)' : 'rgba(251, 191, 36, 0.14)';
+          ctx.lineWidth = 2;
+          for (let r = 70; r <= 630; r += 70) {
+            ctx.beginPath();
+            ctx.arc(W * 0.84, H * 0.22, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        } else if (skin.id === 'skin_obsidian_void') {
+          ctx.fillStyle = 'rgba(255,255,255,0.42)';
+          for (let i = 0; i < 56; i++) {
+            const sx = ((i * 197) % (W - 80)) + 40;
+            const sy = ((i * 131) % (H - 80)) + 40;
+            ctx.beginPath();
+            ctx.arc(sx, sy, (i % 3) + 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (skin.id === 'skin_solar_inferno') {
+          ctx.strokeStyle = 'rgba(251, 113, 133, 0.15)';
+          ctx.lineWidth = 2.5;
+          for (let i = 0; i < 10; i++) {
+            ctx.beginPath();
+            ctx.arc(W * 0.82, H * 0.28, 55 + i * 48, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        } else {
+          ctx.strokeStyle = 'rgba(163, 217, 108, 0.11)';
+          ctx.lineWidth = 1.5;
+          for (let y = 55; y < H; y += 48) {
+            ctx.beginPath();
+            ctx.moveTo(28, y);
+            ctx.lineTo(W - 28, y);
+            ctx.stroke();
+          }
+        }
+
+        // Subtle Diagonal Holographic Foil Sheen
+        const sheenGrad = ctx.createLinearGradient(0, 0, W, H);
+        sheenGrad.addColorStop(0, 'rgba(255,255,255,0)');
+        sheenGrad.addColorStop(0.46, 'rgba(255,255,255,0.03)');
+        sheenGrad.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+        sheenGrad.addColorStop(0.54, 'rgba(255,255,255,0.02)');
+        sheenGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sheenGrad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+
+        // 3. Pro Esports Outer Frame & Glowing Corner HUD Brackets
+        ctx.save();
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(18, 18, W - 36, H - 36, 26);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(28, 28, W - 56, H - 56, 20);
+        ctx.stroke();
+
+        // Corner HUD Brackets
+        const bLen = 38;
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 6;
+        // Top-Left
+        ctx.beginPath(); ctx.moveTo(18, 18 + bLen); ctx.lineTo(18, 18); ctx.lineTo(18 + bLen, 18); ctx.stroke();
+        // Top-Right
+        ctx.beginPath(); ctx.moveTo(W - 18 - bLen, 18); ctx.lineTo(W - 18, 18); ctx.lineTo(W - 18, 18 + bLen); ctx.stroke();
+        // Bottom-Left
+        ctx.beginPath(); ctx.moveTo(18, H - 18 - bLen); ctx.lineTo(18, H - 18); ctx.lineTo(18 + bLen, H - 18); ctx.stroke();
+        // Bottom-Right
+        ctx.beginPath(); ctx.moveTo(W - 18 - bLen, H - 18); ctx.lineTo(W - 18, H - 18); ctx.lineTo(W - 18, H - 18 - bLen); ctx.stroke();
+        ctx.restore();
+
+        // 4. Top Broadcast Header Strip
+        ctx.fillStyle = 'rgba(6, 8, 12, 0.72)';
+        ctx.beginPath();
+        ctx.roundRect(36, 36, W - 72, 62, 16);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = skin.accentHex;
+        ctx.font = '900 20px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.fillText('🏏 ODDANDEVEN.IN  •  PRO ESPORTS GAMER CARD', 58, 74);
+
+        const cardHashId = String((st.username || 'PLAYER').split('').reduce((a, c) => a + c.charCodeAt(0) * 37, 1049) % 9000 + 1000);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '800 16px "JetBrains Mono", monospace';
+        ctx.fillText(`${skin.icon} SKIN: ${skin.name.toUpperCase()}  |  ID #${cardHashId}`, W - 58, 73);
+        ctx.textAlign = 'left';
+
+        // 5. Player Hero Identity Pod (Left) + Master 2000 Rank & Progress Box (Right)
+        // Left Avatar Shield Pod
+        ctx.fillStyle = 'rgba(8, 10, 15, 0.78)';
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(44, 114, 152, 156, 26);
+        ctx.fill();
+        ctx.stroke();
+
+        // Inner Avatar Ring
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(120, 174, 44, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.font = '58px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(st.emblem || '🏏', 120, 194);
+
+        // Nationality Pill inside Avatar Pod
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.beginPath();
+        ctx.roundRect(58, 228, 124, 30, 10);
+        ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '800 16px "JetBrains Mono", monospace';
+        ctx.fillText(`${st.flag} ${st.dial}`, 120, 249);
+        ctx.textAlign = 'left';
+
+        // Player Username & Verified Badge
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 48px "Space Grotesk", Outfit, Inter, sans-serif';
+        const dispUname = (st.username || 'PLAYER').slice(0, 15);
+        ctx.fillText(`${dispUname} ⭐`, 218, 166);
+
+        // Callsign Metallic Pill
+        const callsignText = `⚡ ${(st.callsign || 'ARENA CONTENDER').toUpperCase()}`;
+        ctx.font = '800 20px "Space Grotesk", Outfit, Inter, sans-serif';
+        const csWidth = Math.min(430, Math.max(210, ctx.measureText(callsignText).width + 32));
+        ctx.fillStyle = skin.accentHex + '24';
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(218, 182, csWidth, 38, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = skin.accentHex;
+        ctx.fillText(callsignText, 234, 208);
+
+        // Sub-meta line: Achievements, Active Streak & Multiplayer Tag
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 16px "JetBrains Mono", monospace';
+        ctx.fillText(`🏅 ${st.achUnlocked}/30 Achievements  •  🔥 Streak: ${st.winStreak}  •  ⚔️ Ranked 1v1`, 218, 252);
+
+        // Right Rank & Master 2000 Progress Pod
+        const rankPodX = W - 446;
+        const rankPodW = 402;
+        ctx.fillStyle = 'rgba(8, 10, 15, 0.82)';
+        ctx.strokeStyle = st.rankInfo.colorHex;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(rankPodX, 114, rankPodW, 156, 26);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = st.rankInfo.colorHex;
+        ctx.font = '900 22px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(st.rankInfo.badgeText, rankPodX + rankPodW / 2, 150);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 34px "JetBrains Mono", monospace';
+        ctx.fillText(`${st.elo} ELO  (PEAK ${st.peak})`, rankPodX + rankPodW / 2, 192);
+
+        // Master 2000 Progress Bar inside Rank Pod
+        const barX = rankPodX + 28;
+        const barY = 208;
+        const barW = rankPodW - 56;
+        const barH = 14;
+        const masterPct = Math.max(0.08, Math.min(1, (st.elo - 1400) / (2000 - 1400)));
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, barH, 7);
+        ctx.fill();
+
+        const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+        barGrad.addColorStop(0, skin.accentHex);
+        barGrad.addColorStop(1, '#fbbf24');
+        ctx.fillStyle = barGrad;
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, Math.round(barW * masterPct), barH, 7);
+        ctx.fill();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '800 13px "JetBrains Mono", monospace';
+        ctx.fillText('🎖️ MASTER TIER: 2000 ELO  •  ⏳ GRANDMASTER: ON WAIT', rankPodX + rankPodW / 2, 248);
+        ctx.textAlign = 'left';
+
+        // 6. 6 PRO TELEMETRY STAT PODS (3 Columns x 2 Rows for Crisp Readability)
+        const srVal = st.totalBalls > 0 ? ((st.totalRuns / st.totalBalls) * 100).toFixed(1) : '0.0';
+        const favPct = st.favNum > 0 ? Math.round((st.favCount / Math.max(1, st.totalPicks)) * 100) : 0;
+        const statPods = [
+          {
+            label: '🎖️ OFFICIAL RANKED ELO',
+            value: `${st.elo} ELO`,
+            sub: `Peak Rating: ${st.peak} ELO • ${st.rankInfo.shortBadge}`,
+            accent: '#fbbf24',
+            pct: masterPct
+          },
+          {
+            label: '⚔️ MULTIPLAYER W/L RATIO',
+            value: `${st.wlRatio} RATIO`,
+            sub: `${st.wins}W – ${st.losses}L (${st.winPct}% Win Rate • ${st.matches} MP)`,
+            accent: '#34d399',
+            pct: Math.min(1, (Number(st.winPct) || 0) / 100)
+          },
+          {
+            label: '🏏 MULTIPLAYER RUNS SCORED',
+            value: `${st.totalRuns.toLocaleString()} RUNS`,
+            sub: `High Score: ${st.highScore}* • Strike Rate: ${srVal}`,
+            accent: '#38bdf8',
+            pct: Math.min(1, st.totalRuns / 500)
+          },
+          {
+            label: '⚾ MULTIPLAYER WICKETS',
+            value: `${st.wicketsTaken} WKTS`,
+            sub: `1v1 Wickets Claimed • Best Streak: 🔥 ${st.winStreak}`,
+            accent: '#f43f5e',
+            pct: Math.min(1, st.wicketsTaken / 25)
+          },
+          {
+            label: '🎯 FAVORITE HAND NUMBER',
+            value: st.favNum > 0 ? `NUMBER #${st.favNum}` : 'NO PICKS YET',
+            sub: st.favNum > 0 ? `Picked ${st.favCount}x (${favPct}% Frequency)` : 'Play turns on pitch to track',
+            accent: '#c084fc',
+            pct: st.favNum > 0 ? Math.min(1, favPct / 50) : 0.08
+          },
+          {
+            label: '🏆 ACHIEVEMENTS & STORE',
+            value: `${st.achUnlocked} / 30 BADGES`,
+            sub: `Store Skins Unlocked: ${st.unlockedSkins.length} • Verified Pro`,
+            accent: '#a3d96c',
+            pct: Math.min(1, st.achUnlocked / 30)
+          }
+        ];
+
+        const podW = 356;
+        const podH = 128;
+        const gapX = 22;
+        const gapY = 18;
+        const startX = 44;
+        const startY = 292;
+
+        statPods.forEach((pod, idx) => {
+          const col = idx % 3;
+          const row = Math.floor(idx / 3);
+          const px = startX + col * (podW + gapX);
+          const py = startY + row * (podH + gapY);
+
+          ctx.fillStyle = 'rgba(10, 13, 19, 0.82)';
+          ctx.strokeStyle = pod.accent + '88';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(px, py, podW, podH, 18);
+          ctx.fill();
+          ctx.stroke();
+
+          // Left Accent Bar inside Pod
+          ctx.fillStyle = pod.accent;
+          ctx.beginPath();
+          ctx.roundRect(px + 10, py + 16, 5, podH - 32, 3);
+          ctx.fill();
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '800 13px "JetBrains Mono", monospace';
+          ctx.fillText(pod.label, px + 26, py + 32);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 28px "JetBrains Mono", monospace';
+          ctx.fillText(pod.value, px + 26, py + 70);
+
+          ctx.fillStyle = pod.accent;
+          ctx.font = '700 13px Inter, sans-serif';
+          ctx.fillText(pod.sub, px + 26, py + 96);
+
+          // Mini Telemetry Progress Bar at bottom of Pod
+          const pBarX = px + 26;
+          const pBarY = py + 108;
+          const pBarW = podW - 44;
+          ctx.fillStyle = 'rgba(255,255,255,0.08)';
+          ctx.beginPath();
+          ctx.roundRect(pBarX, pBarY, pBarW, 6, 3);
+          ctx.fill();
+
+          ctx.fillStyle = pod.accent;
+          ctx.beginPath();
+          ctx.roundRect(pBarX, pBarY, Math.max(12, Math.round(pBarW * (pod.pct || 0.1))), 6, 3);
+          ctx.fill();
+        });
+
+        // 7. Bottom Esports Broadcast Footer Bar
+        ctx.fillStyle = 'rgba(6, 8, 12, 0.78)';
+        ctx.beginPath();
+        ctx.roundRect(36, H - 82, W - 72, 48, 14);
+        ctx.fill();
+
+        ctx.fillStyle = '#a3d96c';
+        ctx.font = '800 15px "JetBrains Mono", monospace';
+        ctx.fillText(`✓ MULTIPLAYER LEADERBOARD VERIFIED  •  RANKED MATCHES: ${st.matches}  •  SKIN: ${skin.name.toUpperCase()}`, 56, H - 52);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 15px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.fillText('OddAndEven.in  •  Unlock Skins in Store (store.html)', W - 56, H - 52);
+        ctx.textAlign = 'left';
+      }
+
+      function showGamerCardToast(msg, isSuccess = true) {
+        const toastIds = ['esportsCardFeedbackToast', 'hcProfGamerCardToast'];
+        toastIds.forEach((id) => {
+          const elToast = document.getElementById(id);
+          if (elToast) {
+            elToast.textContent = msg;
+            elToast.className = `p-2.5 rounded-xl text-xs font-bold border text-center transition ${
+              isSuccess
+                ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200'
+                : 'bg-rose-500/20 border-rose-400/50 text-rose-200'
+            }`;
+            elToast.classList.remove('hidden');
+          }
+        });
+      }
+
+      function downloadEsportsPlayerCard(canvasId) {
+        const c = document.getElementById(canvasId || 'esportsGamerCardCanvas') || document.getElementById('hcProfileGamerCardCanvas');
+        if (!c) return;
+        renderEsportsCardToCanvas(c);
+        const st = getActiveEsportsPlayerStats();
+        try {
+          const dataUrl = c.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `OddAndEven_GamerCard_${st.username}.png`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showGamerCardToast(`📥 Downloaded OddAndEven_GamerCard_${st.username}.png! Ready to post on Discord, Twitter/X, or WhatsApp.`);
+        } catch (e) {
+          showGamerCardToast('Could not export PNG directly — try Copy Card Image.', false);
+        }
+      }
+
+      async function copyEsportsPlayerCardImage(canvasId) {
+        const c = document.getElementById(canvasId || 'esportsGamerCardCanvas') || document.getElementById('hcProfileGamerCardCanvas');
+        if (!c) return;
+        renderEsportsCardToCanvas(c);
+        const st = getActiveEsportsPlayerStats();
+        const shareSummary = `🏏 ${st.flag} ${st.username} "${st.callsign}" — ${st.rankInfo.badgeText} (${st.elo} ELO • ⏳ Grandmaster: On Wait) | W/L: ${st.wlRatio} (${st.wins}W-${st.losses}L) | Runs: ${st.totalRuns} (High ${st.highScore}*) | Fav #: ${st.favNum > 0 ? '#' + st.favNum : '—'} | Trophies: ${st.achUnlocked}/30 on OddAndEven.in!`;
+        try {
+          if (navigator.clipboard && typeof window.ClipboardItem !== 'undefined' && c.toBlob) {
+            c.toBlob(async (blob) => {
+              if (!blob) return;
+              try {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                showGamerCardToast('📋 Card Image copied to clipboard! Press Ctrl+V / Paste directly in Discord, Twitter/X, or WhatsApp!');
+              } catch (clipErr) {
+                try {
+                  await navigator.clipboard.writeText(shareSummary);
+                  showGamerCardToast('📋 Card Flex Summary copied to clipboard! (Also click Download PNG to attach image)');
+                } catch (e2) {}
+              }
+            }, 'image/png');
+            return;
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareSummary);
+            showGamerCardToast('📋 Card Flex Summary copied! Ready to paste into Discord, Twitter/X, or WhatsApp!');
+          }
+        } catch (e) {
+          showGamerCardToast('📋 Ready to share! Click Download Player Card to save the HD PNG.');
+        }
+      }
+
+      function shareEsportsPlayerCardSocial(platform) {
+        const st = getActiveEsportsPlayerStats();
+        const text = `🏏 Check out my OddAndEven.in Esports Gamer Card!\n${st.flag} ${st.username} "${st.callsign}"\n🎖️ Rank: ${st.rankInfo.badgeText} (${st.elo} ELO • ⏳ GM: On Wait)\n⚖️ W/L Ratio: ${st.wlRatio} (${st.wins}W–${st.losses}L) • 🔥 Streak: ${st.winStreak}\n🏏 Total Scored: ${st.totalRuns} Runs (High: ${st.highScore}*)\n🎯 Fav Number: ${st.favNum > 0 ? '#' + st.favNum : '—'} • 🏆 ${st.achUnlocked}/30 Trophies`;
+        if (platform === 'twitter') {
+          const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+          window.open(url, '_blank', 'noopener,noreferrer');
+          showGamerCardToast('🐦 Opened X / Twitter composer! Tip: Click "Copy Card Image" to paste your card graphic into the tweet.');
+        } else if (platform === 'whatsapp') {
+          const url = 'https://wa.me/?text=' + encodeURIComponent(text);
+          window.open(url, '_blank', 'noopener,noreferrer');
+          showGamerCardToast('📲 Opened WhatsApp share! You can also attach your downloaded Gamer Card PNG.');
+        } else if (platform === 'discord') {
+          copyEsportsPlayerCardImage('esportsGamerCardCanvas');
+          showGamerCardToast('💬 Copied Gamer Card for Discord! Open any Discord channel and press Ctrl+V (Paste)!');
+        }
+      }
+
+      function unlockOrEquipGamerCardSkin(skinId) {
+        const st = getActiveEsportsPlayerStats();
+        const skin = ESPORTS_CARD_SKINS.find((s) => s.id === skinId);
+        if (!skin) return;
+        const uname = st.username;
+        const isUnlocked = st.unlockedSkins.includes(skin.id) || st.peak >= skin.eloMilestone;
+        if (isUnlocked) {
+          try {
+            localStorage.setItem('oddandeven_gamercard_skin_' + uname, skin.id);
+          } catch (e) {}
+          showGamerCardToast(`✨ Equipped "${skin.name}" Esports Banner Skin!`);
+          updateAllGamerCardUI();
+          return;
+        }
+        // Check if player has enough Match Coins
+        if (st.availableCoins >= skin.coinCost) {
+          const nextUnl = st.unlockedSkins.concat([skin.id]);
+          try {
+            localStorage.setItem('oddandeven_gamercard_unlocked_' + uname, JSON.stringify(nextUnl));
+            localStorage.setItem('oddandeven_spent_coins_' + uname, String(st.spentCoins + skin.coinCost));
+            localStorage.setItem('oddandeven_gamercard_skin_' + uname, skin.id);
+          } catch (e) {}
+          showGamerCardToast(`🎉 Unlocked & Equipped "${skin.name}" for ${skin.coinCost} Match Coins!`);
+          updateAllGamerCardUI();
+        } else {
+          showGamerCardToast(`🔒 Need ${skin.coinCost} Match Coins (Available: ${st.availableCoins}) OR reach ${skin.eloMilestone} Elo Milestone to unlock "${skin.name}"!`, false);
+        }
+      }
+
+      function saveGamerCardCustomMeta(callsignInputId, emblemVal) {
+        const st = getActiveEsportsPlayerStats();
+        const uname = st.username;
+        const cEl = document.getElementById(callsignInputId || 'gamerCardCallsignInput');
+        const nextCallsign = (cEl && cEl.value.trim()) ? cEl.value.trim().slice(0, 26) : st.callsign;
+        const nextEmblem = emblemVal || st.emblem || '🏏';
+        try {
+          localStorage.setItem('oddandeven_gamercard_meta_' + uname, JSON.stringify({
+            callsign: nextCallsign,
+            emblem: nextEmblem
+          }));
+        } catch (e) {}
+        showGamerCardToast(`✨ Updated Gamer Card Callsign ("${nextCallsign}") & Emblem (${nextEmblem})!`);
+        updateAllGamerCardUI();
+      }
+
+      let _lastGamerStripSig = '';
+      function updateAllGamerCardUI(forceFullModalRender = false) {
+        const st = getActiveEsportsPlayerStats();
+        const skin = st.equippedSkin;
+        const sig = `${st.username}|${st.elo}|${st.wlRatio}|${st.totalRuns}|${st.favNum}|${skin.id}|${st.emblem}|${st.callsign}`;
+
+        if (sig !== _lastGamerStripSig || forceFullModalRender) {
+          _lastGamerStripSig = sig;
+          // 1. Update Pitch Player 1 Gamer Card Mini-Banner (#p1GamerCardMiniStrip)
+          const p1Strip = document.getElementById('p1GamerCardMiniStrip');
+          if (p1Strip) {
+            p1Strip.className = `mt-1.5 p-1.5 sm:p-2 rounded-xl border transition-all flex flex-wrap items-center justify-between gap-1.5 ${skin.bgCls} ${skin.borderCls}`;
+            p1Strip.innerHTML = `
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-sm sm:text-base shrink-0">${st.emblem}</span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1 flex-wrap">
+                    <span class="px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-mono-num font-black uppercase border ${st.rankInfo.pillClass}">${st.rankInfo.shortBadge} • ${st.elo}</span>
+                    <span class="text-[8px] font-mono-num text-amber-300 font-bold hidden sm:inline">⏳ GM: On Wait</span>
+                  </div>
+                  <div class="text-[8px] sm:text-[9px] font-mono-num text-slate-300 truncate mt-0.5">
+                    W/L: <strong class="text-emerald-300">${st.wlRatio}</strong> • Runs: <strong class="text-cyan-300">${st.totalRuns}</strong> • Fav: <strong class="text-amber-300">${st.favNum > 0 ? '#' + st.favNum : '—'}</strong>
+                  </div>
+                </div>
+              </div>
+              <button type="button" onclick="window.openEsportsGamerCardModal && window.openEsportsGamerCardModal()" class="px-2 py-1 rounded-lg text-[8px] sm:text-[9px] font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow shrink-0 transition">
+                🪪 Card
+              </button>
+            `;
+          }
+
+          // 2. Update Sidebar Player Card Live Badges
+          const sbCard = document.getElementById('sidebarPlayerCard');
+          if (sbCard) {
+            sbCard.className = `block w-full p-2.5 sm:p-3 rounded-2xl border transition-all duration-300 relative overflow-hidden group shadow-md cursor-pointer ${skin.bgCls} ${skin.borderCls}`;
+          }
+          const sbTierPill = document.getElementById('sidebarCardTierPill');
+          if (sbTierPill) {
+            sbTierPill.textContent = `${st.rankInfo.shortBadge} • ${st.elo}`;
+            sbTierPill.className = `px-1.5 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider border shrink-0 ${st.rankInfo.pillClass}`;
+          }
+          const sbTitle = document.getElementById('sidebarCardTitle');
+          if (sbTitle) {
+            sbTitle.textContent = `${st.emblem} ${st.callsign} (${skin.name})`;
+          }
+          const sbRunsWkts = document.getElementById('sidebarCardRunsWkts');
+          if (sbRunsWkts) {
+            sbRunsWkts.textContent = `W/L ${st.wlRatio} • ${st.totalRuns} R • Fav ${st.favNum > 0 ? '#' + st.favNum : '—'}`;
+          }
+        }
+
+        const modalEl = document.getElementById('esportsGamerCardModal');
+        const isModalOpen = forceFullModalRender || Boolean(modalEl && !modalEl.classList.contains('hidden'));
+        if (!isModalOpen) return;
+
+        // 3. Render Skins Selector Grid inside Modal & Profile Studio
+        ['esportsCardSkinsGrid', 'hcProfSkinsGrid'].forEach((gridId) => {
+          const gridEl = document.getElementById(gridId);
+          if (!gridEl) return;
+          gridEl.innerHTML = ESPORTS_CARD_SKINS.map((sk) => {
+            const isUnlocked = st.unlockedSkins.includes(sk.id) || st.peak >= sk.eloMilestone;
+            const isEquipped = st.equippedSkinId === sk.id;
+            let btnLabel = '';
+            let btnCls = '';
+            if (isEquipped) {
+              btnLabel = '✓ Equipped Banner';
+              btnCls = 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/60';
+            } else if (isUnlocked) {
+              btnLabel = '⚡ Equip Skin';
+              btnCls = 'bg-amber-400 hover:bg-amber-300 text-slate-950 font-black';
+            } else {
+              btnLabel = `🔒 ${sk.coinCost} Coins / ${sk.eloMilestone} Elo`;
+              btnCls = 'bg-black/50 hover:bg-black/70 text-amber-300 border border-amber-500/40';
+            }
+            return `
+              <div class="p-3 rounded-2xl border transition flex flex-col justify-between gap-2 ${sk.bgCls} ${isEquipped ? sk.borderCls : 'border-white/10'}">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-xl shrink-0">${sk.icon}</span>
+                    <div class="min-w-0">
+                      <div class="text-xs font-black text-white truncate">${sk.name}</div>
+                      <div class="text-[10px] text-slate-300 truncate">${sk.subtitle}</div>
+                    </div>
+                  </div>
+                  <span class="px-1.5 py-0.5 rounded text-[8px] font-mono-num font-bold border shrink-0 ${sk.pillCls}">
+                    ${sk.eloMilestone}+ ELO
+                  </span>
+                </div>
+                <button type="button" onclick="window.unlockOrEquipGamerCardSkin && window.unlockOrEquipGamerCardSkin('${sk.id}')" class="w-full py-1.5 px-2.5 rounded-xl text-[10px] font-brand font-extrabold transition ${btnCls}">
+                  ${btnLabel}
+                </button>
+              </div>
+            `;
+          }).join('');
+        });
+
+        // 4. Update Modal Live Badges & Coin Counter
+        const coinsBadge = document.getElementById('gamerCardCoinsBalance');
+        if (coinsBadge) coinsBadge.textContent = `${st.availableCoins.toLocaleString()} Match Coins`;
+        const profCoinsBadge = document.getElementById('hcProfGamerCardCoins');
+        if (profCoinsBadge) profCoinsBadge.textContent = `${st.availableCoins.toLocaleString()} Match Coins`;
+
+        const rankBannerEl = document.getElementById('gamerCardLiveRankPill');
+        if (rankBannerEl) {
+          rankBannerEl.textContent = `${st.rankInfo.badgeText} • ⏳ Grandmaster: On Wait`;
+        }
+
+        // 5. Render HD Canvases
+        const modalCanvas = document.getElementById('esportsGamerCardCanvas');
+        if (modalCanvas) renderEsportsCardToCanvas(modalCanvas);
+        const profCanvas = document.getElementById('hcProfileGamerCardCanvas');
+        if (profCanvas) renderEsportsCardToCanvas(profCanvas);
+      }
+
+      function openEsportsGamerCardModal() {
+        const m = document.getElementById('esportsGamerCardModal');
+        if (!m) return;
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+        const st = getActiveEsportsPlayerStats();
+        const inp = document.getElementById('gamerCardCallsignInput');
+        if (inp) inp.value = st.callsign;
+        updateAllGamerCardUI(true);
+      }
+
+      function closeEsportsGamerCardModal() {
+        const m = document.getElementById('esportsGamerCardModal');
+        if (!m) return;
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+
+      try {
+        window.ESPORTS_CARD_SKINS = ESPORTS_CARD_SKINS;
+        window.getEsportsRankTierInfo = getEsportsRankTierInfo;
+        window.getActiveEsportsPlayerStats = getActiveEsportsPlayerStats;
+        window.renderEsportsCardToCanvas = renderEsportsCardToCanvas;
+        window.downloadEsportsPlayerCard = downloadEsportsPlayerCard;
+        window.copyEsportsPlayerCardImage = copyEsportsPlayerCardImage;
+        window.shareEsportsPlayerCardSocial = shareEsportsPlayerCardSocial;
+        window.unlockOrEquipGamerCardSkin = unlockOrEquipGamerCardSkin;
+        window.saveGamerCardCustomMeta = saveGamerCardCustomMeta;
+        window.updateAllGamerCardUI = updateAllGamerCardUI;
+        window.openEsportsGamerCardModal = openEsportsGamerCardModal;
+        window.closeEsportsGamerCardModal = closeEsportsGamerCardModal;
+      } catch (e) {}
+
+            function renderAchievementsSection() {
         const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
         const list = computePlayerAchievements(myRec);
         const unlockedList = list.filter((a) => a.current >= a.target);
@@ -5766,6 +6927,7 @@
         if (STATE.activeScreen === 'ACHIEVEMENTS') {
           renderAchievementsSection();
         }
+        try { if (typeof updateAllGamerCardUI === 'function') updateAllGamerCardUI(); } catch (e) {}
         renderView();
       }
 
@@ -6870,6 +8032,12 @@
 
       function handleTossNumberPick(userNum) {
         if (STATE.phase !== 'TOSS') return;
+        if ((!STATE.isAuthenticated || isPlaceholderUsername(STATE.myUsername)) && !window.__guestWarnedOnPitchPlay) {
+          window.__guestWarnedOnPitchPlay = true;
+          if (typeof window.openGuestWarningModal === 'function') {
+            window.openGuestWarningModal();
+          }
+        }
         if (isMultiplayer()) {
           submitMultiplayerInput(userNum);
           return;
@@ -6935,68 +8103,7 @@
           dom.aiTossChoiceContinue.classList.add('hidden');
           STATE.lastOutcomeText = `You won toss (${sum} ${sumParity})! Choose Bat or Bowl.`;
         } else {
-          const cleanActor = String(STATE.myUsername || '').trim().toUpperCase();
-          const eqVfx = (function() {
-            try { return localStorage.getItem('oddandeven_equipped_vfx_' + cleanActor) || ''; } catch(e) { return ''; }
-          })();
-          const eqCard = (function() {
-            try { return localStorage.getItem('oddandeven_equipped_card_' + cleanActor) || ''; } catch(e) { return ''; }
-          })();
-
-          if (eqVfx === 'vfx_thunder_wicket') {
-            SoundFX.thunderWicket ? SoundFX.thunderWicket() : SoundFX.wicket();
-            STATE.anim.flashColor = '#38bdf8';
-            STATE.anim.flashAlpha = 0.9;
-            for (let i = 0; i < 35; i++) {
-              const ang = Math.random() * Math.PI * 2;
-              const spd = 2 + Math.random() * 6;
-              STATE.anim.particles.push({
-                x: dom.arenaCanvas ? dom.arenaCanvas.width / 2 : 150,
-                y: dom.arenaCanvas ? dom.arenaCanvas.height * 0.5 : 100,
-                vx: Math.cos(ang) * spd,
-                vy: Math.sin(ang) * spd,
-                alpha: 1,
-                radius: 2 + Math.random() * 3,
-                color: Math.random() > 0.4 ? '#38bdf8' : '#facc15'
-              });
-            }
-          } else if (eqVfx === 'ball_meteorite_fireball') {
-            SoundFX.fireballWicket ? SoundFX.fireballWicket() : SoundFX.wicket();
-            STATE.anim.flashColor = '#f97316';
-            STATE.anim.flashAlpha = 0.9;
-            for (let i = 0; i < 35; i++) {
-              const ang = Math.random() * Math.PI * 2;
-              const spd = 2 + Math.random() * 6;
-              STATE.anim.particles.push({
-                x: dom.arenaCanvas ? dom.arenaCanvas.width / 2 : 150,
-                y: dom.arenaCanvas ? dom.arenaCanvas.height * 0.5 : 100,
-                vx: Math.cos(ang) * spd,
-                vy: Math.sin(ang) * spd,
-                alpha: 1,
-                radius: 2 + Math.random() * 3.5,
-                color: Math.random() > 0.3 ? '#f97316' : '#ef4444'
-              });
-            }
-          } else if (eqCard === 'card_mythic_immortal') {
-            SoundFX.wicket();
-            STATE.anim.flashColor = '#ff4d6d';
-            STATE.anim.flashAlpha = 0.85;
-            for (let i = 0; i < 30; i++) {
-              const ang = Math.random() * Math.PI * 2;
-              const spd = 2 + Math.random() * 5;
-              STATE.anim.particles.push({
-                x: dom.arenaCanvas ? dom.arenaCanvas.width / 2 : 150,
-                y: dom.arenaCanvas ? dom.arenaCanvas.height * 0.5 : 100,
-                vx: Math.cos(ang) * spd,
-                vy: Math.sin(ang) * spd,
-                alpha: 1,
-                radius: 2 + Math.random() * 3,
-                color: '#ff4d6d'
-              });
-            }
-          } else {
-            SoundFX.wicket();
-          }
+          SoundFX.wicket();
           const botChoseBat = Math.random() < 0.6;
           STATE.firstBatter = botChoseBat ? 'AI' : 'USER';
           dom.tossWinnerTag.textContent = `🤖 ${p2Name.toUpperCase()} WON THE TOSS`;
@@ -7088,19 +8195,21 @@
         const p1 = getP1Label();
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
-        const p1Rec = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, STATE.eloRating, {
+        const p1Rec = (mpMatch && !isPlaceholderUsername(p1)) ? ensureHumanPlayerRecord(p1, STATE.eloRating, {
           countryCode: STATE.p1CountryCode || STATE.myCountryCode,
           countryFlag: STATE.p1CountryFlag || STATE.myCountryFlag
         }, true) : null;
         const p2Rec = (mpMatch && !isPlaceholderUsername(p2)) ? ensureHumanPlayerRecord(p2, STATE.friendEloRating) : null;
+        if (mpMatch && p1Rec) { p1Rec.mpStatsVerified = true; p1Rec.statsEpoch = STATS_RESET_EPOCH; }
+        if (mpMatch && p2Rec) { p2Rec.mpStatsVerified = true; p2Rec.statsEpoch = STATS_RESET_EPOCH; }
 
         if (isUserBatting) {
           STATE.userBalls++;
-          if (p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
+          if (mpMatch && p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
           if (mpMatch && p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
         } else {
           STATE.aiBalls++;
-          if (p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
+          if (mpMatch && p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
           if (mpMatch && p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
         }
 
@@ -7129,25 +8238,29 @@
           }
 
           if (isUserBatting) {
-            if (p1Rec) {
+            STATE.aiMatchWickets += 1;
+            if (mpMatch && p1Rec) {
               p1Rec.wicketsLost = (p1Rec.wicketsLost || 0) + 1;
               p1Rec.updatedAt = Date.now();
             }
-            STATE.aiMatchWickets += 1;
             if (mpMatch && p2Rec) {
               p2Rec.wicketsTaken = (p2Rec.wicketsTaken || 0) + 1;
               p2Rec.weeklyWickets = (p2Rec.weeklyWickets || 0) + 1;
+              p2Rec.updatedAt = Date.now();
             }
           } else {
-            if (p1Rec) {
+            STATE.userMatchWickets += 1;
+            if (mpMatch && p1Rec) {
               p1Rec.wicketsTaken = (p1Rec.wicketsTaken || 0) + 1;
               p1Rec.weeklyWickets = (p1Rec.weeklyWickets || 0) + 1;
               p1Rec.updatedAt = Date.now();
             }
-            STATE.userMatchWickets += 1;
-            if (mpMatch && p2Rec) p2Rec.wicketsLost = (p2Rec.wicketsLost || 0) + 1;
+            if (mpMatch && p2Rec) {
+              p2Rec.wicketsLost = (p2Rec.wicketsLost || 0) + 1;
+              p2Rec.updatedAt = Date.now();
+            }
           }
-          saveLocalStatsOnly();
+          if (mpMatch) saveLocalStatsOnly();
 
           const batterName = isUserBatting ? p1 : p2;
           const bowlerName = isUserBatting ? p2 : p1;
@@ -7207,7 +8320,7 @@
           const scoredRuns = isUserBatting ? userNum : oppNum;
           if (isUserBatting) {
             STATE.userScore += scoredRuns;
-            if (p1Rec) {
+            if (mpMatch && p1Rec) {
               p1Rec.totalRuns = (p1Rec.totalRuns || 0) + scoredRuns;
               p1Rec.weeklyRuns = (p1Rec.weeklyRuns || 0) + scoredRuns;
               if (STATE.userScore > (p1Rec.highScore || 0)) {
@@ -7225,6 +8338,7 @@
                 p2Rec.highScore = STATE.aiScore;
               }
               p2Rec.updatedAt = Date.now();
+              saveLocalStatsOnly();
             }
           }
 
@@ -7290,7 +8404,7 @@
         const amIGuest = mpMatch && STATE.onlineRole === 'GUEST';
         const isDraw = (winner === 'DRAW');
 
-        if (!STATE.isTossForfeit) {
+        if (mpMatch && !STATE.isTossForfeit) {
           const myRecForMilestones = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, STATE.eloRating, {
             countryCode: STATE.p1CountryCode,
             countryFlag: STATE.p1CountryFlag
@@ -7303,7 +8417,7 @@
               myRecForMilestones.sr500Count = (myRecForMilestones.sr500Count || 0) + 1;
             }
           }
-          if (mpMatch && !isPlaceholderUsername(p2)) {
+          if (!isPlaceholderUsername(p2)) {
             const oppRecForMilestones = ensureHumanPlayerRecord(p2, STATE.friendEloRating, {
               countryCode: STATE.p2CountryCode,
               countryFlag: STATE.p2CountryFlag
@@ -7340,33 +8454,9 @@
         
         if (!mpMatch) {
           const cleanUser = (STATE.myUsername || '').trim().toUpperCase();
-          if (!STATE.isTossForfeit && cleanUser && !isPlaceholderUsername(cleanUser)) {
-            const myBotRec = ensureHumanPlayerRecord(cleanUser, STATE.eloRating, {
-              countryCode: STATE.myCountryCode,
-              countryFlag: STATE.myCountryFlag
-            }, true);
-            if (myBotRec) {
-              myBotRec.matches = (myBotRec.matches || 0) + 1;
-              myBotRec.v2Matches = myBotRec.matches;
-              myBotRec.weeklyMatches = (myBotRec.weeklyMatches || 0) + 1;
-              if (!isDraw) {
-                if (didIWin) {
-                  myBotRec.wins = (myBotRec.wins || 0) + 1;
-                  myBotRec.weeklyWins = (myBotRec.weeklyWins || 0) + 1;
-                } else {
-                  myBotRec.losses = (myBotRec.losses || 0) + 1;
-                  myBotRec.weeklyLosses = (myBotRec.weeklyLosses || 0) + 1;
-                }
-              }
-              if (STATE.userScore > (myBotRec.highScore || 0)) {
-                myBotRec.highScore = STATE.userScore;
-              }
-              myBotRec.statsEpoch = 'v2_fresh_reset_2026_10_30_r2';
-              myBotRec.updatedAt = Date.now();
-              saveLocalStatsOnly();
-            }
-          }
-          if (cleanUser && !isPlaceholderUsername(cleanUser)) {
+          // Bot matches are Casual Practice: runs, wickets, wins, losses & matches are NOT added to Leaderboard stats!
+          // Only update the profile AI tier breakdown telemetry for the difficulty chart
+          if (cleanUser && !isPlaceholderUsername(cleanUser) && !STATE.isTossForfeit) {
             try {
               const diffKey = STATE.botDifficulty || 'TACTICIAN';
               const aiKey = 'oddandeven_ai_tier_stats_' + cleanUser;
@@ -7383,8 +8473,8 @@
 
           const curBot = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
           dom.gameOverRatingBox.innerHTML = `
-            <div class="text-amber-400 font-bold mb-1">🤖 Casual Match vs ${curBot.name}</div>
-            <div class="text-slate-300">${isDraw ? '🤝 <strong>Match Drawn!</strong> ' : ''}Ratings, runs &amp; wickets are <strong class="text-white">frozen (+0 Elo)</strong> during Bot matches (not counted in leaderboard). Play Multiplayer Rooms to scale your official ranking!</div>
+            <div class="text-amber-400 font-bold mb-1">🤖 Casual Practice Match vs ${curBot.name}</div>
+            <div class="text-slate-300">${isDraw ? '🤝 <strong>Match Drawn!</strong> ' : ''}Runs, wickets, wins &amp; losses are <strong class="text-white">not counted against Bots</strong> and are never displayed in the Leaderboard. Only Multiplayer Room matches count towards your official Leaderboard stats!</div>
           `;
         } else {
           const p1Rec = !isPlaceholderUsername(p1) ? ensureHumanPlayerRecord(p1, amIGuest ? STATE.friendEloRating : STATE.eloRating, {
@@ -7398,12 +8488,20 @@
 
           if (isDraw) {
             if (p1Rec && !STATE.isTossForfeit) {
-              p1Rec.matches = (p1Rec.matches || 0) + 1;
+              p1Rec.mpStatsVerified = true;
+              p1Rec.statsEpoch = STATS_RESET_EPOCH;
+              p1Rec.rankedMatches = (p1Rec.rankedMatches || 0) + 1;
+              p1Rec.matches = p1Rec.rankedMatches;
+              p1Rec.v2Matches = p1Rec.rankedMatches;
               p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
               p1Rec.updatedAt = Date.now();
             }
             if (p2Rec && !STATE.isTossForfeit) {
-              p2Rec.matches = (p2Rec.matches || 0) + 1;
+              p2Rec.mpStatsVerified = true;
+              p2Rec.statsEpoch = STATS_RESET_EPOCH;
+              p2Rec.rankedMatches = (p2Rec.rankedMatches || 0) + 1;
+              p2Rec.matches = p2Rec.rankedMatches;
+              p2Rec.v2Matches = p2Rec.rankedMatches;
               p2Rec.weeklyMatches = (p2Rec.weeklyMatches || 0) + 1;
               p2Rec.updatedAt = Date.now();
             }
@@ -7425,9 +8523,13 @@
             const p2Delta = winner === 'USER' ? -8 : 8;
 
             if (p1Rec) {
+              p1Rec.mpStatsVerified = true;
+              p1Rec.statsEpoch = STATS_RESET_EPOCH;
               p1Rec.elo = Math.max(100, (p1Rec.elo || 1500) + p1Delta);
               if (p1Rec.elo > (p1Rec.peak || 1500)) p1Rec.peak = p1Rec.elo;
-              p1Rec.matches = (p1Rec.matches || 0) + 1;
+              p1Rec.rankedMatches = (p1Rec.rankedMatches || 0) + 1;
+              p1Rec.matches = p1Rec.rankedMatches;
+              p1Rec.v2Matches = p1Rec.rankedMatches;
               p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
               p1Rec.weeklyEloGain = (p1Rec.weeklyEloGain || 0) + p1Delta;
               if (winner === 'USER') {
@@ -7441,9 +8543,13 @@
             }
 
             if (p2Rec) {
+              p2Rec.mpStatsVerified = true;
+              p2Rec.statsEpoch = STATS_RESET_EPOCH;
               p2Rec.elo = Math.max(100, (p2Rec.elo || 1500) + p2Delta);
               if (p2Rec.elo > (p2Rec.peak || 1500)) p2Rec.peak = p2Rec.elo;
-              p2Rec.matches = (p2Rec.matches || 0) + 1;
+              p2Rec.rankedMatches = (p2Rec.rankedMatches || 0) + 1;
+              p2Rec.matches = p2Rec.rankedMatches;
+              p2Rec.v2Matches = p2Rec.rankedMatches;
               p2Rec.weeklyMatches = (p2Rec.weeklyMatches || 0) + 1;
               p2Rec.weeklyEloGain = (p2Rec.weeklyEloGain || 0) + p2Delta;
               if (winner === 'AI') {
@@ -7703,6 +8809,13 @@
           ctx.fill();
           ctx.restore();
         }
+        if ((STATE.anim.particles.length > 0 || STATE.anim.flashAlpha > 0.01) && !STATE.anim._rafPending) {
+          STATE.anim._rafPending = true;
+          requestAnimationFrame(() => {
+            STATE.anim._rafPending = false;
+            if (STATE.activeScreen === 'PITCH') drawCanvas();
+          });
+        }
       }
 
       function highlightBotSelectionCard(key) {
@@ -7736,10 +8849,35 @@
         const mpActive = isMultiplayer();
         const p1Name = getP1Label();
         const p2Name = getP2Label();
+        const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
+        const isGuestUser = !STATE.isAuthenticated || !cleanMe || isPlaceholderUsername(cleanMe);
+        const uRec = (!isGuestUser ? ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) : null) || {};
+        const p1Rec = uRec;
+        const displayElo = typeof uRec.elo === 'number' ? uRec.elo : (STATE.eloRating || 1500);
+        STATE.eloRating = displayElo;
+
+        // Toggle Guest Mode Top Banner & Sidebar Account Status
+        const guestBannerEl = document.getElementById('guestModeTopBanner');
+        if (guestBannerEl) {
+          guestBannerEl.classList.toggle('hidden', !isGuestUser);
+        }
+        const sbStatusPill = document.getElementById('sidebarAuthStatusPill');
+        if (sbStatusPill) {
+          if (isGuestUser) {
+            sbStatusPill.textContent = '⚠️ Guest Mode';
+            sbStatusPill.className = 'px-1.5 py-0.5 rounded-full text-[8px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40';
+          } else {
+            sbStatusPill.textContent = `🟢 @${cleanMe}`;
+            sbStatusPill.className = 'px-1.5 py-0.5 rounded-full text-[8px] font-mono-num font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+          }
+        }
+        const sbManageTxt = document.getElementById('sidebarManageAccBtnText');
+        if (sbManageTxt) {
+          sbManageTxt.textContent = isGuestUser ? 'Switch / Manage Account' : `Switch / Manage (@${cleanMe})`;
+        }
 
         let equippedCardTag = '';
         try {
-          const cleanMe = String(STATE.myUsername || '').trim().toUpperCase();
           if (cleanMe && !isPlaceholderUsername(cleanMe)) {
             const eqId = localStorage.getItem('oddandeven_equipped_card_' + cleanMe);
             if (eqId === 'card_custom_divine') {
@@ -7900,22 +9038,23 @@
         dom.targetValueDisplay.textContent = STATE.target !== null ? STATE.target : '—';
         dom.turnOutcomeBanner.textContent = STATE.lastOutcomeText;
 
-        const uRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating) || {};
-        const displayElo = typeof uRec.elo === 'number' ? uRec.elo : STATE.eloRating;
-        STATE.eloRating = displayElo;
-
-        dom.sidebarUserIdentity.textContent = `${STATE.myCountryFlag} ${STATE.myUsername} (${STATE.myCountryCode})`;
-        const isRealLoggedIn = Boolean(STATE.myUsername && !isPlaceholderUsername(STATE.myUsername));
+        if (dom.sidebarUserIdentity) {
+          dom.sidebarUserIdentity.textContent = `${STATE.myCountryFlag} ${STATE.myUsername} (${STATE.myCountryCode})`;
+        }
+        const isRealLoggedIn = Boolean(!isGuestUser && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername));
         if (dom.btnSidebarRemoveAccount) {
           dom.btnSidebarRemoveAccount.classList.toggle('hidden', !isRealLoggedIn);
         }
         if (dom.modalAccountActionsWrap) {
           dom.modalAccountActionsWrap.classList.toggle('hidden', !isRealLoggedIn);
         }
-        dom.sidebarEloDisplay.textContent = `${displayElo} ELO`;
-        dom.sideNavEloSub.textContent = `${displayElo} ELO`;
-        dom.sidebarCareerRuns.textContent = uRec.totalRuns || 0;
-        dom.sidebarCareerWickets.textContent = uRec.wicketsTaken || 0;
+        if (dom.sidebarEloDisplay) dom.sidebarEloDisplay.textContent = `${displayElo} ELO`;
+        if (dom.sideNavEloSub) dom.sideNavEloSub.textContent = `${displayElo} ELO`;
+        if (dom.sidebarCareerRuns) dom.sidebarCareerRuns.textContent = uRec.totalRuns || 0;
+        if (dom.sidebarCareerWickets) dom.sidebarCareerWickets.textContent = uRec.wicketsTaken || 0;
+        try {
+          if (typeof updateAllGamerCardUI === 'function') updateAllGamerCardUI(false);
+        } catch (e) {}
 
         if (dom.sideNavBotSubtitle) {
           dom.sideNavBotSubtitle.textContent = `${curBot.shortName} • ${curBot.elo} Elo (Casual)`;
@@ -8341,6 +9480,9 @@
           sessionStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.removeItem(SESSION_STORAGE_KEY);
           localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+          STATE.myUsername = 'PLAYER';
+          STATE.p1Name = 'PLAYER';
+          STATE.isAuthenticated = false;
           toggleDrawer(false);
           if (dom.authModal) dom.authModal.classList.add('hidden');
           syncLeaderboardRegistry();
@@ -8360,12 +9502,112 @@
           }
         };
 
-        const openMobileAuthModal = (showRemoveConfirm = false) => {
+        let guestWarningShownThisSession = false;
+
+        const isGuestPlayerActive = () => {
+          return !STATE.isAuthenticated || !STATE.myUsername || isPlaceholderUsername(STATE.myUsername);
+        };
+
+        const setModalAuthModeUI = (mode) => {
+          modalAuthMode = mode === 'SIGNUP' ? 'SIGNUP' : 'LOGIN';
+          if (dom.modalTabLogin && dom.modalTabSignup) {
+            if (modalAuthMode === 'LOGIN') {
+              dom.modalTabLogin.className = 'py-2 rounded-lg bg-[#81b64c] text-white shadow transition';
+              dom.modalTabSignup.className = 'py-2 rounded-lg text-slate-400 hover:text-white transition';
+            } else {
+              dom.modalTabSignup.className = 'py-2 rounded-lg bg-[#81b64c] text-white shadow transition';
+              dom.modalTabLogin.className = 'py-2 rounded-lg text-slate-400 hover:text-white transition';
+            }
+          }
+          if (dom.btnModalSubmitAuth) {
+            dom.btnModalSubmitAuth.textContent = modalAuthMode === 'LOGIN'
+              ? '🔑 Sign In to Arena →'
+              : '✨ Create Account & Enter →';
+          }
+          if (dom.modalAuthAlert) dom.modalAuthAlert.classList.add('hidden');
+        };
+
+        const populateModalSavedAccounts = () => {
+          const wrapEl = document.getElementById('modalSavedAccountsWrap');
+          const listEl = document.getElementById('modalSavedAccountsList');
+          if (!wrapEl || !listEl) return;
+          let usersMap = {};
+          try {
+            usersMap = loadEncryptedUsersMap() || {};
+          } catch (e) {}
+          const savedNames = Object.keys(usersMap).filter((u) => u && !isPlaceholderUsername(u) && !FAKE_SEED_NAMES.includes(u));
+          if (savedNames.length === 0) {
+            wrapEl.classList.add('hidden');
+            listEl.innerHTML = '';
+            return;
+          }
+          wrapEl.classList.remove('hidden');
+          const activeU = (!isGuestPlayerActive() && STATE.myUsername) ? STATE.myUsername.trim().toUpperCase() : '';
+          listEl.innerHTML = savedNames.map((uname) => {
+            const rec = usersMap[uname] || {};
+            const flag = rec.countryFlag || '🇮🇳';
+            const dial = rec.countryCode || '+91';
+            const isCurrent = uname === activeU;
+            return `<button type="button" data-quick-acc="${uname}" data-quick-dial="${dial}" class="px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold border transition flex items-center gap-1.5 ${isCurrent ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-[#1f1d1a] hover:bg-[#2a2723] text-slate-200 border-[#3d3a34]'}">
+              <span>${flag}</span>
+              <span>@${uname}</span>
+              <span class="text-[8px] font-mono-num text-slate-400">${dial}</span>
+              ${isCurrent ? '<span class="text-[8px] text-emerald-400">●</span>' : ''}
+            </button>`;
+          }).join('');
+        };
+
+        const openMobileAuthModal = (showRemoveConfirm = false, preferredMode = null) => {
           SoundFX.click();
           toggleDrawer(false);
+          const gwModal = document.getElementById('guestWarningModal');
+          if (gwModal) {
+            gwModal.classList.add('hidden');
+            gwModal.classList.remove('flex');
+          }
           if (!dom.authModal) return;
-          const isRealUser = Boolean(STATE.myUsername && !isPlaceholderUsername(STATE.myUsername));
-          if (dom.modalInputUsername) dom.modalInputUsername.value = isRealUser ? STATE.myUsername : '';
+          const isRealUser = !isGuestPlayerActive();
+
+          // Update Current Session Bar inside Modal
+          const sessIcon = document.getElementById('modalCurrentSessionIcon');
+          const sessName = document.getElementById('modalCurrentSessionName');
+          const sessSub = document.getElementById('modalCurrentSessionSub');
+          const sessBadge = document.getElementById('modalCurrentSessionBadge');
+          if (sessName) {
+            if (isRealUser) {
+              if (sessIcon) sessIcon.textContent = STATE.myCountryFlag || '🇮🇳';
+              sessName.textContent = `@${STATE.myUsername} (${STATE.myCountryCode || '+91'})`;
+              if (sessSub) sessSub.textContent = `${STATE.eloRating || 1500} Elo • Cloud Vault Synced`;
+              if (sessBadge) {
+                sessBadge.textContent = 'SIGNED IN';
+                sessBadge.className = 'px-2 py-0.5 rounded-full text-[8px] font-mono-num font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0';
+              }
+            } else {
+              if (sessIcon) sessIcon.textContent = '⚠️';
+              sessName.textContent = 'Guest Mode (Unsaved Session)';
+              if (sessSub) sessSub.textContent = 'Log in or Sign up below to save your progress';
+              if (sessBadge) {
+                sessBadge.textContent = 'GUEST';
+                sessBadge.className = 'px-2 py-0.5 rounded-full text-[8px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0';
+              }
+            }
+          }
+
+          populateModalSavedAccounts();
+
+          if (preferredMode === 'LOGIN' || preferredMode === 'SIGNUP') {
+            setModalAuthModeUI(preferredMode);
+          } else {
+            setModalAuthModeUI(modalAuthMode || 'LOGIN');
+          }
+
+          if (dom.modalInputUsername) {
+            if (preferredMode === 'SIGNUP') {
+              dom.modalInputUsername.value = '';
+            } else {
+              dom.modalInputUsername.value = isRealUser ? STATE.myUsername : (localStorage.getItem(LAST_USER_STORAGE_KEY) || '');
+            }
+          }
           if (dom.modalInputPin5) dom.modalInputPin5.value = '';
           if (dom.modalAuthAlert) dom.modalAuthAlert.classList.add('hidden');
           if (dom.modalAccountActionsWrap) {
@@ -8383,7 +9625,43 @@
           }
           dom.authModal.classList.remove('hidden');
           dom.authModal.classList.add('flex');
+          setTimeout(() => {
+            if (dom.modalInputUsername && !dom.modalInputUsername.value) {
+              dom.modalInputUsername.focus();
+            } else if (dom.modalInputPin5) {
+              dom.modalInputPin5.focus();
+            }
+          }, 40);
         };
+        window.openMobileAuthModal = openMobileAuthModal;
+
+        const openGuestWarningModal = (customReason = '') => {
+          if (!isGuestPlayerActive()) return false;
+          const gwModal = document.getElementById('guestWarningModal');
+          if (!gwModal) {
+            openMobileAuthModal(false, 'LOGIN');
+            return true;
+          }
+          const bodyEl = document.getElementById('guestWarningBodyText');
+          if (bodyEl && customReason) {
+            bodyEl.innerHTML = customReason;
+          }
+          toggleDrawer(false);
+          gwModal.classList.remove('hidden');
+          gwModal.classList.add('flex');
+          guestWarningShownThisSession = true;
+          return true;
+        };
+        window.openGuestWarningModal = openGuestWarningModal;
+
+        const closeGuestWarningModal = () => {
+          const gwModal = document.getElementById('guestWarningModal');
+          if (gwModal) {
+            gwModal.classList.add('hidden');
+            gwModal.classList.remove('flex');
+          }
+        };
+        window.closeGuestWarningModal = closeGuestWarningModal;
 
         const promptMobileRemoveAccount = () => {
           if (!STATE.myUsername || isPlaceholderUsername(STATE.myUsername)) {
@@ -8487,6 +9765,91 @@
         if (dom.btnHeaderSignOut) dom.btnHeaderSignOut.addEventListener('click', handleMobileSignOut);
         if (dom.btnModalSignOut) dom.btnModalSignOut.addEventListener('click', handleMobileSignOut);
         if (dom.btnOpenAuthModal) dom.btnOpenAuthModal.addEventListener('click', () => openMobileAuthModal(false));
+
+        const btnSidebarQuickLogin = document.getElementById('btnSidebarQuickLogin');
+        if (btnSidebarQuickLogin) {
+          btnSidebarQuickLogin.addEventListener('click', () => openMobileAuthModal(false, 'LOGIN'));
+        }
+        const btnSidebarQuickSignup = document.getElementById('btnSidebarQuickSignup');
+        if (btnSidebarQuickSignup) {
+          btnSidebarQuickSignup.addEventListener('click', () => openMobileAuthModal(false, 'SIGNUP'));
+        }
+        const btnGuestBannerLogin = document.getElementById('btnGuestBannerLogin');
+        if (btnGuestBannerLogin) {
+          btnGuestBannerLogin.addEventListener('click', () => openMobileAuthModal(false, 'LOGIN'));
+        }
+        const btnGuestBannerSignup = document.getElementById('btnGuestBannerSignup');
+        if (btnGuestBannerSignup) {
+          btnGuestBannerSignup.addEventListener('click', () => openMobileAuthModal(false, 'SIGNUP'));
+        }
+        const btnGuestModalLogin = document.getElementById('btnGuestModalLogin');
+        if (btnGuestModalLogin) {
+          btnGuestModalLogin.addEventListener('click', () => openMobileAuthModal(false, 'LOGIN'));
+        }
+        const btnGuestModalSignup = document.getElementById('btnGuestModalSignup');
+        if (btnGuestModalSignup) {
+          btnGuestModalSignup.addEventListener('click', () => openMobileAuthModal(false, 'SIGNUP'));
+        }
+        const btnGuestModalContinue = document.getElementById('btnGuestModalContinue');
+        if (btnGuestModalContinue) {
+          btnGuestModalContinue.addEventListener('click', () => {
+            SoundFX.click();
+            closeGuestWarningModal();
+          });
+        }
+        const btnCloseGuestWarningModal = document.getElementById('btnCloseGuestWarningModal');
+        if (btnCloseGuestWarningModal) {
+          btnCloseGuestWarningModal.addEventListener('click', () => {
+            SoundFX.click();
+            closeGuestWarningModal();
+          });
+        }
+        const btnModalNewAccountQuick = document.getElementById('btnModalNewAccountQuick');
+        if (btnModalNewAccountQuick) {
+          btnModalNewAccountQuick.addEventListener('click', () => {
+            SoundFX.click();
+            setModalAuthModeUI('SIGNUP');
+            if (dom.modalInputUsername) {
+              dom.modalInputUsername.value = '';
+              dom.modalInputUsername.focus();
+            }
+            if (dom.modalInputPin5) dom.modalInputPin5.value = '';
+          });
+        }
+        const savedAccListEl = document.getElementById('modalSavedAccountsList');
+        if (savedAccListEl) {
+          savedAccListEl.addEventListener('click', (ev) => {
+            const btn = ev.target.closest('[data-quick-acc]');
+            if (!btn) return;
+            SoundFX.click();
+            const uname = btn.getAttribute('data-quick-acc') || '';
+            const dial = btn.getAttribute('data-quick-dial') || '+91';
+            setModalAuthModeUI('LOGIN');
+            if (dom.modalInputUsername) dom.modalInputUsername.value = uname;
+            if (dom.modalSelectCountry) dom.modalSelectCountry.value = dial;
+            if (dom.modalInputPin5) {
+              dom.modalInputPin5.value = '';
+              dom.modalInputPin5.focus();
+            }
+          });
+        }
+        const btnToggleModalPinVis = document.getElementById('btnToggleModalPinVis');
+        if (btnToggleModalPinVis && dom.modalInputPin5) {
+          btnToggleModalPinVis.addEventListener('click', () => {
+            const isPwd = dom.modalInputPin5.type === 'password';
+            dom.modalInputPin5.type = isPwd ? 'text' : 'password';
+            btnToggleModalPinVis.textContent = isPwd ? '🙈' : '👁️';
+          });
+        }
+        [dom.modalInputUsername, dom.modalInputPin5].forEach((inp) => {
+          if (!inp) return;
+          inp.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' && dom.btnModalSubmitAuth) {
+              ev.preventDefault();
+              dom.btnModalSubmitAuth.click();
+            }
+          });
+        });
         if (dom.btnSidebarRemoveAccount) dom.btnSidebarRemoveAccount.addEventListener('click', promptMobileRemoveAccount);
         if (dom.btnModalRemoveAccount) dom.btnModalRemoveAccount.addEventListener('click', promptMobileRemoveAccount);
         if (dom.btnCancelRemoveAccount) {
@@ -8632,6 +9995,8 @@
               countryCode: dial,
               countryFlag: flag,
               countryName: 'India',
+              authProvider: (usersMap[uname] && usersMap[uname].authProvider) || 'pin',
+              googleUid: (usersMap[uname] && usersMap[uname].googleUid) || null,
               encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
               createdAt: usersMap[uname]?.createdAt || new Date().toISOString()
             };
@@ -8819,11 +10184,9 @@
             saveEncryptedUsersMap(encryptedUsers);
           }
         } else {
-          const lastUser = (localStorage.getItem(LAST_USER_STORAGE_KEY) || '').trim().toUpperCase();
-          if (lastUser && !isPlaceholderUsername(lastUser)) {
-            STATE.myUsername = lastUser;
-            STATE.p1Name = lastUser;
-          }
+          STATE.isAuthenticated = false;
+          STATE.myUsername = 'PLAYER';
+          STATE.p1Name = 'PLAYER';
         }
 
         initCloudSync();
@@ -8849,6 +10212,14 @@
         setInterval(() => { if (STATE.activeScreen === 'EVENTS') renderEventsTabAndCountdowns(); }, 1000);
         resizeCanvas();
         startTurnTimer();
+        if (!STATE.isAuthenticated || isPlaceholderUsername(STATE.myUsername)) {
+          setTimeout(() => {
+            if ((!STATE.isAuthenticated || isPlaceholderUsername(STATE.myUsername)) && typeof window.openGuestWarningModal === 'function') {
+              window.__guestWarnedOnPitchPlay = true;
+              window.openGuestWarningModal();
+            }
+          }, 250);
+        }
       }
 
       if (document.readyState === 'loading') {
@@ -9455,6 +10826,158 @@
 
 })();
 </script>
+
+
+  <!-- =========================================================================
+       CUSTOMIZABLE ESPORTS GAMER CARD STUDIO & SHAREABLE HD EXPORT MODAL
+       ========================================================================= -->
+  <div
+    id="esportsGamerCardModal"
+    class="fixed inset-0 z-[80] hidden items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="esportsGamerCardModalTitle"
+  >
+    <div class="relative w-full max-w-4xl rounded-3xl bg-gradient-to-b from-[#181a20] via-[#121318] to-[#0b0c10] border border-amber-400/50 shadow-[0_25px_90px_rgba(0,0,0,0.95)] overflow-hidden text-slate-100 max-h-[92vh] flex flex-col animate-pop">
+      <div class="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-amber-400 to-purple-500 shrink-0"></div>
+
+      <!-- Modal Header -->
+      <div class="px-4 sm:px-6 py-3.5 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-xl shadow">🪪</span>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="esportsGamerCardModalTitle" class="font-brand text-base sm:text-xl font-black text-white">Esports Gamer Card Studio &amp; Exporter</h2>
+              <span id="gamerCardLiveRankPill" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                🎖️ Master: 2000 ELO • ⏳ Grandmaster: On Wait
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400">Customize backgrounds &amp; banners, view live stat badges, and export or copy your HD card for Discord, Twitter/X &amp; WhatsApp</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="gamerCardCoinsBalance" class="px-2.5 py-1 rounded-xl text-xs font-mono-num font-black bg-amber-500/15 text-amber-300 border border-amber-500/35">
+            0 Match Coins
+          </span>
+          <button
+            type="button"
+            onclick="window.closeEsportsGamerCardModal && window.closeEsportsGamerCardModal()"
+            class="w-8 h-8 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-200 border border-white/10 flex items-center justify-center text-sm font-bold transition"
+            aria-label="Close Esports Gamer Card Studio"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Studio Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        <!-- 1. LIVE HD ESPORTS GAMER CARD CANVAS PREVIEW -->
+        <div class="rounded-2xl p-2 sm:p-3 bg-black/60 border border-white/15 shadow-inner">
+          <canvas id="esportsGamerCardCanvas" width="1200" height="675" class="w-full h-auto rounded-xl block shadow-2xl"></canvas>
+        </div>
+
+        <!-- Feedback Toast -->
+        <div id="esportsCardFeedbackToast" class="hidden"></div>
+
+        <!-- 2. SHAREABLE CARD EXPORT ACTIONS (Download PNG, Copy Image, Discord, Twitter, WhatsApp) -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <button
+            type="button"
+            onclick="window.downloadEsportsPlayerCard && window.downloadEsportsPlayerCard('esportsGamerCardCanvas')"
+            class="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📥</span>
+            <span>Download Card</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.copyEsportsPlayerCardImage && window.copyEsportsPlayerCardImage('esportsGamerCardCanvas')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📋</span>
+            <span>Copy Card Image</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('discord')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>💬</span>
+            <span>Discord Flex</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('twitter')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>🐦</span>
+            <span>Twitter / X</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('whatsapp')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📲</span>
+            <span>WhatsApp</span>
+          </button>
+        </div>
+
+        <!-- 3. CUSTOM CALLSIGN & EMBLEM PICKER -->
+        <div class="p-4 rounded-2xl bg-[#16181d] border border-white/10 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-xs sm:text-sm font-black text-white font-brand">🎨 Custom Banner Callsign &amp; Emblem</h3>
+            <span class="text-[10px] font-mono-num text-amber-300">🎖️ Rank Cap: Master (2000 Elo) • ⏳ Grandmaster: On Wait</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+            <div class="sm:col-span-5">
+              <input
+                id="gamerCardCallsignInput"
+                type="text"
+                maxlength="26"
+                placeholder="Enter custom callsign (e.g. APEX STRIKER)"
+                class="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+              />
+            </div>
+            <div class="sm:col-span-4 flex items-center gap-1.5 justify-center sm:justify-start flex-wrap">
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🏏')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🏏</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','⚡')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">⚡</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','👑')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">👑</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🔥')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🔥</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','💎')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">💎</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🐉')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🐉</button>
+            </div>
+            <div class="sm:col-span-3">
+              <button
+                type="button"
+                onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput')"
+                class="w-full py-2 px-3 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow transition"
+              >
+                ✓ Update Callsign
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. STORE BACKGROUND SKINS & BANNERS REDIRECT -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-emerald-500/15 border border-amber-400/40 flex flex-wrap items-center justify-between gap-3">
+          <div class="space-y-1">
+            <div class="text-xs sm:text-sm font-black text-white font-brand flex items-center gap-2">
+              <span>🛍️</span>
+              <span>Unlock Custom Background Skins &amp; Prestige Badges in XP Store</span>
+            </div>
+            <p class="text-[11px] text-slate-300">
+              All Gamer Card Background Skins (Neon Cyber, 24K Golden Trophy, Emerald Matrix, Obsidian Void, Solar Inferno &amp; Royal Amethyst) are available in the XP Store starting at 5,000 XP!
+            </p>
+          </div>
+          <a href="store.html" class="px-4 py-2.5 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg transition shrink-0">
+            🛍️ Open XP Store →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
