@@ -459,6 +459,12 @@
             <span id="headerEloDelta" class="text-[10px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-300 hidden">+8</span>
           </button>
 
+          <!-- Esports Gamer Card Studio Button -->
+          <button type="button" id="btnHeaderGamerCard" onclick="window.openEsportsGamerCardModal && window.openEsportsGamerCardModal()" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-brand font-black bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-purple-500/20 hover:from-emerald-500/30 hover:to-purple-500/30 text-emerald-200 border border-emerald-400/40 flex items-center gap-1.5 active:scale-95 transition shadow-sm" title="Customize &amp; Export Esports Gamer Card">
+            <span>🪪</span>
+            <span>Gamer Card</span>
+          </button>
+
           <!-- Profile Link -->
           <button type="button" id="btnHeaderProfile" class="px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-brand font-black bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 flex items-center gap-1.5 active:scale-95 transition shadow-sm" title="Career Profile Dashboard">
             <span>👤</span>
@@ -633,7 +639,7 @@
                 <h2 class="text-lg sm:text-xl font-black text-white">Bot Challengers (Elo Tiers)</h2>
                 <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-400/30">bots.html</span>
               </div>
-              <p class="text-xs text-slate-400">Unrated Practice Mode (Your Elo rating will not change against Bots)</p>
+              <p class="text-xs text-slate-400">Unrated Practice Mode: Runs, wickets, wins &amp; losses are NOT counted against Bots (Only Multiplayer counts in Leaderboard)</p>
             </div>
           </div>
           <button id="btnBackFromBotSetup" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
@@ -755,7 +761,7 @@
             </div>
             <div>
               <h2 class="text-lg sm:text-xl font-black text-white">Arena Human Leaderboards</h2>
-              <p class="text-xs text-slate-300">Humans Only • Global Elo (±8) • Weekly (Monday–Sunday) • Total Runs Scored</p>
+              <p class="text-xs text-amber-300">Ranked Multiplayer Only • Wins, Losses, Runs &amp; Wickets from 1v1 Rooms (Bot stats not counted)</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -1171,6 +1177,64 @@
           </div>
         </div>
 
+        <!-- Interactive Esports Gamer Card Studio & Shareable Export Hub -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161922] via-[#12141b] to-[#0d0e12] border border-amber-400/45 space-y-4 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-sm sm:text-base font-black text-white font-brand">🪪 Customizable Esports Gamer Card &amp; Social Exporter</h3>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">🎖️ Master: 2000 ELO • ⏳ Grandmaster: On Wait</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">Unlock custom backgrounds (Neon Cyber, Golden Trophy, Obsidian Void) via Match Coins or Elo Milestones &amp; export for Discord, Twitter/X or WhatsApp</p>
+            </div>
+            <span id="hcProfGamerCardCoins" class="px-3 py-1 rounded-xl text-xs font-mono-num font-black bg-amber-500/15 text-amber-300 border border-amber-500/35">0 Match Coins</span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            <div class="lg:col-span-8 space-y-2.5">
+              <div class="rounded-2xl p-2 bg-black/60 border border-white/15 shadow-2xl">
+                <canvas id="hcProfileGamerCardCanvas" width="1200" height="675" class="w-full h-auto rounded-xl block"></canvas>
+              </div>
+              <div id="hcProfGamerCardToast" class="hidden"></div>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <button type="button" onclick="window.downloadEsportsPlayerCard && window.downloadEsportsPlayerCard('hcProfileGamerCardCanvas')" class="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl text-[11px] font-brand font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 text-slate-950 shadow">📥 Download PNG</button>
+                <button type="button" onclick="window.copyEsportsPlayerCardImage && window.copyEsportsPlayerCardImage('hcProfileGamerCardCanvas')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 shadow">📋 Copy Image</button>
+                <button type="button" onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('discord')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-bold bg-indigo-500/20 text-indigo-200 border border-indigo-400/40">💬 Discord</button>
+                <button type="button" onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('twitter')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-bold bg-sky-500/20 text-sky-200 border border-sky-400/40">🐦 Twitter/X</button>
+                <button type="button" onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('whatsapp')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-bold bg-emerald-500/20 text-emerald-200 border border-emerald-400/40">📲 WhatsApp</button>
+              </div>
+            </div>
+            <div class="lg:col-span-4 space-y-3">
+              <div class="p-3.5 rounded-2xl bg-[#161820] border border-white/10 space-y-2.5">
+                <div class="text-xs font-black text-white font-brand">🎨 Customize Callsign &amp; Emblem</div>
+                <input id="hcProfCallsignInput" type="text" maxlength="26" placeholder="e.g. SIXER SOVEREIGN" class="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-bold text-white focus:outline-none focus:border-amber-400" />
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button type="button" onclick="window.saveGamerCardCustomMeta('hcProfCallsignInput','🏏')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🏏</button>
+                  <button type="button" onclick="window.saveGamerCardCustomMeta('hcProfCallsignInput','⚡')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">⚡</button>
+                  <button type="button" onclick="window.saveGamerCardCustomMeta('hcProfCallsignInput','👑')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">👑</button>
+                  <button type="button" onclick="window.saveGamerCardCustomMeta('hcProfCallsignInput','🔥')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🔥</button>
+                  <button type="button" onclick="window.saveGamerCardCustomMeta('hcProfCallsignInput','💎')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">💎</button>
+                  <button type="button" onclick="window.saveGamerCardCustomMeta('hcProfCallsignInput','🐉')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🐉</button>
+                </div>
+                <button type="button" onclick="window.saveGamerCardCustomMeta('hcProfCallsignInput')" class="w-full py-2 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow transition">✓ Save Callsign</button>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-gradient-to-br from-amber-500/15 via-purple-500/10 to-emerald-500/15 border border-amber-400/40 space-y-2.5">
+                <div class="text-xs font-black text-amber-300 uppercase tracking-wider font-brand flex items-center gap-1.5">
+                  <span>🛍️</span>
+                  <span>Background Skins Moved to Store</span>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                  Unlock &amp; equip custom Gamer Card Background Skins (Neon Cyber, 24K Golden Trophy, Emerald Matrix, Obsidian Void, Solar Inferno &amp; Royal Amethyst) in the <strong>XP Store</strong> starting from 5,000 XP!
+                </p>
+                <a href="store.html" class="block w-full py-2.5 px-3 rounded-xl text-center text-xs font-brand font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:brightness-105 text-slate-950 shadow-lg transition">
+                  🛍️ Browse Background Skins in Store →
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Row 1: Live Equipped Hero Player Card & Account Overview (Clean 2-Column Balanced Grid) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
           <!-- Hero Equipped Player Card -->
@@ -1422,8 +1486,9 @@
         </div>
 
         <!-- Store Category Filter Tabs -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 rounded-xl bg-[#211f1c] border border-[#45423e] text-xs font-bold">
-          <button id="btnStoreFilterAll" type="button" class="py-2.5 px-3 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition truncate">All Items (10)</button>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1.5 rounded-xl bg-[#211f1c] border border-[#45423e] text-xs font-bold">
+          <button id="btnStoreFilterAll" type="button" class="py-2.5 px-3 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition truncate">All Items (17)</button>
+          <button id="btnStoreFilterBanners" type="button" class="py-2.5 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🖼️ Banners &amp; Badges (7)</button>
           <button id="btnStoreFilterCards" type="button" class="py-2.5 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🃏 Player Cards (4)</button>
           <button id="btnStoreFilterCustom" type="button" class="py-2.5 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🔱 Divine &amp; Gold (2)</button>
           <button id="btnStoreFilterCosmetics" type="button" class="py-2.5 px-3 rounded-lg text-slate-300 hover:text-white transition truncate">🏟️ Themes &amp; VFX (4)</button>
@@ -1622,6 +1687,8 @@
               </div>
             </div>
           </div>
+          <!-- Live Esports Gamer Card Mini-Banner -->
+          <div id="p1GamerCardMiniStrip" class="mt-2 p-1.5 rounded-xl border border-emerald-400/40 bg-black/40 text-[9px] flex items-center justify-between gap-1"></div>
         </div>
 
         <!-- Center Target & Innings Equation Card -->
@@ -2162,6 +2229,10 @@
           <h3 class="font-bold text-yellow-300 mb-1">4. Match Drawn (Tie) Rules</h3>
           <p>If the chasing side in the 2nd Innings is <strong>bowled OUT</strong> when their score is <strong>exactly equal</strong> to the 1st Innings score (e.g. 42 vs 42, just 1 run short of the target 43), the match ends as an official <strong>MATCH DRAWN (TIE)</strong>! In Multiplayer, both players' Elo ratings remain unchanged (<strong>0 Elo delta</strong>). In Bot matches, the match is recorded as a Draw with ratings frozen.</p>
         </div>
+        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
+          <h3 class="font-bold text-rose-300 mb-1">5. Leaderboard &amp; Stats Eligibility</h3>
+          <p>Matches against bots are <strong>Casual Practice</strong>: runs, wickets, match wins, and losses are <strong>not counted against bots</strong> and are never displayed in the Leaderboard. Only official <strong>1v1 Multiplayer matches</strong> count toward career runs, wickets, wins, losses, and Leaderboard rankings!</p>
+        </div>
       </div>
 
       <div class="pt-2 flex justify-end">
@@ -2377,15 +2448,17 @@
       // =========================================================================
       // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
       // =========================================================================
-      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
       const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
 
       function sanitizeRecordForFreshEpoch(rec) {
         if (!rec || typeof rec !== 'object') return rec;
-        if (rec.statsEpoch === STATS_RESET_EPOCH) {
-          if (typeof rec.v2Matches === 'number') {
-            rec.matches = rec.v2Matches;
-          }
+        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
+        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
+          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
+          rec.matches = mpM;
+          rec.rankedMatches = mpM;
+          rec.v2Matches = mpM;
           return rec;
         }
         const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
@@ -3350,6 +3423,158 @@
 
 })();
 </script>
+
+
+  <!-- =========================================================================
+       CUSTOMIZABLE ESPORTS GAMER CARD STUDIO & SHAREABLE HD EXPORT MODAL
+       ========================================================================= -->
+  <div
+    id="esportsGamerCardModal"
+    class="fixed inset-0 z-[80] hidden items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="esportsGamerCardModalTitle"
+  >
+    <div class="relative w-full max-w-4xl rounded-3xl bg-gradient-to-b from-[#181a20] via-[#121318] to-[#0b0c10] border border-amber-400/50 shadow-[0_25px_90px_rgba(0,0,0,0.95)] overflow-hidden text-slate-100 max-h-[92vh] flex flex-col animate-pop">
+      <div class="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-amber-400 to-purple-500 shrink-0"></div>
+
+      <!-- Modal Header -->
+      <div class="px-4 sm:px-6 py-3.5 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-xl shadow">🪪</span>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="esportsGamerCardModalTitle" class="font-brand text-base sm:text-xl font-black text-white">Esports Gamer Card Studio &amp; Exporter</h2>
+              <span id="gamerCardLiveRankPill" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                🎖️ Master: 2000 ELO • ⏳ Grandmaster: On Wait
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400">Customize backgrounds &amp; banners, view live stat badges, and export or copy your HD card for Discord, Twitter/X &amp; WhatsApp</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="gamerCardCoinsBalance" class="px-2.5 py-1 rounded-xl text-xs font-mono-num font-black bg-amber-500/15 text-amber-300 border border-amber-500/35">
+            0 Match Coins
+          </span>
+          <button
+            type="button"
+            onclick="window.closeEsportsGamerCardModal && window.closeEsportsGamerCardModal()"
+            class="w-8 h-8 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-200 border border-white/10 flex items-center justify-center text-sm font-bold transition"
+            aria-label="Close Esports Gamer Card Studio"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Studio Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        <!-- 1. LIVE HD ESPORTS GAMER CARD CANVAS PREVIEW -->
+        <div class="rounded-2xl p-2 sm:p-3 bg-black/60 border border-white/15 shadow-inner">
+          <canvas id="esportsGamerCardCanvas" width="1200" height="675" class="w-full h-auto rounded-xl block shadow-2xl"></canvas>
+        </div>
+
+        <!-- Feedback Toast -->
+        <div id="esportsCardFeedbackToast" class="hidden"></div>
+
+        <!-- 2. SHAREABLE CARD EXPORT ACTIONS (Download PNG, Copy Image, Discord, Twitter, WhatsApp) -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <button
+            type="button"
+            onclick="window.downloadEsportsPlayerCard && window.downloadEsportsPlayerCard('esportsGamerCardCanvas')"
+            class="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📥</span>
+            <span>Download Card</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.copyEsportsPlayerCardImage && window.copyEsportsPlayerCardImage('esportsGamerCardCanvas')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📋</span>
+            <span>Copy Card Image</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('discord')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>💬</span>
+            <span>Discord Flex</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('twitter')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>🐦</span>
+            <span>Twitter / X</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('whatsapp')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📲</span>
+            <span>WhatsApp</span>
+          </button>
+        </div>
+
+        <!-- 3. CUSTOM CALLSIGN & EMBLEM PICKER -->
+        <div class="p-4 rounded-2xl bg-[#16181d] border border-white/10 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-xs sm:text-sm font-black text-white font-brand">🎨 Custom Banner Callsign &amp; Emblem</h3>
+            <span class="text-[10px] font-mono-num text-amber-300">🎖️ Rank Cap: Master (2000 Elo) • ⏳ Grandmaster: On Wait</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+            <div class="sm:col-span-5">
+              <input
+                id="gamerCardCallsignInput"
+                type="text"
+                maxlength="26"
+                placeholder="Enter custom callsign (e.g. APEX STRIKER)"
+                class="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+              />
+            </div>
+            <div class="sm:col-span-4 flex items-center gap-1.5 justify-center sm:justify-start flex-wrap">
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🏏')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🏏</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','⚡')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">⚡</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','👑')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">👑</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🔥')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🔥</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','💎')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">💎</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🐉')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🐉</button>
+            </div>
+            <div class="sm:col-span-3">
+              <button
+                type="button"
+                onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput')"
+                class="w-full py-2 px-3 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow transition"
+              >
+                ✓ Update Callsign
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. STORE BACKGROUND SKINS & BANNERS REDIRECT -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-emerald-500/15 border border-amber-400/40 flex flex-wrap items-center justify-between gap-3">
+          <div class="space-y-1">
+            <div class="text-xs sm:text-sm font-black text-white font-brand flex items-center gap-2">
+              <span>🛍️</span>
+              <span>Unlock Custom Background Skins &amp; Prestige Badges in XP Store</span>
+            </div>
+            <p class="text-[11px] text-slate-300">
+              All Gamer Card Background Skins (Neon Cyber, 24K Golden Trophy, Emerald Matrix, Obsidian Void, Solar Inferno &amp; Royal Amethyst) are available in the XP Store starting at 5,000 XP!
+            </p>
+          </div>
+          <a href="store.html" class="px-4 py-2.5 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg transition shrink-0">
+            🛍️ Open XP Store →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
