@@ -1839,7 +1839,7 @@
   <!-- Central Cloud Synchronization Engine -->
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, deleteUser, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, deleteUser, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'oddandeven-arena-app';
@@ -2279,6 +2279,46 @@
         try {
           localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
         } catch (e) {}
+      }
+
+      async function ensureUserRegisteredInFirebaseAuth(username, pin5) {
+        if (!auth || !username) return null;
+        const clean = String(username).trim().toUpperCase();
+        if (isPlaceholderUsername(clean)) return null;
+        const authEmail = `${clean.toLowerCase()}@oddandeven.in`;
+        const safePin = pin5 && /^\d{5}$/.test(String(pin5).trim()) ? String(pin5).trim() : '12345';
+        const authPassword = `OAE#${safePin}_${clean.toLowerCase()}`;
+
+        let user = auth.currentUser;
+        if (user && user.email && user.email.toLowerCase() === authEmail.toLowerCase()) return user;
+
+        try {
+          if (typeof createUserWithEmailAndPassword === 'function') {
+            const cred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+            user = cred.user;
+          }
+        } catch (err) {
+          const code = (err && err.code) || '';
+          if (code === 'auth/email-already-in-use') {
+            try {
+              if (typeof signInWithEmailAndPassword === 'function') {
+                const cred = await signInWithEmailAndPassword(auth, authEmail, authPassword);
+                user = cred.user;
+              }
+            } catch (e) {}
+          } else if (code === 'auth/operation-not-allowed') {
+            try {
+              if (typeof signInAnonymously === 'function' && !auth.currentUser) {
+                const cred = await signInAnonymously(auth);
+                user = cred.user;
+              }
+            } catch (e) {}
+          }
+        }
+        if (user && typeof updateProfile === 'function') {
+          try { await updateProfile(user, { displayName: clean }); } catch (e) {}
+        }
+        return user || auth.currentUser;
       }
 
       async function pushUserAccountToCloud(cleanName, uRecord) {
@@ -3228,6 +3268,33 @@
             });
           };
 
+          const syncAllAccountsToFirebaseAuthAndFirestore = async () => {
+            if (!auth || !db) return;
+            let localVault = {};
+            try { localVault = loadEncryptedUsersMap() || {}; } catch (e) {}
+            const keys = Object.keys(localVault).filter(k => k && !isPlaceholderUsername(k) && !FAKE_SEED_NAMES.includes(k));
+            for (const k of keys) {
+              const clean = k.trim().toUpperCase();
+              const rec = localVault[k];
+              if (!rec) continue;
+              try {
+                const authUser = await ensureUserRegisteredInFirebaseAuth(clean, rec.pin5 || '12345');
+                const payload = Object.assign({}, rec, {
+                  username: clean,
+                  authProvider: rec.authProvider || (rec.googleUid ? 'google' : 'pin'),
+                  googleUid: rec.googleUid || null,
+                  firebaseUid: (authUser && authUser.uid) || rec.firebaseUid || null,
+                  updatedAt: Date.now()
+                });
+                await Promise.allSettled([
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), payload, { merge: true }),
+                  setDoc(doc(db, 'accounts', clean), payload, { merge: true })
+                ]);
+              } catch (e) {}
+            }
+          };
+          setTimeout(() => syncAllAccountsToFirebaseAuthAndFirestore().catch(() => {}), 1500);
+
           const recomputeMobileCloudState = () => {
             if (!artAccLoaded && !artLbLoaded) return;
             cloudPurgedList = cloudPurgedList.filter((u) => !isRecentMobileSignup(u));
@@ -3351,11 +3418,21 @@
               if (docSnap.exists()) {
                 const uData = docSnap.data();
                 const uClean = String((uData && uData.username) || docSnap.id).trim().toUpperCase();
-                if (uClean && !isPlaceholderUsername(uClean)) artAcc[uClean] = uData;
+                if (uClean && !isPlaceholderUsername(uClean)) {
+                  artAcc[uClean] = uData;
+                  try {
+                    const localM = loadEncryptedUsersMap();
+                    if (!localM[uClean]) {
+                      localM[uClean] = uData;
+                      saveEncryptedUsersMap(localM);
+                    }
+                  } catch (e) {}
+                }
               }
             });
             artAccLoaded = true;
             recomputeMobileCloudState();
+            if (typeof populateModalSavedAccounts === 'function') populateModalSavedAccounts();
           }, () => {});
 
           onSnapshot(collection(db, 'accounts'), (snapshot) => {
@@ -3365,11 +3442,21 @@
               if (docSnap.exists()) {
                 const uData = docSnap.data();
                 const uClean = String((uData && uData.username) || docSnap.id).trim().toUpperCase();
-                if (uClean && !isPlaceholderUsername(uClean)) rootAcc[uClean] = uData;
+                if (uClean && !isPlaceholderUsername(uClean)) {
+                  rootAcc[uClean] = uData;
+                  try {
+                    const localM = loadEncryptedUsersMap();
+                    if (!localM[uClean]) {
+                      localM[uClean] = uData;
+                      saveEncryptedUsersMap(localM);
+                    }
+                  } catch (e) {}
+                }
               }
             });
             rootAccLoaded = true;
             recomputeMobileCloudState();
+            if (typeof populateModalSavedAccounts === 'function') populateModalSavedAccounts();
           }, () => {});
 
           onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), (snapshot) => {
@@ -9535,7 +9622,8 @@
           try {
             usersMap = loadEncryptedUsersMap() || {};
           } catch (e) {}
-          const savedNames = Object.keys(usersMap).filter((u) => u && !isPlaceholderUsername(u) && !FAKE_SEED_NAMES.includes(u));
+          const mergedAccounts = Object.assign({}, usersMap, cloudAccounts || {}, (typeof STATE !== 'undefined' && STATE.humanPlayers) || {});
+          const savedNames = Object.keys(mergedAccounts).filter((u) => u && !isPlaceholderUsername(u) && !FAKE_SEED_NAMES.includes(u));
           if (savedNames.length === 0) {
             wrapEl.classList.add('hidden');
             listEl.innerHTML = '';
@@ -9544,7 +9632,7 @@
           wrapEl.classList.remove('hidden');
           const activeU = (!isGuestPlayerActive() && STATE.myUsername) ? STATE.myUsername.trim().toUpperCase() : '';
           listEl.innerHTML = savedNames.map((uname) => {
-            const rec = usersMap[uname] || {};
+            const rec = mergedAccounts[uname] || {};
             const flag = rec.countryFlag || '🇮🇳';
             const dial = rec.countryCode || '+91';
             const isCurrent = uname === activeU;
@@ -9990,6 +10078,11 @@
               delete STATE.humanPlayers[uname];
             }
 
+            let authUser = null;
+            try {
+              authUser = await ensureUserRegisteredInFirebaseAuth(uname, pin5);
+            } catch (e) {}
+
             const newAccRecord = {
               username: uname,
               countryCode: dial,
@@ -9997,6 +10090,7 @@
               countryName: 'India',
               authProvider: (usersMap[uname] && usersMap[uname].authProvider) || 'pin',
               googleUid: (usersMap[uname] && usersMap[uname].googleUid) || null,
+              firebaseUid: (authUser && authUser.uid) || null,
               encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
               createdAt: usersMap[uname]?.createdAt || new Date().toISOString()
             };
