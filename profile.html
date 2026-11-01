@@ -118,6 +118,10 @@
 
     <!-- Right Action Utilities -->
     <div class="flex items-center gap-1.5">
+      <button type="button" onclick="window.openEsportsGamerCardModal && window.openEsportsGamerCardModal()" class="px-2.5 py-1.5 rounded-lg text-[11px] font-brand font-black bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 flex items-center gap-1 active:scale-95 transition shadow">
+        <span>🪪</span>
+        <span>Gamer Card / Export</span>
+      </button>
       <button id="btnRefreshStats" type="button" title="Refresh Profile Stats" class="w-8 h-8 rounded-lg bg-[#272521] border border-[#3d3a34] text-slate-300 hover:text-white flex items-center justify-center text-sm active:scale-95 transition">
         ↻
       </button>
@@ -289,6 +293,82 @@
             <span>🛡️</span>
             <span>FNV-1a Salted &amp; E2E Secured</span>
           </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1A: PRO ESPORTS GAMER CARD STUDIO & SOCIAL EXPORTER (LIVE ON PROFILE) -->
+    <section id="profileEsportsGamerCardSection" class="glass-card rounded-3xl p-4 sm:p-5 space-y-4 border border-amber-400/50 bg-gradient-to-br from-[#161922] via-[#12141c] to-[#0b0d12] shadow-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/45 flex items-center justify-center text-lg shadow">
+            🪪
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="font-brand font-black text-sm sm:text-base text-white">Pro Esports Gamer Card &amp; Social Exporter</h2>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                🎖️ Master: 2000 ELO • ⏳ GM: On Wait
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400">Live HD Broadcast Card • Export or copy for Discord, Twitter/X &amp; WhatsApp</p>
+          </div>
+        </div>
+        <a href="store.html" class="px-3 py-1.5 rounded-xl text-[10px] font-brand font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:brightness-105 text-slate-950 flex items-center gap-1 shadow transition">
+          <span>🛍️ Get Background Skins in Store</span>
+          <span>→</span>
+        </a>
+      </div>
+
+      <!-- Live 1200x675 HD Gamer Card Canvas -->
+      <div class="rounded-2xl p-2 bg-black/65 border border-white/15 shadow-inner">
+        <canvas id="hcProfileGamerCardCanvas" width="1200" height="675" class="w-full h-auto rounded-xl block shadow-2xl"></canvas>
+      </div>
+
+      <div id="hcProfGamerCardToast" class="hidden"></div>
+
+      <!-- 1-Tap Export & Social Share Buttons -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        <button type="button" onclick="window.downloadEsportsPlayerCard && window.downloadEsportsPlayerCard('hcProfileGamerCardCanvas')" class="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl text-[11px] font-brand font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1 transition">
+          <span>📥</span><span>Download PNG</span>
+        </button>
+        <button type="button" onclick="window.copyEsportsPlayerCardImage && window.copyEsportsPlayerCardImage('hcProfileGamerCardCanvas')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1 transition">
+          <span>📋</span><span>Copy Image</span>
+        </button>
+        <button type="button" onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('discord')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-bold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 flex items-center justify-center gap-1 transition">
+          <span>💬</span><span>Discord</span>
+        </button>
+        <button type="button" onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('twitter')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-bold bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 flex items-center justify-center gap-1 transition">
+          <span>🐦</span><span>Twitter / X</span>
+        </button>
+        <button type="button" onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('whatsapp')" class="py-2.5 px-3 rounded-xl text-[11px] font-brand font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 flex items-center justify-center gap-1 transition">
+          <span>📲</span><span>WhatsApp</span>
+        </button>
+      </div>
+
+      <!-- Inline Callsign & Emblem Customizer + Store Skins Notice -->
+      <div class="p-3.5 rounded-2xl bg-[#14161d] border border-white/10 space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs font-black text-white font-brand">🎨 Customize Gamer Card Callsign &amp; Emblem</span>
+          <a href="store.html" class="text-[10px] font-bold text-amber-300 hover:underline">🖼️ Background Skins available in Store →</a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+          <div class="sm:col-span-5">
+            <input id="profInlineCallsignInput" type="text" maxlength="26" placeholder="Enter callsign (e.g. APEX STRIKER)" class="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-bold text-white focus:outline-none focus:border-amber-400" />
+          </div>
+          <div class="sm:col-span-4 flex items-center gap-1.5 justify-center sm:justify-start flex-wrap">
+            <button type="button" onclick="window.saveGamerCardCustomMeta('profInlineCallsignInput','🏏')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🏏</button>
+            <button type="button" onclick="window.saveGamerCardCustomMeta('profInlineCallsignInput','⚡')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">⚡</button>
+            <button type="button" onclick="window.saveGamerCardCustomMeta('profInlineCallsignInput','👑')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">👑</button>
+            <button type="button" onclick="window.saveGamerCardCustomMeta('profInlineCallsignInput','🔥')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🔥</button>
+            <button type="button" onclick="window.saveGamerCardCustomMeta('profInlineCallsignInput','💎')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">💎</button>
+            <button type="button" onclick="window.saveGamerCardCustomMeta('profInlineCallsignInput','🐉')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🐉</button>
+          </div>
+          <div class="sm:col-span-3">
+            <button type="button" onclick="window.saveGamerCardCustomMeta('profInlineCallsignInput')" class="w-full py-2 px-3 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow transition">
+              ✓ Save Callsign
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -813,15 +893,17 @@
         } catch (e) {}
       })();
 
-      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
       const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
 
       function sanitizeRecordForFreshEpoch(rec) {
         if (!rec || typeof rec !== 'object') return rec;
-        if (rec.statsEpoch === STATS_RESET_EPOCH) {
-          if (typeof rec.v2Matches === 'number') {
-            rec.matches = rec.v2Matches;
-          }
+        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
+        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
+          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
+          rec.matches = mpM;
+          rec.rankedMatches = mpM;
+          rec.v2Matches = mpM;
           return rec;
         }
         const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
@@ -1028,13 +1110,12 @@
       }
 
       function getLeagueBadge(elo) {
-        if (elo >= 2400) return 'Grandmaster Oracle 👑';
-        if (elo >= 2000) return 'Master Striker 🎖️';
-        if (elo >= 1750) return 'Diamond Predator 💎';
-        if (elo >= 1550) return 'Platinum Elite ⚡';
-        if (elo >= 1400) return 'Gold Striker 🏆';
-        if (elo >= 1200) return 'Silver Contender 🥈';
-        return 'Bronze Challenger 🥉';
+        if (elo >= 2000) return '🎖️ Master (2000+ ELO) • ⏳ GM: On Wait';
+        if (elo >= 1850) return '💎 Diamond Elite • Master @ 2000';
+        if (elo >= 1700) return '⚡ Platinum Vanguard • Master @ 2000';
+        if (elo >= 1600) return '🥇 Gold Challenger • ⏳ GM: On Wait';
+        if (elo >= 1525) return '🥈 Silver Striker • ⏳ GM: On Wait';
+        return '🥉 Arena Contender • Master @ 2000 (⏳ GM: On Wait)';
       }
 
       // Main Data Gathering & Aggregation Engine
@@ -1254,6 +1335,996 @@
       }
 
       // Render UI with aggregated profile
+
+      // =========================================================================
+      // CUSTOMIZABLE ESPORTS GAMER CARD ENGINE, SKIN UNLOCKER & HD PNG EXPORTER
+      // =========================================================================
+      const ESPORTS_CARD_SKINS = [
+        {
+          id: 'skin_stadium_classic',
+          storeItemId: null,
+          name: 'Stadium Emerald',
+          subtitle: 'Pro Turf Floodlight Banner (Default)',
+          icon: '🏟️',
+          coinCost: 0,
+          xpCost: 0,
+          eloMilestone: 0,
+          bgStops: ['#071710', '#0c291c', '#050c09'],
+          accentHex: '#81b64c',
+          secondaryHex: '#34d399',
+          borderCls: 'border-[#81b64c]',
+          bgCls: 'bg-gradient-to-br from-[#0b2217] via-[#0f1d16] to-[#090d0b]',
+          pillCls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        },
+        {
+          id: 'skin_neon_cyber',
+          storeItemId: 'banner_neon_cyber',
+          name: 'Neon Cyber',
+          subtitle: 'Synthwave Grid & Laser Cyan Banner',
+          icon: '🌆',
+          coinCost: 5000,
+          xpCost: 5000,
+          eloMilestone: 1550,
+          bgStops: ['#06152d', '#1b0b2e', '#050714'],
+          accentHex: '#22d3ee',
+          secondaryHex: '#f43f5e',
+          borderCls: 'border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.28)]',
+          bgCls: 'bg-gradient-to-br from-[#091e3a] via-[#1f0d38] to-[#090814]',
+          pillCls: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40'
+        },
+        {
+          id: 'skin_golden_trophy',
+          storeItemId: 'banner_golden_trophy',
+          name: 'Golden Trophy',
+          subtitle: '24K Championship Gold Foil Banner',
+          icon: '🏆',
+          coinCost: 9000,
+          xpCost: 9000,
+          eloMilestone: 1650,
+          bgStops: ['#291d06', '#3d2b08', '#120d04'],
+          accentHex: '#fbbf24',
+          secondaryHex: '#f59e0b',
+          borderCls: 'border-amber-400 shadow-[0_0_22px_rgba(251,191,36,0.3)]',
+          bgCls: 'bg-gradient-to-br from-[#2e2107] via-[#1f1708] to-[#110d06]',
+          pillCls: 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+        },
+        {
+          id: 'skin_emerald_matrix',
+          storeItemId: 'banner_emerald_matrix',
+          name: 'Emerald Matrix',
+          subtitle: 'Cybernetic Hex-Grid & Bio-Lime Banner',
+          icon: '🟢',
+          coinCost: 12500,
+          xpCost: 12500,
+          eloMilestone: 1700,
+          bgStops: ['#041f14', '#063322', '#020f0a'],
+          accentHex: '#10b981',
+          secondaryHex: '#a3e635',
+          borderCls: 'border-emerald-400 shadow-[0_0_22px_rgba(16,185,129,0.3)]',
+          bgCls: 'bg-gradient-to-br from-[#05291a] via-[#071f15] to-[#030d09]',
+          pillCls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        },
+        {
+          id: 'skin_obsidian_void',
+          storeItemId: 'banner_obsidian_void',
+          name: 'Obsidian Void',
+          subtitle: 'Deep Space Dark-Matter & Astral Nebula',
+          icon: '🌌',
+          coinCost: 15000,
+          xpCost: 15000,
+          eloMilestone: 1750,
+          bgStops: ['#160729', '#0d071c', '#05030a'],
+          accentHex: '#c084fc',
+          secondaryHex: '#ec4899',
+          borderCls: 'border-purple-400 shadow-[0_0_24px_rgba(192,132,252,0.32)]',
+          bgCls: 'bg-gradient-to-br from-[#1d0936] via-[#110921] to-[#07050c]',
+          pillCls: 'bg-purple-500/20 text-purple-300 border-purple-400/40'
+        },
+        {
+          id: 'skin_solar_inferno',
+          storeItemId: 'banner_solar_inferno',
+          name: 'Solar Inferno',
+          subtitle: 'Master 2000 Apex Magma Banner',
+          icon: '🔥',
+          coinCost: 35000,
+          xpCost: 35000,
+          eloMilestone: 2000,
+          bgStops: ['#2e0810', '#381207', '#120506'],
+          accentHex: '#fb7185',
+          secondaryHex: '#f97316',
+          borderCls: 'border-rose-500 shadow-[0_0_26px_rgba(244,63,94,0.35)]',
+          bgCls: 'bg-gradient-to-br from-[#330912] via-[#240e08] to-[#120607]',
+          pillCls: 'bg-rose-500/20 text-rose-300 border-rose-400/40'
+        },
+        {
+          id: 'skin_royal_amethyst',
+          storeItemId: 'banner_royal_amethyst',
+          name: 'Royal Amethyst',
+          subtitle: 'Imperial Diamond Prism & Crown Banner',
+          icon: '👑',
+          coinCost: 45000,
+          xpCost: 45000,
+          eloMilestone: 2000,
+          bgStops: ['#240736', '#3b0a45', '#0d0417'],
+          accentHex: '#e879f9',
+          secondaryHex: '#38bdf8',
+          borderCls: 'border-fuchsia-400 shadow-[0_0_26px_rgba(232,121,249,0.35)]',
+          bgCls: 'bg-gradient-to-br from-[#2a083d] via-[#1c0829] to-[#0a0312]',
+          pillCls: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-400/40'
+        }
+      ];
+
+      function getEsportsRankTierInfo(eloVal, peakVal) {
+        const curElo = Number(eloVal) || 1500;
+        const bestElo = Math.max(curElo, Number(peakVal) || 1500);
+        // Master is unlocked at 2000+ Elo; Grandmaster is explicitly On Wait!
+        if (curElo >= 2000 || bestElo >= 2000) {
+          return {
+            tier: 'MASTER',
+            badgeText: '🎖️ MASTER (2000+ ELO)',
+            shortBadge: '🎖️ MASTER',
+            gmWaitText: '⏳ Grandmaster: On Wait',
+            nextTierText: 'Pinnacle Active Rank (Grandmaster On Wait)',
+            colorHex: '#fbbf24',
+            pillClass: 'bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-400 text-slate-950 font-black border-amber-300'
+          };
+        }
+        if (curElo >= 1850) {
+          return {
+            tier: 'DIAMOND',
+            badgeText: '💎 DIAMOND ELITE',
+            shortBadge: '💎 DIAMOND',
+            gmWaitText: `🎯 Master at 2000 ELO (${2000 - curElo} to go) • ⏳ GM: On Wait`,
+            nextTierText: `${2000 - curElo} ELO to Master (2000)`,
+            colorHex: '#38bdf8',
+            pillClass: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/50'
+          };
+        }
+        if (curElo >= 1700) {
+          return {
+            tier: 'PLATINUM',
+            badgeText: '⚡ PLATINUM VANGUARD',
+            shortBadge: '⚡ PLATINUM',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1850 - curElo} ELO to Diamond • Master at 2000`,
+            colorHex: '#a855f7',
+            pillClass: 'bg-purple-500/20 text-purple-200 border-purple-400/50'
+          };
+        }
+        if (curElo >= 1600) {
+          return {
+            tier: 'GOLD',
+            badgeText: '🥇 GOLD CHALLENGER',
+            shortBadge: '🥇 GOLD',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1700 - curElo} ELO to Platinum • Master at 2000`,
+            colorHex: '#f59e0b',
+            pillClass: 'bg-amber-500/20 text-amber-200 border-amber-400/50'
+          };
+        }
+        if (curElo >= 1525) {
+          return {
+            tier: 'SILVER',
+            badgeText: '🥈 SILVER STRIKER',
+            shortBadge: '🥈 SILVER',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1600 - curElo} ELO to Gold • Master at 2000`,
+            colorHex: '#e2e8f0',
+            pillClass: 'bg-slate-700/60 text-slate-200 border-slate-500/50'
+          };
+        }
+        return {
+          tier: 'CONTENDER',
+          badgeText: '🥉 ARENA CONTENDER',
+          shortBadge: '🥉 CONTENDER',
+          gmWaitText: '🎖️ Master: 2000 ELO • ⏳ GM: On Wait',
+          nextTierText: `${Math.max(1, 2000 - curElo)} ELO to Master (2000 ELO) • GM On Wait`,
+          colorHex: '#34d399',
+          pillClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        };
+      }
+
+      function getActiveEsportsPlayerStats() {
+        let uname = 'PLAYER';
+        let flag = '🇮🇳';
+        let dial = '+91';
+        let countryName = 'India';
+        let rec = {};
+
+        try {
+          if (typeof STATE !== 'undefined' && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+            uname = String(STATE.myUsername).trim().toUpperCase();
+            flag = STATE.myCountryFlag || '🇮🇳';
+            dial = STATE.myCountryCode || '+91';
+            countryName = STATE.myCountryName || 'India';
+          } else {
+            const lastU = (localStorage.getItem('oddandeven_last_user_v1') || '').trim().toUpperCase();
+            if (lastU && lastU !== 'GUEST' && lastU !== 'PLAYER' && lastU !== 'YOU') {
+              uname = lastU;
+            }
+          }
+          const wRaw = localStorage.getItem('oddandeven_worldwide_players_v1');
+          const wMap = wRaw ? JSON.parse(wRaw) : {};
+          if (wMap && wMap[uname]) {
+            rec = typeof sanitizeRecordForFreshEpoch === 'function' ? sanitizeRecordForFreshEpoch(wMap[uname]) : wMap[uname];
+          } else if (typeof STATE !== 'undefined' && STATE.humanPlayers && STATE.humanPlayers[uname]) {
+            rec = STATE.humanPlayers[uname];
+          }
+        } catch (e) {}
+
+        const elo = Number(rec.elo) || (typeof STATE !== 'undefined' && Number(STATE.eloRating)) || 1500;
+        const peak = Math.max(elo, Number(rec.peak) || 1500);
+        const wins = Number(rec.wins) || 0;
+        const losses = Number(rec.losses) || 0;
+        const matches = Math.max(Number(rec.matches) || 0, wins + losses);
+        const wlRatio = losses > 0 ? (wins / losses).toFixed(2) : (wins > 0 ? `${wins}.00` : '0.00');
+        const winPct = matches > 0 ? Math.round((wins / matches) * 100) : 0;
+        const totalRuns = Number(rec.totalRuns) || 0;
+        const highScore = Number(rec.highScore) || 0;
+        const wicketsTaken = Number(rec.wicketsTaken) || 0;
+
+        // Win streak
+        let winStreak = Math.max(Number(rec.currentWinStreak) || 0, Number(rec.maxWinStreak) || 0);
+        if (winStreak === 0 && wins > 0 && losses === 0) winStreak = wins;
+
+        // Favorite number from telemetry
+        let favNum = 0;
+        let favCount = 0;
+        let totalPicks = 0;
+        try {
+          const fRaw = localStorage.getItem('oddandeven_number_frequency_' + uname);
+          if (fRaw) {
+            const freq = JSON.parse(fRaw) || {};
+            for (let n = 1; n <= 10; n++) {
+              const c = Number(freq[n]) || 0;
+              totalPicks += c;
+              if (c > favCount) {
+                favCount = c;
+                favNum = n;
+              }
+            }
+          }
+        } catch (e) {}
+
+        // Achievements & Match Coins
+        let achUnlocked = 0;
+        let achXp = 0;
+        try {
+          if (typeof computePlayerAchievements === 'function') {
+            const list = computePlayerAchievements(rec);
+            const unl = list.filter((a) => a.current >= a.target);
+            achUnlocked = unl.length;
+            achXp = unl.reduce((s, a) => s + a.xp, 0);
+          }
+        } catch (e) {}
+
+        const earnedCoins = (totalRuns * 2) + (wicketsTaken * 25) + (wins * 50) + (matches * 20) + achXp;
+        let spentCoins = 0;
+        try {
+          spentCoins = parseInt(localStorage.getItem('oddandeven_spent_coins_' + uname) || '0', 10) || 0;
+        } catch (e) {}
+        const availableCoins = Math.max(0, earnedCoins - spentCoins);
+
+        // Unlocked & Equipped Skins (Synced with XP Store BANNERS inventory)
+        let unlockedSkins = ['skin_stadium_classic'];
+        try {
+          const uRaw = localStorage.getItem('oddandeven_gamercard_unlocked_' + uname);
+          if (uRaw) {
+            const parsed = JSON.parse(uRaw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((s) => { if (!unlockedSkins.includes(s)) unlockedSkins.push(s); });
+            }
+          }
+          const rawStoreInv = localStorage.getItem('oddandeven_store_inventory_' + uname);
+          if (rawStoreInv) {
+            const invArr = JSON.parse(rawStoreInv);
+            if (Array.isArray(invArr)) {
+              ESPORTS_CARD_SKINS.forEach((sk) => {
+                if (sk.storeItemId && invArr.includes(sk.storeItemId) && !unlockedSkins.includes(sk.id)) {
+                  unlockedSkins.push(sk.id);
+                }
+              });
+            }
+          }
+        } catch (e) {}
+        // Auto-unlock any skin whose Elo milestone is met!
+        ESPORTS_CARD_SKINS.forEach((sk) => {
+          if (peak >= sk.eloMilestone && !unlockedSkins.includes(sk.id)) {
+            unlockedSkins.push(sk.id);
+          }
+        });
+
+        let equippedSkinId = 'skin_stadium_classic';
+        try {
+          const eq = localStorage.getItem('oddandeven_gamercard_skin_' + uname);
+          if (eq && unlockedSkins.includes(eq)) equippedSkinId = eq;
+        } catch (e) {}
+        const equippedSkin = ESPORTS_CARD_SKINS.find((s) => s.id === equippedSkinId) || ESPORTS_CARD_SKINS[0];
+
+        // Custom Callsign & Emblem
+        let customMeta = { callsign: 'ARENA STRIKER', emblem: '🏏' };
+        try {
+          const mRaw = localStorage.getItem('oddandeven_gamercard_meta_' + uname);
+          if (mRaw) {
+            const parsedM = JSON.parse(mRaw);
+            if (parsedM && typeof parsedM === 'object') {
+              customMeta = Object.assign(customMeta, parsedM);
+            }
+          }
+          // Also check custom divine card title if set
+          const cRaw = localStorage.getItem('oddandeven_custom_card_' + uname);
+          if (cRaw && customMeta.callsign === 'ARENA STRIKER') {
+            const parsedC = JSON.parse(cRaw);
+            if (parsedC && parsedC.title) customMeta.callsign = parsedC.title;
+          }
+        } catch (e) {}
+
+        const rankInfo = getEsportsRankTierInfo(elo, peak);
+
+        return {
+          username: uname,
+          flag: rec.countryFlag || flag,
+          dial: rec.countryCode || dial,
+          countryName: rec.countryName || countryName,
+          elo,
+          peak,
+          wins,
+          losses,
+          matches,
+          wlRatio,
+          winPct,
+          winStreak,
+          totalRuns,
+          totalBalls: Number(rec.totalBalls) || 0,
+          highScore,
+          wicketsTaken,
+          favNum,
+          favCount,
+          totalPicks,
+          achUnlocked,
+          earnedCoins,
+          spentCoins,
+          availableCoins,
+          unlockedSkins,
+          equippedSkinId,
+          equippedSkin,
+          callsign: customMeta.callsign || 'ARENA STRIKER',
+          emblem: customMeta.emblem || '🏏',
+          rankInfo
+        };
+      }
+
+      function renderEsportsCardToCanvas(canvasEl, overrideSkinId) {
+        if (!canvasEl || typeof canvasEl.getContext !== 'function') return;
+        const ctx = canvasEl.getContext('2d');
+        if (!ctx) return;
+
+        const st = getActiveEsportsPlayerStats();
+        const skin = (overrideSkinId && ESPORTS_CARD_SKINS.find((s) => s.id === overrideSkinId)) || st.equippedSkin || ESPORTS_CARD_SKINS[0];
+        const W = canvasEl.width || 1200;
+        const H = canvasEl.height || 675;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // 1. Multi-Stop Rich Background Gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+        bgGrad.addColorStop(0, skin.bgStops[0]);
+        bgGrad.addColorStop(0.52, skin.bgStops[1]);
+        bgGrad.addColorStop(1, skin.bgStops[2]);
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // 2. Skin-Specific Procedural Esports Artwork & Holographic Light Beams
+        ctx.save();
+        const primaryGlow = ctx.createRadialGradient(W * 0.82, H * 0.24, 15, W * 0.82, H * 0.24, 480);
+        primaryGlow.addColorStop(0, skin.accentHex + '44');
+        primaryGlow.addColorStop(0.5, (skin.secondaryHex || skin.accentHex) + '18');
+        primaryGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = primaryGlow;
+        ctx.fillRect(0, 0, W, H);
+
+        const secondaryGlow = ctx.createRadialGradient(W * 0.16, H * 0.82, 10, W * 0.16, H * 0.82, 380);
+        secondaryGlow.addColorStop(0, (skin.secondaryHex || skin.accentHex) + '30');
+        secondaryGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = secondaryGlow;
+        ctx.fillRect(0, 0, W, H);
+
+        if (skin.id === 'skin_neon_cyber' || skin.id === 'skin_emerald_matrix') {
+          ctx.strokeStyle = skin.id === 'skin_emerald_matrix' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(34, 211, 238, 0.15)';
+          ctx.lineWidth = 1.25;
+          for (let x = 0; x <= W; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, H);
+            ctx.stroke();
+          }
+          for (let y = 0; y <= H; y += 42) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(W, y);
+            ctx.stroke();
+          }
+        } else if (skin.id === 'skin_golden_trophy' || skin.id === 'skin_royal_amethyst') {
+          ctx.strokeStyle = skin.id === 'skin_royal_amethyst' ? 'rgba(232, 121, 249, 0.14)' : 'rgba(251, 191, 36, 0.14)';
+          ctx.lineWidth = 2;
+          for (let r = 70; r <= 630; r += 70) {
+            ctx.beginPath();
+            ctx.arc(W * 0.84, H * 0.22, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        } else if (skin.id === 'skin_obsidian_void') {
+          ctx.fillStyle = 'rgba(255,255,255,0.42)';
+          for (let i = 0; i < 56; i++) {
+            const sx = ((i * 197) % (W - 80)) + 40;
+            const sy = ((i * 131) % (H - 80)) + 40;
+            ctx.beginPath();
+            ctx.arc(sx, sy, (i % 3) + 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (skin.id === 'skin_solar_inferno') {
+          ctx.strokeStyle = 'rgba(251, 113, 133, 0.15)';
+          ctx.lineWidth = 2.5;
+          for (let i = 0; i < 10; i++) {
+            ctx.beginPath();
+            ctx.arc(W * 0.82, H * 0.28, 55 + i * 48, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        } else {
+          ctx.strokeStyle = 'rgba(163, 217, 108, 0.11)';
+          ctx.lineWidth = 1.5;
+          for (let y = 55; y < H; y += 48) {
+            ctx.beginPath();
+            ctx.moveTo(28, y);
+            ctx.lineTo(W - 28, y);
+            ctx.stroke();
+          }
+        }
+
+        // Subtle Diagonal Holographic Foil Sheen
+        const sheenGrad = ctx.createLinearGradient(0, 0, W, H);
+        sheenGrad.addColorStop(0, 'rgba(255,255,255,0)');
+        sheenGrad.addColorStop(0.46, 'rgba(255,255,255,0.03)');
+        sheenGrad.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+        sheenGrad.addColorStop(0.54, 'rgba(255,255,255,0.02)');
+        sheenGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sheenGrad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+
+        // 3. Pro Esports Outer Frame & Glowing Corner HUD Brackets
+        ctx.save();
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(18, 18, W - 36, H - 36, 26);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(28, 28, W - 56, H - 56, 20);
+        ctx.stroke();
+
+        // Corner HUD Brackets
+        const bLen = 38;
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 6;
+        // Top-Left
+        ctx.beginPath(); ctx.moveTo(18, 18 + bLen); ctx.lineTo(18, 18); ctx.lineTo(18 + bLen, 18); ctx.stroke();
+        // Top-Right
+        ctx.beginPath(); ctx.moveTo(W - 18 - bLen, 18); ctx.lineTo(W - 18, 18); ctx.lineTo(W - 18, 18 + bLen); ctx.stroke();
+        // Bottom-Left
+        ctx.beginPath(); ctx.moveTo(18, H - 18 - bLen); ctx.lineTo(18, H - 18); ctx.lineTo(18 + bLen, H - 18); ctx.stroke();
+        // Bottom-Right
+        ctx.beginPath(); ctx.moveTo(W - 18 - bLen, H - 18); ctx.lineTo(W - 18, H - 18); ctx.lineTo(W - 18, H - 18 - bLen); ctx.stroke();
+        ctx.restore();
+
+        // 4. Top Broadcast Header Strip
+        ctx.fillStyle = 'rgba(6, 8, 12, 0.72)';
+        ctx.beginPath();
+        ctx.roundRect(36, 36, W - 72, 62, 16);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = skin.accentHex;
+        ctx.font = '900 20px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.fillText('🏏 ODDANDEVEN.IN  •  PRO ESPORTS GAMER CARD', 58, 74);
+
+        const cardHashId = String((st.username || 'PLAYER').split('').reduce((a, c) => a + c.charCodeAt(0) * 37, 1049) % 9000 + 1000);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '800 16px "JetBrains Mono", monospace';
+        ctx.fillText(`${skin.icon} SKIN: ${skin.name.toUpperCase()}  |  ID #${cardHashId}`, W - 58, 73);
+        ctx.textAlign = 'left';
+
+        // 5. Player Hero Identity Pod (Left) + Master 2000 Rank & Progress Box (Right)
+        // Left Avatar Shield Pod
+        ctx.fillStyle = 'rgba(8, 10, 15, 0.78)';
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(44, 114, 152, 156, 26);
+        ctx.fill();
+        ctx.stroke();
+
+        // Inner Avatar Ring
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(120, 174, 44, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.font = '58px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(st.emblem || '🏏', 120, 194);
+
+        // Nationality Pill inside Avatar Pod
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.beginPath();
+        ctx.roundRect(58, 228, 124, 30, 10);
+        ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '800 16px "JetBrains Mono", monospace';
+        ctx.fillText(`${st.flag} ${st.dial}`, 120, 249);
+        ctx.textAlign = 'left';
+
+        // Player Username & Verified Badge
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 48px "Space Grotesk", Outfit, Inter, sans-serif';
+        const dispUname = (st.username || 'PLAYER').slice(0, 15);
+        ctx.fillText(`${dispUname} ⭐`, 218, 166);
+
+        // Callsign Metallic Pill
+        const callsignText = `⚡ ${(st.callsign || 'ARENA CONTENDER').toUpperCase()}`;
+        ctx.font = '800 20px "Space Grotesk", Outfit, Inter, sans-serif';
+        const csWidth = Math.min(430, Math.max(210, ctx.measureText(callsignText).width + 32));
+        ctx.fillStyle = skin.accentHex + '24';
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(218, 182, csWidth, 38, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = skin.accentHex;
+        ctx.fillText(callsignText, 234, 208);
+
+        // Sub-meta line: Achievements, Active Streak & Multiplayer Tag
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 16px "JetBrains Mono", monospace';
+        ctx.fillText(`🏅 ${st.achUnlocked}/30 Achievements  •  🔥 Streak: ${st.winStreak}  •  ⚔️ Ranked 1v1`, 218, 252);
+
+        // Right Rank & Master 2000 Progress Pod
+        const rankPodX = W - 446;
+        const rankPodW = 402;
+        ctx.fillStyle = 'rgba(8, 10, 15, 0.82)';
+        ctx.strokeStyle = st.rankInfo.colorHex;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(rankPodX, 114, rankPodW, 156, 26);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = st.rankInfo.colorHex;
+        ctx.font = '900 22px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(st.rankInfo.badgeText, rankPodX + rankPodW / 2, 150);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 34px "JetBrains Mono", monospace';
+        ctx.fillText(`${st.elo} ELO  (PEAK ${st.peak})`, rankPodX + rankPodW / 2, 192);
+
+        // Master 2000 Progress Bar inside Rank Pod
+        const barX = rankPodX + 28;
+        const barY = 208;
+        const barW = rankPodW - 56;
+        const barH = 14;
+        const masterPct = Math.max(0.08, Math.min(1, (st.elo - 1400) / (2000 - 1400)));
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, barH, 7);
+        ctx.fill();
+
+        const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+        barGrad.addColorStop(0, skin.accentHex);
+        barGrad.addColorStop(1, '#fbbf24');
+        ctx.fillStyle = barGrad;
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, Math.round(barW * masterPct), barH, 7);
+        ctx.fill();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '800 13px "JetBrains Mono", monospace';
+        ctx.fillText('🎖️ MASTER TIER: 2000 ELO  •  ⏳ GRANDMASTER: ON WAIT', rankPodX + rankPodW / 2, 248);
+        ctx.textAlign = 'left';
+
+        // 6. 6 PRO TELEMETRY STAT PODS (3 Columns x 2 Rows for Crisp Readability)
+        const srVal = st.totalBalls > 0 ? ((st.totalRuns / st.totalBalls) * 100).toFixed(1) : '0.0';
+        const favPct = st.favNum > 0 ? Math.round((st.favCount / Math.max(1, st.totalPicks)) * 100) : 0;
+        const statPods = [
+          {
+            label: '🎖️ OFFICIAL RANKED ELO',
+            value: `${st.elo} ELO`,
+            sub: `Peak Rating: ${st.peak} ELO • ${st.rankInfo.shortBadge}`,
+            accent: '#fbbf24',
+            pct: masterPct
+          },
+          {
+            label: '⚔️ MULTIPLAYER W/L RATIO',
+            value: `${st.wlRatio} RATIO`,
+            sub: `${st.wins}W – ${st.losses}L (${st.winPct}% Win Rate • ${st.matches} MP)`,
+            accent: '#34d399',
+            pct: Math.min(1, (Number(st.winPct) || 0) / 100)
+          },
+          {
+            label: '🏏 MULTIPLAYER RUNS SCORED',
+            value: `${st.totalRuns.toLocaleString()} RUNS`,
+            sub: `High Score: ${st.highScore}* • Strike Rate: ${srVal}`,
+            accent: '#38bdf8',
+            pct: Math.min(1, st.totalRuns / 500)
+          },
+          {
+            label: '⚾ MULTIPLAYER WICKETS',
+            value: `${st.wicketsTaken} WKTS`,
+            sub: `1v1 Wickets Claimed • Best Streak: 🔥 ${st.winStreak}`,
+            accent: '#f43f5e',
+            pct: Math.min(1, st.wicketsTaken / 25)
+          },
+          {
+            label: '🎯 FAVORITE HAND NUMBER',
+            value: st.favNum > 0 ? `NUMBER #${st.favNum}` : 'NO PICKS YET',
+            sub: st.favNum > 0 ? `Picked ${st.favCount}x (${favPct}% Frequency)` : 'Play turns on pitch to track',
+            accent: '#c084fc',
+            pct: st.favNum > 0 ? Math.min(1, favPct / 50) : 0.08
+          },
+          {
+            label: '🏆 ACHIEVEMENTS & STORE',
+            value: `${st.achUnlocked} / 30 BADGES`,
+            sub: `Store Skins Unlocked: ${st.unlockedSkins.length} • Verified Pro`,
+            accent: '#a3d96c',
+            pct: Math.min(1, st.achUnlocked / 30)
+          }
+        ];
+
+        const podW = 356;
+        const podH = 128;
+        const gapX = 22;
+        const gapY = 18;
+        const startX = 44;
+        const startY = 292;
+
+        statPods.forEach((pod, idx) => {
+          const col = idx % 3;
+          const row = Math.floor(idx / 3);
+          const px = startX + col * (podW + gapX);
+          const py = startY + row * (podH + gapY);
+
+          ctx.fillStyle = 'rgba(10, 13, 19, 0.82)';
+          ctx.strokeStyle = pod.accent + '88';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(px, py, podW, podH, 18);
+          ctx.fill();
+          ctx.stroke();
+
+          // Left Accent Bar inside Pod
+          ctx.fillStyle = pod.accent;
+          ctx.beginPath();
+          ctx.roundRect(px + 10, py + 16, 5, podH - 32, 3);
+          ctx.fill();
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '800 13px "JetBrains Mono", monospace';
+          ctx.fillText(pod.label, px + 26, py + 32);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 28px "JetBrains Mono", monospace';
+          ctx.fillText(pod.value, px + 26, py + 70);
+
+          ctx.fillStyle = pod.accent;
+          ctx.font = '700 13px Inter, sans-serif';
+          ctx.fillText(pod.sub, px + 26, py + 96);
+
+          // Mini Telemetry Progress Bar at bottom of Pod
+          const pBarX = px + 26;
+          const pBarY = py + 108;
+          const pBarW = podW - 44;
+          ctx.fillStyle = 'rgba(255,255,255,0.08)';
+          ctx.beginPath();
+          ctx.roundRect(pBarX, pBarY, pBarW, 6, 3);
+          ctx.fill();
+
+          ctx.fillStyle = pod.accent;
+          ctx.beginPath();
+          ctx.roundRect(pBarX, pBarY, Math.max(12, Math.round(pBarW * (pod.pct || 0.1))), 6, 3);
+          ctx.fill();
+        });
+
+        // 7. Bottom Esports Broadcast Footer Bar
+        ctx.fillStyle = 'rgba(6, 8, 12, 0.78)';
+        ctx.beginPath();
+        ctx.roundRect(36, H - 82, W - 72, 48, 14);
+        ctx.fill();
+
+        ctx.fillStyle = '#a3d96c';
+        ctx.font = '800 15px "JetBrains Mono", monospace';
+        ctx.fillText(`✓ MULTIPLAYER LEADERBOARD VERIFIED  •  RANKED MATCHES: ${st.matches}  •  SKIN: ${skin.name.toUpperCase()}`, 56, H - 52);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 15px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.fillText('OddAndEven.in  •  Unlock Skins in Store (store.html)', W - 56, H - 52);
+        ctx.textAlign = 'left';
+      }
+
+      function showGamerCardToast(msg, isSuccess = true) {
+        const toastIds = ['esportsCardFeedbackToast', 'hcProfGamerCardToast'];
+        toastIds.forEach((id) => {
+          const elToast = document.getElementById(id);
+          if (elToast) {
+            elToast.textContent = msg;
+            elToast.className = `p-2.5 rounded-xl text-xs font-bold border text-center transition ${
+              isSuccess
+                ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200'
+                : 'bg-rose-500/20 border-rose-400/50 text-rose-200'
+            }`;
+            elToast.classList.remove('hidden');
+          }
+        });
+      }
+
+      function downloadEsportsPlayerCard(canvasId) {
+        const c = document.getElementById(canvasId || 'esportsGamerCardCanvas') || document.getElementById('hcProfileGamerCardCanvas');
+        if (!c) return;
+        renderEsportsCardToCanvas(c);
+        const st = getActiveEsportsPlayerStats();
+        try {
+          const dataUrl = c.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `OddAndEven_GamerCard_${st.username}.png`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showGamerCardToast(`📥 Downloaded OddAndEven_GamerCard_${st.username}.png! Ready to post on Discord, Twitter/X, or WhatsApp.`);
+        } catch (e) {
+          showGamerCardToast('Could not export PNG directly — try Copy Card Image.', false);
+        }
+      }
+
+      async function copyEsportsPlayerCardImage(canvasId) {
+        const c = document.getElementById(canvasId || 'esportsGamerCardCanvas') || document.getElementById('hcProfileGamerCardCanvas');
+        if (!c) return;
+        renderEsportsCardToCanvas(c);
+        const st = getActiveEsportsPlayerStats();
+        const shareSummary = `🏏 ${st.flag} ${st.username} "${st.callsign}" — ${st.rankInfo.badgeText} (${st.elo} ELO • ⏳ Grandmaster: On Wait) | W/L: ${st.wlRatio} (${st.wins}W-${st.losses}L) | Runs: ${st.totalRuns} (High ${st.highScore}*) | Fav #: ${st.favNum > 0 ? '#' + st.favNum : '—'} | Trophies: ${st.achUnlocked}/30 on OddAndEven.in!`;
+        try {
+          if (navigator.clipboard && typeof window.ClipboardItem !== 'undefined' && c.toBlob) {
+            c.toBlob(async (blob) => {
+              if (!blob) return;
+              try {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                showGamerCardToast('📋 Card Image copied to clipboard! Press Ctrl+V / Paste directly in Discord, Twitter/X, or WhatsApp!');
+              } catch (clipErr) {
+                try {
+                  await navigator.clipboard.writeText(shareSummary);
+                  showGamerCardToast('📋 Card Flex Summary copied to clipboard! (Also click Download PNG to attach image)');
+                } catch (e2) {}
+              }
+            }, 'image/png');
+            return;
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareSummary);
+            showGamerCardToast('📋 Card Flex Summary copied! Ready to paste into Discord, Twitter/X, or WhatsApp!');
+          }
+        } catch (e) {
+          showGamerCardToast('📋 Ready to share! Click Download Player Card to save the HD PNG.');
+        }
+      }
+
+      function shareEsportsPlayerCardSocial(platform) {
+        const st = getActiveEsportsPlayerStats();
+        const text = `🏏 Check out my OddAndEven.in Esports Gamer Card!\n${st.flag} ${st.username} "${st.callsign}"\n🎖️ Rank: ${st.rankInfo.badgeText} (${st.elo} ELO • ⏳ GM: On Wait)\n⚖️ W/L Ratio: ${st.wlRatio} (${st.wins}W–${st.losses}L) • 🔥 Streak: ${st.winStreak}\n🏏 Total Scored: ${st.totalRuns} Runs (High: ${st.highScore}*)\n🎯 Fav Number: ${st.favNum > 0 ? '#' + st.favNum : '—'} • 🏆 ${st.achUnlocked}/30 Trophies`;
+        if (platform === 'twitter') {
+          const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+          window.open(url, '_blank', 'noopener,noreferrer');
+          showGamerCardToast('🐦 Opened X / Twitter composer! Tip: Click "Copy Card Image" to paste your card graphic into the tweet.');
+        } else if (platform === 'whatsapp') {
+          const url = 'https://wa.me/?text=' + encodeURIComponent(text);
+          window.open(url, '_blank', 'noopener,noreferrer');
+          showGamerCardToast('📲 Opened WhatsApp share! You can also attach your downloaded Gamer Card PNG.');
+        } else if (platform === 'discord') {
+          copyEsportsPlayerCardImage('esportsGamerCardCanvas');
+          showGamerCardToast('💬 Copied Gamer Card for Discord! Open any Discord channel and press Ctrl+V (Paste)!');
+        }
+      }
+
+      function unlockOrEquipGamerCardSkin(skinId) {
+        const st = getActiveEsportsPlayerStats();
+        const skin = ESPORTS_CARD_SKINS.find((s) => s.id === skinId);
+        if (!skin) return;
+        const uname = st.username;
+        const isUnlocked = st.unlockedSkins.includes(skin.id) || st.peak >= skin.eloMilestone;
+        if (isUnlocked) {
+          try {
+            localStorage.setItem('oddandeven_gamercard_skin_' + uname, skin.id);
+          } catch (e) {}
+          showGamerCardToast(`✨ Equipped "${skin.name}" Esports Banner Skin!`);
+          updateAllGamerCardUI();
+          return;
+        }
+        // Check if player has enough Match Coins
+        if (st.availableCoins >= skin.coinCost) {
+          const nextUnl = st.unlockedSkins.concat([skin.id]);
+          try {
+            localStorage.setItem('oddandeven_gamercard_unlocked_' + uname, JSON.stringify(nextUnl));
+            localStorage.setItem('oddandeven_spent_coins_' + uname, String(st.spentCoins + skin.coinCost));
+            localStorage.setItem('oddandeven_gamercard_skin_' + uname, skin.id);
+          } catch (e) {}
+          showGamerCardToast(`🎉 Unlocked & Equipped "${skin.name}" for ${skin.coinCost} Match Coins!`);
+          updateAllGamerCardUI();
+        } else {
+          showGamerCardToast(`🔒 Need ${skin.coinCost} Match Coins (Available: ${st.availableCoins}) OR reach ${skin.eloMilestone} Elo Milestone to unlock "${skin.name}"!`, false);
+        }
+      }
+
+      function saveGamerCardCustomMeta(callsignInputId, emblemVal) {
+        const st = getActiveEsportsPlayerStats();
+        const uname = st.username;
+        const cEl = document.getElementById(callsignInputId || 'gamerCardCallsignInput');
+        const nextCallsign = (cEl && cEl.value.trim()) ? cEl.value.trim().slice(0, 26) : st.callsign;
+        const nextEmblem = emblemVal || st.emblem || '🏏';
+        try {
+          localStorage.setItem('oddandeven_gamercard_meta_' + uname, JSON.stringify({
+            callsign: nextCallsign,
+            emblem: nextEmblem
+          }));
+        } catch (e) {}
+        showGamerCardToast(`✨ Updated Gamer Card Callsign ("${nextCallsign}") & Emblem (${nextEmblem})!`);
+        updateAllGamerCardUI();
+      }
+
+      function updateAllGamerCardUI() {
+        const st = getActiveEsportsPlayerStats();
+        const skin = st.equippedSkin;
+
+        // 1. Update Pitch Player 1 Gamer Card Mini-Banner (#p1GamerCardMiniStrip)
+        const p1Strip = document.getElementById('p1GamerCardMiniStrip');
+        if (p1Strip) {
+          p1Strip.className = `mt-1.5 p-1.5 sm:p-2 rounded-xl border transition-all flex flex-wrap items-center justify-between gap-1.5 ${skin.bgCls} ${skin.borderCls}`;
+          p1Strip.innerHTML = `
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="text-sm sm:text-base shrink-0">${st.emblem}</span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1 flex-wrap">
+                  <span class="px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-mono-num font-black uppercase border ${st.rankInfo.pillClass}">${st.rankInfo.shortBadge} • ${st.elo}</span>
+                  <span class="text-[8px] font-mono-num text-amber-300 font-bold hidden sm:inline">⏳ GM: On Wait</span>
+                </div>
+                <div class="text-[8px] sm:text-[9px] font-mono-num text-slate-300 truncate mt-0.5">
+                  W/L: <strong class="text-emerald-300">${st.wlRatio}</strong> • Runs: <strong class="text-cyan-300">${st.totalRuns}</strong> • Fav: <strong class="text-amber-300">${st.favNum > 0 ? '#' + st.favNum : '—'}</strong>
+                </div>
+              </div>
+            </div>
+            <button type="button" onclick="window.openEsportsGamerCardModal && window.openEsportsGamerCardModal()" class="px-2 py-1 rounded-lg text-[8px] sm:text-[9px] font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow shrink-0 transition">
+              🪪 Card
+            </button>
+          `;
+        }
+
+        // 2. Update Sidebar Player Card Live Badges
+        const sbCard = document.getElementById('sidebarPlayerCard');
+        if (sbCard) {
+          sbCard.className = `block w-full p-2.5 sm:p-3 rounded-2xl border transition-all duration-300 relative overflow-hidden group shadow-md cursor-pointer ${skin.bgCls} ${skin.borderCls}`;
+        }
+        const sbTierPill = document.getElementById('sidebarCardTierPill');
+        if (sbTierPill) {
+          sbTierPill.textContent = `${st.rankInfo.shortBadge} • ${st.elo}`;
+          sbTierPill.className = `px-1.5 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider border shrink-0 ${st.rankInfo.pillClass}`;
+        }
+        const sbTitle = document.getElementById('sidebarCardTitle');
+        if (sbTitle) {
+          sbTitle.textContent = `${st.emblem} ${st.callsign} (${skin.name})`;
+        }
+        const sbRunsWkts = document.getElementById('sidebarCardRunsWkts');
+        if (sbRunsWkts) {
+          sbRunsWkts.textContent = `W/L ${st.wlRatio} • ${st.totalRuns} R • Fav ${st.favNum > 0 ? '#' + st.favNum : '—'}`;
+        }
+
+        // 3. Render Skins Selector Grid inside Modal & Profile Studio
+        ['esportsCardSkinsGrid', 'hcProfSkinsGrid'].forEach((gridId) => {
+          const gridEl = document.getElementById(gridId);
+          if (!gridEl) return;
+          gridEl.innerHTML = ESPORTS_CARD_SKINS.map((sk) => {
+            const isUnlocked = st.unlockedSkins.includes(sk.id) || st.peak >= sk.eloMilestone;
+            const isEquipped = st.equippedSkinId === sk.id;
+            let btnLabel = '';
+            let btnCls = '';
+            if (isEquipped) {
+              btnLabel = '✓ Equipped Banner';
+              btnCls = 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/60';
+            } else if (isUnlocked) {
+              btnLabel = '⚡ Equip Skin';
+              btnCls = 'bg-amber-400 hover:bg-amber-300 text-slate-950 font-black';
+            } else {
+              btnLabel = `🔒 ${sk.coinCost} Coins / ${sk.eloMilestone} Elo`;
+              btnCls = 'bg-black/50 hover:bg-black/70 text-amber-300 border border-amber-500/40';
+            }
+            return `
+              <div class="p-3 rounded-2xl border transition flex flex-col justify-between gap-2 ${sk.bgCls} ${isEquipped ? sk.borderCls : 'border-white/10'}">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-xl shrink-0">${sk.icon}</span>
+                    <div class="min-w-0">
+                      <div class="text-xs font-black text-white truncate">${sk.name}</div>
+                      <div class="text-[10px] text-slate-300 truncate">${sk.subtitle}</div>
+                    </div>
+                  </div>
+                  <span class="px-1.5 py-0.5 rounded text-[8px] font-mono-num font-bold border shrink-0 ${sk.pillCls}">
+                    ${sk.eloMilestone}+ ELO
+                  </span>
+                </div>
+                <button type="button" onclick="window.unlockOrEquipGamerCardSkin && window.unlockOrEquipGamerCardSkin('${sk.id}')" class="w-full py-1.5 px-2.5 rounded-xl text-[10px] font-brand font-extrabold transition ${btnCls}">
+                  ${btnLabel}
+                </button>
+              </div>
+            `;
+          }).join('');
+        });
+
+        // 4. Update Modal Live Badges & Coin Counter
+        const coinsBadge = document.getElementById('gamerCardCoinsBalance');
+        if (coinsBadge) coinsBadge.textContent = `${st.availableCoins.toLocaleString()} Match Coins`;
+        const profCoinsBadge = document.getElementById('hcProfGamerCardCoins');
+        if (profCoinsBadge) profCoinsBadge.textContent = `${st.availableCoins.toLocaleString()} Match Coins`;
+
+        const rankBannerEl = document.getElementById('gamerCardLiveRankPill');
+        if (rankBannerEl) {
+          rankBannerEl.textContent = `${st.rankInfo.badgeText} • ⏳ Grandmaster: On Wait`;
+        }
+
+        // 5. Render HD Canvases
+        const modalCanvas = document.getElementById('esportsGamerCardCanvas');
+        if (modalCanvas) renderEsportsCardToCanvas(modalCanvas);
+        const profCanvas = document.getElementById('hcProfileGamerCardCanvas');
+        if (profCanvas) renderEsportsCardToCanvas(profCanvas);
+      }
+
+      function openEsportsGamerCardModal() {
+        const m = document.getElementById('esportsGamerCardModal');
+        if (!m) return;
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+        const st = getActiveEsportsPlayerStats();
+        const inp = document.getElementById('gamerCardCallsignInput');
+        if (inp) inp.value = st.callsign;
+        updateAllGamerCardUI();
+      }
+
+      function closeEsportsGamerCardModal() {
+        const m = document.getElementById('esportsGamerCardModal');
+        if (!m) return;
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+
+      try {
+        window.ESPORTS_CARD_SKINS = ESPORTS_CARD_SKINS;
+        window.getEsportsRankTierInfo = getEsportsRankTierInfo;
+        window.getActiveEsportsPlayerStats = getActiveEsportsPlayerStats;
+        window.renderEsportsCardToCanvas = renderEsportsCardToCanvas;
+        window.downloadEsportsPlayerCard = downloadEsportsPlayerCard;
+        window.copyEsportsPlayerCardImage = copyEsportsPlayerCardImage;
+        window.shareEsportsPlayerCardSocial = shareEsportsPlayerCardSocial;
+        window.unlockOrEquipGamerCardSkin = unlockOrEquipGamerCardSkin;
+        window.saveGamerCardCustomMeta = saveGamerCardCustomMeta;
+        window.updateAllGamerCardUI = updateAllGamerCardUI;
+        window.openEsportsGamerCardModal = openEsportsGamerCardModal;
+        window.closeEsportsGamerCardModal = closeEsportsGamerCardModal;
+      } catch (e) {}
+
       function renderProfile() {
         const data = aggregateUserProfile();
 
@@ -1603,6 +2674,12 @@
             });
           });
         }
+        try {
+          if (typeof updateAllGamerCardUI === 'function') updateAllGamerCardUI();
+          const stGc = typeof getActiveEsportsPlayerStats === 'function' ? getActiveEsportsPlayerStats() : null;
+          const inlineInp = document.getElementById('profInlineCallsignInput');
+          if (inlineInp && stGc && !inlineInp.value) inlineInp.value = stGc.callsign || '';
+        } catch (e) {}
 
         // 3. KPI Summaries
         document.getElementById('careerMatchesBadge').textContent = `${data.totalMatches} Matches Total`;
@@ -1787,5 +2864,157 @@
       renderProfile();
     })();
   </script>
+
+  <!-- =========================================================================
+       CUSTOMIZABLE ESPORTS GAMER CARD STUDIO & SHAREABLE HD EXPORT MODAL
+       ========================================================================= -->
+  <div
+    id="esportsGamerCardModal"
+    class="fixed inset-0 z-[80] hidden items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="esportsGamerCardModalTitle"
+  >
+    <div class="relative w-full max-w-4xl rounded-3xl bg-gradient-to-b from-[#181a20] via-[#121318] to-[#0b0c10] border border-amber-400/50 shadow-[0_25px_90px_rgba(0,0,0,0.95)] overflow-hidden text-slate-100 max-h-[92vh] flex flex-col animate-pop">
+      <div class="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-amber-400 to-purple-500 shrink-0"></div>
+
+      <!-- Modal Header -->
+      <div class="px-4 sm:px-6 py-3.5 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-xl shadow">🪪</span>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="esportsGamerCardModalTitle" class="font-brand text-base sm:text-xl font-black text-white">Esports Gamer Card Studio &amp; Exporter</h2>
+              <span id="gamerCardLiveRankPill" class="px-2 py-0.5 rounded-full text-[9px] font-mono-num font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                🎖️ Master: 2000 ELO • ⏳ Grandmaster: On Wait
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400">Customize backgrounds &amp; banners, view live stat badges, and export or copy your HD card for Discord, Twitter/X &amp; WhatsApp</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="gamerCardCoinsBalance" class="px-2.5 py-1 rounded-xl text-xs font-mono-num font-black bg-amber-500/15 text-amber-300 border border-amber-500/35">
+            0 Match Coins
+          </span>
+          <button
+            type="button"
+            onclick="window.closeEsportsGamerCardModal && window.closeEsportsGamerCardModal()"
+            class="w-8 h-8 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-200 border border-white/10 flex items-center justify-center text-sm font-bold transition"
+            aria-label="Close Esports Gamer Card Studio"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Studio Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        <!-- 1. LIVE HD ESPORTS GAMER CARD CANVAS PREVIEW -->
+        <div class="rounded-2xl p-2 sm:p-3 bg-black/60 border border-white/15 shadow-inner">
+          <canvas id="esportsGamerCardCanvas" width="1200" height="675" class="w-full h-auto rounded-xl block shadow-2xl"></canvas>
+        </div>
+
+        <!-- Feedback Toast -->
+        <div id="esportsCardFeedbackToast" class="hidden"></div>
+
+        <!-- 2. SHAREABLE CARD EXPORT ACTIONS (Download PNG, Copy Image, Discord, Twitter, WhatsApp) -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <button
+            type="button"
+            onclick="window.downloadEsportsPlayerCard && window.downloadEsportsPlayerCard('esportsGamerCardCanvas')"
+            class="col-span-2 sm:col-span-1 py-2.5 px-3 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📥</span>
+            <span>Download Card</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.copyEsportsPlayerCardImage && window.copyEsportsPlayerCardImage('esportsGamerCardCanvas')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:opacity-95 text-slate-950 shadow-lg flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📋</span>
+            <span>Copy Card Image</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('discord')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>💬</span>
+            <span>Discord Flex</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('twitter')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>🐦</span>
+            <span>Twitter / X</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.shareEsportsPlayerCardSocial && window.shareEsportsPlayerCardSocial('whatsapp')"
+            class="py-2.5 px-3 rounded-xl text-xs font-brand font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 flex items-center justify-center gap-1.5 transition"
+          >
+            <span>📲</span>
+            <span>WhatsApp</span>
+          </button>
+        </div>
+
+        <!-- 3. CUSTOM CALLSIGN & EMBLEM PICKER -->
+        <div class="p-4 rounded-2xl bg-[#16181d] border border-white/10 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-xs sm:text-sm font-black text-white font-brand">🎨 Custom Banner Callsign &amp; Emblem</h3>
+            <span class="text-[10px] font-mono-num text-amber-300">🎖️ Rank Cap: Master (2000 Elo) • ⏳ Grandmaster: On Wait</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+            <div class="sm:col-span-5">
+              <input
+                id="gamerCardCallsignInput"
+                type="text"
+                maxlength="26"
+                placeholder="Enter custom callsign (e.g. APEX STRIKER)"
+                class="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+              />
+            </div>
+            <div class="sm:col-span-4 flex items-center gap-1.5 justify-center sm:justify-start flex-wrap">
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🏏')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🏏</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','⚡')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">⚡</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','👑')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">👑</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🔥')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🔥</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','💎')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">💎</button>
+              <button type="button" onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput','🐉')" class="w-8 h-8 rounded-lg bg-black/40 hover:bg-amber-500/20 border border-white/10 text-base">🐉</button>
+            </div>
+            <div class="sm:col-span-3">
+              <button
+                type="button"
+                onclick="window.saveGamerCardCustomMeta('gamerCardCallsignInput')"
+                class="w-full py-2 px-3 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow transition"
+              >
+                ✓ Update Callsign
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. STORE BACKGROUND SKINS & BANNERS REDIRECT -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-emerald-500/15 border border-amber-400/40 flex flex-wrap items-center justify-between gap-3">
+          <div class="space-y-1">
+            <div class="text-xs sm:text-sm font-black text-white font-brand flex items-center gap-2">
+              <span>🛍️</span>
+              <span>Unlock Custom Background Skins &amp; Prestige Badges in XP Store</span>
+            </div>
+            <p class="text-[11px] text-slate-300">
+              All Gamer Card Background Skins (Neon Cyber, 24K Golden Trophy, Emerald Matrix, Obsidian Void, Solar Inferno &amp; Royal Amethyst) are available in the XP Store starting at 5,000 XP!
+            </p>
+          </div>
+          <a href="store.html" class="px-4 py-2.5 rounded-xl text-xs font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg transition shrink-0">
+            🛍️ Open XP Store →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
