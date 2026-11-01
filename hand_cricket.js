@@ -11168,6 +11168,29 @@
 
         setTimeout(async () => {
           try {
+            const rawPending = localStorage.getItem('oddandeven_pending_cloud_sync_v1');
+            if (rawPending) {
+              const pendingProf = JSON.parse(rawPending);
+              if (pendingProf && pendingProf.username) {
+                const pClean = String(pendingProf.username).trim().toUpperCase();
+                const pUser = await ensureUserRegisteredInFirebaseAuth(pClean, pendingProf.pin5 || '12345', Boolean(pendingProf.isNewSignup));
+                const pPayload = Object.assign({}, pendingProf, {
+                  username: pClean,
+                  authProvider: pendingProf.authProvider || (pendingProf.googleUid ? 'google' : 'pin'),
+                  googleUid: pendingProf.googleUid || null,
+                  firebaseUid: (pUser && pUser.uid) || pendingProf.firebaseUid || null,
+                  updatedAt: Date.now()
+                });
+                delete pPayload.pin5;
+                delete pPayload.isNewSignup;
+                delete pPayload.queuedAt;
+                await Promise.allSettled([
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', pClean), pPayload, { merge: true }),
+                  setDoc(doc(db, 'accounts', pClean), pPayload, { merge: true })
+                ]);
+                localStorage.removeItem('oddandeven_pending_cloud_sync_v1');
+              }
+            }
             const vault = loadEncryptedUsersMap() || {};
             for (const uname of Object.keys(vault)) {
               const clean = uname.trim().toUpperCase();
@@ -11191,7 +11214,7 @@
               }
             }
           } catch (e) {}
-        }, 1500);
+        }, 100);
       // Live snapshot listeners for real-time multiplayer & deletion synchronization
       try {
         const accountsCol = collection(db, 'artifacts', appId, 'public', 'data', 'accounts');
@@ -11348,7 +11371,7 @@
         } catch (e) {}
       };
 
-      async function ensureUserRegisteredInFirebaseAuth(username, pin5) {
+      async function ensureUserRegisteredInFirebaseAuth(username, pin5, isNewSignup = false) {
         if (!auth || !username) return null;
         const clean = String(username).trim().toUpperCase();
         if (isPlaceholderUsername(clean)) return null;
@@ -11357,7 +11380,12 @@
         const authPassword = `OAE#${safePin}_${clean.toLowerCase()}`;
 
         let user = auth.currentUser;
-        if (user && user.email && user.email.toLowerCase() === authEmail.toLowerCase()) return user;
+        if (user && user.email && user.email.toLowerCase() === authEmail.toLowerCase()) {
+          if (typeof updateProfile === 'function' && user.displayName !== clean) {
+            try { await updateProfile(user, { displayName: clean }); } catch (e) {}
+          }
+          return user;
+        }
 
         try {
           if (typeof createUserWithEmailAndPassword === 'function') {
@@ -11373,19 +11401,34 @@
                 user = cred.user;
               }
             } catch (e) {}
-          } else if (code === 'auth/operation-not-allowed') {
+          }
+          // Fallback for ANY other error (e.g. auth/configuration-not-found, auth/operation-not-allowed):
+          // Ensure an authenticated Firebase user exists and update displayName!
+          if (!user || (isNewSignup && user.isAnonymous && user.displayName && user.displayName !== clean)) {
             try {
+              if (isNewSignup && auth.currentUser && auth.currentUser.isAnonymous && typeof signOut === 'function') {
+                await signOut(auth).catch(() => {});
+              }
               if (typeof signInAnonymously === 'function' && !auth.currentUser) {
                 const cred = await signInAnonymously(auth);
                 user = cred.user;
+              } else {
+                user = auth.currentUser;
               }
             } catch (e) {}
           }
         }
+        if (!user && !auth.currentUser && typeof signInAnonymously === 'function') {
+          try {
+            const cred = await signInAnonymously(auth);
+            user = cred.user;
+          } catch (e) {}
+        }
+        user = user || auth.currentUser;
         if (user && typeof updateProfile === 'function') {
           try { await updateProfile(user, { displayName: clean }); } catch (e) {}
         }
-        return user || auth.currentUser;
+        return user;
       }
 
       window.__syncCloudLeaderboard = async function (humanPlayersMap, usersVault, activeUsername) {
