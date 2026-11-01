@@ -107,15 +107,17 @@
       // =========================================================================
       // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
       // =========================================================================
-      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
       const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
 
       function sanitizeRecordForFreshEpoch(rec) {
         if (!rec || typeof rec !== 'object') return rec;
-        if (rec.statsEpoch === STATS_RESET_EPOCH) {
-          if (typeof rec.v2Matches === 'number') {
-            rec.matches = rec.v2Matches;
-          }
+        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
+        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
+          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
+          rec.matches = mpM;
+          rec.rankedMatches = mpM;
+          rec.v2Matches = mpM;
           return rec;
         }
         const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
@@ -1257,7 +1259,7 @@
           const scByUser = {};
           if (Array.isArray(STATE.matchScorecards)) {
             STATE.matchScorecards.forEach((mc) => {
-              if (!mc) return;
+              if (!mc || mc.isBotMatch || !mc.isMultiplayer) return;
               [mc.p1Name, mc.p2Name].forEach((cand) => {
                 let cleanU = (cand || '').trim().toUpperCase();
                 if (isPlaceholderUsername(cleanU) && STATE.isAuthenticated && !isPlaceholderUsername(STATE.myUsername)) {
@@ -4582,25 +4584,27 @@
         const p1 = getP1Label();
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
-        const p1Rec = ensureHumanPlayerRecord(p1, 1500, {
+        const p1Rec = (mpMatch && !isPlaceholderUsername(p1)) ? ensureHumanPlayerRecord(p1, 1500, {
           countryCode: STATE.p1CountryCode || STATE.myCountryCode,
           countryFlag: STATE.p1CountryFlag || STATE.myCountryFlag,
           countryName: STATE.p1CountryName || STATE.myCountryName
-        }, !isPlaceholderUsername(p1));
-        const p2Rec = mpMatch ? ensureHumanPlayerRecord(p2, STATE.friendEloRating, {
+        }, true) : null;
+        const p2Rec = (mpMatch && !isPlaceholderUsername(p2)) ? ensureHumanPlayerRecord(p2, STATE.friendEloRating, {
           countryCode: STATE.p2CountryCode,
           countryFlag: STATE.p2CountryFlag,
           countryName: STATE.p2CountryName
-        }, !isPlaceholderUsername(p2)) : null;
+        }, true) : null;
+        if (mpMatch && p1Rec) { p1Rec.mpStatsVerified = true; p1Rec.statsEpoch = STATS_RESET_EPOCH; }
+        if (mpMatch && p2Rec) { p2Rec.mpStatsVerified = true; p2Rec.statsEpoch = STATS_RESET_EPOCH; }
 
         if (isUserBatting) {
           STATE.userBalls += 1;
-          if (p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
-          if (p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
+          if (mpMatch && p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
+          if (mpMatch && p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
         } else {
           STATE.aiBalls += 1;
-          if (p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
-          if (p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
+          if (mpMatch && p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
+          if (mpMatch && p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
         }
 
         const ballNumber = isUserBatting ? STATE.userBalls : STATE.aiBalls;
@@ -4676,30 +4680,32 @@
           STATE.currentStreak = 0;
 
           if (isUserBatting) {
-            if (p1Rec) {
+            STATE.aiMatchWickets += 1;
+            if (mpMatch && p1Rec) {
               p1Rec.wicketsLost = (p1Rec.wicketsLost || 0) + 1;
               p1Rec.updatedAt = Date.now();
             }
-            STATE.aiMatchWickets += 1;
             if (mpMatch && p2Rec) {
               p2Rec.wicketsTaken = (p2Rec.wicketsTaken || 0) + 1;
               p2Rec.weeklyWickets = (p2Rec.weeklyWickets || 0) + 1;
               p2Rec.updatedAt = Date.now();
             }
           } else {
-            if (p1Rec) {
+            STATE.userMatchWickets += 1;
+            if (mpMatch && p1Rec) {
               p1Rec.wicketsTaken = (p1Rec.wicketsTaken || 0) + 1;
               p1Rec.weeklyWickets = (p1Rec.weeklyWickets || 0) + 1;
               p1Rec.updatedAt = Date.now();
             }
-            STATE.userMatchWickets += 1;
             if (mpMatch && p2Rec) {
               p2Rec.wicketsLost = (p2Rec.wicketsLost || 0) + 1;
               p2Rec.updatedAt = Date.now();
             }
           }
-          saveLocalStatsOnly();
-          scheduleDebouncedGlobalSync();
+          if (mpMatch) {
+            saveLocalStatsOnly();
+            scheduleDebouncedGlobalSync();
+          }
 
           const wComm = buildEngagingCommentary('WICKET', {
             u: userNum,
@@ -4717,7 +4723,7 @@
             title: `HOWZAT! Both played ${userNum}! (${bowlerName} +1 Wicket)`,
             detail: isUserBatting
               ? `${p1} OUT for ${STATE.userScore} (${STATE.userBalls} balls)`
-              : `${p2} OUT for ${STATE.aiScore} (${STATE.aiBalls} balls) • ${p1} Wickets: ${p1Rec.wicketsTaken}`,
+              : `${p2} OUT for ${STATE.aiScore} (${STATE.aiBalls} balls) • ${p1} Wickets: ${p1Rec ? p1Rec.wicketsTaken : STATE.userMatchWickets}`,
             commentary: wComm.quote,
             badge: 'WICKET!',
             badgeColor: 'rose'
@@ -4760,16 +4766,16 @@
         // CASE B: RUNS SCORED
         if (isUserBatting) {
           STATE.userScore += batterNum;
-          if (p1Rec) {
+          if (mpMatch && p1Rec) {
             p1Rec.totalRuns = (p1Rec.totalRuns || 0) + batterNum;
             p1Rec.weeklyRuns = (p1Rec.weeklyRuns || 0) + batterNum;
             if (STATE.userScore > (p1Rec.highScore || 0)) {
               p1Rec.highScore = STATE.userScore;
             }
             p1Rec.updatedAt = Date.now();
+            saveLocalStatsOnly();
+            scheduleDebouncedGlobalSync();
           }
-          saveLocalStatsOnly();
-          scheduleDebouncedGlobalSync();
         } else {
           STATE.aiScore += batterNum;
           if (mpMatch && p2Rec) {
@@ -4919,7 +4925,7 @@
           countryFlag: STATE.p1CountryFlag
         }, true);
 
-        if (!STATE.isTossForfeit) {
+        if (mpMatch && !STATE.isTossForfeit) {
           if (STATE.userScore >= 100) {
             p1Rec.centuriesCount = (p1Rec.centuriesCount || 0) + 1;
           }
@@ -4967,6 +4973,8 @@
           } else if (isDraw) {
             // Ranked Multiplayer Match DRAW: Both ratings unchanged (0 ELO change)
             const nowTs = Date.now();
+            p1Rec.mpStatsVerified = true;
+            p1Rec.statsEpoch = STATS_RESET_EPOCH;
             p1Rec.rankedMatches = (p1Rec.rankedMatches || 0) + 1;
             p1Rec.matches = Math.max((p1Rec.matches || 0) + 1, (p1Rec.wins || 0) + (p1Rec.losses || 0) + 1);
             p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
@@ -4977,6 +4985,8 @@
             if (STATE.userScore > (p1Rec.highScore || 0)) p1Rec.highScore = STATE.userScore;
             p1Rec.updatedAt = nowTs;
 
+            p2Rec.mpStatsVerified = true;
+            p2Rec.statsEpoch = STATS_RESET_EPOCH;
             p2Rec.rankedMatches = (p2Rec.rankedMatches || 0) + 1;
             p2Rec.matches = Math.max((p2Rec.matches || 0) + 1, (p2Rec.wins || 0) + (p2Rec.losses || 0) + 1);
             p2Rec.weeklyMatches = (p2Rec.weeklyMatches || 0) + 1;
@@ -5029,6 +5039,8 @@
             const prevP2Elo = p2Rec.elo;
             p1Rec.elo = Math.max(100, p1Rec.elo + p1Delta);
             if (p1Rec.elo > p1Rec.peak) p1Rec.peak = p1Rec.elo;
+            p1Rec.mpStatsVerified = true;
+            p1Rec.statsEpoch = STATS_RESET_EPOCH;
             p1Rec.rankedMatches = (p1Rec.rankedMatches || 0) + 1;
             p1Rec.matches = Math.max((p1Rec.matches || 0) + 1, (p1Rec.wins || 0) + (p1Rec.losses || 0) + 1);
             p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
@@ -5049,6 +5061,8 @@
 
             p2Rec.elo = Math.max(100, p2Rec.elo + p2Delta);
             if (p2Rec.elo > p2Rec.peak) p2Rec.peak = p2Rec.elo;
+            p2Rec.mpStatsVerified = true;
+            p2Rec.statsEpoch = STATS_RESET_EPOCH;
             p2Rec.rankedMatches = (p2Rec.rankedMatches || 0) + 1;
             p2Rec.matches = Math.max((p2Rec.matches || 0) + 1, (p2Rec.wins || 0) + (p2Rec.losses || 0) + 1);
             p2Rec.weeklyMatches = (p2Rec.weeklyMatches || 0) + 1;
@@ -5106,42 +5120,11 @@
             });
           }
         } else {
-          // Bot matches: RATING, RUNS & WICKETS ARE NOT REGISTERED ON THE LEADERBOARD!
-          // User rule: "when user is playing with bots then dont register there runs and wickets in leaderboard"
+          // Bot matches: RUNS, WICKETS, MATCHES, WINS & LOSSES ARE NOT COUNTED IN THE LEADERBOARD!
+          // Only multiplayer matches count towards leaderboard standings.
           const frozenElo = p1Rec.elo;
-          const frozenPeak = p1Rec.peak;
-          const frozenWeeklyElo = p1Rec.weeklyEloGain || 0;
-
-          p1Rec.elo = frozenElo;
-          p1Rec.peak = frozenPeak;
-          p1Rec.weeklyEloGain = frozenWeeklyElo;
-          if (!STATE.isTossForfeit) {
-            p1Rec.matches = (p1Rec.matches || 0) + 1;
-            p1Rec.v2Matches = p1Rec.matches;
-            p1Rec.weeklyMatches = (p1Rec.weeklyMatches || 0) + 1;
-            if (!isDraw) {
-              if (winner === 'USER') {
-                p1Rec.wins = (p1Rec.wins || 0) + 1;
-                p1Rec.weeklyWins = (p1Rec.weeklyWins || 0) + 1;
-              } else {
-                p1Rec.losses = (p1Rec.losses || 0) + 1;
-                p1Rec.weeklyLosses = (p1Rec.weeklyLosses || 0) + 1;
-              }
-            }
-            if (STATE.userScore > (p1Rec.highScore || 0)) {
-              p1Rec.highScore = STATE.userScore;
-            }
-          }
-          p1Rec.statsEpoch = STATS_RESET_EPOCH;
-          p1Rec.updatedAt = Date.now();
-          if (STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-            STATE.humanPlayers[STATE.myUsername.trim().toUpperCase()] = p1Rec;
-          }
-          saveLocalStatsOnly();
-          scheduleDebouncedGlobalSync();
-
           STATE.eloRating = frozenElo;
-          STATE.peakElo = frozenPeak;
+          STATE.peakElo = p1Rec.peak;
           STATE.lastEloDelta = null;
 
           const cleanUserForAi = (STATE.myUsername || '').trim().toUpperCase();
@@ -5165,35 +5148,35 @@
               id: Date.now() + Math.random(),
               opponent: p2,
               p1Name: p1,
-              mode: 'vs Bot (Rating Frozen)',
+              mode: 'vs Bot (Unrated Practice)',
               isBotMatch: true,
               result: 'DRAW',
-              delta: 'FROZEN',
+              delta: 'UNRATED',
               newElo: frozenElo,
               runsScored: STATE.userScore,
               wicketsTaken: STATE.userMatchWickets
             });
-            STATE.winMarginText = `${marginDescription} • 🤝 Match Drawn vs ${p2} (❄️ Rating Frozen: ${frozenElo} ELO)`;
-            STATE.lastOutcomeText = `🤝 Match Drawn! Both you and ${p2} scored ${STATE.userScore} runs! (❄️ Rating Frozen: ${frozenElo} ELO)`;
+            STATE.winMarginText = `${marginDescription} • 🤝 Match Drawn vs ${p2} (Casual Practice: Runs, wickets, wins/losses not counted in Leaderboard)`;
+            STATE.lastOutcomeText = `🤝 Match Drawn vs ${p2}! (Casual Practice: Leaderboard stats untouched)`;
           } else {
             STATE.eloHistory.unshift({
               id: Date.now() + Math.random(),
               opponent: p2,
               p1Name: p1,
-              mode: 'vs Bot (Rating Frozen)',
+              mode: 'vs Bot (Unrated Practice)',
               isBotMatch: true,
               result: STATE.isTossForfeit ? 'FORFEIT' : (winner === 'USER' ? 'WIN' : 'LOSS'),
-              delta: 'FROZEN',
+              delta: 'UNRATED',
               newElo: frozenElo,
               runsScored: STATE.userScore,
               wicketsTaken: STATE.userMatchWickets
             });
-            STATE.winMarginText = `${marginDescription} • ❄️ Bot Match: Rating Frozen at ${frozenElo} ELO (No Rating Change vs Bots)`;
+            STATE.winMarginText = `${marginDescription} • 🤖 Casual Bot Match: Runs, wickets, wins/losses not counted in Leaderboard (Multiplayer only)`;
             STATE.lastOutcomeText = STATE.isTossForfeit
-              ? `🏳️ Match Forfeited vs ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
+              ? `🏳️ Match Forfeited vs ${p2}! (Casual Practice)`
               : (winner === 'USER'
-                  ? `🏆 VICTORY! ${p1} defeated ${p2}! (❄️ Rating Frozen: ${frozenElo} ELO)`
-                  : `❌ ${p2} won the match! (❄️ Rating Frozen: ${frozenElo} ELO)`);
+                  ? `🏆 Practice Victory vs ${p2}! (Casual Practice: Leaderboard stats untouched)`
+                  : `❌ Match finished vs ${p2}! (Casual Practice: Leaderboard stats untouched)`);
           }
         }
 
@@ -5222,6 +5205,8 @@
         STATE.matchScorecards.unshift({
           id: Date.now() + Math.random(),
           matchNumber: STATE.sessionStats.matches,
+          isMultiplayer: Boolean(mpMatch),
+          isBotMatch: !mpMatch,
           p1Name: p1,
           p2Name: p2,
           inn1Team: inn1TeamName,
@@ -5742,6 +5727,7 @@
         try { renderAchievementsSection(); } catch (e) { console.error(e); }
         try { renderProfileSection(); } catch (e) { console.error(e); }
         try { renderStoreSection(); } catch (e) { console.error(e); }
+        try { if (typeof updateAllGamerCardUI === 'function') updateAllGamerCardUI(); } catch (e) { console.error(e); }
 
         // Render Large Incoming Friend Match Call Banner & Sidebar Badge
         const myFriends = getMyFriendsList();
@@ -6785,9 +6771,9 @@
           }
         }
 
-        el.statMatches.textContent = Math.max(STATE.sessionStats.matches, myRec.matches || 0);
-        el.statUserWins.textContent = Math.max(STATE.sessionStats.userWins, myRec.wins || 0);
-        el.statAiWins.textContent = Math.max(STATE.sessionStats.aiWins, myRec.losses || 0);
+        el.statMatches.textContent = Number(myRec.matches) || 0;
+        el.statUserWins.textContent = Number(myRec.wins) || 0;
+        el.statAiWins.textContent = Number(myRec.losses) || 0;
 
         // 8. Ball-by-Ball Log Feed
         el.logCountBadge.textContent = `${STATE.history.length} event${STATE.history.length === 1 ? '' : 's'}`;
@@ -8050,6 +8036,144 @@
           tagline: 'Pure 24K Handcrafted Gold Willow',
           lore: 'Handcrafted from pure solid 24K gold with divine radiance. Triggers golden star bursts and harmonic chimes on every boundary (4, 6, 10).',
           perks: ['Pure 24K Solid Gold Bat Icon', '"Cricket Deity" Verified Title', 'Golden Boundary Star Burst & Chime']
+        },
+        {
+          id: 'banner_neon_cyber',
+          category: 'BANNERS',
+          type: 'banner',
+          skinId: 'skin_neon_cyber',
+          name: 'Neon Cyber Background Banner',
+          tier: 'CYBER BANNER',
+          rarity: 'Rare Banner',
+          badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
+          icon: '🌆',
+          price: 5000,
+          tagline: 'Synthwave Holographic Grid & Cyan Scanline Banner',
+          lore: 'Transforms your Esports Gamer Card and Scoreboard Banner with an electric cyan and laser-magenta synthwave grid.',
+          perks: ['Neon Cyber Gamer Card Background', 'Holographic Pitch Scoreboard Banner', 'Exportable HD Neon PNG Card']
+        },
+        {
+          id: 'badge_century_sovereign',
+          category: 'BANNERS',
+          type: 'badge',
+          badgeEmblem: '💯',
+          badgeTitle: '💯 CENTURY SOVEREIGN',
+          name: 'Century Sovereign Prestige Badge',
+          tier: 'EPIC BADGE',
+          rarity: 'Epic Badge',
+          badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+          icon: '💯',
+          price: 6500,
+          tagline: 'Gilded 100* Strike Prestige Badge',
+          lore: 'Pins the gilded "💯 Century Sovereign" insignia onto your Esports Gamer Card, Profile, and 1v1 Room header.',
+          perks: ['"💯 Century Sovereign" Card Badge', 'Custom 💯 Emblem on Gamer Card', 'Displayed on Exported Social Cards']
+        },
+        {
+          id: 'banner_golden_trophy',
+          category: 'BANNERS',
+          type: 'banner',
+          skinId: 'skin_golden_trophy',
+          name: '24K Golden Trophy Banner',
+          tier: 'GOLD BANNER',
+          rarity: 'Epic Banner',
+          badgeClass: 'bg-amber-500/25 text-amber-200 border-amber-400/50',
+          icon: '🏆',
+          price: 9000,
+          tagline: 'Championship Gold Foil & Sunburst Banner',
+          lore: 'Wraps your Esports Gamer Card in 24K brushed championship gold foil with radial sunburst rays and royal laurels.',
+          perks: ['24K Gold Sunburst Card Background', 'Golden Championship Banner Trim', 'VIP Gold Export Frame']
+        },
+        {
+          id: 'badge_mind_reader',
+          category: 'BANNERS',
+          type: 'badge',
+          badgeEmblem: '🔮',
+          badgeTitle: '🔮 MIND-READER',
+          name: 'Grandmaster Mind-Reader Badge',
+          tier: 'LEGENDARY BADGE',
+          rarity: 'Legendary Badge',
+          badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-400/40',
+          icon: '🔮',
+          price: 11000,
+          tagline: 'Tactical Wicket Predictor Crest',
+          lore: 'Marks you as an elite number-reading tactician across your Gamer Card, Scoreboard, and Profile.',
+          perks: ['"🔮 Mind-Reader" Prestige Badge', 'Custom 🔮 Psychic Emblem on Card', 'Highlighted in 1v1 Match Lobbies']
+        },
+        {
+          id: 'banner_obsidian_void',
+          category: 'BANNERS',
+          type: 'banner',
+          skinId: 'skin_obsidian_void',
+          name: 'Obsidian Void Dark-Matter Banner',
+          tier: 'VOID BANNER',
+          rarity: 'Legendary Banner',
+          badgeClass: 'bg-purple-500/25 text-purple-200 border-purple-400/50',
+          icon: '🌌',
+          price: 15000,
+          tagline: 'Deep Space Astral Nebula & Starfield Banner',
+          lore: 'Surrounds your Gamer Card stats with a shimmering starlight field and deep cosmic violet nebula glow.',
+          perks: ['Obsidian Void Starfield Background', 'Astral Violet Card Border Glow', 'Deep Space HD Export Theme']
+        },
+        {
+          id: 'badge_master_crest',
+          category: 'BANNERS',
+          type: 'badge',
+          badgeEmblem: '⚜️',
+          badgeTitle: '⚜️ APEX MASTER CREST',
+          name: 'Apex Master 2000 Crest Badge',
+          tier: 'MYTHIC BADGE',
+          rarity: 'Mythic Badge',
+          badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-400/40',
+          icon: '⚜️',
+          price: 22000,
+          tagline: 'Royal Master 2000 Tier Insignia (GM On Wait)',
+          lore: 'The royal crest of the 2000 Elo Master Summit while Grandmaster remains On Wait.',
+          perks: ['"⚜️ Apex Master" Sovereign Badge', 'Royal ⚜️ Crest on Gamer Card', 'Gold-Bordered Rank Insignia']
+        },
+        {
+          id: 'banner_emerald_matrix',
+          category: 'BANNERS',
+          type: 'banner',
+          skinId: 'skin_emerald_matrix',
+          name: 'Emerald Matrix Cyber Turf Skin',
+          tier: 'MATRIX SKIN',
+          rarity: 'Epic Skin',
+          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+          icon: '🟢',
+          price: 12500,
+          tagline: 'Cybernetic Hex-Grid & Bio-Lime Gamer Card Skin',
+          lore: 'Infuses your Esports Gamer Card with an electric bio-lime matrix grid and championship stadium telemetry.',
+          perks: ['Emerald Matrix Gamer Card Skin', 'Bio-Lime Telemetry Accents', 'HD Exportable Matrix Card']
+        },
+        {
+          id: 'banner_royal_amethyst',
+          category: 'BANNERS',
+          type: 'banner',
+          skinId: 'skin_royal_amethyst',
+          name: 'Royal Amethyst Dynasty Skin',
+          tier: 'DYNASTY SKIN',
+          rarity: 'Mythic Skin',
+          badgeClass: 'bg-fuchsia-500/25 text-fuchsia-200 border-fuchsia-400/50',
+          icon: '👑',
+          price: 45000,
+          tagline: 'Imperial Amethyst Prism & Sovereign Crown Skin',
+          lore: 'Reserved for true Hand Cricket royalty. Wraps your Esports Gamer Card in imperial amethyst prism rays and golden crown geometry.',
+          perks: ['Royal Amethyst Gamer Card Skin', 'Imperial Prism Border Glow', 'Sovereign Crown HD Export']
+        },
+        {
+          id: 'banner_solar_inferno',
+          category: 'BANNERS',
+          type: 'banner',
+          skinId: 'skin_solar_inferno',
+          name: 'Solar Inferno Magma Banner',
+          tier: 'INFERNO BANNER',
+          rarity: 'Mythic Banner',
+          badgeClass: 'bg-rose-500/25 text-rose-200 border-rose-400/50',
+          icon: '🔥',
+          price: 35000,
+          tagline: 'Blazing Molten Solar Flare & Magma Banner',
+          lore: 'Unleashes a blazing solar flare and molten crimson magma waves across your Esports Gamer Card and Pitch Banner.',
+          perks: ['Solar Inferno Magma Background', 'Crimson-Gold Flame Card Border', 'Pinnacle Esports Export Skin']
         }
       ];
 
@@ -8104,9 +8228,24 @@
         if (!cleanMe || isPlaceholderUsername(cleanMe)) return;
         SoundFX.click();
         try {
+          const catItem = DESKTOP_STORE_CATALOG.find((x) => x.id === itemId);
           if (action === 'equip') {
             if (itemType === 'card' || itemId.startsWith('card_')) {
               localStorage.setItem('oddandeven_equipped_card_' + cleanMe, itemId);
+            } else if (itemType === 'banner' || itemId.startsWith('banner_')) {
+              localStorage.setItem('oddandeven_equipped_banner_' + cleanMe, itemId);
+              if (catItem && catItem.skinId) {
+                localStorage.setItem('oddandeven_gamercard_skin_' + cleanMe, catItem.skinId);
+              }
+            } else if (itemType === 'badge' || itemId.startsWith('badge_')) {
+              localStorage.setItem('oddandeven_equipped_badge_' + cleanMe, itemId);
+              if (catItem && catItem.badgeEmblem) {
+                const rawM = localStorage.getItem('oddandeven_gamercard_meta_' + cleanMe);
+                const mObj = rawM ? JSON.parse(rawM) : {};
+                mObj.emblem = catItem.badgeEmblem;
+                mObj.callsign = catItem.badgeTitle || mObj.callsign || 'ARENA STRIKER';
+                localStorage.setItem('oddandeven_gamercard_meta_' + cleanMe, JSON.stringify(mObj));
+              }
             } else if (itemType === 'theme' || itemId.startsWith('theme_')) {
               localStorage.setItem('oddandeven_equipped_theme_' + cleanMe, itemId);
             } else if (itemType === 'vfx' || itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
@@ -8413,7 +8552,11 @@
           shelfEl.innerHTML = DESKTOP_STORE_CATALOG.map((item) => {
             const isOwned = inv.includes(item.id);
             let isEquipped = false;
-            if (item.type === 'card') isEquipped = isOwned && eqCard === item.id;
+            const eqBanner = localStorage.getItem('oddandeven_equipped_banner_' + cleanMe) || '';
+          const eqBadge = localStorage.getItem('oddandeven_equipped_badge_' + cleanMe) || '';
+          if (item.type === 'card') isEquipped = isOwned && eqCard === item.id;
+          else if (item.type === 'banner') isEquipped = isOwned && eqBanner === item.id;
+          else if (item.type === 'badge') isEquipped = isOwned && eqBadge === item.id;
             else if (item.type === 'theme') isEquipped = isOwned && eqTheme === item.id;
             else if (item.type === 'vfx') isEquipped = isOwned && eqVfx === item.id;
             else if (item.type === 'bat') isEquipped = isOwned && eqBat === item.id;
@@ -8490,10 +8633,12 @@
         const activeTabCls = 'py-2 px-3 rounded-lg bg-amber-500 text-slate-950 font-extrabold transition truncate';
         const idleTabCls = 'py-2 px-3 rounded-lg text-slate-300 hover:text-white transition truncate';
         const fAll = document.getElementById('btnStoreFilterAll');
+        const fBanners = document.getElementById('btnStoreFilterBanners');
         const fCards = document.getElementById('btnStoreFilterCards');
         const fCustom = document.getElementById('btnStoreFilterCustom');
         const fCosm = document.getElementById('btnStoreFilterCosmetics');
         if (fAll) fAll.className = filter === 'ALL' ? activeTabCls : idleTabCls;
+        if (fBanners) fBanners.className = filter === 'BANNERS' ? activeTabCls : idleTabCls;
         if (fCards) fCards.className = filter === 'CARDS' ? activeTabCls : idleTabCls;
         if (fCustom) fCustom.className = filter === 'CUSTOM' ? activeTabCls : idleTabCls;
         if (fCosm) fCosm.className = filter === 'COSMETICS' ? activeTabCls : idleTabCls;
@@ -8504,7 +8649,11 @@
         gridEl.innerHTML = visible.map((item) => {
           const isOwned = inv.includes(item.id);
           let isEquipped = false;
+          const eqBanner = localStorage.getItem('oddandeven_equipped_banner_' + cleanMe) || '';
+          const eqBadge = localStorage.getItem('oddandeven_equipped_badge_' + cleanMe) || '';
           if (item.type === 'card') isEquipped = isOwned && eqCard === item.id;
+          else if (item.type === 'banner') isEquipped = isOwned && eqBanner === item.id;
+          else if (item.type === 'badge') isEquipped = isOwned && eqBadge === item.id;
           else if (item.type === 'theme') isEquipped = isOwned && eqTheme === item.id;
           else if (item.type === 'vfx') isEquipped = isOwned && eqVfx === item.id;
           else if (item.type === 'bat') isEquipped = isOwned && eqBat === item.id;
@@ -8550,6 +8699,996 @@
           `;
         }).join('');
       }
+
+      // =========================================================================
+      // CUSTOMIZABLE ESPORTS GAMER CARD ENGINE, SKIN UNLOCKER & HD PNG EXPORTER
+      // =========================================================================
+      const ESPORTS_CARD_SKINS = [
+        {
+          id: 'skin_stadium_classic',
+          storeItemId: null,
+          name: 'Stadium Emerald',
+          subtitle: 'Pro Turf Floodlight Banner (Default)',
+          icon: '🏟️',
+          coinCost: 0,
+          xpCost: 0,
+          eloMilestone: 0,
+          bgStops: ['#071710', '#0c291c', '#050c09'],
+          accentHex: '#81b64c',
+          secondaryHex: '#34d399',
+          borderCls: 'border-[#81b64c]',
+          bgCls: 'bg-gradient-to-br from-[#0b2217] via-[#0f1d16] to-[#090d0b]',
+          pillCls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        },
+        {
+          id: 'skin_neon_cyber',
+          storeItemId: 'banner_neon_cyber',
+          name: 'Neon Cyber',
+          subtitle: 'Synthwave Grid & Laser Cyan Banner',
+          icon: '🌆',
+          coinCost: 5000,
+          xpCost: 5000,
+          eloMilestone: 1550,
+          bgStops: ['#06152d', '#1b0b2e', '#050714'],
+          accentHex: '#22d3ee',
+          secondaryHex: '#f43f5e',
+          borderCls: 'border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.28)]',
+          bgCls: 'bg-gradient-to-br from-[#091e3a] via-[#1f0d38] to-[#090814]',
+          pillCls: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40'
+        },
+        {
+          id: 'skin_golden_trophy',
+          storeItemId: 'banner_golden_trophy',
+          name: 'Golden Trophy',
+          subtitle: '24K Championship Gold Foil Banner',
+          icon: '🏆',
+          coinCost: 9000,
+          xpCost: 9000,
+          eloMilestone: 1650,
+          bgStops: ['#291d06', '#3d2b08', '#120d04'],
+          accentHex: '#fbbf24',
+          secondaryHex: '#f59e0b',
+          borderCls: 'border-amber-400 shadow-[0_0_22px_rgba(251,191,36,0.3)]',
+          bgCls: 'bg-gradient-to-br from-[#2e2107] via-[#1f1708] to-[#110d06]',
+          pillCls: 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+        },
+        {
+          id: 'skin_emerald_matrix',
+          storeItemId: 'banner_emerald_matrix',
+          name: 'Emerald Matrix',
+          subtitle: 'Cybernetic Hex-Grid & Bio-Lime Banner',
+          icon: '🟢',
+          coinCost: 12500,
+          xpCost: 12500,
+          eloMilestone: 1700,
+          bgStops: ['#041f14', '#063322', '#020f0a'],
+          accentHex: '#10b981',
+          secondaryHex: '#a3e635',
+          borderCls: 'border-emerald-400 shadow-[0_0_22px_rgba(16,185,129,0.3)]',
+          bgCls: 'bg-gradient-to-br from-[#05291a] via-[#071f15] to-[#030d09]',
+          pillCls: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        },
+        {
+          id: 'skin_obsidian_void',
+          storeItemId: 'banner_obsidian_void',
+          name: 'Obsidian Void',
+          subtitle: 'Deep Space Dark-Matter & Astral Nebula',
+          icon: '🌌',
+          coinCost: 15000,
+          xpCost: 15000,
+          eloMilestone: 1750,
+          bgStops: ['#160729', '#0d071c', '#05030a'],
+          accentHex: '#c084fc',
+          secondaryHex: '#ec4899',
+          borderCls: 'border-purple-400 shadow-[0_0_24px_rgba(192,132,252,0.32)]',
+          bgCls: 'bg-gradient-to-br from-[#1d0936] via-[#110921] to-[#07050c]',
+          pillCls: 'bg-purple-500/20 text-purple-300 border-purple-400/40'
+        },
+        {
+          id: 'skin_solar_inferno',
+          storeItemId: 'banner_solar_inferno',
+          name: 'Solar Inferno',
+          subtitle: 'Master 2000 Apex Magma Banner',
+          icon: '🔥',
+          coinCost: 35000,
+          xpCost: 35000,
+          eloMilestone: 2000,
+          bgStops: ['#2e0810', '#381207', '#120506'],
+          accentHex: '#fb7185',
+          secondaryHex: '#f97316',
+          borderCls: 'border-rose-500 shadow-[0_0_26px_rgba(244,63,94,0.35)]',
+          bgCls: 'bg-gradient-to-br from-[#330912] via-[#240e08] to-[#120607]',
+          pillCls: 'bg-rose-500/20 text-rose-300 border-rose-400/40'
+        },
+        {
+          id: 'skin_royal_amethyst',
+          storeItemId: 'banner_royal_amethyst',
+          name: 'Royal Amethyst',
+          subtitle: 'Imperial Diamond Prism & Crown Banner',
+          icon: '👑',
+          coinCost: 45000,
+          xpCost: 45000,
+          eloMilestone: 2000,
+          bgStops: ['#240736', '#3b0a45', '#0d0417'],
+          accentHex: '#e879f9',
+          secondaryHex: '#38bdf8',
+          borderCls: 'border-fuchsia-400 shadow-[0_0_26px_rgba(232,121,249,0.35)]',
+          bgCls: 'bg-gradient-to-br from-[#2a083d] via-[#1c0829] to-[#0a0312]',
+          pillCls: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-400/40'
+        }
+      ];
+
+      function getEsportsRankTierInfo(eloVal, peakVal) {
+        const curElo = Number(eloVal) || 1500;
+        const bestElo = Math.max(curElo, Number(peakVal) || 1500);
+        // Master is unlocked at 2000+ Elo; Grandmaster is explicitly On Wait!
+        if (curElo >= 2000 || bestElo >= 2000) {
+          return {
+            tier: 'MASTER',
+            badgeText: '🎖️ MASTER (2000+ ELO)',
+            shortBadge: '🎖️ MASTER',
+            gmWaitText: '⏳ Grandmaster: On Wait',
+            nextTierText: 'Pinnacle Active Rank (Grandmaster On Wait)',
+            colorHex: '#fbbf24',
+            pillClass: 'bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-400 text-slate-950 font-black border-amber-300'
+          };
+        }
+        if (curElo >= 1850) {
+          return {
+            tier: 'DIAMOND',
+            badgeText: '💎 DIAMOND ELITE',
+            shortBadge: '💎 DIAMOND',
+            gmWaitText: `🎯 Master at 2000 ELO (${2000 - curElo} to go) • ⏳ GM: On Wait`,
+            nextTierText: `${2000 - curElo} ELO to Master (2000)`,
+            colorHex: '#38bdf8',
+            pillClass: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/50'
+          };
+        }
+        if (curElo >= 1700) {
+          return {
+            tier: 'PLATINUM',
+            badgeText: '⚡ PLATINUM VANGUARD',
+            shortBadge: '⚡ PLATINUM',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1850 - curElo} ELO to Diamond • Master at 2000`,
+            colorHex: '#a855f7',
+            pillClass: 'bg-purple-500/20 text-purple-200 border-purple-400/50'
+          };
+        }
+        if (curElo >= 1600) {
+          return {
+            tier: 'GOLD',
+            badgeText: '🥇 GOLD CHALLENGER',
+            shortBadge: '🥇 GOLD',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1700 - curElo} ELO to Platinum • Master at 2000`,
+            colorHex: '#f59e0b',
+            pillClass: 'bg-amber-500/20 text-amber-200 border-amber-400/50'
+          };
+        }
+        if (curElo >= 1525) {
+          return {
+            tier: 'SILVER',
+            badgeText: '🥈 SILVER STRIKER',
+            shortBadge: '🥈 SILVER',
+            gmWaitText: '🎯 Master: 2000 ELO • ⏳ GM: On Wait',
+            nextTierText: `${1600 - curElo} ELO to Gold • Master at 2000`,
+            colorHex: '#e2e8f0',
+            pillClass: 'bg-slate-700/60 text-slate-200 border-slate-500/50'
+          };
+        }
+        return {
+          tier: 'CONTENDER',
+          badgeText: '🥉 ARENA CONTENDER',
+          shortBadge: '🥉 CONTENDER',
+          gmWaitText: '🎖️ Master: 2000 ELO • ⏳ GM: On Wait',
+          nextTierText: `${Math.max(1, 2000 - curElo)} ELO to Master (2000 ELO) • GM On Wait`,
+          colorHex: '#34d399',
+          pillClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+        };
+      }
+
+      function getActiveEsportsPlayerStats() {
+        let uname = 'PLAYER';
+        let flag = '🇮🇳';
+        let dial = '+91';
+        let countryName = 'India';
+        let rec = {};
+
+        try {
+          if (typeof STATE !== 'undefined' && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+            uname = String(STATE.myUsername).trim().toUpperCase();
+            flag = STATE.myCountryFlag || '🇮🇳';
+            dial = STATE.myCountryCode || '+91';
+            countryName = STATE.myCountryName || 'India';
+          } else {
+            const lastU = (localStorage.getItem('oddandeven_last_user_v1') || '').trim().toUpperCase();
+            if (lastU && lastU !== 'GUEST' && lastU !== 'PLAYER' && lastU !== 'YOU') {
+              uname = lastU;
+            }
+          }
+          const wRaw = localStorage.getItem('oddandeven_worldwide_players_v1');
+          const wMap = wRaw ? JSON.parse(wRaw) : {};
+          if (wMap && wMap[uname]) {
+            rec = typeof sanitizeRecordForFreshEpoch === 'function' ? sanitizeRecordForFreshEpoch(wMap[uname]) : wMap[uname];
+          } else if (typeof STATE !== 'undefined' && STATE.humanPlayers && STATE.humanPlayers[uname]) {
+            rec = STATE.humanPlayers[uname];
+          }
+        } catch (e) {}
+
+        const elo = Number(rec.elo) || (typeof STATE !== 'undefined' && Number(STATE.eloRating)) || 1500;
+        const peak = Math.max(elo, Number(rec.peak) || 1500);
+        const wins = Number(rec.wins) || 0;
+        const losses = Number(rec.losses) || 0;
+        const matches = Math.max(Number(rec.matches) || 0, wins + losses);
+        const wlRatio = losses > 0 ? (wins / losses).toFixed(2) : (wins > 0 ? `${wins}.00` : '0.00');
+        const winPct = matches > 0 ? Math.round((wins / matches) * 100) : 0;
+        const totalRuns = Number(rec.totalRuns) || 0;
+        const highScore = Number(rec.highScore) || 0;
+        const wicketsTaken = Number(rec.wicketsTaken) || 0;
+
+        // Win streak
+        let winStreak = Math.max(Number(rec.currentWinStreak) || 0, Number(rec.maxWinStreak) || 0);
+        if (winStreak === 0 && wins > 0 && losses === 0) winStreak = wins;
+
+        // Favorite number from telemetry
+        let favNum = 0;
+        let favCount = 0;
+        let totalPicks = 0;
+        try {
+          const fRaw = localStorage.getItem('oddandeven_number_frequency_' + uname);
+          if (fRaw) {
+            const freq = JSON.parse(fRaw) || {};
+            for (let n = 1; n <= 10; n++) {
+              const c = Number(freq[n]) || 0;
+              totalPicks += c;
+              if (c > favCount) {
+                favCount = c;
+                favNum = n;
+              }
+            }
+          }
+        } catch (e) {}
+
+        // Achievements & Match Coins
+        let achUnlocked = 0;
+        let achXp = 0;
+        try {
+          if (typeof computePlayerAchievements === 'function') {
+            const list = computePlayerAchievements(rec);
+            const unl = list.filter((a) => a.current >= a.target);
+            achUnlocked = unl.length;
+            achXp = unl.reduce((s, a) => s + a.xp, 0);
+          }
+        } catch (e) {}
+
+        const earnedCoins = (totalRuns * 2) + (wicketsTaken * 25) + (wins * 50) + (matches * 20) + achXp;
+        let spentCoins = 0;
+        try {
+          spentCoins = parseInt(localStorage.getItem('oddandeven_spent_coins_' + uname) || '0', 10) || 0;
+        } catch (e) {}
+        const availableCoins = Math.max(0, earnedCoins - spentCoins);
+
+        // Unlocked & Equipped Skins (Synced with XP Store BANNERS inventory)
+        let unlockedSkins = ['skin_stadium_classic'];
+        try {
+          const uRaw = localStorage.getItem('oddandeven_gamercard_unlocked_' + uname);
+          if (uRaw) {
+            const parsed = JSON.parse(uRaw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((s) => { if (!unlockedSkins.includes(s)) unlockedSkins.push(s); });
+            }
+          }
+          const rawStoreInv = localStorage.getItem('oddandeven_store_inventory_' + uname);
+          if (rawStoreInv) {
+            const invArr = JSON.parse(rawStoreInv);
+            if (Array.isArray(invArr)) {
+              ESPORTS_CARD_SKINS.forEach((sk) => {
+                if (sk.storeItemId && invArr.includes(sk.storeItemId) && !unlockedSkins.includes(sk.id)) {
+                  unlockedSkins.push(sk.id);
+                }
+              });
+            }
+          }
+        } catch (e) {}
+        // Auto-unlock any skin whose Elo milestone is met!
+        ESPORTS_CARD_SKINS.forEach((sk) => {
+          if (peak >= sk.eloMilestone && !unlockedSkins.includes(sk.id)) {
+            unlockedSkins.push(sk.id);
+          }
+        });
+
+        let equippedSkinId = 'skin_stadium_classic';
+        try {
+          const eq = localStorage.getItem('oddandeven_gamercard_skin_' + uname);
+          if (eq && unlockedSkins.includes(eq)) equippedSkinId = eq;
+        } catch (e) {}
+        const equippedSkin = ESPORTS_CARD_SKINS.find((s) => s.id === equippedSkinId) || ESPORTS_CARD_SKINS[0];
+
+        // Custom Callsign & Emblem
+        let customMeta = { callsign: 'ARENA STRIKER', emblem: '🏏' };
+        try {
+          const mRaw = localStorage.getItem('oddandeven_gamercard_meta_' + uname);
+          if (mRaw) {
+            const parsedM = JSON.parse(mRaw);
+            if (parsedM && typeof parsedM === 'object') {
+              customMeta = Object.assign(customMeta, parsedM);
+            }
+          }
+          // Also check custom divine card title if set
+          const cRaw = localStorage.getItem('oddandeven_custom_card_' + uname);
+          if (cRaw && customMeta.callsign === 'ARENA STRIKER') {
+            const parsedC = JSON.parse(cRaw);
+            if (parsedC && parsedC.title) customMeta.callsign = parsedC.title;
+          }
+        } catch (e) {}
+
+        const rankInfo = getEsportsRankTierInfo(elo, peak);
+
+        return {
+          username: uname,
+          flag: rec.countryFlag || flag,
+          dial: rec.countryCode || dial,
+          countryName: rec.countryName || countryName,
+          elo,
+          peak,
+          wins,
+          losses,
+          matches,
+          wlRatio,
+          winPct,
+          winStreak,
+          totalRuns,
+          totalBalls: Number(rec.totalBalls) || 0,
+          highScore,
+          wicketsTaken,
+          favNum,
+          favCount,
+          totalPicks,
+          achUnlocked,
+          earnedCoins,
+          spentCoins,
+          availableCoins,
+          unlockedSkins,
+          equippedSkinId,
+          equippedSkin,
+          callsign: customMeta.callsign || 'ARENA STRIKER',
+          emblem: customMeta.emblem || '🏏',
+          rankInfo
+        };
+      }
+
+      function renderEsportsCardToCanvas(canvasEl, overrideSkinId) {
+        if (!canvasEl || typeof canvasEl.getContext !== 'function') return;
+        const ctx = canvasEl.getContext('2d');
+        if (!ctx) return;
+
+        const st = getActiveEsportsPlayerStats();
+        const skin = (overrideSkinId && ESPORTS_CARD_SKINS.find((s) => s.id === overrideSkinId)) || st.equippedSkin || ESPORTS_CARD_SKINS[0];
+        const W = canvasEl.width || 1200;
+        const H = canvasEl.height || 675;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // 1. Multi-Stop Rich Background Gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+        bgGrad.addColorStop(0, skin.bgStops[0]);
+        bgGrad.addColorStop(0.52, skin.bgStops[1]);
+        bgGrad.addColorStop(1, skin.bgStops[2]);
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // 2. Skin-Specific Procedural Esports Artwork & Holographic Light Beams
+        ctx.save();
+        const primaryGlow = ctx.createRadialGradient(W * 0.82, H * 0.24, 15, W * 0.82, H * 0.24, 480);
+        primaryGlow.addColorStop(0, skin.accentHex + '44');
+        primaryGlow.addColorStop(0.5, (skin.secondaryHex || skin.accentHex) + '18');
+        primaryGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = primaryGlow;
+        ctx.fillRect(0, 0, W, H);
+
+        const secondaryGlow = ctx.createRadialGradient(W * 0.16, H * 0.82, 10, W * 0.16, H * 0.82, 380);
+        secondaryGlow.addColorStop(0, (skin.secondaryHex || skin.accentHex) + '30');
+        secondaryGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = secondaryGlow;
+        ctx.fillRect(0, 0, W, H);
+
+        if (skin.id === 'skin_neon_cyber' || skin.id === 'skin_emerald_matrix') {
+          ctx.strokeStyle = skin.id === 'skin_emerald_matrix' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(34, 211, 238, 0.15)';
+          ctx.lineWidth = 1.25;
+          for (let x = 0; x <= W; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, H);
+            ctx.stroke();
+          }
+          for (let y = 0; y <= H; y += 42) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(W, y);
+            ctx.stroke();
+          }
+        } else if (skin.id === 'skin_golden_trophy' || skin.id === 'skin_royal_amethyst') {
+          ctx.strokeStyle = skin.id === 'skin_royal_amethyst' ? 'rgba(232, 121, 249, 0.14)' : 'rgba(251, 191, 36, 0.14)';
+          ctx.lineWidth = 2;
+          for (let r = 70; r <= 630; r += 70) {
+            ctx.beginPath();
+            ctx.arc(W * 0.84, H * 0.22, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        } else if (skin.id === 'skin_obsidian_void') {
+          ctx.fillStyle = 'rgba(255,255,255,0.42)';
+          for (let i = 0; i < 56; i++) {
+            const sx = ((i * 197) % (W - 80)) + 40;
+            const sy = ((i * 131) % (H - 80)) + 40;
+            ctx.beginPath();
+            ctx.arc(sx, sy, (i % 3) + 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (skin.id === 'skin_solar_inferno') {
+          ctx.strokeStyle = 'rgba(251, 113, 133, 0.15)';
+          ctx.lineWidth = 2.5;
+          for (let i = 0; i < 10; i++) {
+            ctx.beginPath();
+            ctx.arc(W * 0.82, H * 0.28, 55 + i * 48, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        } else {
+          ctx.strokeStyle = 'rgba(163, 217, 108, 0.11)';
+          ctx.lineWidth = 1.5;
+          for (let y = 55; y < H; y += 48) {
+            ctx.beginPath();
+            ctx.moveTo(28, y);
+            ctx.lineTo(W - 28, y);
+            ctx.stroke();
+          }
+        }
+
+        // Subtle Diagonal Holographic Foil Sheen
+        const sheenGrad = ctx.createLinearGradient(0, 0, W, H);
+        sheenGrad.addColorStop(0, 'rgba(255,255,255,0)');
+        sheenGrad.addColorStop(0.46, 'rgba(255,255,255,0.03)');
+        sheenGrad.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+        sheenGrad.addColorStop(0.54, 'rgba(255,255,255,0.02)');
+        sheenGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sheenGrad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+
+        // 3. Pro Esports Outer Frame & Glowing Corner HUD Brackets
+        ctx.save();
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(18, 18, W - 36, H - 36, 26);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(28, 28, W - 56, H - 56, 20);
+        ctx.stroke();
+
+        // Corner HUD Brackets
+        const bLen = 38;
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 6;
+        // Top-Left
+        ctx.beginPath(); ctx.moveTo(18, 18 + bLen); ctx.lineTo(18, 18); ctx.lineTo(18 + bLen, 18); ctx.stroke();
+        // Top-Right
+        ctx.beginPath(); ctx.moveTo(W - 18 - bLen, 18); ctx.lineTo(W - 18, 18); ctx.lineTo(W - 18, 18 + bLen); ctx.stroke();
+        // Bottom-Left
+        ctx.beginPath(); ctx.moveTo(18, H - 18 - bLen); ctx.lineTo(18, H - 18); ctx.lineTo(18 + bLen, H - 18); ctx.stroke();
+        // Bottom-Right
+        ctx.beginPath(); ctx.moveTo(W - 18 - bLen, H - 18); ctx.lineTo(W - 18, H - 18); ctx.lineTo(W - 18, H - 18 - bLen); ctx.stroke();
+        ctx.restore();
+
+        // 4. Top Broadcast Header Strip
+        ctx.fillStyle = 'rgba(6, 8, 12, 0.72)';
+        ctx.beginPath();
+        ctx.roundRect(36, 36, W - 72, 62, 16);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = skin.accentHex;
+        ctx.font = '900 20px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.fillText('🏏 ODDANDEVEN.IN  •  PRO ESPORTS GAMER CARD', 58, 74);
+
+        const cardHashId = String((st.username || 'PLAYER').split('').reduce((a, c) => a + c.charCodeAt(0) * 37, 1049) % 9000 + 1000);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '800 16px "JetBrains Mono", monospace';
+        ctx.fillText(`${skin.icon} SKIN: ${skin.name.toUpperCase()}  |  ID #${cardHashId}`, W - 58, 73);
+        ctx.textAlign = 'left';
+
+        // 5. Player Hero Identity Pod (Left) + Master 2000 Rank & Progress Box (Right)
+        // Left Avatar Shield Pod
+        ctx.fillStyle = 'rgba(8, 10, 15, 0.78)';
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(44, 114, 152, 156, 26);
+        ctx.fill();
+        ctx.stroke();
+
+        // Inner Avatar Ring
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(120, 174, 44, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.font = '58px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(st.emblem || '🏏', 120, 194);
+
+        // Nationality Pill inside Avatar Pod
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.beginPath();
+        ctx.roundRect(58, 228, 124, 30, 10);
+        ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '800 16px "JetBrains Mono", monospace';
+        ctx.fillText(`${st.flag} ${st.dial}`, 120, 249);
+        ctx.textAlign = 'left';
+
+        // Player Username & Verified Badge
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 48px "Space Grotesk", Outfit, Inter, sans-serif';
+        const dispUname = (st.username || 'PLAYER').slice(0, 15);
+        ctx.fillText(`${dispUname} ⭐`, 218, 166);
+
+        // Callsign Metallic Pill
+        const callsignText = `⚡ ${(st.callsign || 'ARENA CONTENDER').toUpperCase()}`;
+        ctx.font = '800 20px "Space Grotesk", Outfit, Inter, sans-serif';
+        const csWidth = Math.min(430, Math.max(210, ctx.measureText(callsignText).width + 32));
+        ctx.fillStyle = skin.accentHex + '24';
+        ctx.strokeStyle = skin.accentHex;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(218, 182, csWidth, 38, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = skin.accentHex;
+        ctx.fillText(callsignText, 234, 208);
+
+        // Sub-meta line: Achievements, Active Streak & Multiplayer Tag
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 16px "JetBrains Mono", monospace';
+        ctx.fillText(`🏅 ${st.achUnlocked}/30 Achievements  •  🔥 Streak: ${st.winStreak}  •  ⚔️ Ranked 1v1`, 218, 252);
+
+        // Right Rank & Master 2000 Progress Pod
+        const rankPodX = W - 446;
+        const rankPodW = 402;
+        ctx.fillStyle = 'rgba(8, 10, 15, 0.82)';
+        ctx.strokeStyle = st.rankInfo.colorHex;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(rankPodX, 114, rankPodW, 156, 26);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = st.rankInfo.colorHex;
+        ctx.font = '900 22px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(st.rankInfo.badgeText, rankPodX + rankPodW / 2, 150);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 34px "JetBrains Mono", monospace';
+        ctx.fillText(`${st.elo} ELO  (PEAK ${st.peak})`, rankPodX + rankPodW / 2, 192);
+
+        // Master 2000 Progress Bar inside Rank Pod
+        const barX = rankPodX + 28;
+        const barY = 208;
+        const barW = rankPodW - 56;
+        const barH = 14;
+        const masterPct = Math.max(0.08, Math.min(1, (st.elo - 1400) / (2000 - 1400)));
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, barH, 7);
+        ctx.fill();
+
+        const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+        barGrad.addColorStop(0, skin.accentHex);
+        barGrad.addColorStop(1, '#fbbf24');
+        ctx.fillStyle = barGrad;
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, Math.round(barW * masterPct), barH, 7);
+        ctx.fill();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '800 13px "JetBrains Mono", monospace';
+        ctx.fillText('🎖️ MASTER TIER: 2000 ELO  •  ⏳ GRANDMASTER: ON WAIT', rankPodX + rankPodW / 2, 248);
+        ctx.textAlign = 'left';
+
+        // 6. 6 PRO TELEMETRY STAT PODS (3 Columns x 2 Rows for Crisp Readability)
+        const srVal = st.totalBalls > 0 ? ((st.totalRuns / st.totalBalls) * 100).toFixed(1) : '0.0';
+        const favPct = st.favNum > 0 ? Math.round((st.favCount / Math.max(1, st.totalPicks)) * 100) : 0;
+        const statPods = [
+          {
+            label: '🎖️ OFFICIAL RANKED ELO',
+            value: `${st.elo} ELO`,
+            sub: `Peak Rating: ${st.peak} ELO • ${st.rankInfo.shortBadge}`,
+            accent: '#fbbf24',
+            pct: masterPct
+          },
+          {
+            label: '⚔️ MULTIPLAYER W/L RATIO',
+            value: `${st.wlRatio} RATIO`,
+            sub: `${st.wins}W – ${st.losses}L (${st.winPct}% Win Rate • ${st.matches} MP)`,
+            accent: '#34d399',
+            pct: Math.min(1, (Number(st.winPct) || 0) / 100)
+          },
+          {
+            label: '🏏 MULTIPLAYER RUNS SCORED',
+            value: `${st.totalRuns.toLocaleString()} RUNS`,
+            sub: `High Score: ${st.highScore}* • Strike Rate: ${srVal}`,
+            accent: '#38bdf8',
+            pct: Math.min(1, st.totalRuns / 500)
+          },
+          {
+            label: '⚾ MULTIPLAYER WICKETS',
+            value: `${st.wicketsTaken} WKTS`,
+            sub: `1v1 Wickets Claimed • Best Streak: 🔥 ${st.winStreak}`,
+            accent: '#f43f5e',
+            pct: Math.min(1, st.wicketsTaken / 25)
+          },
+          {
+            label: '🎯 FAVORITE HAND NUMBER',
+            value: st.favNum > 0 ? `NUMBER #${st.favNum}` : 'NO PICKS YET',
+            sub: st.favNum > 0 ? `Picked ${st.favCount}x (${favPct}% Frequency)` : 'Play turns on pitch to track',
+            accent: '#c084fc',
+            pct: st.favNum > 0 ? Math.min(1, favPct / 50) : 0.08
+          },
+          {
+            label: '🏆 ACHIEVEMENTS & STORE',
+            value: `${st.achUnlocked} / 30 BADGES`,
+            sub: `Store Skins Unlocked: ${st.unlockedSkins.length} • Verified Pro`,
+            accent: '#a3d96c',
+            pct: Math.min(1, st.achUnlocked / 30)
+          }
+        ];
+
+        const podW = 356;
+        const podH = 128;
+        const gapX = 22;
+        const gapY = 18;
+        const startX = 44;
+        const startY = 292;
+
+        statPods.forEach((pod, idx) => {
+          const col = idx % 3;
+          const row = Math.floor(idx / 3);
+          const px = startX + col * (podW + gapX);
+          const py = startY + row * (podH + gapY);
+
+          ctx.fillStyle = 'rgba(10, 13, 19, 0.82)';
+          ctx.strokeStyle = pod.accent + '88';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(px, py, podW, podH, 18);
+          ctx.fill();
+          ctx.stroke();
+
+          // Left Accent Bar inside Pod
+          ctx.fillStyle = pod.accent;
+          ctx.beginPath();
+          ctx.roundRect(px + 10, py + 16, 5, podH - 32, 3);
+          ctx.fill();
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '800 13px "JetBrains Mono", monospace';
+          ctx.fillText(pod.label, px + 26, py + 32);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 28px "JetBrains Mono", monospace';
+          ctx.fillText(pod.value, px + 26, py + 70);
+
+          ctx.fillStyle = pod.accent;
+          ctx.font = '700 13px Inter, sans-serif';
+          ctx.fillText(pod.sub, px + 26, py + 96);
+
+          // Mini Telemetry Progress Bar at bottom of Pod
+          const pBarX = px + 26;
+          const pBarY = py + 108;
+          const pBarW = podW - 44;
+          ctx.fillStyle = 'rgba(255,255,255,0.08)';
+          ctx.beginPath();
+          ctx.roundRect(pBarX, pBarY, pBarW, 6, 3);
+          ctx.fill();
+
+          ctx.fillStyle = pod.accent;
+          ctx.beginPath();
+          ctx.roundRect(pBarX, pBarY, Math.max(12, Math.round(pBarW * (pod.pct || 0.1))), 6, 3);
+          ctx.fill();
+        });
+
+        // 7. Bottom Esports Broadcast Footer Bar
+        ctx.fillStyle = 'rgba(6, 8, 12, 0.78)';
+        ctx.beginPath();
+        ctx.roundRect(36, H - 82, W - 72, 48, 14);
+        ctx.fill();
+
+        ctx.fillStyle = '#a3d96c';
+        ctx.font = '800 15px "JetBrains Mono", monospace';
+        ctx.fillText(`✓ MULTIPLAYER LEADERBOARD VERIFIED  •  RANKED MATCHES: ${st.matches}  •  SKIN: ${skin.name.toUpperCase()}`, 56, H - 52);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 15px "Space Grotesk", Outfit, Inter, sans-serif';
+        ctx.fillText('OddAndEven.in  •  Unlock Skins in Store (store.html)', W - 56, H - 52);
+        ctx.textAlign = 'left';
+      }
+
+      function showGamerCardToast(msg, isSuccess = true) {
+        const toastIds = ['esportsCardFeedbackToast', 'hcProfGamerCardToast'];
+        toastIds.forEach((id) => {
+          const elToast = document.getElementById(id);
+          if (elToast) {
+            elToast.textContent = msg;
+            elToast.className = `p-2.5 rounded-xl text-xs font-bold border text-center transition ${
+              isSuccess
+                ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200'
+                : 'bg-rose-500/20 border-rose-400/50 text-rose-200'
+            }`;
+            elToast.classList.remove('hidden');
+          }
+        });
+      }
+
+      function downloadEsportsPlayerCard(canvasId) {
+        const c = document.getElementById(canvasId || 'esportsGamerCardCanvas') || document.getElementById('hcProfileGamerCardCanvas');
+        if (!c) return;
+        renderEsportsCardToCanvas(c);
+        const st = getActiveEsportsPlayerStats();
+        try {
+          const dataUrl = c.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `OddAndEven_GamerCard_${st.username}.png`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showGamerCardToast(`📥 Downloaded OddAndEven_GamerCard_${st.username}.png! Ready to post on Discord, Twitter/X, or WhatsApp.`);
+        } catch (e) {
+          showGamerCardToast('Could not export PNG directly — try Copy Card Image.', false);
+        }
+      }
+
+      async function copyEsportsPlayerCardImage(canvasId) {
+        const c = document.getElementById(canvasId || 'esportsGamerCardCanvas') || document.getElementById('hcProfileGamerCardCanvas');
+        if (!c) return;
+        renderEsportsCardToCanvas(c);
+        const st = getActiveEsportsPlayerStats();
+        const shareSummary = `🏏 ${st.flag} ${st.username} "${st.callsign}" — ${st.rankInfo.badgeText} (${st.elo} ELO • ⏳ Grandmaster: On Wait) | W/L: ${st.wlRatio} (${st.wins}W-${st.losses}L) | Runs: ${st.totalRuns} (High ${st.highScore}*) | Fav #: ${st.favNum > 0 ? '#' + st.favNum : '—'} | Trophies: ${st.achUnlocked}/30 on OddAndEven.in!`;
+        try {
+          if (navigator.clipboard && typeof window.ClipboardItem !== 'undefined' && c.toBlob) {
+            c.toBlob(async (blob) => {
+              if (!blob) return;
+              try {
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                showGamerCardToast('📋 Card Image copied to clipboard! Press Ctrl+V / Paste directly in Discord, Twitter/X, or WhatsApp!');
+              } catch (clipErr) {
+                try {
+                  await navigator.clipboard.writeText(shareSummary);
+                  showGamerCardToast('📋 Card Flex Summary copied to clipboard! (Also click Download PNG to attach image)');
+                } catch (e2) {}
+              }
+            }, 'image/png');
+            return;
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareSummary);
+            showGamerCardToast('📋 Card Flex Summary copied! Ready to paste into Discord, Twitter/X, or WhatsApp!');
+          }
+        } catch (e) {
+          showGamerCardToast('📋 Ready to share! Click Download Player Card to save the HD PNG.');
+        }
+      }
+
+      function shareEsportsPlayerCardSocial(platform) {
+        const st = getActiveEsportsPlayerStats();
+        const text = `🏏 Check out my OddAndEven.in Esports Gamer Card!\n${st.flag} ${st.username} "${st.callsign}"\n🎖️ Rank: ${st.rankInfo.badgeText} (${st.elo} ELO • ⏳ GM: On Wait)\n⚖️ W/L Ratio: ${st.wlRatio} (${st.wins}W–${st.losses}L) • 🔥 Streak: ${st.winStreak}\n🏏 Total Scored: ${st.totalRuns} Runs (High: ${st.highScore}*)\n🎯 Fav Number: ${st.favNum > 0 ? '#' + st.favNum : '—'} • 🏆 ${st.achUnlocked}/30 Trophies`;
+        if (platform === 'twitter') {
+          const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+          window.open(url, '_blank', 'noopener,noreferrer');
+          showGamerCardToast('🐦 Opened X / Twitter composer! Tip: Click "Copy Card Image" to paste your card graphic into the tweet.');
+        } else if (platform === 'whatsapp') {
+          const url = 'https://wa.me/?text=' + encodeURIComponent(text);
+          window.open(url, '_blank', 'noopener,noreferrer');
+          showGamerCardToast('📲 Opened WhatsApp share! You can also attach your downloaded Gamer Card PNG.');
+        } else if (platform === 'discord') {
+          copyEsportsPlayerCardImage('esportsGamerCardCanvas');
+          showGamerCardToast('💬 Copied Gamer Card for Discord! Open any Discord channel and press Ctrl+V (Paste)!');
+        }
+      }
+
+      function unlockOrEquipGamerCardSkin(skinId) {
+        const st = getActiveEsportsPlayerStats();
+        const skin = ESPORTS_CARD_SKINS.find((s) => s.id === skinId);
+        if (!skin) return;
+        const uname = st.username;
+        const isUnlocked = st.unlockedSkins.includes(skin.id) || st.peak >= skin.eloMilestone;
+        if (isUnlocked) {
+          try {
+            localStorage.setItem('oddandeven_gamercard_skin_' + uname, skin.id);
+          } catch (e) {}
+          showGamerCardToast(`✨ Equipped "${skin.name}" Esports Banner Skin!`);
+          updateAllGamerCardUI();
+          return;
+        }
+        // Check if player has enough Match Coins
+        if (st.availableCoins >= skin.coinCost) {
+          const nextUnl = st.unlockedSkins.concat([skin.id]);
+          try {
+            localStorage.setItem('oddandeven_gamercard_unlocked_' + uname, JSON.stringify(nextUnl));
+            localStorage.setItem('oddandeven_spent_coins_' + uname, String(st.spentCoins + skin.coinCost));
+            localStorage.setItem('oddandeven_gamercard_skin_' + uname, skin.id);
+          } catch (e) {}
+          showGamerCardToast(`🎉 Unlocked & Equipped "${skin.name}" for ${skin.coinCost} Match Coins!`);
+          updateAllGamerCardUI();
+        } else {
+          showGamerCardToast(`🔒 Need ${skin.coinCost} Match Coins (Available: ${st.availableCoins}) OR reach ${skin.eloMilestone} Elo Milestone to unlock "${skin.name}"!`, false);
+        }
+      }
+
+      function saveGamerCardCustomMeta(callsignInputId, emblemVal) {
+        const st = getActiveEsportsPlayerStats();
+        const uname = st.username;
+        const cEl = document.getElementById(callsignInputId || 'gamerCardCallsignInput');
+        const nextCallsign = (cEl && cEl.value.trim()) ? cEl.value.trim().slice(0, 26) : st.callsign;
+        const nextEmblem = emblemVal || st.emblem || '🏏';
+        try {
+          localStorage.setItem('oddandeven_gamercard_meta_' + uname, JSON.stringify({
+            callsign: nextCallsign,
+            emblem: nextEmblem
+          }));
+        } catch (e) {}
+        showGamerCardToast(`✨ Updated Gamer Card Callsign ("${nextCallsign}") & Emblem (${nextEmblem})!`);
+        updateAllGamerCardUI();
+      }
+
+      function updateAllGamerCardUI() {
+        const st = getActiveEsportsPlayerStats();
+        const skin = st.equippedSkin;
+
+        // 1. Update Pitch Player 1 Gamer Card Mini-Banner (#p1GamerCardMiniStrip)
+        const p1Strip = document.getElementById('p1GamerCardMiniStrip');
+        if (p1Strip) {
+          p1Strip.className = `mt-1.5 p-1.5 sm:p-2 rounded-xl border transition-all flex flex-wrap items-center justify-between gap-1.5 ${skin.bgCls} ${skin.borderCls}`;
+          p1Strip.innerHTML = `
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="text-sm sm:text-base shrink-0">${st.emblem}</span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1 flex-wrap">
+                  <span class="px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-mono-num font-black uppercase border ${st.rankInfo.pillClass}">${st.rankInfo.shortBadge} • ${st.elo}</span>
+                  <span class="text-[8px] font-mono-num text-amber-300 font-bold hidden sm:inline">⏳ GM: On Wait</span>
+                </div>
+                <div class="text-[8px] sm:text-[9px] font-mono-num text-slate-300 truncate mt-0.5">
+                  W/L: <strong class="text-emerald-300">${st.wlRatio}</strong> • Runs: <strong class="text-cyan-300">${st.totalRuns}</strong> • Fav: <strong class="text-amber-300">${st.favNum > 0 ? '#' + st.favNum : '—'}</strong>
+                </div>
+              </div>
+            </div>
+            <button type="button" onclick="window.openEsportsGamerCardModal && window.openEsportsGamerCardModal()" class="px-2 py-1 rounded-lg text-[8px] sm:text-[9px] font-brand font-black bg-amber-400 hover:bg-amber-300 text-slate-950 shadow shrink-0 transition">
+              🪪 Card
+            </button>
+          `;
+        }
+
+        // 2. Update Sidebar Player Card Live Badges
+        const sbCard = document.getElementById('sidebarPlayerCard');
+        if (sbCard) {
+          sbCard.className = `block w-full p-2.5 sm:p-3 rounded-2xl border transition-all duration-300 relative overflow-hidden group shadow-md cursor-pointer ${skin.bgCls} ${skin.borderCls}`;
+        }
+        const sbTierPill = document.getElementById('sidebarCardTierPill');
+        if (sbTierPill) {
+          sbTierPill.textContent = `${st.rankInfo.shortBadge} • ${st.elo}`;
+          sbTierPill.className = `px-1.5 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider border shrink-0 ${st.rankInfo.pillClass}`;
+        }
+        const sbTitle = document.getElementById('sidebarCardTitle');
+        if (sbTitle) {
+          sbTitle.textContent = `${st.emblem} ${st.callsign} (${skin.name})`;
+        }
+        const sbRunsWkts = document.getElementById('sidebarCardRunsWkts');
+        if (sbRunsWkts) {
+          sbRunsWkts.textContent = `W/L ${st.wlRatio} • ${st.totalRuns} R • Fav ${st.favNum > 0 ? '#' + st.favNum : '—'}`;
+        }
+
+        // 3. Render Skins Selector Grid inside Modal & Profile Studio
+        ['esportsCardSkinsGrid', 'hcProfSkinsGrid'].forEach((gridId) => {
+          const gridEl = document.getElementById(gridId);
+          if (!gridEl) return;
+          gridEl.innerHTML = ESPORTS_CARD_SKINS.map((sk) => {
+            const isUnlocked = st.unlockedSkins.includes(sk.id) || st.peak >= sk.eloMilestone;
+            const isEquipped = st.equippedSkinId === sk.id;
+            let btnLabel = '';
+            let btnCls = '';
+            if (isEquipped) {
+              btnLabel = '✓ Equipped Banner';
+              btnCls = 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/60';
+            } else if (isUnlocked) {
+              btnLabel = '⚡ Equip Skin';
+              btnCls = 'bg-amber-400 hover:bg-amber-300 text-slate-950 font-black';
+            } else {
+              btnLabel = `🔒 ${sk.coinCost} Coins / ${sk.eloMilestone} Elo`;
+              btnCls = 'bg-black/50 hover:bg-black/70 text-amber-300 border border-amber-500/40';
+            }
+            return `
+              <div class="p-3 rounded-2xl border transition flex flex-col justify-between gap-2 ${sk.bgCls} ${isEquipped ? sk.borderCls : 'border-white/10'}">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-xl shrink-0">${sk.icon}</span>
+                    <div class="min-w-0">
+                      <div class="text-xs font-black text-white truncate">${sk.name}</div>
+                      <div class="text-[10px] text-slate-300 truncate">${sk.subtitle}</div>
+                    </div>
+                  </div>
+                  <span class="px-1.5 py-0.5 rounded text-[8px] font-mono-num font-bold border shrink-0 ${sk.pillCls}">
+                    ${sk.eloMilestone}+ ELO
+                  </span>
+                </div>
+                <button type="button" onclick="window.unlockOrEquipGamerCardSkin && window.unlockOrEquipGamerCardSkin('${sk.id}')" class="w-full py-1.5 px-2.5 rounded-xl text-[10px] font-brand font-extrabold transition ${btnCls}">
+                  ${btnLabel}
+                </button>
+              </div>
+            `;
+          }).join('');
+        });
+
+        // 4. Update Modal Live Badges & Coin Counter
+        const coinsBadge = document.getElementById('gamerCardCoinsBalance');
+        if (coinsBadge) coinsBadge.textContent = `${st.availableCoins.toLocaleString()} Match Coins`;
+        const profCoinsBadge = document.getElementById('hcProfGamerCardCoins');
+        if (profCoinsBadge) profCoinsBadge.textContent = `${st.availableCoins.toLocaleString()} Match Coins`;
+
+        const rankBannerEl = document.getElementById('gamerCardLiveRankPill');
+        if (rankBannerEl) {
+          rankBannerEl.textContent = `${st.rankInfo.badgeText} • ⏳ Grandmaster: On Wait`;
+        }
+
+        // 5. Render HD Canvases
+        const modalCanvas = document.getElementById('esportsGamerCardCanvas');
+        if (modalCanvas) renderEsportsCardToCanvas(modalCanvas);
+        const profCanvas = document.getElementById('hcProfileGamerCardCanvas');
+        if (profCanvas) renderEsportsCardToCanvas(profCanvas);
+      }
+
+      function openEsportsGamerCardModal() {
+        const m = document.getElementById('esportsGamerCardModal');
+        if (!m) return;
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+        const st = getActiveEsportsPlayerStats();
+        const inp = document.getElementById('gamerCardCallsignInput');
+        if (inp) inp.value = st.callsign;
+        updateAllGamerCardUI();
+      }
+
+      function closeEsportsGamerCardModal() {
+        const m = document.getElementById('esportsGamerCardModal');
+        if (!m) return;
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      }
+
+      try {
+        window.ESPORTS_CARD_SKINS = ESPORTS_CARD_SKINS;
+        window.getEsportsRankTierInfo = getEsportsRankTierInfo;
+        window.getActiveEsportsPlayerStats = getActiveEsportsPlayerStats;
+        window.renderEsportsCardToCanvas = renderEsportsCardToCanvas;
+        window.downloadEsportsPlayerCard = downloadEsportsPlayerCard;
+        window.copyEsportsPlayerCardImage = copyEsportsPlayerCardImage;
+        window.shareEsportsPlayerCardSocial = shareEsportsPlayerCardSocial;
+        window.unlockOrEquipGamerCardSkin = unlockOrEquipGamerCardSkin;
+        window.saveGamerCardCustomMeta = saveGamerCardCustomMeta;
+        window.updateAllGamerCardUI = updateAllGamerCardUI;
+        window.openEsportsGamerCardModal = openEsportsGamerCardModal;
+        window.closeEsportsGamerCardModal = closeEsportsGamerCardModal;
+      } catch (e) {}
+
 
       function bindEvents() {
         el.btnCallOdd.addEventListener('click', () => setTossCall('ODD'));
@@ -8761,6 +9900,8 @@
           renderStoreSection();
         };
         const fAllBtn = document.getElementById('btnStoreFilterAll');
+        const fBannersBtn = document.getElementById('btnStoreFilterBanners');
+        if (fBannersBtn) fBannersBtn.addEventListener('click', () => setDesktopStoreFilter('BANNERS'));
         const fCardsBtn = document.getElementById('btnStoreFilterCards');
         const fCustomBtn = document.getElementById('btnStoreFilterCustom');
         const fCosmBtn = document.getElementById('btnStoreFilterCosmetics');
@@ -9366,6 +10507,8 @@
                 countryCode: dial,
                 countryName: cName,
                 countryFlag: cFlag,
+                authProvider: 'pin',
+                googleUid: null,
                 encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
                 createdAt: new Date().toISOString()
               };
@@ -9800,14 +10943,16 @@
           }
         } catch (e) {}
 
-        FAKE_SEED_NAMES.forEach((fakeName) => {
-          deleteAllCloudAccountMirrors(fakeName);
-          delete artAccounts[fakeName];
-          delete rootAccounts[fakeName];
-          delete artPlayers[fakeName];
-          delete rootPlayers[fakeName];
-          delete localVault[fakeName];
-        });
+        if (!window.__hcFakeSeedsPurgedOnce) {
+          window.__hcFakeSeedsPurgedOnce = true;
+          FAKE_SEED_NAMES.forEach((fakeName) => {
+            delete artAccounts[fakeName];
+            delete rootAccounts[fakeName];
+            delete artPlayers[fakeName];
+            delete rootPlayers[fakeName];
+            delete localVault[fakeName];
+          });
+        }
 
         const allSeen = new Set([
           ...Object.keys(artAccounts),
@@ -9883,12 +11028,17 @@
               updatedAt: Date.now()
             };
 
-            // If account was missing from leaderboard collection in cloud, seed it!
-            if (!inArtLb || !inRootLb) {
+            // Seed missing or pre-v3 bot-polluted leaderboard entry once per session
+            if (!window.__hcSeededLbSet) window.__hcSeededLbSet = new Set();
+            if (!window.__hcSeededAccSet) window.__hcSeededAccSet = new Set();
+            const needsV3CloudPurge = Boolean(rawBasePlayer && rawBasePlayer.statsEpoch !== 'v3_mp_only_leaderboard_2026_11_01');
+            if (artLbLoaded && (!inArtLb || needsV3CloudPurge) && !window.__hcSeededLbSet.has(clean)) {
+              window.__hcSeededLbSet.add(clean);
               setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), nextPlayers[clean], { merge: true }).catch(() => {});
               setDoc(doc(db, 'leaderboard', clean), nextPlayers[clean], { merge: true }).catch(() => {});
             }
-            if (localVault[clean] && (!inArtAcc || !inRootAcc)) {
+            if (artAccLoaded && localVault[clean] && !inArtAcc && !window.__hcSeededAccSet.has(clean)) {
+              window.__hcSeededAccSet.add(clean);
               needsReseedSync = true;
             }
           }
@@ -10096,7 +11246,12 @@
             for (const k of Object.keys(usersVault)) {
               const clean = (k || '').trim().toUpperCase();
               if (canPushUser(clean)) {
-                const uPayload = usersVault[k];
+                const rawUp = usersVault[k] || {};
+                const uPayload = Object.assign({}, rawUp, {
+                  username: clean,
+                  authProvider: rawUp.authProvider || (rawUp.googleUid ? 'google' : 'pin'),
+                  googleUid: rawUp.googleUid || null
+                });
                 await Promise.allSettled([
                   setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true }),
                   setDoc(doc(db, 'accounts', clean), uPayload, { merge: true })
