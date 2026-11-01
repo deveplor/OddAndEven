@@ -10190,9 +10190,40 @@
           el.modalAuthAlert.classList.add('hidden');
         };
 
+        function populateModalSavedAccounts() {
+          const wrapEl = document.getElementById('modalSavedAccountsWrap');
+          const listEl = document.getElementById('modalSavedAccountsList');
+          if (!wrapEl || !listEl) return;
+          let localVault = {};
+          try { localVault = loadEncryptedUsersMap() || {}; } catch (e) {}
+          const mergedAccounts = Object.assign({}, localVault, cloudAccounts || {}, (typeof STATE !== 'undefined' && STATE.humanPlayers) || {});
+          const savedNames = Object.keys(mergedAccounts).filter((u) => u && !isPlaceholderUsername(u) && !FAKE_SEED_NAMES.includes(u));
+          if (savedNames.length === 0) {
+            wrapEl.classList.add('hidden');
+            listEl.innerHTML = '';
+            return;
+          }
+          wrapEl.classList.remove('hidden');
+          const activeU = (STATE.isAuthenticated && STATE.myUsername) ? STATE.myUsername.trim().toUpperCase() : '';
+          listEl.innerHTML = savedNames.map((uname) => {
+            const rec = mergedAccounts[uname] || {};
+            const flag = rec.countryFlag || '🇮🇳';
+            const dial = rec.countryCode || '+91';
+            const isCurrent = uname === activeU;
+            return `<button type="button" data-quick-acc="${uname}" data-quick-dial="${dial}" class="px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold border transition flex items-center gap-1.5 ${isCurrent ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50' : 'bg-[#1f1d1a] hover:bg-[#2a2723] text-slate-200 border-[#3d3a34]'}">
+              <span>${flag}</span>
+              <span>@${uname}</span>
+              <span class="text-[8px] font-mono-num text-slate-400">${dial}</span>
+              ${isCurrent ? '<span class="text-[8px] text-emerald-400">●</span>' : ''}
+            </button>`;
+          }).join('');
+        }
+        window.populateDesktopModalSavedAccounts = populateModalSavedAccounts;
+
         const openAuthModal = (showRemoveConfirm = false) => {
           SoundFX.click();
           if (!el.authModal) return;
+          populateModalSavedAccounts();
           const usersCount = Object.keys(loadEncryptedUsersMap()).length;
           if (!STATE.isAuthenticated && usersCount === 0) {
             setModalAuthTab('SIGNUP');
@@ -10399,6 +10430,38 @@
         if (el.btnConfirmRemoveAccount) {
           el.btnConfirmRemoveAccount.addEventListener('click', executeRemoveCurrentAccount);
         }
+
+        const savedAccListEl = document.getElementById('modalSavedAccountsList');
+        if (savedAccListEl) {
+          savedAccListEl.addEventListener('click', (ev) => {
+            const btn = ev.target.closest('[data-quick-acc]');
+            if (!btn) return;
+            SoundFX.click();
+            const uname = btn.getAttribute('data-quick-acc') || '';
+            const dial = btn.getAttribute('data-quick-dial') || '+91';
+            setModalAuthTab('LOGIN');
+            if (el.modalInputUsername) el.modalInputUsername.value = uname;
+            if (el.modalSelectCountry) el.modalSelectCountry.value = dial;
+            if (el.modalInputPin5) {
+              el.modalInputPin5.value = '';
+              el.modalInputPin5.focus();
+            }
+            if (typeof updateModalKeyPreview === 'function') updateModalKeyPreview();
+          });
+        }
+        const btnNewAccQuick = document.getElementById('btnModalNewAccountQuick');
+        if (btnNewAccQuick) {
+          btnNewAccQuick.addEventListener('click', () => {
+            SoundFX.click();
+            setModalAuthTab('SIGNUP');
+            if (el.modalInputUsername) {
+              el.modalInputUsername.value = '';
+              el.modalInputUsername.focus();
+            }
+            if (el.modalInputPin5) el.modalInputPin5.value = '';
+            if (typeof updateModalKeyPreview === 'function') updateModalKeyPreview();
+          });
+        }
         if (el.btnInlineLeaveRoom) el.btnInlineLeaveRoom.addEventListener('click', leaveMultiplayerRoom);
         ['btnGoLoginPage1', 'btnGoLoginPage2'].forEach((id) => {
           const b = document.getElementById(id);
@@ -10502,6 +10565,11 @@
               }
               // Reset any old cached stats so re-created account starts fresh at 1500 ELO
               delete STATE.humanPlayers[uname];
+              let authUser = null;
+              try {
+                authUser = await ensureUserRegisteredInFirebaseAuth(uname, pin5);
+              } catch (e) {}
+
               usersMap[uname] = {
                 username: uname,
                 countryCode: dial,
@@ -10509,6 +10577,7 @@
                 countryFlag: cFlag,
                 authProvider: 'pin',
                 googleUid: null,
+                firebaseUid: (authUser && authUser.uid) || null,
                 encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
                 createdAt: new Date().toISOString()
               };
@@ -10861,7 +10930,7 @@
   ])
     .then(async ([appMod, authMod, firestoreMod]) => {
       const { initializeApp, getApps, getApp } = appMod;
-      const { getAuth, signInAnonymously, signInWithCustomToken, deleteUser, signOut } = authMod;
+      const { getAuth, signInAnonymously, signInWithCustomToken, deleteUser, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } = authMod;
       const { getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection } = firestoreMod;
 
       const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
@@ -11097,6 +11166,32 @@
         console.warn('Anonymous sign-in notice:', e);
       }
 
+        setTimeout(async () => {
+          try {
+            const vault = loadEncryptedUsersMap() || {};
+            for (const uname of Object.keys(vault)) {
+              const clean = uname.trim().toUpperCase();
+              if (clean && !isPlaceholderUsername(clean) && !FAKE_SEED_NAMES.includes(clean)) {
+                const uRec = vault[uname] || {};
+                let authUser = null;
+                try {
+                  authUser = await ensureUserRegisteredInFirebaseAuth(clean, uRec.pin5 || '12345');
+                } catch (e) {}
+                const uPayload = Object.assign({}, uRec, {
+                  username: clean,
+                  authProvider: uRec.authProvider || (uRec.googleUid ? 'google' : 'pin'),
+                  googleUid: uRec.googleUid || null,
+                  firebaseUid: (authUser && authUser.uid) || uRec.firebaseUid || null,
+                  updatedAt: Date.now()
+                });
+                await Promise.allSettled([
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true }),
+                  setDoc(doc(db, 'accounts', clean), uPayload, { merge: true })
+                ]);
+              }
+            }
+          } catch (e) {}
+        }, 1500);
       // Live snapshot listeners for real-time multiplayer & deletion synchronization
       try {
         const accountsCol = collection(db, 'artifacts', appId, 'public', 'data', 'accounts');
@@ -11107,11 +11202,21 @@
             if (docSnap.exists()) {
               const d = docSnap.data();
               const c = String((d && d.username) || docSnap.id).trim().toUpperCase();
-              if (c) artAccounts[c] = d;
+              if (c) {
+                artAccounts[c] = d;
+                try {
+                  const localM = loadEncryptedUsersMap();
+                  if (!localM[c]) {
+                    localM[c] = d;
+                    saveEncryptedUsersMap(localM);
+                  }
+                } catch (e) {}
+              }
             }
           });
           artAccLoaded = true;
           recomputeAuthoritativeCloudState();
+          if (typeof window.populateDesktopModalSavedAccounts === 'function') window.populateDesktopModalSavedAccounts();
         }, (err) => console.warn('Cloud accounts snapshot notice:', err));
 
         const lbCol = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
@@ -11152,11 +11257,21 @@
             if (docSnap.exists()) {
               const d = docSnap.data();
               const c = String((d && d.username) || docSnap.id).trim().toUpperCase();
-              if (c) rootAccounts[c] = d;
+              if (c) {
+                rootAccounts[c] = d;
+                try {
+                  const localM = loadEncryptedUsersMap();
+                  if (!localM[c]) {
+                    localM[c] = d;
+                    saveEncryptedUsersMap(localM);
+                  }
+                } catch (e) {}
+              }
             }
           });
           rootAccLoaded = true;
           recomputeAuthoritativeCloudState();
+          if (typeof window.populateDesktopModalSavedAccounts === 'function') window.populateDesktopModalSavedAccounts();
         }, () => {});
 
         onSnapshot(collection(db, 'leaderboard'), (snapshot) => {
@@ -11233,6 +11348,46 @@
         } catch (e) {}
       };
 
+      async function ensureUserRegisteredInFirebaseAuth(username, pin5) {
+        if (!auth || !username) return null;
+        const clean = String(username).trim().toUpperCase();
+        if (isPlaceholderUsername(clean)) return null;
+        const authEmail = `${clean.toLowerCase()}@oddandeven.in`;
+        const safePin = pin5 && /^\d{5}$/.test(String(pin5).trim()) ? String(pin5).trim() : '12345';
+        const authPassword = `OAE#${safePin}_${clean.toLowerCase()}`;
+
+        let user = auth.currentUser;
+        if (user && user.email && user.email.toLowerCase() === authEmail.toLowerCase()) return user;
+
+        try {
+          if (typeof createUserWithEmailAndPassword === 'function') {
+            const cred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+            user = cred.user;
+          }
+        } catch (err) {
+          const code = (err && err.code) || '';
+          if (code === 'auth/email-already-in-use') {
+            try {
+              if (typeof signInWithEmailAndPassword === 'function') {
+                const cred = await signInWithEmailAndPassword(auth, authEmail, authPassword);
+                user = cred.user;
+              }
+            } catch (e) {}
+          } else if (code === 'auth/operation-not-allowed') {
+            try {
+              if (typeof signInAnonymously === 'function' && !auth.currentUser) {
+                const cred = await signInAnonymously(auth);
+                user = cred.user;
+              }
+            } catch (e) {}
+          }
+        }
+        if (user && typeof updateProfile === 'function') {
+          try { await updateProfile(user, { displayName: clean }); } catch (e) {}
+        }
+        return user || auth.currentUser;
+      }
+
       window.__syncCloudLeaderboard = async function (humanPlayersMap, usersVault, activeUsername) {
         if (!db) return;
         try {
@@ -11247,10 +11402,16 @@
               const clean = (k || '').trim().toUpperCase();
               if (canPushUser(clean)) {
                 const rawUp = usersVault[k] || {};
+                let authUser = null;
+                try {
+                  authUser = await ensureUserRegisteredInFirebaseAuth(clean, rawUp.pin5 || '12345');
+                } catch (e) {}
                 const uPayload = Object.assign({}, rawUp, {
                   username: clean,
                   authProvider: rawUp.authProvider || (rawUp.googleUid ? 'google' : 'pin'),
-                  googleUid: rawUp.googleUid || null
+                  googleUid: rawUp.googleUid || null,
+                  firebaseUid: (authUser && authUser.uid) || rawUp.firebaseUid || null,
+                  updatedAt: Date.now()
                 });
                 await Promise.allSettled([
                   setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true }),
