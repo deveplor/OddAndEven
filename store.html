@@ -391,23 +391,24 @@
     <!-- STORE CATALOG FILTER TABS -->
     <section class="space-y-3">
       <div class="flex items-center justify-between px-1">
-        <h3 class="font-brand font-black text-sm text-white flex items-center gap-1.5">
+        <h3 class="font-brand font-black text-sm sm:text-base text-white flex items-center gap-1.5">
           <span>🏆</span>
-          <span>Valuable Items Catalog</span>
+          <span>Valuable Items, Banners &amp; Badges Catalog</span>
         </h3>
-        <span class="text-[9px] font-mono-num text-amber-300 font-bold">10 High-Tier Items</span>
+        <span class="text-[10px] font-mono-num text-amber-300 font-bold">17 High-Tier Items (From 5,000 XP)</span>
       </div>
 
       <!-- Category Filter Pills -->
-      <div class="grid grid-cols-4 gap-1 text-[10px] font-bold">
-        <button id="btnTabAll" type="button" class="py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black transition">All</button>
-        <button id="btnTabCards" type="button" class="py-1.5 rounded-xl bg-[#1e1c19] text-slate-400 border border-[#36332e] hover:text-white transition">Cards</button>
-        <button id="btnTabCustom" type="button" class="py-1.5 rounded-xl bg-[#1e1c19] text-slate-400 border border-[#36332e] hover:text-white transition">Custom</button>
-        <button id="btnTabCosmetics" type="button" class="py-1.5 rounded-xl bg-[#1e1c19] text-slate-400 border border-[#36332e] hover:text-white transition">VFX/Pitch</button>
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-[10px] sm:text-xs font-bold">
+        <button id="btnTabAll" type="button" class="py-2 px-2.5 rounded-xl bg-amber-500 text-slate-950 font-black transition">All (17)</button>
+        <button id="btnTabBanners" type="button" class="py-2 px-2.5 rounded-xl bg-[#1e1c19] text-slate-300 border border-[#36332e] hover:text-white transition">🖼️ Banners &amp; Badges (7)</button>
+        <button id="btnTabCards" type="button" class="py-2 px-2.5 rounded-xl bg-[#1e1c19] text-slate-300 border border-[#36332e] hover:text-white transition">🃏 Cards (4)</button>
+        <button id="btnTabCustom" type="button" class="py-2 px-2.5 rounded-xl bg-[#1e1c19] text-slate-300 border border-[#36332e] hover:text-white transition">🔱 Custom (2)</button>
+        <button id="btnTabCosmetics" type="button" class="py-2 px-2.5 rounded-xl bg-[#1e1c19] text-slate-300 border border-[#36332e] hover:text-white transition">✨ VFX/Pitch (4)</button>
       </div>
 
       <!-- STORE ITEMS LIST CONTAINER -->
-      <div class="space-y-3" id="storeItemsContainer">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5" id="storeItemsContainer">
         <!-- Dynamic Item Cards Injected by JS -->
       </div>
     </section>
@@ -591,15 +592,17 @@
         } catch (e) {}
       })();
 
-      const STATS_RESET_EPOCH = 'v2_fresh_reset_2026_10_30_r2';
+      const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
       const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
 
       function sanitizeRecordForFreshEpoch(rec) {
         if (!rec || typeof rec !== 'object') return rec;
-        if (rec.statsEpoch === STATS_RESET_EPOCH) {
-          if (typeof rec.v2Matches === 'number') {
-            rec.matches = rec.v2Matches;
-          }
+        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
+        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
+          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
+          rec.matches = mpM;
+          rec.rankedMatches = mpM;
+          rec.v2Matches = mpM;
           return rec;
         }
         const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
@@ -1043,6 +1046,147 @@
           tagline: 'Pure 24K Handcrafted Gold Willow',
           lore: 'The rarest, most difficult item in the entire game. Handcrafted from pure solid 24K gold with divine radiance. Permanent "Cricket Deity" recognition on all scorecards.',
           perks: ['Pure 24K Solid Gold Bat Icon', '"Cricket Deity" Verified Title', 'Golden Ball Strike VFX']
+        },
+        {
+          id: 'banner_neon_cyber',
+          category: 'BANNERS',
+          skinId: 'skin_neon_cyber',
+          name: 'Neon Cyber Background Banner',
+          tier: 'CYBER BANNER',
+          rarity: 'Rare Banner',
+          badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
+          cardBorderClass: 'border-cyan-400 diamond-glow',
+          cardBgGradient: 'from-[#091e2c] via-[#1a0f2e] to-[#090d16]',
+          icon: '🌆',
+          price: 5000,
+          tagline: 'Synthwave Holographic Grid & Cyan Scanline Banner',
+          lore: 'Transforms your Esports Gamer Card and Scoreboard Banner with an electric cyan and laser-magenta synthwave grid.',
+          perks: ['Neon Cyber Gamer Card Background', 'Holographic Pitch Scoreboard Banner', 'Exportable HD Neon PNG Card']
+        },
+        {
+          id: 'badge_century_sovereign',
+          category: 'BANNERS',
+          badgeEmblem: '💯',
+          badgeTitle: '💯 CENTURY SOVEREIGN',
+          name: 'Century Sovereign Prestige Badge',
+          tier: 'EPIC BADGE',
+          rarity: 'Epic Badge',
+          badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+          icon: '💯',
+          price: 6500,
+          tagline: 'Gilded 100* Strike Prestige Badge',
+          lore: 'An iconic badge of batting dominance. Pins the gilded "💯 Century Sovereign" insignia onto your Esports Gamer Card, Profile, and 1v1 Room header.',
+          perks: ['"💯 Century Sovereign" Card Badge', 'Custom 💯 Emblem on Gamer Card', 'Displayed on Exported Social Cards']
+        },
+        {
+          id: 'banner_golden_trophy',
+          category: 'BANNERS',
+          skinId: 'skin_golden_trophy',
+          name: '24K Golden Trophy Banner',
+          tier: 'GOLD BANNER',
+          rarity: 'Epic Banner',
+          badgeClass: 'bg-amber-500/25 text-amber-200 border-amber-400/50',
+          cardBorderClass: 'border-amber-400 gold-glow',
+          cardBgGradient: 'from-[#2e220a] via-[#1f180d] to-[#12100c]',
+          icon: '🏆',
+          price: 9000,
+          tagline: 'Championship Gold Foil & Radial Sunburst Banner',
+          lore: 'Wraps your Esports Gamer Card in 24K brushed championship gold foil with radial sunburst rays and royal victory laurels.',
+          perks: ['24K Gold Sunburst Card Background', 'Golden Championship Banner Trim', 'VIP Gold Export Frame']
+        },
+        {
+          id: 'badge_mind_reader',
+          category: 'BANNERS',
+          badgeEmblem: '🔮',
+          badgeTitle: '🔮 MIND-READER',
+          name: 'Grandmaster Mind-Reader Badge',
+          tier: 'LEGENDARY BADGE',
+          rarity: 'Legendary Badge',
+          badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-400/40',
+          icon: '🔮',
+          price: 11000,
+          tagline: 'Tactical Wicket Predictor Crest',
+          lore: 'Strikes psychological fear into batters before the first ball is bowled. Marks you as an elite number-reading tactician.',
+          perks: ['"🔮 Mind-Reader" Prestige Badge', 'Custom 🔮 Psychic Emblem on Card', 'Highlighted in 1v1 Match Lobbies']
+        },
+        {
+          id: 'banner_obsidian_void',
+          category: 'BANNERS',
+          skinId: 'skin_obsidian_void',
+          name: 'Obsidian Void Dark-Matter Banner',
+          tier: 'VOID BANNER',
+          rarity: 'Legendary Banner',
+          badgeClass: 'bg-purple-500/25 text-purple-200 border-purple-400/50',
+          cardBorderClass: 'border-purple-400 celestial-glow',
+          cardBgGradient: 'from-[#1c0b2b] via-[#110d1a] to-[#08070c]',
+          icon: '🌌',
+          price: 15000,
+          tagline: 'Deep Space Astral Nebula & Starfield Banner',
+          lore: 'Forged in deep cosmic dark matter. Surrounds your Gamer Card stats with a shimmering starlight field and violet nebula glow.',
+          perks: ['Obsidian Void Starfield Background', 'Astral Violet Card Border Glow', 'Deep Space HD Export Theme']
+        },
+        {
+          id: 'badge_master_crest',
+          category: 'BANNERS',
+          badgeEmblem: '⚜️',
+          badgeTitle: '⚜️ APEX MASTER CREST',
+          name: 'Apex Master 2000 Crest Badge',
+          tier: 'MYTHIC BADGE',
+          rarity: 'Mythic Badge',
+          badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-400/40',
+          icon: '⚜️',
+          price: 22000,
+          tagline: 'Royal Master 2000 Tier Insignia (GM On Wait)',
+          lore: 'The royal crest of the 2000 Elo Master Summit while Grandmaster remains On Wait. Bestows the sovereign fleur-de-lis crest on your Gamer Card.',
+          perks: ['"⚜️ Apex Master" Sovereign Badge', 'Royal ⚜️ Crest on Gamer Card', 'Gold-Bordered Rank Insignia']
+        },
+        {
+          id: 'banner_emerald_matrix',
+          category: 'BANNERS',
+          skinId: 'skin_emerald_matrix',
+          name: 'Emerald Matrix Cyber Turf Skin',
+          tier: 'MATRIX SKIN',
+          rarity: 'Epic Skin',
+          badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+          cardBorderClass: 'border-emerald-400',
+          cardBgGradient: 'from-[#05291a] via-[#071f15] to-[#030d09]',
+          icon: '🟢',
+          price: 12500,
+          tagline: 'Cybernetic Hex-Grid & Bio-Lime Gamer Card Background Skin',
+          lore: 'Infuses your Esports Gamer Card with an electric bio-lime matrix grid and championship stadium telemetry.',
+          perks: ['Emerald Matrix Gamer Card Background Skin', 'Bio-Lime Telemetry Accents', 'HD Exportable Matrix Card']
+        },
+        {
+          id: 'banner_royal_amethyst',
+          category: 'BANNERS',
+          skinId: 'skin_royal_amethyst',
+          name: 'Royal Amethyst Dynasty Skin',
+          tier: 'DYNASTY SKIN',
+          rarity: 'Mythic Skin',
+          badgeClass: 'bg-fuchsia-500/25 text-fuchsia-200 border-fuchsia-400/50',
+          cardBorderClass: 'border-fuchsia-400 celestial-glow',
+          cardBgGradient: 'from-[#2a083d] via-[#1c0829] to-[#0a0312]',
+          icon: '👑',
+          price: 45000,
+          tagline: 'Imperial Amethyst Prism & Sovereign Crown Background Skin',
+          lore: 'Reserved for true Hand Cricket royalty. Wraps your Esports Gamer Card in imperial amethyst prism rays and golden crown geometry.',
+          perks: ['Royal Amethyst Gamer Card Background Skin', 'Imperial Prism Border Glow', 'Sovereign Crown HD Export']
+        },
+        {
+          id: 'banner_solar_inferno',
+          category: 'BANNERS',
+          skinId: 'skin_solar_inferno',
+          name: 'Solar Inferno Magma Banner',
+          tier: 'INFERNO BANNER',
+          rarity: 'Mythic Banner',
+          badgeClass: 'bg-rose-500/25 text-rose-200 border-rose-400/50',
+          cardBorderClass: 'border-rose-500 mythic-glow',
+          cardBgGradient: 'from-[#2e0c12] via-[#21120a] to-[#12090a]',
+          icon: '🔥',
+          price: 35000,
+          tagline: 'Blazing Molten Solar Flare & Magma Banner',
+          lore: 'Unleashes a blazing solar flare and molten crimson magma waves across your Esports Gamer Card, Sidebar Card, and Pitch Banner.',
+          perks: ['Solar Inferno Magma Background', 'Crimson-Gold Flame Card Border', 'Pinnacle Esports Export Skin']
         }
       ];
 
@@ -1243,6 +1387,7 @@
         studioPreviewCard: document.getElementById('studioPreviewCard'),
         storeItemsContainer: document.getElementById('storeItemsContainer'),
         btnTabAll: document.getElementById('btnTabAll'),
+        btnTabBanners: document.getElementById('btnTabBanners'),
         btnTabCards: document.getElementById('btnTabCards'),
         btnTabCustom: document.getElementById('btnTabCustom'),
         btnTabCosmetics: document.getElementById('btnTabCosmetics')
@@ -1321,11 +1466,19 @@
           dom.cardMottoDisplay.textContent = `"${equippedItem.lore.slice(0, 48)}..."`;
           dom.cardFrontFace.className = `card-face-front w-full rounded-2xl p-4 transition-all duration-300 border bg-gradient-to-br ${equippedItem.cardBorderClass || 'border-amber-400'} ${equippedItem.cardBgGradient || 'from-[#2e2617] to-[#121110]'}`;
         } else {
-          dom.cardTierBadge.textContent = 'Default Rookie Card';
-          dom.cardTierBadge.className = 'px-2 py-0.5 rounded-full text-[9px] font-brand font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-600';
-          dom.cardCustomTitleDisplay.textContent = 'Hand Cricket Aspirant';
-          dom.cardMottoDisplay.textContent = '"Every number counts on the pitch."';
-          dom.cardFrontFace.className = 'card-face-front w-full rounded-2xl p-4 transition-all duration-300 border border-[#36332e] bg-[#181715]';
+          const eqBannerId = localStorage.getItem('oddandeven_equipped_banner_' + clean) || '';
+          const eqBadgeId = localStorage.getItem('oddandeven_equipped_badge_' + clean) || '';
+          const bannerItem = STORE_CATALOG.find((x) => x.id === eqBannerId);
+          const badgeItem = STORE_CATALOG.find((x) => x.id === eqBadgeId);
+          dom.cardTierBadge.textContent = badgeItem ? badgeItem.badgeTitle : (bannerItem ? bannerItem.tier : 'Default Rookie Card');
+          dom.cardTierBadge.className = `px-2 py-0.5 rounded-full text-[9px] font-brand font-black uppercase tracking-wider ${
+            badgeItem ? badgeItem.badgeClass : (bannerItem ? bannerItem.badgeClass : 'bg-slate-800 text-slate-300 border border-slate-600')
+          }`;
+          dom.cardCustomTitleDisplay.textContent = badgeItem ? badgeItem.name : (bannerItem ? bannerItem.name : 'Hand Cricket Aspirant');
+          dom.cardMottoDisplay.textContent = `"${(bannerItem && bannerItem.tagline) || (badgeItem && badgeItem.tagline) || 'Every number counts on the pitch.'}"`;
+          dom.cardFrontFace.className = bannerItem
+            ? `card-face-front w-full rounded-2xl p-4 transition-all duration-300 border bg-gradient-to-br ${bannerItem.cardBorderClass} ${bannerItem.cardBgGradient}`
+            : 'card-face-front w-full rounded-2xl p-4 transition-all duration-300 border border-[#36332e] bg-[#181715]';
         }
       }
 
@@ -1338,6 +1491,7 @@
 
         const visibleItems = STORE_CATALOG.filter((item) => {
           if (currentFilter === 'ALL') return true;
+          if (currentFilter === 'BANNERS') return item.category === 'BANNERS';
           if (currentFilter === 'CARDS') return item.category === 'CARDS';
           if (currentFilter === 'CUSTOM') return item.category === 'CUSTOM';
           if (currentFilter === 'COSMETICS') return item.category === 'COSMETICS';
@@ -1347,11 +1501,15 @@
         const equippedTheme = localStorage.getItem('oddandeven_equipped_theme_' + clean) || '';
         const equippedVfx = localStorage.getItem('oddandeven_equipped_vfx_' + clean) || '';
         const equippedBat = localStorage.getItem('oddandeven_equipped_bat_' + clean) || '';
+        const equippedBanner = localStorage.getItem('oddandeven_equipped_banner_' + clean) || '';
+        const equippedBadge = localStorage.getItem('oddandeven_equipped_badge_' + clean) || '';
 
         dom.storeItemsContainer.innerHTML = visibleItems.map((item) => {
           const isOwned = inventory.includes(item.id);
           let isEquipped = false;
           if (item.id.startsWith('card_')) isEquipped = isOwned && equippedId === item.id;
+          else if (item.id.startsWith('banner_')) isEquipped = isOwned && equippedBanner === item.id;
+          else if (item.id.startsWith('badge_')) isEquipped = isOwned && equippedBadge === item.id;
           else if (item.id.startsWith('theme_')) isEquipped = isOwned && equippedTheme === item.id;
           else if (item.id.startsWith('vfx_') || item.id.startsWith('ball_')) isEquipped = isOwned && equippedVfx === item.id;
           else if (item.id.startsWith('bat_')) isEquipped = isOwned && equippedBat === item.id;
@@ -1494,8 +1652,33 @@
         saveUserSpentXp(clean, spent);
 
         // Auto-equip newly purchased item to active loadout
+        const boughtItemObj = STORE_CATALOG.find((x) => x.id === itemId);
         if (itemId.startsWith('card_')) {
           setEquippedCardId(clean, itemId);
+        } else if (itemId.startsWith('banner_')) {
+          localStorage.setItem('oddandeven_equipped_banner_' + clean, itemId);
+          if (boughtItemObj && boughtItemObj.skinId) {
+            localStorage.setItem('oddandeven_gamercard_skin_' + clean, boughtItemObj.skinId);
+            try {
+              const rawU = localStorage.getItem('oddandeven_gamercard_unlocked_' + clean);
+              const uArr = rawU ? JSON.parse(rawU) : ['skin_stadium_classic'];
+              if (Array.isArray(uArr) && !uArr.includes(boughtItemObj.skinId)) {
+                uArr.push(boughtItemObj.skinId);
+                localStorage.setItem('oddandeven_gamercard_unlocked_' + clean, JSON.stringify(uArr));
+              }
+            } catch (e) {}
+          }
+        } else if (itemId.startsWith('badge_')) {
+          localStorage.setItem('oddandeven_equipped_badge_' + clean, itemId);
+          if (boughtItemObj && boughtItemObj.badgeEmblem) {
+            try {
+              const rawM = localStorage.getItem('oddandeven_gamercard_meta_' + clean);
+              const mObj = rawM ? JSON.parse(rawM) : {};
+              mObj.emblem = boughtItemObj.badgeEmblem;
+              mObj.callsign = boughtItemObj.badgeTitle || mObj.callsign || 'ARENA STRIKER';
+              localStorage.setItem('oddandeven_gamercard_meta_' + clean, JSON.stringify(mObj));
+            } catch (e) {}
+          }
         } else if (itemId.startsWith('theme_')) {
           localStorage.setItem('oddandeven_equipped_theme_' + clean, itemId);
         } else if (itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
@@ -1517,9 +1700,26 @@
         const clean = activeUser;
         if (!clean) return;
 
+        const itemObj = STORE_CATALOG.find((x) => x.id === itemId);
         if (action === 'equip') {
           if (itemId.startsWith('card_')) {
             setEquippedCardId(clean, itemId);
+          } else if (itemId.startsWith('banner_')) {
+            localStorage.setItem('oddandeven_equipped_banner_' + clean, itemId);
+            if (itemObj && itemObj.skinId) {
+              localStorage.setItem('oddandeven_gamercard_skin_' + clean, itemObj.skinId);
+            }
+          } else if (itemId.startsWith('badge_')) {
+            localStorage.setItem('oddandeven_equipped_badge_' + clean, itemId);
+            if (itemObj && itemObj.badgeEmblem) {
+              try {
+                const rawM = localStorage.getItem('oddandeven_gamercard_meta_' + clean);
+                const mObj = rawM ? JSON.parse(rawM) : {};
+                mObj.emblem = itemObj.badgeEmblem;
+                mObj.callsign = itemObj.badgeTitle || mObj.callsign || 'ARENA STRIKER';
+                localStorage.setItem('oddandeven_gamercard_meta_' + clean, JSON.stringify(mObj));
+              } catch (e) {}
+            }
           } else if (itemId.startsWith('theme_')) {
             localStorage.setItem('oddandeven_equipped_theme_' + clean, itemId);
           } else if (itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
@@ -1531,6 +1731,11 @@
         } else {
           if (itemId.startsWith('card_')) {
             setEquippedCardId(clean, 'card_default');
+          } else if (itemId.startsWith('banner_')) {
+            localStorage.removeItem('oddandeven_equipped_banner_' + clean);
+            localStorage.setItem('oddandeven_gamercard_skin_' + clean, 'skin_stadium_classic');
+          } else if (itemId.startsWith('badge_')) {
+            localStorage.removeItem('oddandeven_equipped_badge_' + clean);
           } else if (itemId.startsWith('theme_')) {
             localStorage.removeItem('oddandeven_equipped_theme_' + clean);
           } else if (itemId.startsWith('vfx_') || itemId.startsWith('ball_')) {
@@ -1603,10 +1808,11 @@
       function setupTabs() {
         const tabs = [
           { btn: dom.btnTabAll, filter: 'ALL' },
+          { btn: dom.btnTabBanners, filter: 'BANNERS' },
           { btn: dom.btnTabCards, filter: 'CARDS' },
           { btn: dom.btnTabCustom, filter: 'CUSTOM' },
           { btn: dom.btnTabCosmetics, filter: 'COSMETICS' }
-        ];
+        ].filter(t => t.btn);
 
         tabs.forEach((t) => {
           t.btn.addEventListener('click', () => {
