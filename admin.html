@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OddAndEven.in — Admin Leaderboard Control Panel</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0b0b0e;
+      background-image:
+        radial-gradient(circle at 50% 0%, #1c1a24 0%, #0d0c11 50%, #060608 100%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 36px 36px, 36px 36px;
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .font-brand {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    }
+    .admin-card {
+      background: linear-gradient(180deg, rgba(22, 20, 28, 0.88) 0%, rgba(13, 12, 17, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(16px);
+    }
+    .trash-btn {
+      transition: all 0.15s ease;
+    }
+    .trash-btn:hover {
+      background-color: rgba(244, 63, 94, 0.22);
+      border-color: rgba(244, 63, 94, 0.6);
+      color: #fda4af;
+      transform: scale(1.06);
+    }
+    .trash-btn:active {
+      transform: scale(0.96);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #393644;
+      border-radius: 999px;
+    }
+  </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+  <!-- ADMIN HEADER -->
+  <header class="w-full bg-[#100f14]/90 border-b border-white/10 px-4 sm:px-8 py-3.5 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand & Admin Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-rose-500/20 border border-white/15">
+          🛡️
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-brand font-black text-lg text-white tracking-tight flex items-baseline">
+              <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span><span class="text-xs font-mono-num ml-0.5 text-[#a3d96c]">.in</span>
+            </span>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/35">
+              Admin Vault
+            </span>
+          </div>
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+            Cloud &amp; WebRTC Leaderboard Moderator Panel
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Status & Navigation Buttons -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <span id="networkMeshBadge" class="px-3 py-1.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#18161f] text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span id="meshStatusLabel">Mesh Connecting...</span>
+        </span>
+
+        <span id="adminLiveCounter" class="px-3 py-1.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#18161f] text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="playerCountLabel">0 Accounts</span>
+        </span>
+
+        <button id="btnForceBroadcastPurge" type="button" class="px-3 py-1.5 rounded-xl text-xs font-black bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 transition flex items-center gap-1.5" title="Blast permanent deletion signal to all live devices & phones">
+          <span>⚡</span>
+          <span class="hidden sm:inline">Broadcast Purge</span>
+        </button>
+
+        <button id="btnRefreshData" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+          <span>🔄</span>
+          <span>Refresh</span>
+        </button>
+
+        <a href="hand_cricket.html" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 transition flex items-center gap-1.5">
+          <span>🏏</span>
+          <span>Desktop Arena</span>
+        </a>
+        <a href="mobile.html" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 transition flex items-center gap-1.5">
+          <span>📱</span>
+          <span>Mobile Arena</span>
+        </a>
+        <a href="index.html" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+          <span>🔐</span>
+          <span>Login Portal</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="max-w-6xl mx-auto w-full flex-1 px-4 sm:px-8 py-6 space-y-6">
+
+    <!-- TOP CONTROL BAR: SEARCH, STATS & TAB SWITCHERS -->
+    <div class="admin-card rounded-2xl p-4 sm:p-5 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-black text-white font-brand tracking-tight flex items-center gap-2">
+            <span>🏆</span>
+            <span>Registered Competitors &amp; Standings</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Click the red dustbin icon (🗑️) beside any account to erase it from the website, cloud database, and live WebRTC mesh on all devices.
+          </p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="w-full sm:w-64">
+          <div class="relative">
+            <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
+            <input
+              id="inputSearchPlayer"
+              type="text"
+              placeholder="Search username or country..."
+              class="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0c0b10] border border-white/10 text-xs sm:text-sm font-extrabold uppercase text-white placeholder:normal-case placeholder:font-normal placeholder:text-slate-500 focus:outline-none focus:border-rose-500 transition"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Website-Wide Direct Account Eradication Bar (Remove Any Username Across All Pages) -->
+      <div class="p-3.5 rounded-2xl bg-[#110e16] border border-rose-500/35 space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-black uppercase bg-rose-500/20 text-rose-300 border border-rose-500/40">
+              WEBSITE-WIDE ACCOUNT ERADICATOR
+            </span>
+            <span class="text-xs font-bold text-slate-300">
+              Remove any account from <code class="text-rose-300 font-mono-num">index.html</code>, <code class="text-rose-300 font-mono-num">hand_cricket.html</code>, <code class="text-rose-300 font-mono-num">mobile.html</code> &amp; <code class="text-rose-300 font-mono-num">events.html</code>
+            </span>
+          </div>
+          <button id="btnPurgeAllPlaceholders" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/35 transition">
+            🧹 Purge Test / Seed Accounts
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+          <input
+            id="inputDirectRemoveUsername"
+            type="text"
+            maxlength="16"
+            placeholder="Enter exact username to remove from website (e.g. PLAYER_X)..."
+            class="sm:col-span-5 px-3.5 py-2 rounded-xl bg-[#09080c] border border-white/15 text-xs sm:text-sm font-mono-num font-extrabold uppercase text-white placeholder:normal-case placeholder:font-sans placeholder:font-normal placeholder:text-slate-500 focus:outline-none focus:border-rose-500"
+          />
+          <select
+            id="selectViolationRule"
+            aria-label="Admin Rule Violation Reason"
+            class="sm:col-span-4 px-3 py-2 rounded-xl bg-[#09080c] border border-white/15 text-xs font-bold text-slate-200 focus:outline-none focus:border-rose-500"
+          >
+            <option value="Rule 1: Fair Play & Anti-Cheat Violation">Rule 1: Fair Play &amp; Anti-Cheat Violation</option>
+            <option value="Rule 2: Duplicate / Multi-Account Elo Boosting">Rule 2: Duplicate / Multi-Account Boosting</option>
+            <option value="Rule 3: Inappropriate or Impersonating Username">Rule 3: Inappropriate / Impersonating Tag</option>
+            <option value="Rule 4: Room Griefing / Intentional Timeout Abuse">Rule 4: Room Griefing / Timeout Abuse</option>
+            <option value="Rule 5: Tournament Bracket No-Show / Manipulation">Rule 5: Tournament Bracket Manipulation</option>
+            <option value="Rule 6: Account Owner Removal / GDPR Request">Rule 6: Account Owner Removal Request</option>
+          </select>
+          <button
+            id="btnDirectRemoveAccount"
+            type="button"
+            class="sm:col-span-3 py-2 px-4 rounded-xl font-black text-xs bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-lg shadow-rose-600/25 border border-rose-400/40 transition flex items-center justify-center gap-1.5"
+          >
+            <span>🗑️</span>
+            <span>Remove Account</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1.5 rounded-xl bg-[#0e0d13] border border-white/10 text-xs font-bold">
+        <button id="tabGlobal" type="button" class="py-2.5 rounded-lg bg-rose-600 text-white font-extrabold transition shadow flex items-center justify-center gap-1.5">
+          <span>🌍</span>
+          <span>Global Elo</span>
+        </button>
+        <button id="tabWeekly" type="button" class="py-2.5 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <span>📅</span>
+          <span>Weekly (Mon–Sun)</span>
+        </button>
+        <button id="tabRuns" type="button" class="py-2.5 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <span>🏏</span>
+          <span>Career Runs</span>
+        </button>
+        <button id="tabPurged" type="button" class="py-2.5 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <span>🚫</span>
+          <span>Banned / Purged (<span id="purgedCountBadge">0</span>)</span>
+        </button>
+        <button id="tabRules" type="button" class="col-span-2 sm:col-span-1 py-2.5 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <span>📜</span>
+          <span>Admin Rules (6)</span>
+        </button>
+      </div>
+
+      <!-- Context Ribbon & Network State -->
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs bg-[#121118] px-3.5 py-2.5 rounded-xl border border-white/5 text-slate-300">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono-num font-black text-[10px] uppercase">
+            ACTIVE MODERATOR
+          </span>
+          <span id="activeTabDescriptor" class="font-medium text-slate-300">Ranked by All-Time Competitive Elo</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-400 hover:text-slate-200">
+            <input type="checkbox" id="checkShowPurged" class="rounded bg-slate-900 border-slate-700 text-rose-500 focus:ring-0">
+            <span>Show Purged in List</span>
+          </label>
+          <span id="activeWeekRangeText" class="font-mono-num text-[11px] text-amber-300/90 font-semibold">Weekly Cycle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD TABLE CONTAINER -->
+    <div class="admin-card rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-white/10 bg-[#14121a] text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+              <th class="py-3 px-4 w-14 text-center">Rank</th>
+              <th class="py-3 px-4">Player Tag &amp; Origin</th>
+              <th class="py-3 px-4 text-center">Elo Rating</th>
+              <th class="py-3 px-4 text-center">Record (W–L)</th>
+              <th class="py-3 px-4 text-center">Career Runs</th>
+              <th class="py-3 px-4 text-center">Wickets</th>
+              <th class="py-3 px-4 text-center">Network Status</th>
+              <th class="py-3 px-4 w-28 text-center">Eradicate</th>
+            </tr>
+          </thead>
+          <tbody id="adminLeaderboardBody" class="divide-y divide-white/5 font-medium">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="adminEmptyState" class="hidden p-8 text-center space-y-2">
+        <div class="text-3xl">📭</div>
+        <div class="text-sm font-bold text-white">No Registered Accounts Found</div>
+        <p class="text-xs text-slate-400 max-w-sm mx-auto">
+          No players match the search criteria. New accounts registered from phones or PCs will appear here immediately via live sync.
+        </p>
+      </div>
+    </div>
+
+    <!-- OFFICIAL ADMIN RULES & WEBSITE GOVERNANCE PROTOCOL SECTION -->
+    <section id="adminRulesSection" class="admin-card rounded-2xl p-5 sm:p-6 border border-rose-500/35 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-2xl shadow-inner">
+            📜
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-lg sm:text-xl font-black text-white font-brand tracking-tight">
+                Official Admin Rules &amp; Website Governance Protocol
+              </h2>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                MANDATORY ENFORCEMENT
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Binding moderation rules governing account removal, Elo integrity, multiplayer rooms, and Season 1 tournaments across OddAndEven.in.
+            </p>
+          </div>
+        </div>
+        <span class="px-3 py-1 rounded-xl text-xs font-mono-num font-bold bg-[#14121a] text-amber-300 border border-amber-500/30">
+          6 Core Rules Active
+        </span>
+      </div>
+
+      <!-- 6 Core Admin Rules Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 text-xs">
+        <div class="p-4 rounded-2xl bg-[#121118] border border-white/10 border-l-4 border-l-rose-500 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-black uppercase text-rose-400">RULE 01 • ANTI-CHEAT</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-rose-500/20 text-rose-300">Instant Purge</span>
+          </div>
+          <h3 class="text-sm font-extrabold text-white">Fair Play &amp; Anti-Win-Trading</h3>
+          <p class="text-slate-400 leading-relaxed">
+            Any account caught win-trading in Ranked 1v1 Multiplayer rooms, scripting automated inputs, or exploiting network disconnects to farm ±8 Elo is subject to immediate permanent account removal.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#121118] border border-white/10 border-l-4 border-l-amber-400 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-black uppercase text-amber-300">RULE 02 • SINGLE IDENTITY</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-amber-500/20 text-amber-300">1 Account / Player</span>
+          </div>
+          <h3 class="text-sm font-extrabold text-white">No Alt-Account Elo Boosting</h3>
+          <p class="text-slate-400 leading-relaxed">
+            Players must compete on a single verified Country Code + 5-Digit PIN identity. Secondary "burner" accounts created to feed wins or inflate Weekly (Mon–Sun) Elo gains will be eradicated.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#121118] border border-white/10 border-l-4 border-l-cyan-400 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-black uppercase text-cyan-300">RULE 03 • IDENTITY POLICY</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-cyan-500/20 text-cyan-300">Tag Hygiene</span>
+          </div>
+          <h3 class="text-sm font-extrabold text-white">Username &amp; Impersonation Standards</h3>
+          <p class="text-slate-400 leading-relaxed">
+            Offensive tags, reserved system placeholders (<code class="text-cyan-300 font-mono-num">GUEST</code>, <code class="text-cyan-300 font-mono-num">PLAYER_1</code>, <code class="text-cyan-300 font-mono-num">HOST</code>), or usernames impersonating moderators/champions are purged on sight.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#121118] border border-white/10 border-l-4 border-l-purple-400 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-black uppercase text-purple-300">RULE 04 • MULTI-LAYER WIPE</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-purple-500/20 text-purple-300">Website-Wide</span>
+          </div>
+          <h3 class="text-sm font-extrabold text-white">Complete Website Eradication Scope</h3>
+          <p class="text-slate-400 leading-relaxed">
+            Removing an account deletes it from the Encrypted Auth Vault, Global/Weekly/Runs Leaderboards, Friends Rosters, Event Registrations, Cloud Firestore, and forces instant sign-out on live devices.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#121118] border border-white/10 border-l-4 border-l-emerald-400 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-black uppercase text-emerald-300">RULE 05 • RATING &amp; CUPS</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-emerald-500/20 text-emerald-300">Frozen vs Bots</span>
+          </div>
+          <h3 class="text-sm font-extrabold text-white">Bot Practice Freeze &amp; Cup Eligibility</h3>
+          <p class="text-slate-400 leading-relaxed">
+            Matches against AI Bots (250–2800 Elo) strictly freeze Elo (+0). Only verified non-banned accounts in good standing may lock spots in the Season 1 Duo Cup (2v2) and Solo Championship.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#121118] border border-white/10 border-l-4 border-l-pink-400 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono-num text-[10px] font-black uppercase text-pink-300">RULE 06 • APPEALS &amp; AUDIT</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-pink-500/20 text-pink-300">Logged Actions</span>
+          </div>
+          <h3 class="text-sm font-extrabold text-white">Unban Protocol &amp; Audit Trail</h3>
+          <p class="text-slate-400 leading-relaxed">
+            Every account removal or unban must cite a rule reason and is recorded in the Admin Moderation Audit Log below. Unbanning removes the tombstone so the user can register fresh at 1500 Elo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Persistent Admin Moderation Audit Log -->
+      <div class="pt-3 border-t border-white/10 space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-200">📋 Admin Moderation Audit Log</span>
+            <span id="auditLogCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono-num font-bold bg-slate-800 text-slate-300 border border-slate-700">
+              0 Actions
+            </span>
+          </div>
+          <button id="btnClearAuditLog" type="button" class="text-[11px] font-bold text-slate-400 hover:text-rose-300 transition">
+            Clear Audit Log
+          </button>
+        </div>
+        <div id="adminAuditLogBody" class="space-y-1.5 max-h-44 overflow-y-auto pr-1 text-xs">
+          <div class="p-3 rounded-xl bg-[#121118] border border-white/5 text-center text-slate-500">
+            No moderation actions recorded in this session yet.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- CONFIRM DELETION MODAL -->
+  <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-md p-4">
+    <div class="admin-card max-w-md w-full rounded-2xl p-6 border-2 border-rose-500/60 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-300 flex items-center justify-center text-lg border border-rose-500/35">
+            ⚠️
+          </span>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base text-white">Permanently Delete Account?</h3>
+            <p class="text-[10px] text-rose-300/80 uppercase tracking-wider font-mono-num">Irreversible Action</p>
+          </div>
+        </div>
+        <button id="btnCloseModalX" type="button" class="text-slate-400 hover:text-white font-bold p-1">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs leading-relaxed text-slate-300">
+        <div class="p-3 rounded-xl bg-[#0d0c11] border border-rose-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Target Username</div>
+              <div id="modalTargetUsername" class="text-base font-black text-rose-400 font-mono-num mt-0.5">PLAYER</div>
+            </div>
+            <span id="modalTargetFlagDial" class="font-mono-num text-xs font-bold px-2 py-1 rounded bg-slate-800 text-amber-300 border border-slate-700">🇮🇳 +91</span>
+          </div>
+          <div class="pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">Enforcement Rule:</span>
+            <span id="modalTargetReason" class="font-mono-num font-bold text-amber-300 truncate max-w-[230px]">Admin Rule Enforcement</span>
+          </div>
+        </div>
+
+        <p>
+          This will permanently wipe this account from the entire website, cloud storage, and live WebRTC mesh on all players' devices:
+        </p>
+        <ul class="space-y-1 text-[11px] text-slate-400 list-disc list-inside">
+          <li>Erased from <code class="text-rose-300 font-mono-num">oddandeven_encrypted_users_v1</code></li>
+          <li>Erased from <code class="text-rose-300 font-mono-num">oddandeven_worldwide_players_v1</code></li>
+          <li>Permanent entry added to the global blacklist tombstone</li>
+          <li>Instant live eviction &amp; logout sent to active sessions</li>
+          <li>Broadcast across all PeerJS network hubs and BroadcastChannels</li>
+        </ul>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-2 border-t border-white/10">
+        <button id="btnCancelDelete" type="button" class="px-4 py-2.5 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          Cancel
+        </button>
+        <button id="btnConfirmDelete" type="button" class="px-5 py-2.5 rounded-xl font-black text-xs bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-lg shadow-rose-600/30 border border-rose-400/40 transition flex items-center gap-1.5">
+          <span>🗑️</span>
+          <span>Yes, Erase Forever</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-2xl text-xs font-extrabold bg-[#15141c] text-white border border-white/15 shadow-2xl flex items-center gap-2.5">
+    <span id="toastIcon">✓</span>
+    <span id="toastMessage">Action completed</span>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="w-full bg-[#0a0a0d] border-t border-white/10 px-4 sm:px-8 py-3.5 mt-8">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-brand font-extrabold text-slate-300">OddAndEven.in</span>
+        <span>— Admin Control Console</span>
+      </div>
+      <span class="font-mono-num text-[11px] text-[#a3d96c]">Live Mesh &amp; Cloud Synchronized</span>
+    </div>
+  </footer>
+
+  <!-- Central Cloud & WebRTC Mesh Engine -->
+  <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'oddandeven-arena-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : {
+      apiKey: "AIzaSyDDeP-6rWqo0WFuMHv5jKtBVBuLnCz5Id0",
+      authDomain: "oddeven-1c742.firebaseapp.com",
+      projectId: "oddeven-1c742",
+      storageBucket: "oddeven-1c742.firebasestorage.app",
+      messagingSenderId: "266550623227",
+      appId: "1:266550623227:web:3edc0b6a98d2e99fa8e95e",
+      measurementId: "G-7M71J054G0"
+    };
+
+    let app = null;
+    let auth = null;
+    let db = null;
+    let currentUser = null;
+    // UI gate only: Firestore rules must also enforce the admin custom claim.
+    document.body.inert = true;
+    try {
+      app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      await auth.authStateReady();
+      const token = auth.currentUser && await auth.currentUser.getIdTokenResult();
+      if (!token || token.claims.admin !== true) throw new Error('admin-required');
+      currentUser = auth.currentUser;
+      document.body.inert = false;
+    } catch (error) {
+      document.body.inert = false;
+      document.body.innerHTML = '<main class="max-w-lg mx-auto p-8"><h1 class="text-2xl font-bold">Administrator sign-in required</h1><p class="my-4">Sign in with an account authorized to manage this arena.</p><a class="text-emerald-300 underline" href="index.html?stay=1">Return to sign-in</a></main>';
+      throw new Error('Admin controls require a verified administrator claim.');
+    }
+
+    const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
+    const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
+    const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+    const SIGNED_OUT_FLAG_KEY = 'oddandeven_signed_out_v1';
+    const SCORECARD_HISTORY_KEY = 'hc_arena_match_scorecards_v1';
+    const ELO_V2_STORAGE_KEY = 'hc_arena_elo_v2';
+    const PURGED_ACCOUNTS_KEY = 'oddandeven_purged_accounts_v1';
+    const FRIENDS_MAP_KEY = 'oddandeven_friends_map_v1';
+    const EVENT_REG_MAP_KEY = 'oddandeven_event_regs_map_v1';
+    const LAST_USER_KEY = 'oddandeven_last_user_v1';
+    const ADMIN_AUDIT_LOG_KEY = 'oddandeven_admin_audit_log_v1';
+    const GLOBAL_LB_CHANNEL = 'oddandeven_global_leaderboard_v1';
+    const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+
+    const GLOBAL_HUB_IDS = [
+      'oddandeven-world-hub-v1-1',
+      'oddandeven-world-hub-v1-2',
+      'oddandeven-world-hub-v1-3',
+      'oddandeven-world-hub-v1-4'
+    ];
+
+    let cloudAccounts = {};
+    let cloudLeaderboard = {};
+    let cloudPurgedList = [];
+    let liveMeshPlayers = {};
+    let liveMeshUsers = {};
+
+    let peerMeshInstance = null;
+    const peerMeshConns = [];
+
+    const FAKE_SEED_NAMES = [
+      'AARAV_99',
+      'KABIR_STRIKER',
+      'PRIYA_XI',
+      'DEV_CAPTAIN',
+      'PLAYER_1',
+      'GUEST',
+      'YOU',
+      'FRIEND',
+      'WAITING...',
+      'LOGIN REQUIRED',
+      'UNAUTHENTICATED'
+    ];
+
+    let activeTab = 'GLOBAL';
+    let playerToDelete = null;
+
+    function fnv1aHash(str) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return (h >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function encryptPayload(plainObj) {
+      const json = JSON.stringify(plainObj);
+      const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+      const bytes = [];
+      for (let i = 0; i < json.length; i++) {
+        const code = json.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff);
+        bytes.push(String.fromCharCode(code));
+      }
+      const b64 = btoa(unescape(encodeURIComponent(bytes.join(''))));
+      const sig = fnv1aHash(json + '::' + SECRET_SALT);
+      return `OAE1.${sig}.${b64}`;
+    }
+
+    function decryptPayload(cipherText) {
+      if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+      try {
+        const parts = cipherText.split('.');
+        if (parts.length !== 3) return null;
+        const sig = parts[1];
+        const raw = decodeURIComponent(escape(atob(parts[2])));
+        const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+        const chars = [];
+        for (let i = 0; i < raw.length; i++) {
+          chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+        }
+        const json = chars.join('');
+        if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+        return JSON.parse(json);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function loadPurgedAccountsList() {
+      try {
+        const raw = localStorage.getItem(PURGED_ACCOUNTS_KEY);
+        const localList = raw ? JSON.parse(raw) : [];
+        const merged = Array.from(new Set([
+          ...(Array.isArray(localList) ? localList : []),
+          ...cloudPurgedList
+        ]));
+        return merged;
+      } catch (e) {
+        return cloudPurgedList;
+      }
+    }
+
+    function addAccountToPurgedList(username) {
+      const clean = (username || '').trim().toUpperCase();
+      if (!clean) return;
+      if (!cloudPurgedList.includes(clean)) {
+        cloudPurgedList.push(clean);
+      }
+      try {
+        const list = loadPurgedAccountsList();
+        if (!list.includes(clean)) list.push(clean);
+        localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function removeAccountFromPurgedList(username) {
+      const clean = (username || '').trim().toUpperCase();
+      if (!clean) return;
+      cloudPurgedList = cloudPurgedList.filter((u) => u !== clean);
+      try {
+        let list = loadPurgedAccountsList();
+        list = list.filter((u) => u !== clean);
+        localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function getMondaySundayWeekInfo() {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday);
+      monday.setHours(0, 0, 0, 0);
+
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+
+      const opts = { month: 'short', day: 'numeric' };
+      const monStr = monday.toLocaleDateString('en-US', opts);
+      const sunStr = sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return {
+        weekKey: `${monday.getFullYear()}-${monday.getMonth() + 1}-${monday.getDate()}`,
+        label: `${monStr} – ${sunStr}`
+      };
+    }
+
+    function loadEncryptedUsersMap() {
+      try {
+        const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+        const local = raw ? decryptPayload(raw) : {};
+        return Object.assign({}, local || {}, cloudAccounts, liveMeshUsers);
+      } catch (e) {
+        return Object.assign({}, cloudAccounts, liveMeshUsers);
+      }
+    }
+
+    function saveEncryptedUsersMap(usersMap) {
+      try {
+        localStorage.setItem(AUTH_STORAGE_KEY, encryptPayload(usersMap));
+      } catch (e) {}
+    }
+
+    function loadWorldwidePlayersMap() {
+      try {
+        const raw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+        const local = raw ? JSON.parse(raw) : {};
+        const merged = Object.assign({}, local || {}, cloudLeaderboard, liveMeshPlayers);
+        FAKE_SEED_NAMES.forEach((fn) => delete merged[fn]);
+        return merged;
+      } catch (e) {
+        return Object.assign({}, cloudLeaderboard, liveMeshPlayers);
+      }
+    }
+
+    function saveWorldwidePlayersMap(map) {
+      try {
+        localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(map));
+      } catch (e) {}
+    }
+
+    const dom = {
+      networkMeshBadge: document.getElementById('networkMeshBadge'),
+      meshStatusLabel: document.getElementById('meshStatusLabel'),
+      playerCountLabel: document.getElementById('playerCountLabel'),
+      btnForceBroadcastPurge: document.getElementById('btnForceBroadcastPurge'),
+      btnRefreshData: document.getElementById('btnRefreshData'),
+      inputSearchPlayer: document.getElementById('inputSearchPlayer'),
+      tabGlobal: document.getElementById('tabGlobal'),
+      tabWeekly: document.getElementById('tabWeekly'),
+      tabRuns: document.getElementById('tabRuns'),
+      tabPurged: document.getElementById('tabPurged'),
+      tabRules: document.getElementById('tabRules'),
+      adminRulesSection: document.getElementById('adminRulesSection'),
+      inputDirectRemoveUsername: document.getElementById('inputDirectRemoveUsername'),
+      selectViolationRule: document.getElementById('selectViolationRule'),
+      btnDirectRemoveAccount: document.getElementById('btnDirectRemoveAccount'),
+      btnPurgeAllPlaceholders: document.getElementById('btnPurgeAllPlaceholders'),
+      modalTargetReason: document.getElementById('modalTargetReason'),
+      auditLogCountBadge: document.getElementById('auditLogCountBadge'),
+      adminAuditLogBody: document.getElementById('adminAuditLogBody'),
+      btnClearAuditLog: document.getElementById('btnClearAuditLog'),
+      purgedCountBadge: document.getElementById('purgedCountBadge'),
+      activeTabDescriptor: document.getElementById('activeTabDescriptor'),
+      activeWeekRangeText: document.getElementById('activeWeekRangeText'),
+      checkShowPurged: document.getElementById('checkShowPurged'),
+      adminLeaderboardBody: document.getElementById('adminLeaderboardBody'),
+      adminEmptyState: document.getElementById('adminEmptyState'),
+      deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+      btnCloseModalX: document.getElementById('btnCloseModalX'),
+      modalTargetUsername: document.getElementById('modalTargetUsername'),
+      modalTargetFlagDial: document.getElementById('modalTargetFlagDial'),
+      btnCancelDelete: document.getElementById('btnCancelDelete'),
+      btnConfirmDelete: document.getElementById('btnConfirmDelete'),
+      toastNotification: document.getElementById('toastNotification'),
+      toastIcon: document.getElementById('toastIcon'),
+      toastMessage: document.getElementById('toastMessage')
+    };
+
+    function showToast(message, isSuccess = true) {
+      dom.toastNotification.classList.remove('hidden');
+      dom.toastIcon.textContent = isSuccess ? '✓' : '⚠️';
+      dom.toastNotification.className = isSuccess
+        ? 'fixed bottom-5 right-5 z-50 px-4 py-3 rounded-2xl text-xs font-extrabold bg-[#131a14] text-emerald-300 border border-emerald-500/40 shadow-2xl flex items-center gap-2.5 animate-bounce'
+        : 'fixed bottom-5 right-5 z-50 px-4 py-3 rounded-2xl text-xs font-extrabold bg-[#1f1115] text-rose-300 border border-rose-500/40 shadow-2xl flex items-center gap-2.5 animate-bounce';
+      dom.toastMessage.textContent = message;
+      setTimeout(() => {
+        dom.toastNotification.classList.add('hidden');
+      }, 3500);
+    }
+
+    function getConsolidatedPlayers() {
+      const encryptedUsers = loadEncryptedUsersMap();
+      const worldwidePlayers = loadWorldwidePlayersMap();
+      const wkInfo = getMondaySundayWeekInfo();
+      const purged = loadPurgedAccountsList();
+      const showPurged = dom.checkShowPurged ? dom.checkShowPurged.checked : false;
+
+      const consolidated = {};
+
+      Object.keys(encryptedUsers).forEach((uname) => {
+        const clean = uname.trim().toUpperCase();
+        if (FAKE_SEED_NAMES.includes(clean)) return;
+        const isPurged = purged.includes(clean);
+        if (isPurged && !showPurged && activeTab !== 'PURGED') return;
+
+        const acc = encryptedUsers[uname];
+        consolidated[clean] = {
+          name: clean,
+          countryCode: acc.countryCode || '+91',
+          countryFlag: acc.countryFlag || '🇮🇳',
+          countryName: acc.countryName || 'India',
+          createdAt: acc.createdAt || null,
+          isPurged: isPurged,
+          elo: 1500,
+          peak: 1500,
+          wins: 0,
+          losses: 0,
+          matches: 0,
+          totalRuns: 0,
+          totalBalls: 0,
+          highScore: 0,
+          wicketsTaken: 0,
+          weeklyEloGain: 0,
+          weeklyRuns: 0,
+          weeklyWickets: 0,
+          weeklyWins: 0,
+          weeklyLosses: 0
+        };
+      });
+
+      Object.keys(worldwidePlayers).forEach((uname) => {
+        const clean = uname.trim().toUpperCase();
+        if (FAKE_SEED_NAMES.includes(clean)) return;
+        const isPurged = purged.includes(clean);
+        if (isPurged && !showPurged && activeTab !== 'PURGED') return;
+
+        const rec = worldwidePlayers[uname];
+        if (!consolidated[clean]) {
+          consolidated[clean] = {
+            name: clean,
+            countryCode: rec.countryCode || '+91',
+            countryFlag: rec.countryFlag || '🇮🇳',
+            countryName: rec.countryName || 'India',
+            createdAt: rec.createdAt || null,
+            isPurged: isPurged,
+            elo: 1500,
+            peak: 1500,
+            wins: 0,
+            losses: 0,
+            matches: 0,
+            totalRuns: 0,
+            totalBalls: 0,
+            highScore: 0,
+            wicketsTaken: 0,
+            weeklyEloGain: 0,
+            weeklyRuns: 0,
+            weeklyWickets: 0,
+            weeklyWins: 0,
+            weeklyLosses: 0
+          };
+        }
+        const target = consolidated[clean];
+        target.isPurged = isPurged;
+        target.elo = typeof rec.elo === 'number' ? rec.elo : target.elo;
+        target.peak = Math.max(target.peak || 1500, rec.peak || 1500);
+        target.wins = Math.max(target.wins || 0, rec.wins || 0);
+        target.losses = Math.max(target.losses || 0, rec.losses || 0);
+        target.matches = Math.max(target.matches || 0, rec.matches || 0);
+        target.totalRuns = Math.max(target.totalRuns || 0, rec.totalRuns || 0);
+        target.totalBalls = Math.max(target.totalBalls || 0, rec.totalBalls || 0);
+        target.highScore = Math.max(target.highScore || 0, rec.highScore || 0);
+        target.wicketsTaken = Math.max(target.wicketsTaken || 0, rec.wicketsTaken || 0);
+
+        if (rec.weekKey === wkInfo.weekKey) {
+          target.weeklyEloGain = rec.weeklyEloGain || 0;
+          target.weeklyRuns = rec.weeklyRuns || 0;
+          target.weeklyWickets = rec.weeklyWickets || 0;
+          target.weeklyWins = rec.weeklyWins || 0;
+          target.weeklyLosses = rec.weeklyLosses || 0;
+        }
+      });
+
+      // If viewing the PURGED tab, ensure all blacklisted accounts are present
+      if (activeTab === 'PURGED') {
+        purged.forEach((pName) => {
+          if (!consolidated[pName]) {
+            consolidated[pName] = {
+              name: pName,
+              countryCode: '+91',
+              countryFlag: '🇮🇳',
+              countryName: 'India',
+              createdAt: null,
+              isPurged: true,
+              elo: 1500,
+              peak: 1500,
+              wins: 0,
+              losses: 0,
+              matches: 0,
+              totalRuns: 0,
+              totalBalls: 0,
+              highScore: 0,
+              wicketsTaken: 0,
+              weeklyEloGain: 0,
+              weeklyRuns: 0,
+              weeklyWickets: 0
+            };
+          }
+        });
+      }
+
+      return consolidated;
+    }
+
+    function renderAdminLeaderboard() {
+      const wkInfo = getMondaySundayWeekInfo();
+      dom.activeWeekRangeText.textContent = `Cycle: ${wkInfo.label}`;
+
+      const purgedList = loadPurgedAccountsList();
+      dom.purgedCountBadge.textContent = purgedList.length;
+
+      const playersMap = getConsolidatedPlayers();
+      let players = Object.values(playersMap);
+
+      if (activeTab === 'PURGED') {
+        players = players.filter((p) => p.isPurged);
+      }
+
+      const totalAccounts = players.filter((p) => !p.isPurged).length;
+      dom.playerCountLabel.textContent = `${totalAccounts} Live Account${totalAccounts === 1 ? '' : 's'}`;
+
+      const query = (dom.inputSearchPlayer.value || '').trim().toUpperCase();
+      if (query) {
+        players = players.filter((p) =>
+          p.name.includes(query) ||
+          (p.countryCode && p.countryCode.includes(query)) ||
+          (p.countryName && p.countryName.toUpperCase().includes(query))
+        );
+      }
+
+      if (activeTab === 'GLOBAL') {
+        dom.activeTabDescriptor.textContent = 'Ranked by All-Time Competitive Elo';
+        players.sort((a, b) => b.elo - a.elo || (b.totalRuns || 0) - (a.totalRuns || 0));
+      } else if (activeTab === 'WEEKLY') {
+        dom.activeTabDescriptor.textContent = `Weekly Performance Cycle (${wkInfo.label})`;
+        players.sort((a, b) => (b.weeklyEloGain || 0) - (a.weeklyEloGain || 0) || (b.weeklyRuns || 0) - (a.weeklyRuns || 0));
+      } else if (activeTab === 'RUNS') {
+        dom.activeTabDescriptor.textContent = 'Ranked by Total Career Runs Scored';
+        players.sort((a, b) => (b.totalRuns || 0) - (a.totalRuns || 0) || b.elo - a.elo);
+      } else {
+        dom.activeTabDescriptor.textContent = 'Accounts on the Eradication / Blacklist Tombstone';
+      }
+
+      if (players.length === 0) {
+        dom.adminLeaderboardBody.innerHTML = '';
+        dom.adminEmptyState.classList.remove('hidden');
+        return;
+      }
+
+      dom.adminEmptyState.classList.add('hidden');
+
+      dom.adminLeaderboardBody.innerHTML = players.map((player, idx) => {
+        const rankDisplay = idx + 1;
+        const regDate = player.createdAt
+          ? new Date(player.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'Active';
+
+        let mainScore = `${player.elo} ELO`;
+        let subScore = `Peak: ${player.peak}`;
+
+        if (activeTab === 'WEEKLY') {
+          const wkGain = player.weeklyEloGain || 0;
+          const sign = wkGain >= 0 ? `+${wkGain}` : `${wkGain}`;
+          mainScore = `${sign} ELO`;
+          subScore = `${player.weeklyRuns || 0} Runs this week`;
+        } else if (activeTab === 'RUNS') {
+          mainScore = `${player.totalRuns || 0} RUNS`;
+          subScore = `High: ${player.highScore || 0}*`;
+        }
+
+        const rankBadge = idx === 0
+          ? 'w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 font-mono-num font-black text-xs border border-amber-400/40 flex items-center justify-center'
+          : idx === 1
+          ? 'w-7 h-7 rounded-lg bg-slate-300/20 text-slate-200 font-mono-num font-black text-xs border border-slate-300/30 flex items-center justify-center'
+          : idx === 2
+          ? 'w-7 h-7 rounded-lg bg-amber-700/20 text-amber-400 font-mono-num font-black text-xs border border-amber-600/30 flex items-center justify-center'
+          : 'w-7 h-7 rounded-lg bg-white/5 text-slate-400 font-mono-num font-bold text-xs flex items-center justify-center';
+
+        const statusTag = player.isPurged
+          ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono-num font-black bg-rose-500/20 text-rose-300 border border-rose-500/40">🚫 PURGED</span>'
+          : (liveMeshPlayers[player.name] || liveMeshUsers[player.name])
+          ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono-num font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>LIVE</span>'
+          : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-slate-800 text-slate-300">CLOUD</span>';
+
+        return `
+          <tr class="hover:bg-white/[0.03] transition group ${player.isPurged ? 'opacity-60 bg-rose-950/10' : ''}">
+            <td class="py-3.5 px-4 text-center">
+              <div class="flex justify-center">${rankBadge.replace('>', `>#${rankDisplay}`)}</div>
+            </td>
+
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-2.5">
+                <span class="text-xl shrink-0">${player.countryFlag || '🇮🇳'}</span>
+                <div class="min-w-0">
+                  <div class="font-extrabold text-white text-xs sm:text-sm font-brand tracking-wide flex items-center gap-1.5 truncate">
+                    <span>${player.name}</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-mono-num bg-slate-800 text-amber-300 border border-slate-700">
+                      ${player.countryCode || '+91'}
+                    </span>
+                    ${player.isPurged ? '<span class="text-[9px] font-black text-rose-400">(Marked Deleted)</span>' : ''}
+                  </div>
+                  <div class="text-[10px] text-slate-400 font-mono-num truncate">
+                    Matches: ${player.matches || 0} • Strike: ${player.totalBalls > 0 ? ((player.totalRuns / player.totalBalls) * 100).toFixed(1) : '0.0'}%
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="py-3.5 px-4 text-center">
+              <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-mono-num font-black ${activeTab === 'WEEKLY' && (player.weeklyEloGain || 0) < 0 ? 'bg-rose-950/70 text-rose-300 border border-rose-500/30' : 'bg-slate-900 text-amber-300 border border-amber-500/30'}">
+                ${mainScore}
+              </span>
+              <span class="block text-[10px] text-slate-400 mt-0.5 font-mono-num">${subScore}</span>
+            </td>
+
+            <td class="py-3.5 px-4 text-center">
+              <span class="font-mono-num font-bold text-xs text-slate-200">${player.wins || 0}W – ${player.losses || 0}L</span>
+              <span class="block text-[10px] text-slate-400 font-mono-num">
+                ${player.matches > 0 ? Math.round(((player.wins || 0) / player.matches) * 100) : 0}% Win Rate
+              </span>
+            </td>
+
+            <td class="py-3.5 px-4 text-center font-mono-num text-xs font-black text-emerald-400">
+              ${player.totalRuns || 0}
+            </td>
+
+            <td class="py-3.5 px-4 text-center font-mono-num text-xs font-bold text-cyan-400">
+              ${player.wicketsTaken || 0}
+            </td>
+
+            <td class="py-3.5 px-4 text-center">
+              ${statusTag}
+            </td>
+
+            <td class="py-3.5 px-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button
+                  type="button"
+                  data-username="${player.name}"
+                  data-flag="${player.countryFlag || '🇮🇳'}"
+                  data-dial="${player.countryCode || '+91'}"
+                  class="btn-trigger-delete trash-btn w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 hover:text-white flex items-center justify-center"
+                  title="Permanently remove ${player.name} forever from cloud, mesh & leaderboard"
+                  aria-label="Delete player ${player.name}"
+                >
+                  <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+                ${
+                  player.isPurged
+                    ? `<button type="button" data-unban-username="${player.name}" class="btn-action-unban px-2 py-1 rounded-lg text-[10px] font-black bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Remove from blacklist">Unban</button>`
+                    : ''
+                }
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.btn-trigger-delete').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const uname = btn.getAttribute('data-username');
+          const flag = btn.getAttribute('data-flag');
+          const dial = btn.getAttribute('data-dial');
+          openDeleteModal(uname, flag, dial);
+        });
+      });
+
+      document.querySelectorAll('.btn-action-unban').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const uname = (btn.getAttribute('data-unban-username') || '').trim().toUpperCase();
+          if (!uname) return;
+          removeAccountFromPurgedList(uname);
+          if (db) {
+            try {
+              await Promise.allSettled([
+                deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', uname)),
+                deleteDoc(doc(db, 'purged_accounts', uname))
+              ]);
+            } catch (e) {}
+          }
+          appendAdminAuditLog('UNBANNED', uname, 'Rule 6: Admin Unban & Tombstone Restoration');
+          renderAdminLeaderboard();
+          showToast(`Account "@${uname}" unbanned and removed from global tombstone.`);
+        });
+      });
+    }
+
+    function loadAdminAuditLog() {
+      try {
+        const raw = localStorage.getItem(ADMIN_AUDIT_LOG_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function appendAdminAuditLog(actionType, username, reason) {
+      try {
+        const list = loadAdminAuditLog();
+        list.unshift({
+          id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          action: actionType,
+          username: (username || '').trim().toUpperCase(),
+          reason: reason || 'Admin Moderation Protocol',
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem(ADMIN_AUDIT_LOG_KEY, JSON.stringify(list.slice(0, 50)));
+        renderAdminAuditLog();
+      } catch (e) {}
+    }
+
+    function renderAdminAuditLog() {
+      if (!dom.adminAuditLogBody) return;
+      const list = loadAdminAuditLog();
+      if (dom.auditLogCountBadge) {
+        dom.auditLogCountBadge.textContent = `${list.length} Action${list.length === 1 ? '' : 's'}`;
+      }
+      if (list.length === 0) {
+        dom.adminAuditLogBody.innerHTML = `
+          <div class="p-3 rounded-xl bg-[#121118] border border-white/5 text-center text-slate-500">
+            No moderation actions recorded yet. Removing or unbanning an account logs the action here.
+          </div>`;
+        return;
+      }
+      dom.adminAuditLogBody.innerHTML = list.map((item) => {
+        const isPurge = item.action === 'ERADICATED';
+        const timeStr = new Date(item.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return `
+          <div class="p-2.5 rounded-xl bg-[#121118] border border-white/10 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-black uppercase ${isPurge ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'}">
+                ${isPurge ? '🗑️ ERADICATED' : '✓ UNBANNED'}
+              </span>
+              <span class="font-mono-num font-black text-white text-xs">@${item.username}</span>
+              <span class="text-slate-400 text-[11px] truncate">— ${item.reason}</span>
+            </div>
+            <span class="font-mono-num text-[10px] text-slate-500 shrink-0">${timeStr}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openDeleteModal(uname, flag, dial, customReason = null) {
+      const cleanU = (uname || '').trim().toUpperCase();
+      if (!cleanU) return;
+      const reason = customReason || (dom.selectViolationRule ? dom.selectViolationRule.value : 'Rule 1: Fair Play & Anti-Cheat Violation');
+      playerToDelete = { uname: cleanU, flag: flag || '🇮🇳', dial: dial || '+91', reason };
+      dom.modalTargetUsername.textContent = cleanU;
+      dom.modalTargetFlagDial.textContent = `${flag || '🇮🇳'} ${dial || '+91'}`;
+      if (dom.modalTargetReason) dom.modalTargetReason.textContent = reason;
+      dom.deleteConfirmModal.classList.remove('hidden');
+      dom.deleteConfirmModal.classList.add('flex');
+    }
+
+    function closeDeleteModal() {
+      playerToDelete = null;
+      dom.deleteConfirmModal.classList.add('hidden');
+      dom.deleteConfirmModal.classList.remove('flex');
+    }
+
+    function broadcastAccountEradication(targetName, reason = 'Admin Rule Enforcement') {
+      const clean = targetName.trim().toUpperCase();
+      const purgedList = loadPurgedAccountsList();
+
+      const eradicationPacket = {
+        type: 'GLOBAL_ACCOUNT_REMOVED',
+        username: clean,
+        reason: reason,
+        purgedAccounts: purgedList,
+        timestamp: Date.now()
+      };
+
+      // 1. LocalStorage cross-tab eradication bus (Triggers instant eviction on index.html, hand_cricket.html, mobile.html)
+      try {
+        localStorage.setItem('oddandeven_account_eradicated_bus', JSON.stringify(eradicationPacket));
+      } catch (e) {}
+
+      // 2. BroadcastChannel (Same device/browser tabs)
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          const gbc = new BroadcastChannel(GLOBAL_LB_CHANNEL);
+          gbc.postMessage(eradicationPacket);
+          const authBc = new BroadcastChannel('oddandeven_auth_sync');
+          authBc.postMessage(eradicationPacket);
+        } catch (e) {}
+      }
+
+      // 3. PeerJS Live WebRTC Mesh (All connected players on the live website worldwide)
+      peerMeshConns.forEach((c) => {
+        if (c && c.open) {
+          try {
+            c.send(eradicationPacket);
+            c.send({
+              type: 'GLOBAL_LEADERBOARD_SYNC',
+              allPlayers: loadWorldwidePlayersMap(),
+              encryptedUsers: loadEncryptedUsersMap(),
+              requestReply: false,
+              timestamp: Date.now()
+            });
+          } catch (e) {}
+        }
+      });
+    }
+
+    function scrubAccountFromWebsiteLocalStorage(targetName) {
+      const clean = (targetName || '').trim().toUpperCase();
+      if (!clean) return;
+
+      // 1. Encrypted Users Vault
+      const usersMap = loadEncryptedUsersMap();
+      delete usersMap[clean];
+      saveEncryptedUsersMap(usersMap);
+
+      // 2. Worldwide Players Registry
+      const worldMap = loadWorldwidePlayersMap();
+      delete worldMap[clean];
+      saveWorldwidePlayersMap(worldMap);
+
+      // 3. Desktop & Mobile Elo / HumanPlayers / History
+      try {
+        const rawElo = localStorage.getItem(ELO_V2_STORAGE_KEY);
+        if (rawElo) {
+          const eloObj = JSON.parse(rawElo);
+          if (eloObj && eloObj.humanPlayers) delete eloObj.humanPlayers[clean];
+          if (eloObj && Array.isArray(eloObj.eloHistory)) {
+            eloObj.eloHistory = eloObj.eloHistory.filter((h) => h.p1Name !== clean && h.opponent !== clean);
+          }
+          localStorage.setItem(ELO_V2_STORAGE_KEY, JSON.stringify(eloObj));
+        }
+      } catch (e) {}
+
+      // 4. Match Scorecards History
+      try {
+        const rawScorecards = localStorage.getItem(SCORECARD_HISTORY_KEY);
+        if (rawScorecards) {
+          let scList = JSON.parse(rawScorecards);
+          if (Array.isArray(scList)) {
+            scList = scList.filter((m) => m.p1Name !== clean && m.p2Name !== clean);
+            localStorage.setItem(SCORECARD_HISTORY_KEY, JSON.stringify(scList));
+          }
+        }
+      } catch (e) {}
+
+      // 5. Desktop & Mobile Friends Rosters
+      try {
+        localStorage.removeItem('oddandeven_friends_' + clean);
+        const rawFMap = localStorage.getItem(FRIENDS_MAP_KEY);
+        if (rawFMap) {
+          const fMap = JSON.parse(rawFMap);
+          if (fMap && typeof fMap === 'object') {
+            delete fMap[clean];
+            Object.keys(fMap).forEach((owner) => {
+              if (Array.isArray(fMap[owner])) {
+                fMap[owner] = fMap[owner].filter((u) => String(u || '').trim().toUpperCase() !== clean);
+              }
+            });
+            localStorage.setItem(FRIENDS_MAP_KEY, JSON.stringify(fMap));
+          }
+        }
+      } catch (e) {}
+
+      // 6. Season 1 Event Registrations Map (events.html)
+      try {
+        const rawRegMap = localStorage.getItem(EVENT_REG_MAP_KEY);
+        if (rawRegMap) {
+          const regMap = JSON.parse(rawRegMap);
+          if (regMap && typeof regMap === 'object' && regMap[clean]) {
+            delete regMap[clean];
+            localStorage.setItem(EVENT_REG_MAP_KEY, JSON.stringify(regMap));
+          }
+        }
+      } catch (e) {}
+
+      // 7. Evict Active Session if currently logged in as this account on this browser
+      try {
+        if ((localStorage.getItem(LAST_USER_KEY) || '').trim().toUpperCase() === clean) {
+          localStorage.removeItem(LAST_USER_KEY);
+        }
+        const checkSess = (rawSess) => {
+          const dec = rawSess ? decryptPayload(rawSess) : null;
+          return dec && (dec.username || '').trim().toUpperCase() === clean;
+        };
+        if (checkSess(localStorage.getItem(SESSION_STORAGE_KEY)) || checkSess(sessionStorage.getItem(SESSION_STORAGE_KEY))) {
+          sessionStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+          localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
+        }
+      } catch (e) {}
+    }
+
+    async function executePermanentDeletion() {
+      if (!playerToDelete || !playerToDelete.uname) return;
+
+      const targetName = playerToDelete.uname.trim().toUpperCase();
+      const reason = playerToDelete.reason || 'Rule 1: Fair Play & Anti-Cheat Violation';
+
+      // 1. Add to permanent blacklist tombstone
+      addAccountToPurgedList(targetName);
+
+      // 2. Scrub across all website localStorage keys (Auth, Leaderboard, Friends, Events, Sessions)
+      scrubAccountFromWebsiteLocalStorage(targetName);
+
+      delete cloudAccounts[targetName];
+      delete cloudLeaderboard[targetName];
+      delete liveMeshPlayers[targetName];
+      delete liveMeshUsers[targetName];
+
+      // 3. Erase from Centralized Cloud Database (Firestore — both artifacts path and root collections)
+      if (db) {
+        const purgePayload = {
+          username: targetName,
+          reason: reason,
+          purgedAt: Date.now()
+        };
+        try {
+          await Promise.allSettled([
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', targetName)),
+            deleteDoc(doc(db, 'accounts', targetName)),
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', targetName)),
+            deleteDoc(doc(db, 'leaderboard', targetName)),
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', targetName)),
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', targetName)),
+            deleteDoc(doc(db, 'invites', targetName)),
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', targetName), purgePayload),
+            setDoc(doc(db, 'purged_accounts', targetName), purgePayload)
+          ]);
+        } catch (e) {
+          console.warn('Cloud document deletion note:', e);
+        }
+      }
+
+      // 4. Record in Admin Audit Log & Blast eradication across live WebRTC mesh and channels
+      appendAdminAuditLog('ERADICATED', targetName, reason);
+      broadcastAccountEradication(targetName, reason);
+
+      if (dom.inputDirectRemoveUsername) dom.inputDirectRemoveUsername.value = '';
+      closeDeleteModal();
+      renderAdminLeaderboard();
+      showToast(`Account "@${targetName}" permanently removed from all website pages & cloud.`);
+    }
+
+    function forceBroadcastAllPurges() {
+      const purgedList = loadPurgedAccountsList();
+      if (purgedList.length === 0) {
+        showToast('No accounts currently on the banned tombstone.');
+        return;
+      }
+      purgedList.forEach((uname) => {
+        broadcastAccountEradication(uname);
+      });
+      showToast(`Blasted eradication signals for ${purgedList.length} banned account(s) to live mesh.`);
+    }
+
+    function setTab(tab) {
+      activeTab = tab === 'RULES' ? 'GLOBAL' : tab;
+      const activeCls = 'py-2.5 rounded-lg bg-rose-600 text-white font-extrabold transition shadow flex items-center justify-center gap-1.5';
+      const idleCls = 'py-2.5 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5';
+      dom.tabGlobal.className = tab === 'GLOBAL' ? activeCls : idleCls;
+      dom.tabWeekly.className = tab === 'WEEKLY' ? activeCls : idleCls;
+      dom.tabRuns.className = tab === 'RUNS' ? activeCls : idleCls;
+      dom.tabPurged.className = tab === 'PURGED' ? activeCls : idleCls;
+      if (dom.tabRules) {
+        dom.tabRules.className = (tab === 'RULES' ? activeCls : idleCls) + ' col-span-2 sm:col-span-1';
+      }
+      renderAdminLeaderboard();
+      if (tab === 'RULES' && dom.adminRulesSection) {
+        dom.adminRulesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function initWorldwideWebRTCMesh() {
+      if (typeof Peer === 'undefined') {
+        dom.meshStatusLabel.textContent = 'WebRTC Unsupported';
+        return;
+      }
+
+      function attachPeerConn(conn) {
+        if (!conn) return;
+        if (!peerMeshConns.includes(conn)) peerMeshConns.push(conn);
+
+        const sendSync = () => {
+          try {
+            conn.send({
+              type: 'GLOBAL_LEADERBOARD_SYNC',
+              allPlayers: loadWorldwidePlayersMap(),
+              encryptedUsers: loadEncryptedUsersMap(),
+              requestReply: true,
+              timestamp: Date.now()
+            });
+          } catch (e) {}
+        };
+
+        if (conn.open) sendSync();
+        else conn.on('open', sendSync);
+
+        conn.on('data', (data) => {
+          if (!data) return;
+          if (data.type === 'GLOBAL_LEADERBOARD_SYNC') {
+            if (data.allPlayers && typeof data.allPlayers === 'object') {
+              Object.assign(liveMeshPlayers, data.allPlayers);
+            }
+            if (data.encryptedUsers && typeof data.encryptedUsers === 'object') {
+              Object.assign(liveMeshUsers, data.encryptedUsers);
+            }
+            renderAdminLeaderboard();
+          }
+        });
+      }
+
+      function connectToOtherHubs(peerObj, myId) {
+        GLOBAL_HUB_IDS.forEach((hubId) => {
+          if (hubId === myId) return;
+          try {
+            const c = peerObj.connect(hubId);
+            attachPeerConn(c);
+          } catch (e) {}
+        });
+      }
+
+      function claimHubSlot(idx) {
+        if (idx >= GLOBAL_HUB_IDS.length) {
+          try {
+            const client = new Peer();
+            peerMeshInstance = client;
+            client.on('open', (id) => {
+              dom.meshStatusLabel.textContent = 'Mesh Live (Client)';
+              connectToOtherHubs(client, id);
+            });
+            client.on('connection', (c) => attachPeerConn(c));
+          } catch (e) {
+            dom.meshStatusLabel.textContent = 'Mesh Standby';
+          }
+          return;
+        }
+
+        const slotId = GLOBAL_HUB_IDS[idx];
+        try {
+          const p = new Peer(slotId);
+          let opened = false;
+          p.on('open', (id) => {
+            opened = true;
+            peerMeshInstance = p;
+            dom.meshStatusLabel.textContent = `Mesh Live (Hub #${idx + 1})`;
+            connectToOtherHubs(p, id);
+          });
+          p.on('connection', (c) => attachPeerConn(c));
+          p.on('error', () => {
+            if (!opened) {
+              try { p.destroy(); } catch (e) {}
+              claimHubSlot(idx + 1);
+            }
+          });
+        } catch (e) {
+          claimHubSlot(idx + 1);
+        }
+      }
+
+      claimHubSlot(0);
+    }
+
+    async function initCloudSync() {
+      if (!firebaseConfig) {
+        renderAdminLeaderboard();
+        return;
+      }
+
+      try {
+        app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        currentUser = auth.currentUser;
+
+        const accountsCol = collection(db, 'artifacts', appId, 'public', 'data', 'accounts');
+        onSnapshot(accountsCol, (snapshot) => {
+          cloudAccounts = {};
+          snapshot.forEach((docSnap) => {
+            if (docSnap.exists()) {
+              cloudAccounts[docSnap.id] = docSnap.data();
+            }
+          });
+          renderAdminLeaderboard();
+        }, (err) => {
+          console.warn('Cloud accounts listener notice:', err);
+        });
+
+        const lbCol = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+        onSnapshot(lbCol, (snapshot) => {
+          cloudLeaderboard = {};
+          snapshot.forEach((docSnap) => {
+            if (docSnap.exists()) {
+              cloudLeaderboard[docSnap.id] = docSnap.data();
+            }
+          });
+          renderAdminLeaderboard();
+        }, (err) => {
+          console.warn('Cloud leaderboard listener notice:', err);
+        });
+
+        const purgedCol = collection(db, 'artifacts', appId, 'public', 'data', 'purged_accounts');
+        onSnapshot(purgedCol, (snapshot) => {
+          cloudPurgedList = [];
+          snapshot.forEach((docSnap) => {
+            if (docSnap.exists()) {
+              cloudPurgedList.push(docSnap.id.toUpperCase());
+            }
+          });
+          try {
+            localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(cloudPurgedList));
+          } catch (e) {}
+          renderAdminLeaderboard();
+        }, (err) => {
+          console.warn('Cloud purged listener notice:', err);
+        });
+
+        onSnapshot(collection(db, 'accounts'), (snapshot) => {
+          snapshot.forEach((docSnap) => {
+            if (docSnap.exists()) cloudAccounts[docSnap.id.toUpperCase()] = docSnap.data();
+          });
+          renderAdminLeaderboard();
+        }, () => {});
+
+        onSnapshot(collection(db, 'leaderboard'), (snapshot) => {
+          snapshot.forEach((docSnap) => {
+            if (docSnap.exists()) cloudLeaderboard[docSnap.id.toUpperCase()] = docSnap.data();
+          });
+          renderAdminLeaderboard();
+        }, () => {});
+
+      } catch (err) {
+        console.warn('Cloud initialization notice:', err);
+      }
+    }
+
+    function initEvents() {
+      dom.tabGlobal.addEventListener('click', () => setTab('GLOBAL'));
+      dom.tabWeekly.addEventListener('click', () => setTab('WEEKLY'));
+      dom.tabRuns.addEventListener('click', () => setTab('RUNS'));
+      dom.tabPurged.addEventListener('click', () => setTab('PURGED'));
+      if (dom.tabRules) dom.tabRules.addEventListener('click', () => setTab('RULES'));
+
+      if (dom.btnDirectRemoveAccount) {
+        dom.btnDirectRemoveAccount.addEventListener('click', () => {
+          const rawU = (dom.inputDirectRemoveUsername ? dom.inputDirectRemoveUsername.value : '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+          if (!rawU || rawU.length < 2) {
+            showToast('Enter a valid username (at least 2 characters) to remove from the website.', false);
+            return;
+          }
+          const consolidated = getConsolidatedPlayers();
+          const known = consolidated[rawU] || {};
+          const reason = dom.selectViolationRule ? dom.selectViolationRule.value : 'Rule 1: Fair Play & Anti-Cheat Violation';
+          openDeleteModal(rawU, known.countryFlag || '🇮🇳', known.countryCode || '+91', reason);
+        });
+      }
+
+      if (dom.inputDirectRemoveUsername) {
+        dom.inputDirectRemoveUsername.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && dom.btnDirectRemoveAccount) {
+            e.preventDefault();
+            dom.btnDirectRemoveAccount.click();
+          }
+        });
+      }
+
+      if (dom.btnPurgeAllPlaceholders) {
+        dom.btnPurgeAllPlaceholders.addEventListener('click', async () => {
+          let count = 0;
+          for (const seedName of FAKE_SEED_NAMES) {
+            const clean = seedName.trim().toUpperCase();
+            scrubAccountFromWebsiteLocalStorage(clean);
+            delete cloudAccounts[clean];
+            delete cloudLeaderboard[clean];
+            if (db) {
+              try {
+                await Promise.allSettled([
+                  deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
+                  deleteDoc(doc(db, 'accounts', clean)),
+                  deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean)),
+                  deleteDoc(doc(db, 'leaderboard', clean))
+                ]);
+              } catch (e) {}
+            }
+            count += 1;
+          }
+          appendAdminAuditLog('ERADICATED', 'SEED_PLACEHOLDERS', `Rule 3: Purged ${count} test/seed placeholder tags`);
+          renderAdminLeaderboard();
+          showToast(`Purged ${count} test/seed placeholder tags across website & cloud.`);
+        });
+      }
+
+      if (dom.btnClearAuditLog) {
+        dom.btnClearAuditLog.addEventListener('click', () => {
+          try { localStorage.removeItem(ADMIN_AUDIT_LOG_KEY); } catch (e) {}
+          renderAdminAuditLog();
+          showToast('Admin moderation audit log cleared.');
+        });
+      }
+
+      dom.btnRefreshData.addEventListener('click', () => {
+        renderAdminLeaderboard();
+        showToast('Leaderboard refreshed and re-synced.');
+      });
+
+      dom.btnForceBroadcastPurge.addEventListener('click', forceBroadcastAllPurges);
+
+      dom.inputSearchPlayer.addEventListener('input', () => {
+        renderAdminLeaderboard();
+      });
+
+      if (dom.checkShowPurged) {
+        dom.checkShowPurged.addEventListener('change', () => {
+          renderAdminLeaderboard();
+        });
+      }
+
+      dom.btnCloseModalX.addEventListener('click', closeDeleteModal);
+      dom.btnCancelDelete.addEventListener('click', closeDeleteModal);
+      dom.btnConfirmDelete.addEventListener('click', executePermanentDeletion);
+
+      dom.deleteConfirmModal.addEventListener('click', (e) => {
+        if (e.target === dom.deleteConfirmModal) closeDeleteModal();
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !dom.deleteConfirmModal.classList.contains('hidden')) {
+          closeDeleteModal();
+        }
+      });
+    }
+
+    initEvents();
+    initWorldwideWebRTCMesh();
+    initCloudSync();
+    renderAdminLeaderboard();
+    renderAdminAuditLog();
+  </script>
+</body>
+</html>

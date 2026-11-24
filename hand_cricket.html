@@ -33,14 +33,19 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
+    html {
+      scroll-behavior: smooth;
+    }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #262421;
-      background-image: radial-gradient(circle at 50% 0%, #312e2b 0%, #262421 60%, #1b1a17 100%);
+      background-color: #1c1a17;
+      background-image: radial-gradient(circle at 50% 0%, #2a2723 0%, #1c1a17 65%, #141311 100%);
       color: #f8fafc;
       min-height: 100vh;
       overflow-x: hidden;
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
     .font-mono-num {
       font-family: 'JetBrains Mono', monospace;
@@ -49,77 +54,92 @@
       font-family: 'Space Grotesk', 'Inter', sans-serif;
     }
     .glass-card {
-      background: #302e2b;
-      border: 1px solid #45423e;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      background: linear-gradient(160deg, #2b2824 0%, #1f1d1a 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 26px -6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      contain: layout style;
     }
     .glass-card-active {
-      background: #363431;
+      background: linear-gradient(160deg, #322f2a 0%, #23211d 100%);
       border: 2px solid #81b64c;
-      box-shadow: 0 8px 24px rgba(129, 182, 76, 0.22);
+      box-shadow: 0 10px 28px -6px rgba(129, 182, 76, 0.25);
+      contain: layout style;
     }
     .chess-green-btn {
-      background: #81b64c;
+      background: linear-gradient(180deg, #8cc354 0%, #78ab43 100%);
       color: #ffffff;
-      border-bottom: 4px solid #5d8c32;
+      border-bottom: 3.5px solid #537c2a;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-      transition: all 0.12s ease;
+      transition: transform 0.1s ease, filter 0.1s ease;
+      will-change: transform;
     }
     .chess-green-btn:hover:not(:disabled) {
-      background: #95c95e;
+      filter: brightness(1.06);
       transform: translateY(-1px);
     }
     .chess-green-btn:active:not(:disabled) {
       transform: translateY(2px);
-      border-bottom-width: 2px;
+      border-bottom-width: 1.5px;
     }
     .num-btn {
-      background: #3c3934;
-      border: 1px solid #524e48;
-      border-bottom: 4px solid #22201d;
+      background: linear-gradient(180deg, #3a3631 0%, #2d2a26 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 3.5px solid #1a1815;
       color: #ffffff;
-      transition: all 0.12s ease;
+      min-height: 46px;
+      font-weight: 800;
+      transition: transform 0.08s ease, background 0.1s ease, border-color 0.1s ease;
+      will-change: transform;
     }
     .num-btn:hover:not(:disabled) {
-      background: #81b64c;
-      border-color: #95c95e;
-      border-bottom-color: #537d2b;
+      background: linear-gradient(180deg, #8cc354 0%, #78ab43 100%);
+      border-color: #a3d96c;
+      border-bottom-color: #4f7828;
       color: #ffffff;
-      transform: translateY(-2px);
+      transform: translateY(-1.5px);
     }
     .num-btn:active:not(:disabled) {
-      transform: translateY(1px);
+      transform: translateY(1.5px);
+      border-bottom-width: 1.5px;
     }
     .num-btn:disabled {
-      opacity: 0.4;
+      opacity: 0.38;
       cursor: not-allowed;
     }
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
-      50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    #arenaCanvas {
+      transform: translateZ(0);
+      will-change: transform;
     }
     .pulse-cta {
-      animation: pulseGlow 2s infinite;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .pulse-cta:hover:not(:disabled) {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
     }
     @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.88) translateY(8px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
+      0% { opacity: 0; transform: translateY(4px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
     .animate-pop {
-      animation: popIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: popIn 0.16s ease-out forwards;
     }
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(15, 23, 42, 0.35);
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.5);
+      background: rgba(148, 163, 184, 0.35);
       border-radius: 9999px;
     }
   </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
+  <script src="grandmaster.js?v=2.5"></script>
 </head>
 <body class="min-h-screen flex flex-col lg:flex-row bg-[#262421] text-slate-100 p-0 m-0">
 
@@ -233,9 +253,9 @@
           <span class="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-[#81b64c]/20 border border-[#81b64c]/40 flex items-center justify-center text-xs sm:text-base group-hover:scale-105 transition-transform">🚀</span>
           <div class="min-w-0 flex-1">
             <div class="text-[10px] sm:text-xs font-extrabold tracking-tight text-white group-hover:text-[#a3d96c] truncate">Updates &amp; Notes</div>
-            <div class="hidden lg:block text-[10px] text-[#a3d96c] truncate">v2.0 Changelog</div>
+            <div class="hidden lg:block text-[10px] text-[#a3d96c] truncate">v2.5 Changelog</div>
           </div>
-          <span class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v2.0</span>
+          <span class="hidden lg:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono-num font-bold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v2.5</span>
         </a>
       </div>
     </div>
@@ -319,131 +339,10 @@
   <!-- RIGHT OF SIDEBAR: MAIN WORKSPACE AREA (Top Invite Banner + Top Bar + Clean Middle Column + Right Scorecard & Commentary Sidebar) -->
   <div class="flex-1 min-w-0 flex flex-col min-h-screen">
 
-    <!-- AESTHETIC NEW UPDATE VERSION 2.0 BANNER (Redirects to updates.html) -->
-    <div
-      id="newUpdateBanner"
-      class="w-full relative overflow-hidden bg-gradient-to-r from-[#0c140d]/95 via-[#0e1a22]/95 to-[#1a1226]/95 backdrop-blur-xl border-b border-[#a3d96c]/30 px-3 sm:px-6 py-2.5 transition-all shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-30 group/banner"
-    >
-      <!-- Ambient Radial Aura & Shimmer Highlights -->
-      <div class="absolute -left-12 -top-10 w-48 h-28 bg-[#81b64c]/20 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="absolute left-1/3 -bottom-10 w-64 h-24 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -right-8 -top-10 w-44 h-28 bg-purple-500/15 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#a3d96c]/60 to-transparent"></div>
 
-      <div class="max-w-[1520px] mx-auto flex items-center justify-between gap-3 relative z-10">
-        <a
-          id="btnBannerNewUpdate"
-          href="updates.html"
-          onclick="if(window.openVersion2Showcase){event.preventDefault();window.openVersion2Showcase();}"
-          class="flex-1 flex items-center gap-3 text-left min-w-0 group"
-          aria-label="Open Version 2.0 Interactive Showcase"
-        >
-          <!-- Glowing Animated Rocket Icon Pill -->
-          <div class="relative shrink-0">
-            <span class="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-br from-[#81b64c]/30 via-emerald-500/10 to-cyan-500/15 border border-[#a3d96c]/50 flex items-center justify-center text-base sm:text-lg shadow-md shadow-[#81b64c]/20 group-hover:scale-105 group-hover:shadow-[#81b64c]/40 group-hover:border-[#a3d96c] transition-all duration-200">
-              🚀
-            </span>
-            <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-ping absolute -top-0.5 -right-0.5"></span>
-            <span class="w-2 h-2 rounded-full bg-[#a3d96c] absolute -top-0.5 -right-0.5"></span>
-          </div>
-
-          <!-- Content Strip with Aesthetic Badge and Highlights -->
-          <div class="min-w-0 flex-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono-num font-black uppercase tracking-wider bg-gradient-to-r from-[#81b64c] via-emerald-400 to-[#a3d96c] text-slate-950 shadow-sm shrink-0">
-              <span>⚡</span>
-              <span>VERSION 2.0 LIVE</span>
-            </span>
-
-            <span class="font-brand text-xs sm:text-sm font-black text-white group-hover:text-[#a3d96c] transition-colors truncate">
-              What's New in Version 2.0 — Roast Mode, Security 2.0 & More
-            </span>
-
-            <!-- Feature Tags -->
-            <div class="hidden md:flex items-center gap-1.5 text-[11px] shrink-0">
-              <span class="px-2 py-0.5 rounded-lg bg-yellow-500/15 text-yellow-300 border border-yellow-400/30 font-semibold flex items-center gap-1">
-                <span>🎖️</span><span>Achievements</span>
-              </span>
-              <span class="px-2 py-0.5 rounded-lg bg-pink-500/15 text-pink-300 border border-pink-400/30 font-semibold flex items-center gap-1">
-                <span>🎟️</span><span>Events &amp; Tournaments</span>
-              </span>
-              <span class="px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 font-semibold flex items-center gap-1">
-                <span>☁️</span><span>Cloud Sync</span>
-              </span>
-            </div>
-
-            <span class="hidden xl:inline text-xs text-zinc-400 truncate">
-              — Top-10 Leaderboard, Bug Fixes &amp; More
-            </span>
-          </div>
-
-          <!-- CTA Pill -->
-          <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-extrabold bg-[#81b64c]/15 hover:bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/40 group-hover:border-[#a3d96c] transition-all shrink-0 ml-auto mr-1">
-            <span>Open v2.0 Box</span>
-            <span class="group-hover:translate-x-0.5 transition-transform font-black">→</span>
-          </span>
-        </a>
-
-        <!-- Modern Dismiss Button -->
-        <button
-          id="btnDismissUpdateBanner"
-          type="button"
-          aria-label="Close New Update banner"
-          title="Dismiss banner"
-          onclick="event.stopPropagation();var b=document.getElementById('newUpdateBanner');if(b)b.classList.add('hidden');"
-          class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white/[0.06] hover:bg-rose-500/10 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-xs font-bold shrink-0 active:scale-90 transition-all"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-
-<!-- AESTHETIC TOP "INVITE YOUR FRIENDS" BANNER (Redirects to Friends Tab in Sidebar) -->
-    <div
-      id="topInviteFriendsBanner"
-      role="button"
-      tabindex="0"
-      aria-label="Invite your friends — Open Friends tab"
-      onclick="if(document.getElementById('sideNavFriends')){document.getElementById('sideNavFriends').click();setTimeout(function(){var inp=document.getElementById('inputFriendSearch');if(inp)inp.focus();},80);}"
-      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
-      class="w-full relative overflow-hidden cursor-pointer bg-gradient-to-r from-[#142213] via-[#182c25] to-[#16202e] hover:from-[#192b17] hover:via-[#1d362d] hover:to-[#1b2738] border-b border-[#81b64c]/45 px-3 sm:px-6 py-2 transition-all group shadow-lg"
-    >
-      <!-- Ambient Glow Accents -->
-      <div class="absolute -left-10 -top-10 w-36 h-24 bg-[#81b64c]/20 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="absolute right-1/4 -bottom-10 w-40 h-24 bg-cyan-400/15 rounded-full blur-2xl pointer-events-none"></div>
-
-      <div class="max-w-[1520px] mx-auto flex items-center justify-between gap-2.5 relative z-10">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#81b64c]/25 border border-[#81b64c]/60 flex items-center justify-center text-sm sm:text-base shadow-sm shrink-0 group-hover:scale-105 transition-transform">
-            🤝
-          </span>
-          <div class="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 min-w-0">
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-[#a3d96c] border border-[#81b64c]/40 shrink-0">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#a3d96c] animate-pulse"></span>
-              <span>1V1 SQUAD</span>
-            </span>
-            <span class="font-brand text-xs sm:text-sm font-black text-white tracking-tight group-hover:text-[#a3d96c] transition truncate">
-              Invite your friends
-            </span>
-            <span class="hidden md:inline text-xs text-slate-300/90 truncate">
-              — Search any username, add friends &amp; launch instant 1v1 Ranked Rooms together!
-            </span>
-          </div>
-        </div>
-
-        <button
-          id="btnTopInviteFriendsCta"
-          type="button"
-          onclick="event.stopPropagation();if(document.getElementById('sideNavFriends')){document.getElementById('sideNavFriends').click();setTimeout(function(){var inp=document.getElementById('inputFriendSearch');if(inp)inp.focus();},80);}"
-          class="shrink-0 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold bg-gradient-to-r from-[#81b64c] to-emerald-500 hover:from-[#95c95e] hover:to-emerald-400 text-slate-950 shadow-md shadow-[#81b64c]/20 flex items-center gap-1.5 transition group-hover:translate-x-0.5"
-        >
-          <span>Invite Friends</span>
-          <span class="font-black">→</span>
-        </button>
-      </div>
-    </div>
 
     <!-- Streamlined Top Header Bar (Only Current Rating, Username, Multiplayer, Rules & Sign Out) -->
-    <header class="w-full bg-[#211f1c] border-b border-[#383531] px-2.5 sm:px-6 py-2">
+    <header class="w-full bg-[#191815]/95 border-b border-white/10 px-3.5 sm:px-6 py-2.5 sticky top-0 z-30 shadow-md">
       <div class="max-w-[1520px] mx-auto flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 min-w-0">
           <h1 class="font-brand text-sm sm:text-lg font-extrabold tracking-tight flex items-baseline shrink-0">
@@ -515,116 +414,25 @@
     </header>
 
     <!-- Main 2-Column Content Grid: Clean Middle Portion + Right Scorecard & Commentary Options -->
-    <main class="w-full max-w-[1520px] mx-auto flex-1 px-3 sm:px-6 py-4 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+    <main class="w-full max-w-[1520px] mx-auto flex-1 px-3.5 sm:px-6 py-5 grid grid-cols-1 xl:grid-cols-12 gap-5 sm:gap-6 items-start">
 
       <!-- CLEAN MIDDLE PORTION (Uncluttered Single-View Center Stage) -->
       <div id="mainCenterStageCol" class="xl:col-span-8 flex flex-col gap-4 min-w-0">
+      <section class="arena-welcome" aria-label="Arena v2.5">
+        <div class="arena-release">Midnight Arena · v2.5</div>
+        <h2>Read the rhythm. Rule the pitch.</h2>
+        <p>Pick your number, outthink your opponent. <a href="updates.html#v2-5">See what’s new</a></p>
+      </section>
 
-      <!-- CLEAN STARTING UI (Two Hero Buttons: Play Bot & Play Multiplayer + Game Features) -->
-      <section id="centerShowcasePanel" class="glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-cyan-500/35 animate-pop">
-        <div class="absolute -right-12 -top-12 w-52 h-52 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-12 -bottom-12 w-52 h-52 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <div class="flex items-center gap-2">
-            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-300 border border-emerald-400/30">
-              🏏 OddAndEven.in ARENA
-            </span>
-            <span class="px-3 py-1 rounded-full text-[10px] font-mono-num font-bold bg-amber-500/10 text-amber-300 border border-amber-400/30" id="startHubEloChip">
-              ♟️ Rating: 1500 ELO (±8)
-            </span>
-          </div>
-          <button id="btnToggleShowcaseCompact" type="button" class="text-[11px] font-bold text-slate-400 hover:text-white transition">
-            Minimize ▲
-          </button>
-        </div>
-
-        <div id="showcaseBodyContent" class="space-y-5">
-          <!-- Hero Headline -->
-          <div class="text-center max-w-xl mx-auto space-y-1.5 py-1">
-            <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Choose Your Arena Mode
-            </h2>
-            <p class="text-xs sm:text-sm text-slate-300">
-              Challenge Elo-rated AI bots from <strong class="text-emerald-300">250 to 2800 Elo</strong> or play live <strong class="text-purple-300">Multiplayer</strong> with friends to climb the 1500+ Elo Leaderboard.
-            </p>
-          </div>
-
-          <!-- TWO MAIN HERO BUTTONS IN THE MIDDLE: PLAY BOT & PLAY MULTIPLAYER -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button id="cardQuickBot" type="button" class="p-5 rounded-2xl text-left bg-gradient-to-br from-emerald-500/10 via-slate-900/95 to-cyan-950/80 hover:from-emerald-500/30 hover:to-cyan-900/80 border-2 border-emerald-400/50 hover:border-emerald-300 shadow-xl shadow-emerald-500/10 transition group flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between mb-3">
-                  <span class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-400/40 flex items-center justify-center text-2xl shadow-md">🤖</span>
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950">
-                    250 – 2800 ELO
-                  </span>
-                </div>
-                <h3 class="text-lg sm:text-xl font-black text-white group-hover:text-emerald-300 transition">
-                  Play Bot
-                </h3>
-                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Face 4 Elo tiers — from friendly Basic (450) & Intermediate (1100) to mind-reading Advanced (1850) & Grandmaster Oracle (2650).
-                </p>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-extrabold text-emerald-300">
-                <span>Select Bot & Difficulty</span>
-                <span class="group-hover:translate-x-1 transition-transform">→</span>
-              </div>
-            </button>
-
-            <button id="cardQuickMp" type="button" class="p-5 rounded-2xl text-left bg-gradient-to-br from-purple-500/10 via-slate-900/95 to-indigo-950/80 hover:from-purple-500/30 hover:to-indigo-900/80 border-2 border-purple-400/50 hover:border-purple-300 shadow-xl shadow-purple-500/10 transition group flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between mb-3">
-                  <span class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-400/40 flex items-center justify-center text-2xl shadow-md">👥</span>
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-400 text-slate-950">
-                    RANKED +8 / -8 ELO
-                  </span>
-                </div>
-                <h3 class="text-lg sm:text-xl font-black text-white group-hover:text-purple-300 transition">
-                  Play Multiplayer
-                </h3>
-                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Create or join a Live Online Room Code (P1 vs P2) with real usernames, room lock & synced 15s clock. Win +8 Elo or lose -8 Elo!
-                </p>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-extrabold text-purple-300">
-                <span>Create or Join Room Code</span>
-                <span class="group-hover:translate-x-1 transition-transform">→</span>
-              </div>
-            </button>
-          </div>
-
-          <!-- Clean Game Features Strip -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-            <div class="p-3 rounded-xl bg-slate-900/85 border border-slate-800 flex items-start gap-2.5">
-              <span class="text-base mt-0.5">♟️</span>
-              <div>
-                <div class="text-xs font-extrabold text-white">Chess Elo Rating (1500)</div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Multiplayer is Ranked (±8 Elo). Bot matches are unrated practice (rating stays unchanged).</p>
-              </div>
-            </div>
-
-            <div class="p-3 rounded-xl bg-slate-900/85 border border-slate-800 flex items-start gap-2.5">
-              <span class="text-base mt-0.5">🧠</span>
-              <div>
-                <div class="text-xs font-extrabold text-white">Adaptive Markov AI</div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Advanced & Master bots analyze your number sequences in real time.</p>
-              </div>
-            </div>
-
-            <button id="cardQuickCommentary" type="button" class="p-3 rounded-xl bg-slate-900/85 hover:bg-slate-800/90 border border-amber-500/30 text-left flex items-start gap-2.5 transition">
-              <span class="text-base mt-0.5">🎙️</span>
-              <div class="min-w-0">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-extrabold text-white">Live Commentary</span>
-                  <span id="commentaryMoodChip" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300">HYPE</span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Click to cycle Hype, Tactical, Classic & Roast broadcast styles.</p>
-              </div>
-            </button>
-          </div>
-        </div>
+      <section id="centerShowcasePanel" class="hidden" aria-hidden="true">
+        <span id="startHubEloChip"></span>
+        <span id="commentaryMoodChip"></span>
+        <div id="showcaseBodyContent"></div>
+        <button id="btnToggleShowcaseCompact" type="button"></button>
+        <button id="cardQuickBot" type="button"></button>
+        <button id="cardQuickMp" type="button"></button>
+        <button id="cardQuickCommentary" type="button"></button>
       </section>
 
       <!-- INLINE SCREEN 1: ELO BOTS ARENA (bots.html View — Basic 250-700, Intermediate 700-1400, Advanced 1400-2200, Master 2200-2800) -->
@@ -705,7 +513,7 @@
               </div>
             </div>
             <p class="hidden sm:block text-xs text-slate-400 leading-relaxed">
-              Deep 2nd-order N-gram and delta-shift sequence predictor with over 90% accuracy, dynamic EV survival batting, and lethal bowling traps.
+              Deep 2nd-order N-gram and delta-shift sequence predictor that adapts to your past moves, dynamic EV survival batting, and lethal bowling traps.
             </p>
           </button>
 
@@ -720,12 +528,12 @@
             <div class="flex items-center gap-2.5">
               <span class="text-2xl">👑</span>
               <div>
-                <div class="font-extrabold text-sm text-white">Apex "Grandmaster" Oracle (Unbeatable)</div>
-                <div class="text-[11px] text-rose-300/90 font-medium">100% Unbeatable • Mind-Reading Oracle Foresight</div>
+                <div class="font-extrabold text-sm text-white">Apex "Grandmaster" Bot</div>
+                <div class="text-[11px] text-rose-300/90 font-medium">Grandmaster Tier • Adaptive Sequence AI</div>
               </div>
             </div>
             <p class="hidden sm:block text-xs text-slate-400 leading-relaxed">
-              Unbeatable Grandmaster! Uses real-time predictive foresight to anticipate your exact next move, evades all bowling deliveries, and dismisses batters with mathematical certainty.
+              Learns your repeated picks and sequences, separates batting from bowling habits, and chooses smarter chase shots. Tough, fair play based only on completed turns.
             </p>
           </button>
         </div>
@@ -847,13 +655,138 @@
               🌐
             </div>
             <div>
-              <h2 class="text-lg sm:text-xl font-black text-white">Online Room Multiplayer Lobby</h2>
-              <p class="text-xs text-slate-400">Generate or join a Room Code • Locks automatically at 2/2 players (P1 vs P2) • Synced 15s Clock</p>
+              <h2 class="text-lg sm:text-xl font-black text-white">Online Multiplayer Arena (1v1 &amp; 2v2 Squads)</h2>
+              <p class="text-xs text-slate-400">Choose 1v1 Duel or 2v2 Team Match • Invite Friends • Pick Teammate &amp; Captains • Synced 15s Clock</p>
             </div>
           </div>
           <button id="btnBackFromMpSetup" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
             ← Back to Pitch
           </button>
+        </div>
+
+        <!-- MULTIPLAYER FORMAT SWITCHER: 1v1 DUEL vs 2v2 SQUAD MATCH -->
+        <div class="p-1.5 rounded-2xl bg-slate-950/90 border border-purple-500/35 grid grid-cols-2 gap-2">
+          <button id="btnMpFormat1v1" type="button" class="py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-lg">
+            <span>⚔️</span>
+            <span>1v1 Duel Mode (2 Players • 1 Wicket)</span>
+          </button>
+          <button id="btnMpFormat2v2" type="button" class="py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800">
+            <span>🛡️</span>
+            <span>2v2 Squad Mode (4 Players • Captains &amp; 6-Ball Overs)</span>
+          </button>
+        </div>
+
+        <!-- 1v1 QUICK FRIEND INVITE BAR -->
+        <div id="mp1v1FriendInviteStrip" class="p-3.5 rounded-2xl bg-slate-950/85 border border-emerald-500/30 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-emerald-300 flex items-center gap-1.5">
+              <span>📞</span>
+              <span>Invite a Friend for 1v1 Match</span>
+            </span>
+            <span class="text-[10px] font-mono-num text-slate-400">Rings friend's screen &amp; creates room</span>
+          </div>
+          <div class="flex gap-2">
+            <input id="input1v1InviteFriend" type="text" maxlength="16" placeholder="Enter Friend's Username (e.g. VIRAT_18)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono-num text-xs font-bold uppercase focus:outline-none focus:border-emerald-400" />
+            <button id="btn1v1SendInvite" type="button" class="px-4 py-2 rounded-xl font-extrabold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition shrink-0 shadow">
+              📞 Invite Friend
+            </button>
+          </div>
+          <div id="mp1v1QuickFriendsList" class="flex flex-wrap gap-1.5 pt-0.5"></div>
+        </div>
+
+        <!-- 2v2 SQUAD BUILDER, TEAM SELECTOR & CAPTAINCY PANEL -->
+        <div id="mp2v2SquadPanel" class="hidden p-4 rounded-2xl bg-[#16151c] border-2 border-purple-500/45 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+                <span>🛡️</span>
+                <span>2v2 Squad Builder, Team Picker &amp; Captaincy</span>
+              </div>
+              <p class="text-[11px] text-slate-300 mt-0.5">
+                Invite 3 friends (4 players total) → Pick <strong>1 player for Your Team</strong> (remaining 2 automatically go to <strong>Opponent Team</strong>) → You are <strong>Your Team's Captain</strong> &amp; assign the <strong>Opponent Team Captain</strong>!
+              </p>
+            </div>
+            <button id="btn2v2AutoFillSquad" type="button" class="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/40 transition shrink-0">
+              ⚡ Auto-Fill Squad from Friends
+            </button>
+          </div>
+
+          <!-- Step 1: Invite 3 Friends into the 2v2 Pool -->
+          <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-extrabold text-emerald-300">Step 1: Invite 3 Friends to 2v2 Lobby (<span id="mp2v2PoolCountLabel">0/3</span> Invited)</span>
+              <span class="text-[10px] font-mono-num text-slate-400">Click a friend below or type username</span>
+            </div>
+            <div class="flex gap-2">
+              <input id="input2v2InviteFriend" type="text" maxlength="16" placeholder="Type Friend Username to Invite (e.g. ROHIT_45)" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono-num text-xs font-bold uppercase focus:outline-none focus:border-purple-400" />
+              <button id="btn2v2AddInviteFriend" type="button" class="px-4 py-2 rounded-xl font-extrabold text-xs bg-purple-500 hover:bg-purple-400 text-white transition shrink-0 shadow">
+                ➕ Invite to 2v2
+              </button>
+            </div>
+            <!-- Quick Friends Chips -->
+            <div id="mp2v2QuickFriendsList" class="flex flex-wrap gap-1.5"></div>
+            <!-- 3 Invited Friend Slots + Teammate Selection -->
+            <div id="mp2v2InvitedSlotsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1"></div>
+          </div>
+
+          <!-- Step 2 & 3: Live 2v2 Team Lineups & Captain Assignment -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- YOUR TEAM (TEAM ALPHA) -->
+            <div class="p-3.5 rounded-xl bg-emerald-950/35 border-2 border-emerald-500/45 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                  <span>🟢</span>
+                  <span>Your Team (Team Alpha)</span>
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                  👑 YOU ARE CAPTAIN
+                </span>
+              </div>
+              <div id="mp2v2TeamAList" class="space-y-2 text-xs"></div>
+              <div class="pt-1 border-t border-emerald-500/20 flex items-center justify-between gap-2 text-[11px]">
+                <span class="text-slate-300 font-semibold">Opening Order:</span>
+                <button id="btn2v2SwapTeamAOrder" type="button" class="px-2.5 py-1 rounded-lg font-extrabold bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/35 transition">
+                  🔄 Swap #1 / #2 Order
+                </button>
+              </div>
+            </div>
+
+            <!-- OPPONENT TEAM (TEAM BRAVO) -->
+            <div class="p-3.5 rounded-xl bg-cyan-950/35 border-2 border-cyan-500/45 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
+                  <span>🔵</span>
+                  <span>Opponent Team (Rest 2 Players)</span>
+                </span>
+                <span id="mp2v2OppCaptainPill" class="px-2 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                  👑 Assign Captain Below
+                </span>
+              </div>
+              <div id="mp2v2TeamBList" class="space-y-2 text-xs"></div>
+              <div class="pt-1 border-t border-cyan-500/20 flex items-center justify-between gap-2 text-[11px]">
+                <span class="text-slate-300 font-semibold">Tap a player above to assign <strong>Opponent Captain</strong></span>
+                <button id="btn2v2SwapTeamBOrder" type="button" class="px-2.5 py-1 rounded-lg font-extrabold bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/35 transition shrink-0">
+                  🔄 Swap Order
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2v2 Match Rules Highlight Strip -->
+          <div class="p-3 rounded-xl bg-slate-900/95 border border-amber-500/35 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+            <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
+              <div class="font-extrabold text-amber-300">🪙 Captains Toss &amp; Call</div>
+              <p class="text-slate-300 mt-0.5">You (Team A Captain) &amp; assigned Opponent Captain do the Toss and decide who Bats or Bowls first.</p>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
+              <div class="font-extrabold text-cyan-300">⚾ 6-Ball Bowler Switch</div>
+              <p class="text-slate-300 mt-0.5">Every <strong>6 balls (1 Over)</strong>, the bowling team's bowler automatically switches to the other teammate!</p>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
+              <div class="font-extrabold text-emerald-300">🏏 2 Wickets Per Innings</div>
+              <p class="text-slate-300 mt-0.5">When 1st batter gets OUT, the 2nd batter comes in. When <strong>both get OUT (2/2)</strong>, Opponent Team gets the Target!</p>
+            </div>
+          </div>
         </div>
 
         <!-- Live P1 vs P2 Matchup & Room Lock Banner -->
@@ -1076,6 +1009,68 @@
               </button>
             </div>
           </article>
+        </div>
+      </section>
+
+
+      <!-- INLINE SCREEN 4B: UPDATES & CHANGELOG (v2.5 Release Notes) -->
+      <section id="screenUpdates" class="hidden glass-card rounded-2xl p-5 sm:p-6 border border-[#81b64c]/45 space-y-4 animate-pop"><div class="arena-welcome"><div class="arena-release">v2.5 · Latest release</div><h2>Meet Midnight Arena.</h2><p>Refreshed visuals, more reliable login, and a tougher, fair Grandmaster. <a href="updates.html#v2-5">Read the v2.5 patch notes</a></p></div>
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#45423e] pb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-[#81b64c]/20 border border-[#81b64c]/45 flex items-center justify-center text-2xl">
+              🚀
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-black text-white font-brand">OddAndEven.in Updates &amp; Patch Notes</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">v2.5 LIVE</span>
+              </div>
+              <p class="text-xs text-slate-300">Latest arena features, 1v1 &amp; 2v2 Multiplayer, Referral +50 XP System &amp; Store Upgrades</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="updates.html" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 shadow transition flex items-center gap-1">
+              <span>updates.html</span>
+              <span>↗</span>
+            </a>
+            <button id="btnBackFromUpdates" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+              ← Back to Pitch
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-emerald-500/35 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-brand font-black text-sm text-emerald-300">🎁 Referral Code &amp; URL Invite (+50 XP)</span>
+              <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-emerald-500/20 text-emerald-300">NEW</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">Generate your personal referral code (<code class="text-emerald-300 font-mono-num">OAE-USER-50XP</code>) and shareable website invite URL. Earn <strong>+50 XP</strong> every time a friend signs up using your link!</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-purple-500/35 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-brand font-black text-sm text-purple-300">🛡️ 1v1 Duel &amp; 2v2 Squad Multiplayer</span>
+              <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-purple-500/20 text-purple-300">NEW</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">Invite 3 friends for 2v2 Squad matches, pick your teammate (rest 2 join Opponent Team), assign Team Captains for the Toss, automatic 6-ball bowler rotation, and 2-wicket innings!</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-amber-500/35 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-brand font-black text-sm text-amber-300">🛍️ XP Store Banners, Badges &amp; Gamer Cards</span>
+              <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-amber-500/20 text-amber-300">5,000+ XP</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">Unlock custom background banners (Neon Cyber, Golden Trophy, Emerald Matrix, Obsidian Void, Solar Inferno &amp; Royal Amethyst) and prestige badges starting at 5,000 XP.</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#1c1a17] border border-cyan-500/35 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-brand font-black text-sm text-cyan-300">🏆 Multiplayer-Only Ranked Leaderboards</span>
+              <span class="px-2 py-0.5 rounded text-[9px] font-mono-num font-bold bg-cyan-500/20 text-cyan-300">RANKED</span>
+            </div>
+            <p class="text-slate-300 leading-relaxed">Global, Weekly (Mon–Sun), and Total Runs leaderboards track verified Multiplayer matches only, synced in real time via Firestore <code class="text-cyan-300 font-mono-num">artifacts</code> collections.</p>
+          </div>
         </div>
       </section>
 
@@ -1591,6 +1586,159 @@
           </button>
         </div>
 
+        <!-- ALL-NEW INTERACTIVE WEBSITE REFERRAL & FRIEND INVITATION BANNER (+50 XP PER SIGNUP) -->
+        <div
+          id="referralInviteBanner_friends"
+          data-referral-widget="friends"
+          class="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-[#122415] via-[#121f2b] to-[#1f142e] border-2 border-[#81b64c]/55 shadow-[0_14px_36px_rgba(0,0,0,0.45)] space-y-4"
+        >
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#81b64c] via-emerald-400 to-cyan-400 pointer-events-none"></div>
+
+          <!-- Top Header Row: Title & +50 XP Reward Pill -->
+          <div class="flex flex-wrap items-start justify-between gap-3 relative z-10">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#81b64c]/30 via-emerald-500/20 to-cyan-500/20 border border-[#a3d96c]/60 flex items-center justify-center text-2xl shadow-lg shrink-0">
+                🎁
+              </div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase tracking-wider bg-gradient-to-r from-[#81b64c] to-emerald-400 text-slate-950 shadow-sm">
+                    <span>⚡</span>
+                    <span>+50 XP PER SIGNUP</span>
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-mono-num font-bold bg-amber-500/15 text-amber-300 border border-amber-400/35" data-ref-earned-pill>
+                    🏆 +0 XP Earned (0 Joined)
+                  </span>
+                </div>
+                <h3 class="font-brand text-sm sm:text-base font-black text-white mt-1 tracking-tight">
+                  Invite Friends via Referral Link &amp; Earn +50 XP
+                </h3>
+                <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed mt-0.5">
+                  Generate your personal referral code &amp; website URL below. Every friend who signs up with your link or code gives you <strong class="text-[#a3d96c]">+50 XP</strong> toward Store Banners, Badges &amp; Gamer Cards!
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              data-ref-action="generate"
+              class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 hover:brightness-110 text-slate-950 shadow-md flex items-center gap-1.5 transition active:scale-95 shrink-0"
+            >
+              <span>🔄</span>
+              <span>Generate New Code</span>
+            </button>
+          </div>
+
+          <!-- Interactive Referral Code & Website URL Generator Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 relative z-10">
+            <!-- Referral Code Box -->
+            <div class="md:col-span-4 p-3 rounded-xl bg-slate-950/85 border border-emerald-500/35 flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                <span>🔑 Your Referral Code</span>
+                <span class="font-mono-num text-amber-300">+50 XP</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <code data-ref-code-display class="font-mono-num text-xs sm:text-sm font-black text-white tracking-wider bg-white/[0.04] px-2.5 py-1.5 rounded-lg border border-white/10 truncate flex-1">
+                  OAE-PLAYER-50XP
+                </code>
+                <button
+                  type="button"
+                  data-ref-action="copy-code"
+                  class="px-3 py-1.5 rounded-lg text-[11px] font-extrabold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 transition active:scale-95 shrink-0"
+                >
+                  📋 Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- Shareable Website Referral URL Box -->
+            <div class="md:col-span-8 p-3 rounded-xl bg-slate-950/85 border border-cyan-500/35 flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                <span>🌐 Shareable Website Referral URL</span>
+                <span data-ref-status-hint class="text-[10px] font-mono-num text-[#a3d96c]">Ready to share</span>
+              </div>
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <input
+                  type="text"
+                  readonly
+                  data-ref-url-input
+                  aria-label="Shareable Website Referral URL"
+                  value="https://oddeven-two.vercel.app/?ref=OAE-PLAYER-50XP"
+                  onclick="this.select()"
+                  class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/80 text-cyan-200 font-mono-num text-xs font-bold focus:outline-none focus:border-cyan-400 truncate"
+                />
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    data-ref-action="copy-url"
+                    class="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:brightness-110 text-slate-950 shadow transition active:scale-95 flex items-center justify-center gap-1"
+                  >
+                    <span>🔗</span>
+                    <span>Copy URL</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-ref-action="share-whatsapp"
+                    class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600/25 hover:bg-emerald-600/40 text-emerald-200 border border-emerald-400/40 transition active:scale-95 flex items-center justify-center gap-1"
+                    title="Share referral link on WhatsApp"
+                  >
+                    <span>📲</span>
+                    <span>Share</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Milestone Progress + Redeem Friend's Code Strip -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1 relative z-10">
+            <!-- Progress & Joined Friends -->
+            <div class="md:col-span-7 p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                  <span>📈</span>
+                  <span>Referral XP Milestone Track</span>
+                </span>
+                <span data-ref-progress-label class="font-mono-num text-[11px] font-extrabold text-[#a3d96c]">0 / 5 Friends (0 / 250 XP)</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-white/10">
+                <div data-ref-progress-bar class="h-full bg-gradient-to-r from-[#81b64c] via-emerald-400 to-cyan-400 transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <div data-ref-friends-list class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 pt-0.5">
+                <span>Share your link above — every friend who signs up awards you <strong class="text-amber-300">+50 XP</strong>!</span>
+              </div>
+            </div>
+
+            <!-- Apply / Redeem a Friend's Referral Code -->
+            <div class="md:col-span-5 p-3 rounded-xl bg-black/40 border border-purple-500/30 flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-purple-300">
+                <span>🎟️ Have a Friend's Referral Code?</span>
+                <span class="text-amber-300">+50 XP to Inviter</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  data-ref-redeem-input
+                  maxlength="40"
+                  placeholder="Enter code (e.g. OAE-VIRAT_18-50XP)"
+                  class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono-num text-xs font-bold uppercase placeholder:normal-case placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:border-purple-400"
+                />
+                <button
+                  type="button"
+                  data-ref-action="redeem-code"
+                  class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-purple-500 hover:bg-purple-400 text-white shadow transition active:scale-95 shrink-0"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Toast Feedback Line -->
+          <div data-ref-feedback class="hidden p-2.5 rounded-xl text-xs font-bold border relative z-10"></div>
+        </div>
+
+
         <!-- Search Bar to Find & Send Friend Requests by Username -->
         <div class="p-3.5 sm:p-4 rounded-2xl bg-[#1d1c19] border border-[#45423e] space-y-3">
           <label for="inputFriendSearch" class="block text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
@@ -1659,7 +1807,7 @@
       </section>
 
       <!-- Active Pitch Wrapper (Mobile-First: Scorecard + Toss/Runs Controls + Compact Hand Clash) -->
-      <div id="activePitchWrapper" class="flex flex-col gap-2.5 sm:gap-4">
+      <div id="activePitchWrapper" class="flex flex-col gap-3.5 sm:gap-4">
 
       <!-- 1. COMPACT SIDE-BY-SIDE LIVE SCORECARD STRIP (3-Columns on Mobile & Desktop) -->
       <section aria-label="Match Scoreboard" class="grid grid-cols-3 gap-1.5 sm:gap-3">
@@ -1820,6 +1968,45 @@
           </div>
         </div>
 
+        <!-- 2v2 Live Squad Crease, Wickets (0/2) & 6-Ball Bowler Rotation HUD Banner -->
+        <div id="mp2v2LiveHudBanner" class="hidden mb-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-cyan-950/90 border-2 border-purple-500/45 space-y-2.5 shadow-lg">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase bg-purple-500/25 text-purple-200 border border-purple-400/50">
+                🛡️ 2v2 SQUAD MATCH
+              </span>
+              <span id="mp2v2HudCaptainsText" class="text-xs font-extrabold text-amber-300">
+                👑 Captains: YOU (C) vs OPP (C)
+              </span>
+            </div>
+            <span id="mp2v2HudOverBadge" class="px-2.5 py-0.5 rounded-lg text-[11px] font-mono-num font-black bg-slate-950 text-cyan-300 border border-cyan-500/40">
+              Over 0.0 • Bowler Switch Every 6 Balls
+            </span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="p-2.5 rounded-xl bg-slate-950/85 border border-emerald-500/35 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-[10px] font-bold uppercase text-emerald-300" id="mp2v2HudBattingTeamLabel">🏏 BATTING TEAM (2 WICKETS)</div>
+                <div class="font-black text-white truncate mt-0.5" id="mp2v2HudStrikerText">Striker: —</div>
+                <div class="text-[11px] text-slate-400 truncate" id="mp2v2HudPartnerText">Next Batter: —</div>
+              </div>
+              <span id="mp2v2HudWicketsPill" class="px-2.5 py-1 rounded-lg font-mono-num text-xs font-black bg-emerald-500/15 text-emerald-300 border border-emerald-400/40 shrink-0">
+                0/2 OUT
+              </span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-950/85 border border-cyan-500/35 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-[10px] font-bold uppercase text-cyan-300" id="mp2v2HudBowlingTeamLabel">⚾ BOWLING TEAM (6-BALL SPELLS)</div>
+                <div class="font-black text-white truncate mt-0.5" id="mp2v2HudBowlerText">Active Bowler: —</div>
+                <div class="text-[11px] text-slate-400 truncate" id="mp2v2HudNextBowlerText">Switches every 6 balls</div>
+              </div>
+              <span id="mp2v2HudSpellBallsPill" class="px-2.5 py-1 rounded-lg font-mono-num text-xs font-black bg-cyan-500/15 text-cyan-300 border border-cyan-400/40 shrink-0">
+                Ball 0/6
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Multiplayer Turn & Lock-In Status Bar (Hidden in vs-AI mode) -->
         <div id="mpTurnStatusBar" class="hidden mb-4 p-3 rounded-xl bg-gradient-to-r from-indigo-950/90 via-purple-950/80 to-slate-900 border border-purple-500/40 flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2.5">
@@ -1901,6 +2088,37 @@
             <p id="tossDecisionSubtext" class="text-xs sm:text-sm text-slate-300">
               Choose whether you want to set a target by batting first or chase by bowling first.
             </p>
+          </div>
+
+          <!-- 2v2 Captain's Opening Batter & Bowler Selector -->
+          <div id="mp2v2TossOrderBox" class="hidden p-3.5 rounded-xl bg-slate-950/90 border border-purple-500/40 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-extrabold text-purple-300 flex items-center gap-1.5">
+                <span>👑</span>
+                <span id="mp2v2TossOrderTitle">Captain's Lineup Decision: Who Goes First?</span>
+              </span>
+              <span class="text-[10px] font-mono-num text-amber-300">Bowler switches every 6 balls • Next batter on 1st wicket</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-emerald-500/30 flex items-center justify-between gap-2">
+                <div>
+                  <div class="text-[10px] uppercase font-bold text-emerald-300">Your Team Opening Player (#1)</div>
+                  <div id="mp2v2TossTeamAOpener" class="font-black text-white mt-0.5">PLAYER 1</div>
+                </div>
+                <button id="btn2v2TossSwapTeamA" type="button" class="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 transition">
+                  🔄 Switch Opener
+                </button>
+              </div>
+              <div class="p-2.5 rounded-lg bg-slate-900 border border-cyan-500/30 flex items-center justify-between gap-2">
+                <div>
+                  <div class="text-[10px] uppercase font-bold text-cyan-300">Opponent Opening Player (#1)</div>
+                  <div id="mp2v2TossTeamBOpener" class="font-black text-white mt-0.5">OPP 1</div>
+                </div>
+                <button id="btn2v2TossSwapTeamB" type="button" class="px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 transition">
+                  🔄 Switch Opener
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Shown when User wins Toss -->
@@ -2022,6 +2240,159 @@
         </div>
 
       </section>
+
+        <!-- ALL-NEW INTERACTIVE WEBSITE REFERRAL & FRIEND INVITATION BANNER (+50 XP PER SIGNUP) -->
+        <div
+          id="referralInviteBanner_main"
+          data-referral-widget="main"
+          class="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-[#122415] via-[#121f2b] to-[#1f142e] border-2 border-[#81b64c]/55 shadow-[0_14px_36px_rgba(0,0,0,0.45)] space-y-4"
+        >
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#81b64c] via-emerald-400 to-cyan-400 pointer-events-none"></div>
+
+          <!-- Top Header Row: Title & +50 XP Reward Pill -->
+          <div class="flex flex-wrap items-start justify-between gap-3 relative z-10">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#81b64c]/30 via-emerald-500/20 to-cyan-500/20 border border-[#a3d96c]/60 flex items-center justify-center text-2xl shadow-lg shrink-0">
+                🎁
+              </div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase tracking-wider bg-gradient-to-r from-[#81b64c] to-emerald-400 text-slate-950 shadow-sm">
+                    <span>⚡</span>
+                    <span>+50 XP PER SIGNUP</span>
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-mono-num font-bold bg-amber-500/15 text-amber-300 border border-amber-400/35" data-ref-earned-pill>
+                    🏆 +0 XP Earned (0 Joined)
+                  </span>
+                </div>
+                <h3 class="font-brand text-sm sm:text-base font-black text-white mt-1 tracking-tight">
+                  Invite Friends via Referral Link &amp; Earn +50 XP
+                </h3>
+                <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed mt-0.5">
+                  Generate your personal referral code &amp; website URL below. Every friend who signs up with your link or code gives you <strong class="text-[#a3d96c]">+50 XP</strong> toward Store Banners, Badges &amp; Gamer Cards!
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              data-ref-action="generate"
+              class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 hover:brightness-110 text-slate-950 shadow-md flex items-center gap-1.5 transition active:scale-95 shrink-0"
+            >
+              <span>🔄</span>
+              <span>Generate New Code</span>
+            </button>
+          </div>
+
+          <!-- Interactive Referral Code & Website URL Generator Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 relative z-10">
+            <!-- Referral Code Box -->
+            <div class="md:col-span-4 p-3 rounded-xl bg-slate-950/85 border border-emerald-500/35 flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                <span>🔑 Your Referral Code</span>
+                <span class="font-mono-num text-amber-300">+50 XP</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <code data-ref-code-display class="font-mono-num text-xs sm:text-sm font-black text-white tracking-wider bg-white/[0.04] px-2.5 py-1.5 rounded-lg border border-white/10 truncate flex-1">
+                  OAE-PLAYER-50XP
+                </code>
+                <button
+                  type="button"
+                  data-ref-action="copy-code"
+                  class="px-3 py-1.5 rounded-lg text-[11px] font-extrabold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 transition active:scale-95 shrink-0"
+                >
+                  📋 Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- Shareable Website Referral URL Box -->
+            <div class="md:col-span-8 p-3 rounded-xl bg-slate-950/85 border border-cyan-500/35 flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                <span>🌐 Shareable Website Referral URL</span>
+                <span data-ref-status-hint class="text-[10px] font-mono-num text-[#a3d96c]">Ready to share</span>
+              </div>
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <input
+                  type="text"
+                  readonly
+                  data-ref-url-input
+                  aria-label="Shareable Website Referral URL"
+                  value="https://oddeven-two.vercel.app/?ref=OAE-PLAYER-50XP"
+                  onclick="this.select()"
+                  class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/80 text-cyan-200 font-mono-num text-xs font-bold focus:outline-none focus:border-cyan-400 truncate"
+                />
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    data-ref-action="copy-url"
+                    class="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-black bg-gradient-to-r from-[#81b64c] to-emerald-400 hover:brightness-110 text-slate-950 shadow transition active:scale-95 flex items-center justify-center gap-1"
+                  >
+                    <span>🔗</span>
+                    <span>Copy URL</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-ref-action="share-whatsapp"
+                    class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-emerald-600/25 hover:bg-emerald-600/40 text-emerald-200 border border-emerald-400/40 transition active:scale-95 flex items-center justify-center gap-1"
+                    title="Share referral link on WhatsApp"
+                  >
+                    <span>📲</span>
+                    <span>Share</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Milestone Progress + Redeem Friend's Code Strip -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1 relative z-10">
+            <!-- Progress & Joined Friends -->
+            <div class="md:col-span-7 p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                  <span>📈</span>
+                  <span>Referral XP Milestone Track</span>
+                </span>
+                <span data-ref-progress-label class="font-mono-num text-[11px] font-extrabold text-[#a3d96c]">0 / 5 Friends (0 / 250 XP)</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-white/10">
+                <div data-ref-progress-bar class="h-full bg-gradient-to-r from-[#81b64c] via-emerald-400 to-cyan-400 transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <div data-ref-friends-list class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 pt-0.5">
+                <span>Share your link above — every friend who signs up awards you <strong class="text-amber-300">+50 XP</strong>!</span>
+              </div>
+            </div>
+
+            <!-- Apply / Redeem a Friend's Referral Code -->
+            <div class="md:col-span-5 p-3 rounded-xl bg-black/40 border border-purple-500/30 flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-purple-300">
+                <span>🎟️ Have a Friend's Referral Code?</span>
+                <span class="text-amber-300">+50 XP to Inviter</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  data-ref-redeem-input
+                  maxlength="40"
+                  placeholder="Enter code (e.g. OAE-VIRAT_18-50XP)"
+                  class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono-num text-xs font-bold uppercase placeholder:normal-case placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:border-purple-400"
+                />
+                <button
+                  type="button"
+                  data-ref-action="redeem-code"
+                  class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-purple-500 hover:bg-purple-400 text-white shadow transition active:scale-95 shrink-0"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Toast Feedback Line -->
+          <div data-ref-feedback class="hidden p-2.5 rounded-xl text-xs font-bold border relative z-10"></div>
+        </div>
+
       </div><!-- /#activePitchWrapper -->
     </div>
 
@@ -2183,7 +2554,7 @@
       </aside>
     </main>
 
-    <!-- Official Footer with Version 2 -->
+    <!-- Official Footer with Version 2.5 -->
     <footer class="w-full bg-[#191816] border-t border-[#383531] px-4 sm:px-6 py-3 mt-auto">
       <div class="max-w-[1520px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
         <div class="flex items-center gap-2">
@@ -2192,7 +2563,7 @@
         </div>
         <div class="flex items-center gap-3">
           <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
-            Version 2
+            Version 2.5
           </span>
         </div>
       </div>
@@ -2229,9 +2600,19 @@
           <h3 class="font-bold text-yellow-300 mb-1">4. Match Drawn (Tie) Rules</h3>
           <p>If the chasing side in the 2nd Innings is <strong>bowled OUT</strong> when their score is <strong>exactly equal</strong> to the 1st Innings score (e.g. 42 vs 42, just 1 run short of the target 43), the match ends as an official <strong>MATCH DRAWN (TIE)</strong>! In Multiplayer, both players' Elo ratings remain unchanged (<strong>0 Elo delta</strong>). In Bot matches, the match is recorded as a Draw with ratings frozen.</p>
         </div>
+        <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/40">
+          <h3 class="font-bold text-purple-300 mb-1">5. 1v1 Duel &amp; 2v2 Squad Multiplayer Rules</h3>
+          <p>In Multiplayer, choose between <strong>1v1 Duel</strong> (2 players, 1 wicket per innings) or <strong>2v2 Squad Match</strong> (4 players across 2 teams):</p>
+          <ul class="list-disc list-inside mt-1 space-y-1 text-slate-300">
+            <li><strong>Team Selection &amp; Captains:</strong> Invite 3 friends, pick 1 friend for <strong>Your Team</strong>, and the remaining 2 automatically join the <strong>Opponent Team</strong>. You are assigned <strong>Your Team Captain</strong> and can assign the <strong>Opponent Team Captain</strong>.</li>
+            <li><strong>Captains Toss &amp; Role Decision:</strong> Both Team Captains perform the Odd/Even Toss. The winning Captain decides whether their team <strong>Bats</strong> or <strong>Bowls</strong> first and chooses the opening order.</li>
+            <li><strong>6-Ball Bowler Rotation:</strong> In 2v2 mode, the active bowler automatically switches to their teammate <strong>every 6 balls (1 Over)</strong>.</li>
+            <li><strong>2-Wicket Batting Lineup:</strong> In 2v2 mode, when the 1st batter gets <strong>OUT</strong>, the 2nd teammate walks in to bat. When <strong>both batters get OUT (2/2 Wickets)</strong>, the innings ends and the Opponent Team gets the <strong>Target</strong>!</li>
+          </ul>
+        </div>
         <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-          <h3 class="font-bold text-rose-300 mb-1">5. Leaderboard &amp; Stats Eligibility</h3>
-          <p>Matches against bots are <strong>Casual Practice</strong>: runs, wickets, match wins, and losses are <strong>not counted against bots</strong> and are never displayed in the Leaderboard. Only official <strong>1v1 Multiplayer matches</strong> count toward career runs, wickets, wins, losses, and Leaderboard rankings!</p>
+          <h3 class="font-bold text-rose-300 mb-1">6. Leaderboard &amp; Stats Eligibility</h3>
+          <p>Matches against bots are <strong>Casual Practice</strong>: runs, wickets, match wins, and losses are <strong>not counted against bots</strong> and are never displayed in the Leaderboard. Only official <strong>Multiplayer matches (1v1 &amp; 2v2)</strong> count toward career runs, wickets, wins, losses, and Leaderboard rankings!</p>
         </div>
       </div>
 
@@ -2358,6 +2739,15 @@
         </button>
       </div>
 
+      <!-- Saved Accounts Quick-Switch Strip -->
+      <div id="modalSavedAccountsWrap" class="hidden space-y-1.5 p-2.5 rounded-xl bg-[#161512] border border-[#383530]">
+        <div class="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <span>⚡ Saved Accounts on Device</span>
+          <button id="btnModalNewAccountQuick" type="button" class="text-[#a3d96c] hover:underline font-extrabold normal-case">+ New Account</button>
+        </div>
+        <div id="modalSavedAccountsList" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-0.5"></div>
+      </div>
+
       <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-[#1d1c19] border border-[#45423e]">
         <button id="modalTabLogin" type="button" class="py-2 px-3 rounded-lg text-xs font-extrabold bg-[#81b64c] text-white">
           🔑 Login
@@ -2419,6 +2809,19 @@
             Connected Key: +91-•••••
           </div>
         </div>
+
+        <div id="modalReferralInputWrap" class="pt-1">
+          <label for="modalInputReferralCode" class="block text-[11px] font-bold uppercase tracking-wider text-emerald-300 mb-1">
+            🎁 Referral Code (Optional — Awards +50 XP to Friend on Sign Up)
+          </label>
+          <input
+            id="modalInputReferralCode"
+            type="text"
+            maxlength="40"
+            placeholder="e.g. OAE-VIRAT_18-50XP (Auto-filled from invite link)"
+            class="w-full px-3 py-2 rounded-xl bg-[#1d1c19] border border-emerald-500/40 text-emerald-200 font-mono-num text-xs font-bold uppercase placeholder:normal-case placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:border-[#81b64c]"
+          />
+        </div>
       </div>
 
       <div class="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#45423e]">
@@ -2444,7 +2847,7 @@
   <script>
     (function () {
       'use strict';
-      
+
       // =========================================================================
       // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
       // =========================================================================
@@ -2487,7 +2890,11 @@
           weeklyRuns: 0,
           weeklyWickets: 0,
           tournamentWins: 0,
-          xp: 0,
+          xp: Number(rec.referralXp) || 0,
+          referralXp: Number(rec.referralXp) || 0,
+          referralCount: Number(rec.referralCount) || 0,
+          referredFriends: Array.isArray(rec.referredFriends) ? rec.referredFriends : [],
+          referralCode: rec.referralCode || null,
           maxWinStreak: 0,
           currentWinStreak: 0,
           maxBoundariesInMatch: 0,
@@ -2817,613 +3224,8 @@
       });
     })();
   </script>
-  <script src="hand_cricket.js"></script>
-
-  <!-- =========================================================================
-       CENTERED INTERACTIVE VERSION 2.0 SHOWCASE BOX (#version2ShowcaseModal)
-       ========================================================================= -->
-  <div
-    id="version2ShowcaseModal"
-    class="fixed inset-0 z-[70] hidden items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md transition-opacity duration-300"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="v2ShowcaseTitle"
-  >
-    <!-- Ambient Outer Glow -->
-    <div class="relative w-full max-w-2xl rounded-3xl bg-gradient-to-b from-[#171c22] via-[#12161b] to-[#0c0f13] border border-[#a3d96c]/45 shadow-[0_25px_90px_rgba(0,0,0,0.9),0_0_50px_rgba(129,182,76,0.22)] overflow-hidden text-zinc-100 animate-pop max-h-[92vh] flex flex-col">
-      <!-- Top Shimmer Accent Line -->
-      <div class="h-1.5 w-full bg-gradient-to-r from-[#81b64c] via-cyan-400 to-amber-400 shrink-0"></div>
-
-      <!-- Scrollable Interior -->
-      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
-        <!-- 1. HEADER & VERSION 2 TITLE -->
-        <div class="flex items-start justify-between gap-3">
-          <div class="space-y-1">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono-num font-black uppercase tracking-widest bg-[#81b64c]/20 text-[#a3d96c] border border-[#a3d96c]/40 shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-ping"></span>
-              <span>🚀 OFFICIAL RELEASE • VERSION 2</span>
-            </div>
-            <h2 id="v2ShowcaseTitle" class="font-brand text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
-              OddAndEven.in <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Version 2</span> Arena Update
-            </h2>
-            <p class="text-xs sm:text-sm text-zinc-400">
-              Explore our biggest upgrade yet — click any feature card below to preview &amp; test it live.
-            </p>
-          </div>
-
-          <button
-            id="btnTopCloseV2Modal"
-            type="button"
-            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
-            aria-label="Close Version 2 box"
-            class="w-8 h-8 rounded-xl bg-white/[0.06] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-200 border border-white/10 hover:border-rose-400/40 flex items-center justify-center text-sm font-bold transition shrink-0"
-          >
-            ✕
-          </button>
-        </div>
-
-        <!-- 2. HERO IMAGE IN BETWEEN -->
-        <div class="relative rounded-2xl overflow-hidden border border-white/15 bg-[#090d12] shadow-inner group">
-          <img
-            id="v2HeroIllustration"
-            src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20800%20250%22%20width%3D%22800%22%20height%3D%22250%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bgGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2307130d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2245%25%22%20stop-color%3D%22%230d1b24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231c1126%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22stadiumGlow%22%20cx%3D%2250%25%22%20cy%3D%2255%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.38%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2322d3ee%22%20stop-opacity%3D%220.14%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23000000%22%20stop-opacity%3D%220%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22v2TextGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23d9f99d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%2381b64c%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2322d3ee%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22goldGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fde047%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23f97316%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22pitchGrad%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%220%25%22%20y2%3D%22100%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2381b64c%22%20stop-opacity%3D%220.28%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2315803d%22%20stop-opacity%3D%220.05%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22glow%22%20x%3D%22-20%25%22%20y%3D%22-20%25%22%20width%3D%22140%25%22%20height%3D%22140%25%22%3E%0A%20%20%20%20%20%20%3CfeGaussianBlur%20stdDeviation%3D%226%22%20result%3D%22blur%22/%3E%0A%20%20%20%20%20%20%3CfeComposite%20in%3D%22SourceGraphic%22%20in2%3D%22blur%22%20operator%3D%22over%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%0A%20%20%3C%21--%20Background%20--%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23bgGrad%29%22/%3E%0A%20%20%3Crect%20width%3D%22800%22%20height%3D%22250%22%20rx%3D%2218%22%20fill%3D%22url%28%23stadiumGlow%29%22/%3E%0A%0A%20%20%3C%21--%20Perspective%20Arena%20Grid%20/%20Turf%20Rings%20--%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22340%22%20ry%3D%2252%22%20fill%3D%22url%28%23pitchGrad%29%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.5%22/%3E%0A%20%20%3Cellipse%20cx%3D%22400%22%20cy%3D%22215%22%20rx%3D%22230%22%20ry%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.25%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%226%206%22/%3E%0A%20%20%3Cline%20x1%3D%2260%22%20y1%3D%22215%22%20x2%3D%22740%22%20y2%3D%22215%22%20stroke%3D%22%2381b64c%22%20stroke-opacity%3D%220.2%22%20stroke-width%3D%221%22/%3E%0A%0A%20%20%3C%21--%20Center%20Championship%20Emblem%3A%20VERSION%202%20--%3E%0A%20%20%3Cg%20transform%3D%22translate%28400%2C%20108%29%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2276%22%20fill%3D%22%230d1512%22%20stroke%3D%22url%28%23v2TextGrad%29%22%20stroke-width%3D%223%22%20filter%3D%22url%28%23glow%29%22/%3E%0A%20%20%20%20%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2266%22%20fill%3D%22%23131f18%22%20stroke%3D%22%23a3d96c%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%221.2%22%20stroke-dasharray%3D%224%204%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%22-8%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2211%22%20fill%3D%22%23a3d96c%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%223%22%3EODD%20%26amp%3B%20EVEN%20ARENA%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2224%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2233%22%20fill%3D%22url%28%23v2TextGrad%29%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221%22%3EV2.0%3C/text%3E%0A%20%20%20%20%3Crect%20x%3D%22-48%22%20y%3D%2234%22%20width%3D%2296%22%20height%3D%2219%22%20rx%3D%229.5%22%20fill%3D%22url%28%23goldGrad%29%22/%3E%0A%20%20%20%20%3Ctext%20x%3D%220%22%20y%3D%2247%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%229.5%22%20fill%3D%22%23090d16%22%20text-anchor%3D%22middle%22%20letter-spacing%3D%221.2%22%3EMAJOR%20UPDATE%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E"
-            alt="Version 2 Hand Cricket Arena Showcase Graphic"
-            class="w-full h-36 sm:h-44 object-cover object-center select-none transition-transform duration-500 group-hover:scale-[1.02]"
-          />
-          <!-- Dynamic Live Feature Overlay Strip at Bottom of Image -->
-          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-3.5 py-2.5 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span id="v2ImageLiveBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase bg-amber-500/25 text-amber-200 border border-amber-400/40 shrink-0">
-                🛍️ XP STORE
-              </span>
-              <span id="v2ImageLiveCaption" class="text-xs font-bold text-white truncate">
-                High-tier marketplace starting at 5,000 XP floor with Player Cards &amp; Custom Studio.
-              </span>
-            </div>
-            <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono-num font-bold text-[#a3d96c] shrink-0">
-              <span>Interactive Preview</span>
-              <span>●</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- 3. INTERACTIVE FEATURE LAYOUT -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between text-[11px] font-mono-num uppercase tracking-wider text-zinc-400">
-            <span>✨ Select a Version 2 Feature to Inspect</span>
-            <span id="v2FeatureCounter" class="text-[#a3d96c] font-bold">1 / 5 Selected</span>
-          </div>
-
-          <!-- Interactive Feature Pills Grid -->
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" role="tablist" aria-label="Version 2 Features">
-            <button
-              type="button"
-              data-v2-tab="store"
-              onclick="window.selectVersion2Feature && window.selectVersion2Feature('store')"
-              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-amber-500/20 border-amber-400/60 shadow-[0_0_20px_rgba(245,184,61,0.25)]"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-lg">🛍️</span>
-                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-amber-500/30 text-amber-200">5k+ XP</span>
-              </div>
-              <div class="text-xs font-extrabold text-white leading-tight">XP Store</div>
-              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Marketplace &amp; Cards</div>
-            </button>
-
-            <button
-              type="button"
-              data-v2-tab="profile"
-              onclick="window.selectVersion2Feature && window.selectVersion2Feature('profile')"
-              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-lg">👤</span>
-                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">STATS</span>
-              </div>
-              <div class="text-xs font-extrabold text-white leading-tight">Career Profile</div>
-              <div class="text-[10px] text-zinc-400 truncate mt-0.5">1-10 Freq &amp; Acc Info</div>
-            </button>
-
-            <button
-              type="button"
-              data-v2-tab="cards"
-              onclick="window.selectVersion2Feature && window.selectVersion2Feature('cards')"
-              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-lg">🎴</span>
-                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">CUSTOM</span>
-              </div>
-              <div class="text-xs font-extrabold text-white leading-tight">Player Cards</div>
-              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Custom Card Studio</div>
-            </button>
-
-            <button
-              type="button"
-              data-v2-tab="themes"
-              onclick="window.selectVersion2Feature && window.selectVersion2Feature('themes')"
-              class="v2-feature-tab group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-lg">🏰</span>
-                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">THEMES</span>
-              </div>
-              <div class="text-xs font-extrabold text-white leading-tight">Pitch &amp; VFX</div>
-              <div class="text-[10px] text-zinc-400 truncate mt-0.5">Lords Turf &amp; Thunder</div>
-            </button>
-
-            <button
-              type="button"
-              data-v2-tab="roast"
-              onclick="window.selectVersion2Feature && window.selectVersion2Feature('roast')"
-              class="v2-feature-tab col-span-2 sm:col-span-1 group text-left p-2.5 rounded-2xl border transition-all bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-lg">💀</span>
-                <span class="text-[9px] font-mono-num font-black px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">ROAST</span>
-              </div>
-              <div class="text-xs font-extrabold text-white leading-tight">Roast Mode</div>
-              <div class="text-[10px] text-zinc-400 truncate mt-0.5">30 Badges &amp; Audio</div>
-            </button>
-          </div>
-
-          <!-- Dynamic Interactive Feature Detail Card -->
-          <div id="v2FeatureDetailBox" class="rounded-2xl bg-[#181c22]/95 border border-white/10 p-3.5 sm:p-4 space-y-2.5 transition-all">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
-                <span id="v2DetailIcon" class="text-xl">🛍️</span>
-                <h3 id="v2DetailTitle" class="font-brand text-sm sm:text-base font-extrabold text-white">
-                  XP Store &amp; Marketplace (5,000+ XP Starting Floor)
-                </h3>
-              </div>
-              <span id="v2DetailTag" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                5,000+ XP FLOOR • PRESTIGE ECONOMY
-              </span>
-            </div>
-
-            <p id="v2DetailDesc" class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-              Redeem your achievement and match XP for valuable flex cosmetics. With a strict <strong class="text-amber-300">5,000 XP entry price floor</strong>, every unlock reflects genuine dedication across the 30 career milestones and ranked matches.
-            </p>
-
-            <!-- Interactive Live Feature Sub-Widget -->
-            <div id="v2InteractiveSubWidget" class="pt-2 border-t border-white/10">
-
-              <!-- Sub-Widget 1: Live Card Simulator (Visible on Store & Cards tabs) -->
-              <div id="v2CardSimulatorBox" class="space-y-2">
-                <div class="flex items-center justify-between text-[11px]">
-                  <span class="font-bold text-slate-300">🎮 Interactive Live Card Simulator:</span>
-                  <span class="text-[10px] text-amber-300 font-mono-num font-bold" id="v2SimPrice">75,000 XP</span>
-                </div>
-                <!-- Card Preview Container -->
-                <div class="p-3 rounded-2xl border transition-all duration-300 bg-gradient-to-br from-[#261e11] via-[#1a1714] to-[#121110] border-amber-400 shadow-[0_0_20px_rgba(245,184,61,0.2)]" id="v2SimCardPreview">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                      <span class="text-xl">🇮🇳</span>
-                      <div>
-                        <div class="font-brand font-black text-xs text-white flex items-center gap-1">
-                          <span>PLAYER</span>
-                          <span id="v2SimStar" class="text-amber-300 text-xs">⭐</span>
-                        </div>
-                        <div class="text-[9px] font-mono-num text-slate-400">+91</div>
-                      </div>
-                    </div>
-                    <span id="v2SimTierBadge" class="px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-purple-400 text-slate-950">
-                      🔱 DIVINE CUSTOM
-                    </span>
-                  </div>
-                  <div class="mt-2 p-1.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
-                    <span class="text-[10px] font-black text-amber-300 font-brand" id="v2SimTitle">Sixer King</span>
-                    <span class="text-[10px] font-mono-num font-bold text-cyan-300">1850 ELO</span>
-                  </div>
-                  <div class="mt-1.5 text-[9px] text-slate-300 italic" id="v2SimMotto">"Can't break this defense on the pitch."</div>
-                </div>
-                <!-- Tier Buttons Selector -->
-                <div class="grid grid-cols-5 gap-1 text-[9px] font-bold">
-                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-amber-300 border border-amber-500/30" data-tier="gold">🏆 Gold</button>
-                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-cyan-300 border border-cyan-500/30" data-tier="diamond">💎 Diamond</button>
-                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-rose-300 border border-rose-500/30" data-tier="mythic">👑 Mythic</button>
-                  <button type="button" class="btnSimTier py-1 rounded-lg bg-[#24221f] text-purple-300 border border-purple-500/30" data-tier="cosmic">🌌 Cosmic</button>
-                  <button type="button" class="btnSimTier py-1 rounded-lg bg-amber-500/30 text-amber-200 border border-amber-400 font-black" data-tier="custom">🔱 Custom</button>
-                </div>
-              </div>
-
-              <!-- Sub-Widget 2: Live Roast Sampler (Visible on Roast tab) -->
-              <div id="v2RoastSamplerBox" class="hidden flex flex-wrap items-center justify-between gap-2">
-                <div id="v2SampleRoastText" class="text-[11px] italic text-amber-200/95 flex-1 min-w-[200px]">
-                  "💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!"
-                </div>
-                <button
-                  id="btnV2SampleAction"
-                  type="button"
-                  onclick="window.triggerVersion2Sample && window.triggerVersion2Sample()"
-                  class="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 transition active:scale-95 shrink-0"
-                >
-                  🎲 Another Savage Roast
-                </button>
-              </div>
-
-              <!-- Sub-Widget 3: Profile Stats Mini Preview (Visible on Profile tab) -->
-              <div id="v2ProfilePreviewBox" class="hidden space-y-2">
-                <div class="grid grid-cols-4 gap-1.5 text-center text-[10px]">
-                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
-                    <span class="text-slate-400 block text-[8px]">Matches</span>
-                    <span class="font-bold text-white font-mono-num">48 Played</span>
-                  </div>
-                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
-                    <span class="text-slate-400 block text-[8px]">Win Ratio</span>
-                    <span class="font-bold text-emerald-300 font-mono-num">73% Win</span>
-                  </div>
-                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
-                    <span class="text-slate-400 block text-[8px]">Fav Hand</span>
-                    <span class="font-bold text-cyan-300 font-mono-num">#6 (38%)</span>
-                  </div>
-                  <div class="bg-black/40 p-2 rounded-xl border border-blue-500/20">
-                    <span class="text-slate-400 block text-[8px]">Peak Rating</span>
-                    <span class="font-bold text-amber-300 font-mono-num">1850 ELO</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Sub-Widget 4: Turf Theme Mini Preview (Visible on Themes tab) -->
-              <div id="v2ThemePreviewBox" class="hidden grid grid-cols-2 gap-2 text-[10px]">
-                <div class="p-2.5 rounded-xl border border-emerald-500/40 bg-gradient-to-br from-[#071a0e] to-[#0f2b18] text-emerald-200">
-                  <div class="font-bold text-white flex items-center gap-1"><span>🏰</span><span>Lords Royal Pavilion</span></div>
-                  <div class="text-[9px] text-emerald-300/80 mt-0.5">Lush county green turf with golden brass creases</div>
-                </div>
-                <div class="p-2.5 rounded-xl border border-fuchsia-500/40 bg-gradient-to-br from-[#05111a] to-[#160824] text-fuchsia-200">
-                  <div class="font-bold text-white flex items-center gap-1"><span>🌆</span><span>Cyberpunk Neon Arena</span></div>
-                  <div class="text-[9px] text-fuchsia-300/80 mt-0.5">Synthwave grid night with glowing cyan lines</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. FOOTER WITH TWO OPTIONS: CLOSE & TRY OUT -->
-      <div class="px-4 sm:px-6 py-3.5 bg-[#090b0e]/95 border-t border-white/10 flex items-center justify-between gap-3 shrink-0">
-        <div class="hidden sm:flex items-center gap-2 text-[11px] text-zinc-400">
-          <span class="w-2 h-2 rounded-full bg-[#a3d96c]"></span>
-          <span id="v2TryOutHint">Ready to activate: <strong class="text-white">🛍️ XP Store &amp; Marketplace (store.html)</strong></span>
-        </div>
-
-        <div class="flex items-center justify-end gap-2.5 w-full sm:w-auto">
-          <button
-            id="btnCloseV2Modal"
-            type="button"
-            onclick="window.closeVersion2Showcase && window.closeVersion2Showcase()"
-            class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-white/15 transition active:scale-95"
-          >
-            Close
-          </button>
-          <button
-            id="btnTryOutV2Modal"
-            type="button"
-            onclick="window.tryOutVersion2Feature && window.tryOutVersion2Feature()"
-            class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-[#81b64c] via-emerald-400 to-[#a3d96c] hover:brightness-110 text-slate-950 shadow-[0_6px_25px_rgba(129,182,76,0.45)] transition active:scale-95 flex items-center justify-center gap-1.5"
-          >
-            <span id="btnTryOutV2Label">🛍️ Open XP Store</span>
-            <span>→</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-<!-- VERSION 2.0 INTERACTIVE SHOWCASE CONTROLLER -->
-<script>
-(function() {
-  var V2_FEATURES = {
-    store: {
-      index: 1,
-      icon: "🛍️",
-      badge: "🛍️ XP STORE & MARKETPLACE",
-      badgeClass: "bg-amber-500/25 text-amber-200 border-amber-400/40",
-      caption: "High-tier marketplace starting at 5,000 XP floor with Player Cards & Custom Studio.",
-      title: "XP Store & Marketplace (5,000+ XP Starting Floor)",
-      tag: "5,000+ XP FLOOR • PRESTIGE ECONOMY",
-      tagClass: "bg-amber-500/20 text-amber-300 border-amber-400/30",
-      desc: "Redeem your achievement and match XP for valuable flex cosmetics. With a strict <strong class=\"text-amber-300\">5,000 XP entry price floor</strong>, every unlock reflects genuine dedication across the 30 career milestones and ranked matches.",
-      tryHint: "🛍️ XP Store & Marketplace (store.html)",
-      tryBtn: "🛍️ Open XP Store",
-      actionUrl: "store.html",
-      tabActiveClass: "bg-amber-500/20 border-amber-400/60 shadow-[0_0_20px_rgba(245,184,61,0.25)]"
-    },
-    profile: {
-      index: 2,
-      icon: "👤",
-      badge: "👤 CAREER PROFILE DASHBOARD",
-      badgeClass: "bg-blue-500/25 text-blue-200 border-blue-400/40",
-      caption: "Dedicated analytics dashboard with 1–10 number frequency graph & bot tier win rates.",
-      title: "Career Profile Dashboard & Top Navigation Tab",
-      tag: "1–10 FREQ GRAPH • 4 AI TIERS",
-      tagClass: "bg-blue-500/20 text-blue-300 border-blue-400/30",
-      desc: "Track every career metric in one unified dashboard: favorite number 1–10 frequency bar chart, win rates across Sunny (450), Rohan (1100), Vikram (1850) and Apex Oracle (2650), peak Elo, and verified account credentials.",
-      tryHint: "👤 Career Profile Dashboard (profile.html)",
-      tryBtn: "👤 View Profile Dashboard",
-      actionUrl: "profile.html",
-      tabActiveClass: "bg-blue-500/20 border-blue-400/60 shadow-[0_0_20px_rgba(59,130,246,0.25)]"
-    },
-    cards: {
-      index: 3,
-      icon: "🎴",
-      badge: "🎴 PLAYER CARDS & STUDIO",
-      badgeClass: "bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 text-slate-950 font-black",
-      caption: "5 Tiers of Player Cards (Gold, Diamond, Mythic, Cosmic, Custom) & Custom Card Studio.",
-      title: "Holographic Player Cards & Custom Card Studio",
-      tag: "CUSTOM STUDIO • VERIFIED STAR ⭐",
-      tagClass: "bg-purple-500/20 text-purple-300 border-purple-400/30",
-      desc: "Unlock 5 tiers of cards. The 75,000 XP <strong class=\"text-purple-300\">Divine Custom Card</strong> opens the Custom Card Studio: craft your own title ('Sixer King', 'The Wall', 'Pitch Overlord'), signature motto bio, border aura glow, and verified star badge ⭐!",
-      tryHint: "🎴 Custom Card Studio & Player Cards",
-      tryBtn: "🎴 Open Card Studio in Store",
-      actionUrl: "store.html",
-      tabActiveClass: "bg-purple-500/20 border-purple-400/60 shadow-[0_0_20px_rgba(168,85,247,0.25)]"
-    },
-    themes: {
-      index: 4,
-      icon: "🏰",
-      badge: "🏰 PITCH THEMES & WICKET VFX",
-      badgeClass: "bg-emerald-500/25 text-emerald-200 border-emerald-400/40",
-      caption: "Lords Royal Pavilion Turf, Cyberpunk Neon Grid, and Thunderstrike Wicket lightning FX.",
-      title: "Pitch Themes, Thunderstrike Wicket VFX & Gold Bat",
-      tag: "LORDS TURF • THUNDER VFX",
-      tagClass: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
-      desc: "Equip the <strong class=\"text-emerald-300\">Lords Royal Pavilion Theme</strong> for lush county green turf with golden brass creases, or <strong class=\"text-fuchsia-300\">Cyberpunk Neon Grid</strong>. Wickets trigger <strong class=\"text-cyan-300\">⚡ Thunderstrike lightning</strong> or <strong class=\"text-orange-300\">🔥 Meteorite Fireball</strong> explosions!",
-      tryHint: "🏰 Pitch Themes & Wicket VFX",
-      tryBtn: "🏏 Switch to Pitch",
-      actionUrl: null,
-      tabActiveClass: "bg-emerald-500/20 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.25)]"
-    },
-    roast: {
-      index: 5,
-      icon: "💀",
-      badge: "💀 ROAST MODE & 30 ACHIEVEMENTS",
-      badgeClass: "bg-rose-500/25 text-rose-200 border-rose-400/40",
-      caption: "Savage stadium humiliation, 30 career achievements (6,625 XP), and Golden Duck roasts.",
-      title: "Roast Commentary Mode & 30 Career Achievements",
-      tag: "6,625 XP • SAVAGE AUDIO",
-      tagClass: "bg-rose-500/20 text-rose-300 border-rose-400/30",
-      desc: "Zero-mercy announcer roasts on wickets with Golden Duck roasts, paired with a full roster of <strong class=\"text-rose-300\">30 Career Achievements</strong> granting 6,625 XP to fuel your store unlocks!",
-      tryHint: "💀 Roast Commentary & Achievements",
-      tryBtn: "🔥 Test Savage Roast Audio",
-      actionUrl: null,
-      tabActiveClass: "bg-rose-500/20 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.25)]"
-    }
-  };
-
-  var SAMPLE_ROASTS = [
-    "\"💀 EMOTIONAL DAMAGE! Read like a nursery rhyme—pack your kit bag and walk back to the pavilion!\"",
-    "\"🦆 GOLDEN DUCK ROAST! 0 off 1 ball! Came from the dressing room just to check the pitch weather!\"",
-    "\"🤡 Bro thought he was playing 4D chess and walked straight into the most obvious finger trap in history!\"",
-    "\"📉 That batting display just set Hand Cricket back by 10 years. The crowd is demanding a refund!\"",
-    "\"🪦 RIP INNINGS! Even the stadium floodlights dimmed out of second-hand embarrassment for that shot!\""
-  ];
-  var roastIdx = 0;
-  window.__currentV2Feature = "store";
-
-  window.openVersion2Showcase = function() {
-    var modal = document.getElementById("version2ShowcaseModal");
-    if (!modal) return;
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-  };
-
-  window.closeVersion2Showcase = function() {
-    var modal = document.getElementById("version2ShowcaseModal");
-    if (!modal) return;
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-  };
-
-  window.triggerVersion2Sample = function() {
-    roastIdx = (roastIdx + 1) % SAMPLE_ROASTS.length;
-    var el = document.getElementById("v2SampleRoastText");
-    if (el) {
-      el.textContent = SAMPLE_ROASTS[roastIdx];
-    }
-    try {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        var clean = SAMPLE_ROASTS[roastIdx].replace(/[^a-zA-Z0-9 ,.!'-]/g, "");
-        var u = new SpeechSynthesisUtterance(clean);
-        u.rate = 1.05;
-        window.speechSynthesis.speak(u);
-      }
-    } catch (e) {}
-  };
-
-  window.selectVersion2Feature = function(key) {
-    var feat = V2_FEATURES[key] || V2_FEATURES.store;
-    window.__currentV2Feature = key;
-
-    // Update tabs
-    var tabs = document.querySelectorAll("[data-v2-tab]");
-    for (var i = 0; i < tabs.length; i++) {
-      var t = tabs[i];
-      var k = t.getAttribute("data-v2-tab");
-      t.className = "v2-feature-tab " + (k === "roast" ? "col-span-2 sm:col-span-1 " : "") +
-        "group text-left p-2.5 rounded-2xl border transition-all " +
-        (k === key ? feat.tabActiveClass : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]");
-    }
-
-    // Update image live overlay
-    var imgBadge = document.getElementById("v2ImageLiveBadge");
-    if (imgBadge) {
-      imgBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase border shrink-0 " + feat.badgeClass;
-      imgBadge.textContent = feat.badge;
-    }
-    var imgCap = document.getElementById("v2ImageLiveCaption");
-    if (imgCap) imgCap.textContent = feat.caption;
-
-    // Update counter & detail box
-    var counter = document.getElementById("v2FeatureCounter");
-    if (counter) counter.textContent = feat.index + " / 5 Selected";
-    var icon = document.getElementById("v2DetailIcon");
-    if (icon) icon.textContent = feat.icon;
-    var title = document.getElementById("v2DetailTitle");
-    if (title) title.textContent = feat.title;
-    var tag = document.getElementById("v2DetailTag");
-    if (tag) {
-      tag.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black border " + feat.tagClass;
-      tag.textContent = feat.tag;
-    }
-    var desc = document.getElementById("v2DetailDesc");
-    if (desc) desc.innerHTML = feat.desc;
-
-    var hint = document.getElementById("v2TryOutHint");
-    if (hint) hint.innerHTML = "Ready to activate: <strong class=\"text-white\">" + feat.tryHint + "</strong>";
-    var btnLbl = document.getElementById("btnTryOutV2Label");
-    if (btnLbl) btnLbl.textContent = feat.tryBtn;
-
-    // Toggle Sub-Widgets
-    var simBox = document.getElementById("v2CardSimulatorBox");
-    var roastBox = document.getElementById("v2RoastSamplerBox");
-    var profBox = document.getElementById("v2ProfilePreviewBox");
-    var themeBox = document.getElementById("v2ThemePreviewBox");
-
-    if (simBox) simBox.classList.toggle("hidden", key !== "store" && key !== "cards");
-    if (roastBox) roastBox.classList.toggle("hidden", key !== "roast");
-    if (profBox) profBox.classList.toggle("hidden", key !== "profile");
-    if (themeBox) themeBox.classList.toggle("hidden", key !== "themes");
-  };
-
-  window.tryOutVersion2Feature = function() {
-    var key = window.__currentV2Feature || "store";
-    var feat = V2_FEATURES[key] || V2_FEATURES.store;
-    window.closeVersion2Showcase();
-
-    if (key === "store" || key === "cards") {
-      var stBtn = document.getElementById("sideNavStore");
-      if (stBtn) { stBtn.click(); return; }
-    }
-    if (key === "profile" || key === "themes") {
-      var prBtn = document.getElementById("sideNavProfile");
-      if (prBtn) { prBtn.click(); return; }
-    }
-    if (feat.actionUrl) {
-      window.location.href = feat.actionUrl;
-      return;
-    }
-
-    if (key === "roast") {
-      window.triggerVersion2Sample();
-      return;
-    }
-
-    // Default: switch to pitch
-    try {
-      if (typeof window.switchCenterScreen === "function") {
-        window.switchCenterScreen("PITCH");
-      }
-    } catch(e) {}
-  };
-
-  // Attach Card Simulator Tier Buttons Inside Centered Modal
-  document.addEventListener("DOMContentLoaded", function() {
-    var simTiers = {
-      gold: {
-        price: "5,000 XP",
-        border: "border-amber-400 bg-gradient-to-br from-[#2e2617] via-[#211d15] to-[#121110] shadow-[0_0_20px_rgba(245,184,61,0.2)]",
-        badge: "🏆 ELITE GOLD",
-        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40",
-        title: "24K Gold Cap Holder",
-        motto: "\"Polished gold foil card frame on pitch.\"",
-        star: false
-      },
-      diamond: {
-        price: "12,000 XP",
-        border: "border-cyan-400 bg-gradient-to-br from-[#0e2329] via-[#141d22] to-[#121110] shadow-[0_0_20px_rgba(56,189,248,0.2)]",
-        badge: "💎 DIAMOND VANGUARD",
-        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40",
-        title: "Diamond Prodigy",
-        motto: "\"Crystalline diamond particle sheen.\"",
-        star: false
-      },
-      mythic: {
-        price: "30,000 XP",
-        border: "border-rose-500 bg-gradient-to-br from-[#2a0e14] via-[#1d1215] to-[#121110] shadow-[0_0_20px_rgba(255,77,109,0.2)]",
-        badge: "👑 MYTHIC IMMORTAL",
-        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40",
-        title: "Obsidian Magma Sovereign",
-        motto: "\"Pulsing with molten lava flames.\"",
-        star: false
-      },
-      cosmic: {
-        price: "55,000 XP",
-        border: "border-purple-400 bg-gradient-to-br from-[#230f2e] via-[#1a1224] to-[#121110] shadow-[0_0_20px_rgba(168,85,247,0.2)]",
-        badge: "🌌 COSMIC CELESTIAL",
-        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40",
-        title: "Celestial Master",
-        motto: "\"Infused with deep cosmic starlight.\"",
-        star: false
-      },
-      custom: {
-        price: "75,000 XP",
-        border: "border-amber-400 bg-gradient-to-br from-[#261e11] via-[#1a1714] to-[#121110] shadow-[0_0_20px_rgba(245,184,61,0.25)]",
-        badge: "🔱 DIVINE CUSTOM",
-        badgeCls: "px-2 py-0.5 rounded-full text-[8px] font-brand font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 to-purple-400 text-slate-950",
-        title: "Sixer King (Custom)",
-        motto: "\"Can't break this defense on the pitch.\"",
-        star: true
-      }
-    };
-
-    document.querySelectorAll(".btnSimTier").forEach(function(btn) {
-      btn.addEventListener("click", function() {
-        var tKey = btn.getAttribute("data-tier");
-        var cfg = simTiers[tKey];
-        if (!cfg) return;
-
-        var priceEl = document.getElementById("v2SimPrice");
-        var cardEl = document.getElementById("v2SimCardPreview");
-        var badgeEl = document.getElementById("v2SimTierBadge");
-        var titleEl = document.getElementById("v2SimTitle");
-        var mottoEl = document.getElementById("v2SimMotto");
-        var starEl = document.getElementById("v2SimStar");
-
-        if (priceEl) priceEl.textContent = cfg.price;
-        if (cardEl) cardEl.className = "p-3 rounded-2xl border transition-all duration-300 " + cfg.border;
-        if (badgeEl) {
-          badgeEl.textContent = cfg.badge;
-          badgeEl.className = cfg.badgeCls;
-        }
-        if (titleEl) titleEl.textContent = cfg.title;
-        if (mottoEl) mottoEl.textContent = cfg.motto;
-        if (starEl) starEl.classList.toggle("hidden", !cfg.star);
-
-        document.querySelectorAll(".btnSimTier").forEach(function(b) {
-          b.className = "btnSimTier py-1 rounded-lg bg-[#24221f] text-slate-300 border border-[#383530]";
-        });
-        btn.className = "btnSimTier py-1 rounded-lg bg-amber-500/30 text-amber-200 border border-amber-400 font-black";
-      });
-    });
-  });
-
-  window.autoShowVersion2IfLoggedIn = function() {
-    if (window.isUserLoggedIntoWebsite()) {
-      try {
-        localStorage.removeItem("oddandeven_just_logged_in");
-        sessionStorage.removeItem("oddandeven_show_v2_box");
-      } catch (e) {}
-      window.openVersion2Showcase();
-    } else {
-      window.closeVersion2Showcase();
-    }
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function() {
-      setTimeout(window.autoShowVersion2IfLoggedIn, 60);
-    });
-  } else {
-    setTimeout(window.autoShowVersion2IfLoggedIn, 60);
-  }
-
-})();
-</script>
-
+  <script src="hand_cricket.js?v=2.5"></script>
+  <!-- Game engine is loaded once from hand_cricket.js. -->
 
   <!-- =========================================================================
        CUSTOMIZABLE ESPORTS GAMER CARD STUDIO & SHAREABLE HD EXPORT MODAL
@@ -3576,5 +3378,742 @@
     </div>
   </div>
 
+
+  <script>
+    if (!window.OddAndEvenReferrals) {
+/* ============================================================================
+ * WEBSITE REFERRAL CODE & URL INVITATION ENGINE (+50 XP PER FRIEND SIGNUP)
+ * ============================================================================ */
+(function initOddAndEvenReferralEngine() {
+  if (typeof window === 'undefined') return;
+
+  const PENDING_REF_KEY = 'oddandeven_pending_referral_code_v1';
+  const PENDING_CLOUD_CREDIT_KEY = 'oddandeven_pending_referral_credit_v1';
+  const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
+  const LAST_USER_KEY = 'oddandeven_last_user_v1';
+  const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+  const ELO_STORAGE_KEY = 'hc_arena_elo_v2';
+  const PLACEHOLDERS = new Set(['PLAYER', 'PLAYER_1', 'PLAYER_2', 'GUEST', 'YOU', 'FRIEND', 'HOST', 'LOGIN REQUIRED', 'UNAUTHENTICATED']);
+
+  function isRealUser(u) {
+    const clean = String(u || '').trim().toUpperCase();
+    return clean.length >= 3 && !PLACEHOLDERS.has(clean);
+  }
+
+  function getActiveUsername() {
+    try {
+      const elUser = document.getElementById('headerAuthUsername');
+      if (elUser && elUser.textContent) {
+        const m = elUser.textContent.trim().split(/\s+/)[0].toUpperCase();
+        if (isRealUser(m) && m !== 'LOGIN') {
+          window.__activeReferralUsername = m;
+          return m;
+        }
+      }
+      const lastU = (localStorage.getItem(LAST_USER_KEY) || '').trim().toUpperCase();
+      if (isRealUser(lastU)) {
+        window.__activeReferralUsername = lastU;
+        return lastU;
+      }
+    } catch (e) {}
+    return 'PLAYER';
+  }
+
+  function getOrCreateUserReferralCode(username, forceNew = false) {
+    const clean = isRealUser(username) ? String(username).trim().toUpperCase() : 'PLAYER';
+    const storageKey = 'oddandeven_my_referral_code_' + clean;
+    if (!forceNew) {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved && saved.startsWith('OAE-' + clean + '-')) {
+          return saved;
+        }
+      } catch (e) {}
+    }
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let suffix = forceNew ? '' : '50XP';
+    if (forceNew) {
+      for (let i = 0; i < 4; i++) {
+        suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+    }
+    const code = `OAE-${clean}-${suffix}`;
+    try {
+      localStorage.setItem(storageKey, code);
+    } catch (e) {}
+    return code;
+  }
+
+  function buildShareableReferralUrl(code) {
+    const cleanCode = String(code || 'OAE-PLAYER-50XP').trim().toUpperCase();
+    try {
+      const loc = window.location;
+      const proto = String(loc.protocol || '').toLowerCase();
+      const host = String(loc.hostname || '').toLowerCase();
+      const isSandbox = proto === 'blob:' || proto === 'about:' || proto === 'data:' || host.includes('usercontent.goog') || host.includes('googleusercontent.com');
+      if (!isSandbox && (proto === 'http:' || proto === 'https:')) {
+        const basePath = loc.pathname.replace(/\/(hand_cricket|handcricket|mobile|store|profile)\.html$/i, '/index.html');
+        return `${loc.origin}${basePath}?ref=${encodeURIComponent(cleanCode)}`;
+      }
+    } catch (e) {}
+    return `https://oddeven-two.vercel.app/?ref=${encodeURIComponent(cleanCode)}`;
+  }
+
+  function parseReferrerFromCodeOrInput(rawInput) {
+    if (!rawInput) return { referrer: null, code: null };
+    let str = String(rawInput).trim();
+    try {
+      if (str.includes('ref=')) {
+        const u = new URL(str, 'https://oddeven-two.vercel.app');
+        const p = u.searchParams.get('ref');
+        if (p) str = p.trim();
+      }
+    } catch (e) {
+      const m = str.match(/[?&]ref=([^&#\s]+)/i);
+      if (m && m[1]) str = decodeURIComponent(m[1]);
+    }
+    const cleanCode = str.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (!cleanCode) return { referrer: null, code: null };
+
+    if (cleanCode.startsWith('OAE-')) {
+      const body = cleanCode.slice(4);
+      const lastDash = body.lastIndexOf('-');
+      const uname = lastDash > 0 ? body.slice(0, lastDash) : body;
+      if (isRealUser(uname)) {
+        return { referrer: uname, code: cleanCode };
+      }
+    }
+    if (isRealUser(cleanCode)) {
+      return { referrer: cleanCode, code: `OAE-${cleanCode}-50XP` };
+    }
+    return { referrer: null, code: null };
+  }
+
+  function getReferralStatsForUser(username) {
+    const clean = isRealUser(username) ? String(username).trim().toUpperCase() : '';
+    if (!clean) return { xp: 0, count: 0, friends: [] };
+    let friends = [];
+    try {
+      const rawF = localStorage.getItem('oddandeven_referred_friends_' + clean);
+      if (rawF) {
+        const parsed = JSON.parse(rawF);
+        if (Array.isArray(parsed)) friends = parsed;
+      }
+    } catch (e) {}
+    let storedXp = 0;
+    try {
+      storedXp = parseInt(localStorage.getItem('oddandeven_referral_xp_' + clean) || '0', 10) || 0;
+    } catch (e) {}
+    try {
+      const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+      if (wRaw) {
+        const wMap = JSON.parse(wRaw) || {};
+        if (wMap[clean]) {
+          storedXp = Math.max(storedXp, Number(wMap[clean].referralXp) || 0);
+          if (Array.isArray(wMap[clean].referredFriends) && wMap[clean].referredFriends.length > friends.length) {
+            friends = wMap[clean].referredFriends;
+          }
+        }
+      }
+    } catch (e) {}
+    const totalXp = Math.max(storedXp, friends.length * 50);
+    return {
+      xp: totalXp,
+      count: Math.max(friends.length, Math.floor(totalXp / 50)),
+      friends
+    };
+  }
+
+  function awardReferralXpToReferrer(referrerUsername, newSignupUsername, codeUsed) {
+    const cleanRef = String(referrerUsername || '').trim().toUpperCase();
+    const cleanNew = String(newSignupUsername || '').trim().toUpperCase();
+    if (!isRealUser(cleanRef) || !isRealUser(cleanNew)) {
+      return { ok: false, message: 'Please sign in with a valid player username first.' };
+    }
+    if (cleanRef === cleanNew) {
+      return { ok: false, message: 'You cannot use your own referral code!' };
+    }
+
+    try {
+      const alreadyRedeemedByNew = localStorage.getItem('oddandeven_redeemed_ref_by_' + cleanNew);
+      if (alreadyRedeemedByNew) {
+        return { ok: false, message: `@${cleanNew} has already redeemed a referral code (@${alreadyRedeemedByNew}).` };
+      }
+    } catch (e) {}
+
+    const stats = getReferralStatsForUser(cleanRef);
+    const alreadyInList = stats.friends.some((f) => {
+      const u = typeof f === 'string' ? f.trim().toUpperCase() : String(f && f.username || '').trim().toUpperCase();
+      return u === cleanNew;
+    });
+    if (alreadyInList) {
+      return { ok: false, message: `@${cleanNew} was already counted for @${cleanRef}'s referral bonus!` };
+    }
+
+    const finalCode = codeUsed || `OAE-${cleanRef}-50XP`;
+    const nextFriends = [
+      { username: cleanNew, code: finalCode, xp: 50, timestamp: Date.now() },
+      ...stats.friends
+    ];
+    const nextXp = Math.max(stats.xp + 50, nextFriends.length * 50);
+
+    try {
+      localStorage.setItem('oddandeven_referral_xp_' + cleanRef, String(nextXp));
+      localStorage.setItem('oddandeven_referred_friends_' + cleanRef, JSON.stringify(nextFriends));
+      localStorage.setItem('oddandeven_redeemed_ref_by_' + cleanNew, cleanRef);
+      localStorage.removeItem(PENDING_REF_KEY);
+    } catch (e) {}
+
+    // Update worldwide & desktop player maps
+    try {
+      const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+      const wMap = wRaw ? JSON.parse(wRaw) : {};
+      if (!wMap[cleanRef]) {
+        wMap[cleanRef] = { name: cleanRef, isRealRegisteredUser: true, elo: 1500, peak: 1500, wins: 0, losses: 0, matches: 0, totalRuns: 0, wicketsTaken: 0 };
+      }
+      wMap[cleanRef].referralXp = nextXp;
+      wMap[cleanRef].referralCount = nextFriends.length;
+      wMap[cleanRef].referredFriends = nextFriends;
+      wMap[cleanRef].xp = Math.max(Number(wMap[cleanRef].xp) || 0, nextXp);
+      wMap[cleanRef].updatedAt = Date.now();
+      localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(wMap));
+    } catch (e) {}
+
+    try {
+      const eRaw = localStorage.getItem(ELO_STORAGE_KEY);
+      const eObj = eRaw ? JSON.parse(eRaw) : {};
+      eObj.humanPlayers = eObj.humanPlayers || {};
+      if (!eObj.humanPlayers[cleanRef]) {
+        eObj.humanPlayers[cleanRef] = { name: cleanRef, isRealRegisteredUser: true, elo: 1500, peak: 1500, wins: 0, losses: 0, matches: 0, totalRuns: 0, wicketsTaken: 0 };
+      }
+      eObj.humanPlayers[cleanRef].referralXp = nextXp;
+      eObj.humanPlayers[cleanRef].referralCount = nextFriends.length;
+      eObj.humanPlayers[cleanRef].referredFriends = nextFriends;
+      eObj.humanPlayers[cleanRef].xp = Math.max(Number(eObj.humanPlayers[cleanRef].xp) || 0, nextXp);
+      localStorage.setItem(ELO_STORAGE_KEY, JSON.stringify(eObj));
+    } catch (e) {}
+
+    // Queue & trigger Firestore cloud credit
+    try {
+      const qRaw = localStorage.getItem(PENDING_CLOUD_CREDIT_KEY);
+      const qArr = qRaw ? JSON.parse(qRaw) : [];
+      qArr.push({ referrer: cleanRef, newUser: cleanNew, code: finalCode, timestamp: Date.now() });
+      localStorage.setItem(PENDING_CLOUD_CREDIT_KEY, JSON.stringify(qArr));
+    } catch (e) {}
+
+    if (typeof window.__creditReferralInCloud === 'function') {
+      window.__creditReferralInCloud(cleanRef, cleanNew, finalCode).then(() => {
+        try { localStorage.removeItem(PENDING_CLOUD_CREDIT_KEY); } catch (e) {}
+      }).catch(() => {});
+    }
+
+    // Broadcast across tabs
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('oddandeven_store_sync');
+        bc.postMessage({ type: 'REFERRAL_XP_AWARDED', referrer: cleanRef, newUser: cleanNew, xp: 50, totalReferralXp: nextXp, timestamp: Date.now() });
+      }
+      localStorage.setItem('oddandeven_store_bus', JSON.stringify({ type: 'REFERRAL_XP_AWARDED', referrer: cleanRef, newUser: cleanNew, xp: 50, time: Date.now() }));
+    } catch (e) {}
+
+    refreshAllBanners();
+    return {
+      ok: true,
+      referrer: cleanRef,
+      newUser: cleanNew,
+      xpAwarded: 50,
+      totalReferralXp: nextXp,
+      message: `🎉 +50 XP awarded to @${cleanRef} for referring @${cleanNew}!`
+    };
+  }
+
+  function showWidgetFeedback(widget, msg, isSuccess = true) {
+    if (!widget) return;
+    const box = widget.querySelector('[data-ref-feedback]');
+    if (!box) return;
+    box.classList.remove('hidden');
+    box.className = 'p-2.5 rounded-xl text-xs font-bold border relative z-10 ' + (
+      isSuccess
+        ? 'bg-emerald-500/15 text-emerald-200 border-emerald-400/45'
+        : 'bg-rose-500/15 text-rose-200 border-rose-400/45'
+    );
+    box.textContent = msg;
+    clearTimeout(box._hideTimer);
+    box._hideTimer = setTimeout(() => {
+      box.classList.add('hidden');
+    }, 5500);
+  }
+
+  function refreshAllBanners() {
+    const activeUser = getActiveUsername();
+    const code = getOrCreateUserReferralCode(activeUser, false);
+    const shareUrl = buildShareableReferralUrl(code);
+    const stats = getReferralStatsForUser(activeUser);
+
+    const widgets = document.querySelectorAll('[data-referral-widget]');
+    widgets.forEach((w) => {
+      const codeEl = w.querySelector('[data-ref-code-display]');
+      if (codeEl) codeEl.textContent = code;
+
+      const urlInp = w.querySelector('[data-ref-url-input]');
+      if (urlInp) urlInp.value = shareUrl;
+
+      const earnedPill = w.querySelector('[data-ref-earned-pill]');
+      if (earnedPill) {
+        earnedPill.textContent = `🏆 +${stats.xp} XP Earned (${stats.count} Joined)`;
+      }
+
+      const milestoneTarget = Math.max(5, Math.ceil((stats.count + 1) / 5) * 5);
+      const milestoneXp = milestoneTarget * 50;
+      const pct = Math.min(100, Math.round((stats.count / milestoneTarget) * 100));
+
+      const progLbl = w.querySelector('[data-ref-progress-label]');
+      if (progLbl) {
+        progLbl.textContent = `${stats.count} / ${milestoneTarget} Friends (${stats.xp} / ${milestoneXp} XP)`;
+      }
+
+      const progBar = w.querySelector('[data-ref-progress-bar]');
+      if (progBar) {
+        progBar.style.width = `${pct}%`;
+      }
+
+      const friendsListEl = w.querySelector('[data-ref-friends-list]');
+      if (friendsListEl) {
+        if (stats.friends.length > 0) {
+          friendsListEl.innerHTML = stats.friends.slice(0, 6).map((f) => {
+            const u = typeof f === 'string' ? f : (f.username || 'FRIEND');
+            return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono-num font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-400/35">✓ @${u} (+50 XP)</span>`;
+          }).join('');
+        } else {
+          friendsListEl.innerHTML = `<span>Share your link above — every friend who signs up awards you <strong class="text-amber-300">+50 XP</strong>!</span>`;
+        }
+      }
+    });
+
+    // Update Store sidebar XP badge if present
+    try {
+      const storeSub = document.getElementById('sideNavStoreSub');
+      if (storeSub && isRealUser(activeUser)) {
+        const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+        const wMap = wRaw ? JSON.parse(wRaw) : {};
+        const myRec = wMap[activeUser] || {};
+        const spent = parseInt(localStorage.getItem('oddandeven_spent_xp_' + activeUser) || '0', 10) || 0;
+        const mXp = ((myRec.totalRuns || 0) * 2) + ((myRec.wicketsTaken || 0) * 25) + ((myRec.wins || 0) * 50) + ((myRec.matches || 0) * 15);
+        const avail = Math.max(0, mXp + stats.xp - spent);
+        if (avail > 0) {
+          storeSub.textContent = `${avail.toLocaleString()} XP • Cards & Flex`;
+        }
+      }
+    } catch (e) {}
+  }
+
+  function captureUrlReferralParam() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const rawRef = params.get('ref') || params.get('referral') || params.get('invite');
+      if (rawRef) {
+        const parsed = parseReferrerFromCodeOrInput(rawRef);
+        if (parsed.referrer && parsed.code) {
+          localStorage.setItem(PENDING_REF_KEY, parsed.code);
+        }
+      }
+      const pendingCode = localStorage.getItem(PENDING_REF_KEY);
+      if (pendingCode) {
+        const modalRefInp = document.getElementById('modalInputReferralCode');
+        if (modalRefInp && !modalRefInp.value) {
+          modalRefInp.value = pendingCode;
+        }
+        document.querySelectorAll('[data-ref-redeem-input]').forEach((inp) => {
+          if (!inp.value) inp.value = pendingCode;
+        });
+      }
+    } catch (e) {}
+  }
+
+  function handleSignupReferral(newUsername, explicitCodeInput = '') {
+    let codeToUse = String(explicitCodeInput || '').trim();
+    if (!codeToUse) {
+      try {
+        codeToUse = localStorage.getItem(PENDING_REF_KEY) || '';
+      } catch (e) {}
+    }
+    if (!codeToUse) return null;
+    const parsed = parseReferrerFromCodeOrInput(codeToUse);
+    if (!parsed.referrer) return null;
+    return awardReferralXpToReferrer(parsed.referrer, newUsername, parsed.code);
+  }
+
+  function bindReferralBannerEvents() {
+    document.addEventListener('click', (ev) => {
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-ref-action]') : null;
+      if (!btn) return;
+      const action = btn.getAttribute('data-ref-action');
+      const widget = btn.closest('[data-referral-widget]');
+      const activeUser = getActiveUsername();
+
+      if (action === 'generate') {
+        const newCode = getOrCreateUserReferralCode(activeUser, true);
+        const newUrl = buildShareableReferralUrl(newCode);
+        refreshAllBanners();
+        showWidgetFeedback(widget, `⚡ Generated new referral code ${newCode} & updated your invite URL!`, true);
+        return;
+      }
+
+      if (action === 'copy-code') {
+        const code = getOrCreateUserReferralCode(activeUser, false);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).catch(() => {});
+        }
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Copied!';
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+        showWidgetFeedback(widget, `📋 Referral code "${code}" copied! Share it with friends to earn +50 XP per signup.`, true);
+        return;
+      }
+
+      if (action === 'copy-url') {
+        const code = getOrCreateUserReferralCode(activeUser, false);
+        const url = buildShareableReferralUrl(code);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).catch(() => {});
+        }
+        const statusHint = widget ? widget.querySelector('[data-ref-status-hint]') : null;
+        if (statusHint) statusHint.textContent = '✓ Link Copied!';
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span>✓</span><span>Copied!</span>';
+        setTimeout(() => {
+          btn.innerHTML = orig;
+          if (statusHint) statusHint.textContent = 'Ready to share';
+        }, 2000);
+        showWidgetFeedback(widget, `🔗 Invite URL copied to clipboard! Send it to friends — you'll get +50 XP when they sign up!`, true);
+        return;
+      }
+
+      if (action === 'share-whatsapp') {
+        const code = getOrCreateUserReferralCode(activeUser, false);
+        const url = buildShareableReferralUrl(code);
+        const shareText = `🏏 Play Hand Cricket with me on OddAndEven.in! Sign up using my referral link (Code: ${code}) so we can play 1v1 & 2v2 matches: ${url}`;
+        if (navigator.share) {
+          navigator.share({
+            title: 'OddAndEven.in — Hand Cricket Invite',
+            text: shareText,
+            url: url
+          }).catch(() => {});
+        } else {
+          const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+          window.open(waUrl, '_blank', 'noopener,noreferrer');
+        }
+        showWidgetFeedback(widget, `📲 Opening share menu for your referral link (${code})!`, true);
+        return;
+      }
+
+      if (action === 'redeem-code') {
+        const inp = widget ? widget.querySelector('[data-ref-redeem-input]') : null;
+        const rawVal = inp ? inp.value.trim() : '';
+        if (!rawVal) {
+          showWidgetFeedback(widget, 'Please enter a friend\'s referral code or invite URL first.', false);
+          return;
+        }
+        const parsed = parseReferrerFromCodeOrInput(rawVal);
+        if (!parsed.referrer) {
+          showWidgetFeedback(widget, 'Invalid referral code format. Example: OAE-VIRAT_18-50XP', false);
+          return;
+        }
+        if (!isRealUser(activeUser)) {
+          try { localStorage.setItem(PENDING_REF_KEY, parsed.code); } catch (e) {}
+          const modalRefInp = document.getElementById('modalInputReferralCode');
+          if (modalRefInp) modalRefInp.value = parsed.code;
+          showWidgetFeedback(widget, `🎁 Code ${parsed.code} saved! Sign up now to award +50 XP to @${parsed.referrer}!`, true);
+          return;
+        }
+        const res = awardReferralXpToReferrer(parsed.referrer, activeUser, parsed.code);
+        showWidgetFeedback(widget, res.message, res.ok);
+        if (res.ok && inp) inp.value = '';
+      }
+    });
+  }
+
+  window.openVersion2Showcase = function() {};
+  window.closeVersion2Showcase = function() {};
+
+  window.OddAndEvenReferrals = {
+    getOrCreateUserReferralCode,
+    buildShareableReferralUrl,
+    parseReferrerFromCodeOrInput,
+    getReferralStatsForUser,
+    awardReferralXpToReferrer,
+    handleSignupReferral,
+    refreshAllBanners
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      captureUrlReferralParam();
+      bindReferralBannerEvents();
+      refreshAllBanners();
+    });
+  } else {
+    captureUrlReferralParam();
+    bindReferralBannerEvents();
+    refreshAllBanners();
+  }
+
+  window.addEventListener('storage', (ev) => {
+    if (!ev || !ev.key) return;
+    if (ev.key.startsWith('oddandeven_referral_') || ev.key.startsWith('oddandeven_referred_') || ev.key === LAST_USER_KEY || ev.key === SESSION_STORAGE_KEY || ev.key === 'oddandeven_store_bus') {
+      refreshAllBanners();
+    }
+  });
+})();
+
+    }
+  </script>
+  <script>
+    /* ============================================================================
+     * UNIVERSAL SIDEBAR TAB ROUTER & STANDALONE CANVAS FALLBACK CONTROLLER
+     * Ensures all Sidebar Tabs, Header Buttons, Back Buttons, Modals & Pitch
+     * work 100% reliably both when hand_cricket.js is loaded and in standalone preview.
+     * ============================================================================ */
+    (function initUniversalSidebarAndArenaRouter() {
+      if (typeof window === 'undefined') return;
+
+      const SCREEN_MAP = {
+        PITCH: 'activePitchWrapper',
+        PROFILE: 'screenProfile',
+        STORE: 'screenStore',
+        BOT_SETUP: 'screenBotSetup',
+        MP_SETUP: 'screenMpSetup',
+        FRIENDS: 'screenFriends',
+        LEADERBOARD: 'screenLeaderboard',
+        ACHIEVEMENTS: 'screenAchievements',
+        EVENTS: 'screenEvents',
+        UPDATES: 'screenUpdates',
+        SHOWCASE: 'centerShowcasePanel'
+      };
+
+      const SIDE_NAV_MAP = {
+        PROFILE: 'sideNavProfile',
+        STORE: 'sideNavStore',
+        BOT_SETUP: 'sideNavBot',
+        MP_SETUP: 'sideNavMultiplayer',
+        FRIENDS: 'sideNavFriends',
+        LEADERBOARD: 'sideNavLeaderboard',
+        ACHIEVEMENTS: 'sideNavAchievements',
+        EVENTS: 'sideNavEvents',
+        UPDATES: 'sideNavUpdates'
+      };
+
+      const NAV_ACTIVE_CLS = 'w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-gradient-to-r from-[#81b64c]/25 to-emerald-500/15 text-[#a3d96c] border-2 border-[#81b64c] shadow-md';
+      const NAV_IDLE_CLS = 'w-full px-1.5 sm:px-3 py-1.5 sm:py-2.5 rounded-xl text-center lg:text-left transition flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-1 lg:gap-2.5 bg-slate-900/75 hover:bg-slate-800/90 text-slate-300 border border-slate-800';
+
+      function applyScreenVisibility(targetScreen) {
+        const cleanScreen = SCREEN_MAP[targetScreen] ? targetScreen : 'PITCH';
+        window.__currentActiveScreen = cleanScreen;
+
+        // 1. Toggle full-width layout for PROFILE and STORE
+        const isFullWidth = cleanScreen === 'PROFILE' || cleanScreen === 'STORE';
+        const mainCenterCol = document.getElementById('mainCenterStageCol');
+        const rightScoreCol = document.getElementById('rightMatchScorecardCol');
+        if (mainCenterCol) {
+          mainCenterCol.className = isFullWidth
+            ? 'xl:col-span-12 flex flex-col gap-4 min-w-0 w-full'
+            : 'xl:col-span-8 flex flex-col gap-4 min-w-0';
+        }
+        if (rightScoreCol) {
+          rightScoreCol.classList.toggle('hidden', isFullWidth);
+        }
+
+        // 2. Show only the selected screen and hide all other screens
+        Object.keys(SCREEN_MAP).forEach((key) => {
+          const el = document.getElementById(SCREEN_MAP[key]);
+          if (el) {
+            if (key === cleanScreen && key !== 'SHOWCASE') {
+              el.classList.remove('hidden');
+            } else {
+              el.classList.add('hidden');
+            }
+          }
+        });
+
+        // 3. Highlight active sidebar button
+        Object.keys(SIDE_NAV_MAP).forEach((key) => {
+          const btn = document.getElementById(SIDE_NAV_MAP[key]);
+          if (btn) {
+            btn.className = (key === cleanScreen ? NAV_ACTIVE_CLS : NAV_IDLE_CLS) + (key === 'FRIENDS' ? ' relative' : '');
+          }
+        });
+
+        // 4. Refresh referral banners if present
+        if (window.OddAndEvenReferrals && typeof window.OddAndEvenReferrals.refreshAllBanners === 'function') {
+          try { window.OddAndEvenReferrals.refreshAllBanners(); } catch (e) {}
+        }
+      }
+
+      function navigateToScreen(screenName) {
+        try {
+          if (typeof window.switchCenterScreen === 'function' && !window.switchCenterScreen.__isFallback) {
+            window.switchCenterScreen(screenName);
+          }
+        } catch (e) {}
+        applyScreenVisibility(screenName);
+      }
+
+      if (typeof window.switchCenterScreen !== 'function') {
+        const fn = function (screenName) {
+          applyScreenVisibility(screenName);
+        };
+        fn.__isFallback = true;
+        window.switchCenterScreen = fn;
+      }
+
+      function bindUniversalSidebarAndButtons() {
+        const directScreenTriggers = [
+          ['sideNavProfile', 'PROFILE'],
+          ['btnHeaderProfile', 'PROFILE'],
+          ['sidebarPlayerCard', 'PROFILE'],
+          ['btnStoreGoToProfile', 'PROFILE'],
+          ['sideNavStore', 'STORE'],
+          ['btnHeaderStore', 'STORE'],
+          ['btnProfileGoToStore', 'STORE'],
+          ['btnProfOpenStoreBottom', 'STORE'],
+          ['btnAchOpenStoreInline', 'STORE'],
+          ['sideNavBot', 'BOT_SETUP'],
+          ['sideNavMultiplayer', 'MP_SETUP'],
+          ['sideNavFriends', 'FRIENDS'],
+          ['sideNavLeaderboard', 'LEADERBOARD'],
+          ['btnHeaderElo', 'LEADERBOARD'],
+          ['sideNavAchievements', 'ACHIEVEMENTS'],
+          ['sideNavEvents', 'EVENTS'],
+          ['sideNavUpdates', 'UPDATES'],
+          ['btnBackFromUpdates', 'PITCH'],
+          ['sideNavPitch', 'PITCH'],
+          ['btnBackFromBotSetup', 'PITCH'],
+          ['btnBackFromMpSetup', 'PITCH'],
+          ['btnBackFromFriends', 'PITCH'],
+          ['btnBackFromLeaderboard', 'PITCH'],
+          ['btnBackFromAchievements', 'PITCH'],
+          ['btnBackFromEvents', 'PITCH'],
+          ['btnBackFromProfile', 'PITCH'],
+          ['btnBackFromStore', 'PITCH']
+        ];
+
+        directScreenTriggers.forEach(([id, targetScreen]) => {
+          const elem = document.getElementById(id);
+          if (!elem || elem.__universalNavBound) return;
+          elem.__universalNavBound = true;
+          elem.addEventListener('click', (ev) => {
+            if (ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+            ev.preventDefault();
+            navigateToScreen(targetScreen);
+          });
+        });
+
+        // Header Rules & Multiplayer & Auth Modals fallback bindings
+        const rulesModal = document.getElementById('rulesModal');
+        const btnRules = document.getElementById('btnRules');
+        const btnCloseRules = document.getElementById('btnCloseRules');
+        const btnGotItRules = document.getElementById('btnGotItRules');
+        if (btnRules && rulesModal && !btnRules.__universalBound) {
+          btnRules.__universalBound = true;
+          btnRules.addEventListener('click', () => {
+            rulesModal.classList.remove('hidden');
+            rulesModal.classList.add('flex');
+          });
+        }
+        [btnCloseRules, btnGotItRules].forEach((b) => {
+          if (b && rulesModal && !b.__universalBound) {
+            b.__universalBound = true;
+            b.addEventListener('click', () => {
+              rulesModal.classList.add('hidden');
+              rulesModal.classList.remove('flex');
+            });
+          }
+        });
+
+        const mpModal = document.getElementById('mpModal');
+        const btnMultiplayer = document.getElementById('btnMultiplayer');
+        const btnCloseMpModal = document.getElementById('btnCloseMpModal');
+        const btnCancelMpModal = document.getElementById('btnCancelMpModal');
+        if (btnMultiplayer && !btnMultiplayer.__universalBound) {
+          btnMultiplayer.__universalBound = true;
+          btnMultiplayer.addEventListener('click', () => {
+            navigateToScreen('MP_SETUP');
+          });
+        }
+        [btnCloseMpModal, btnCancelMpModal].forEach((b) => {
+          if (b && mpModal && !b.__universalBound) {
+            b.__universalBound = true;
+            b.addEventListener('click', () => {
+              mpModal.classList.add('hidden');
+              mpModal.classList.remove('flex');
+            });
+          }
+        });
+
+        const authModal = document.getElementById('authModal');
+        const btnOpenAuthModal = document.getElementById('btnOpenAuthModal');
+        const btnSidebarAuth = document.getElementById('btnSidebarAuth');
+        const btnCloseAuthModal = document.getElementById('btnCloseAuthModal');
+        [btnOpenAuthModal, btnSidebarAuth].forEach((b) => {
+          if (b && authModal && !b.__universalBound) {
+            b.__universalBound = true;
+            b.addEventListener('click', () => {
+              authModal.classList.remove('hidden');
+              authModal.classList.add('flex');
+            });
+          }
+        });
+        if (btnCloseAuthModal && authModal && !btnCloseAuthModal.__universalBound) {
+          btnCloseAuthModal.__universalBound = true;
+          btnCloseAuthModal.addEventListener('click', () => {
+            authModal.classList.add('hidden');
+            authModal.classList.remove('flex');
+          });
+        }
+
+        // Populate 1-10 Toss & Gameplay number buttons if standalone preview hasn't populated them yet
+        ['tossNumberGrid', 'playNumberGrid'].forEach((gridId) => {
+          const grid = document.getElementById(gridId);
+          if (grid && grid.children.length === 0) {
+            for (let n = 1; n <= 10; n++) {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'num-btn py-2.5 sm:py-3 rounded-xl font-mono-num text-sm sm:text-base font-black text-white shadow';
+              btn.textContent = String(n);
+              grid.appendChild(btn);
+            }
+          }
+        });
+
+        // 1v1 vs 2v2 Format toggle fallback inside Multiplayer Setup
+        const btn1v1 = document.getElementById('btnMpFormat1v1');
+        const btn2v2 = document.getElementById('btnMpFormat2v2');
+        const strip1v1 = document.getElementById('mp1v1FriendInviteStrip');
+        const panel2v2 = document.getElementById('mp2v2SquadPanel');
+        if (btn1v1 && btn2v2 && !btn1v1.__universalBound) {
+          btn1v1.__universalBound = true;
+          btn1v1.addEventListener('click', () => {
+            if (strip1v1) strip1v1.classList.remove('hidden');
+            if (panel2v2) panel2v2.classList.add('hidden');
+            btn1v1.className = 'py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-lg';
+            btn2v2.className = 'py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800';
+          });
+          btn2v2.addEventListener('click', () => {
+            if (strip1v1) strip1v1.classList.add('hidden');
+            if (panel2v2) panel2v2.classList.remove('hidden');
+            btn2v2.className = 'py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg';
+            btn1v1.className = 'py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800';
+          });
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindUniversalSidebarAndButtons);
+      } else {
+        bindUniversalSidebarAndButtons();
+      }
+      window.addEventListener('load', bindUniversalSidebarAndButtons);
+    })();
+  </script>
 </body>
 </html>

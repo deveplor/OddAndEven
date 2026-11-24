@@ -98,6 +98,9 @@
       border-bottom-width: 1px;
     }
   </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
 </head>
 <body class="bg-black-grid min-h-screen flex flex-col justify-between text-slate-100 selection:bg-[#81b64c] selection:text-black">
 
@@ -111,7 +114,7 @@
           <div class="font-brand text-lg sm:text-xl font-extrabold tracking-tight leading-none flex items-baseline">
             <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-white bg-clip-text text-transparent">Odd</span><span class="text-amber-400 italic font-black px-0.5">And</span><span class="bg-gradient-to-r from-cyan-300 to-sky-400 bg-clip-text text-transparent">Even</span><span class="text-xs font-mono-num font-black text-[#a3d96c] ml-0.5">.in</span>
           </div>
-          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Official Hand Cricket Arena • Version 2</div>
+          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mt-0.5">Official Hand Cricket Arena • Version 2.5</div>
         </div>
       </div>
 
@@ -123,7 +126,7 @@
 
         <span id="worldSyncChip" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-mono-num font-bold bg-zinc-950 text-emerald-300 border border-emerald-500/30 shadow-inner">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="worldSyncText">Global Network Live</span>
+          <span id="worldSyncText">Connecting to arena</span>
         </span>
       </div>
     </div>
@@ -136,15 +139,15 @@
       <div class="lg:col-span-6 space-y-6 text-left">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-950 border border-white/10 text-[11px] font-extrabold uppercase tracking-widest text-[#a3d96c]">
           <span>⚡</span>
-          <span>Version 2 • Competitive Hand Cricket</span>
+          <span>Version 2.5 • Competitive Hand Cricket</span>
         </div>
 
         <div class="space-y-3">
           <h1 class="font-brand text-3xl sm:text-5xl font-black tracking-tight text-white leading-[1.12]">
-            Step Into the <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Global Pitch.</span>
+            Every number. <span class="bg-gradient-to-r from-[#a3d96c] via-emerald-300 to-cyan-300 bg-clip-text text-transparent">A mind game.</span>
           </h1>
           <p class="text-sm sm:text-base text-zinc-400 leading-relaxed max-w-lg">
-            Sign in with your player identity to compete in real-time <strong class="text-zinc-200">P1 vs P2 Multiplayer Rooms</strong>, challenge adaptive <strong class="text-zinc-200">250–2800 Elo AI Bots</strong>, and climb the worldwide leaderboard.
+            Sign in with your player identity to compete in real-time <strong class="text-zinc-200">P1 vs P2 Multiplayer Rooms</strong>, challenge <strong class="text-zinc-200">four adaptive AI levels</strong>, and climb the worldwide leaderboard.
           </p>
         </div>
 
@@ -179,7 +182,7 @@
         <div class="flex flex-wrap items-center gap-4 pt-1 text-xs text-zinc-400">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[11px] text-emerald-300">✓</span>
-            <span>Encrypted Country + 5-Digit PIN</span>
+            <span>Your player identity, across devices</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-[11px] text-cyan-300">✓</span>
@@ -309,13 +312,26 @@
 
               <div class="flex items-center justify-between mt-2 px-0.5">
                 <span id="keyPreviewBadge" class="text-[11px] font-mono-num text-zinc-400">
-                  Vault Key: <strong class="text-amber-300/90">+91-•••••</strong>
+                  Player region: <strong class="text-amber-300/90">+91-•••••</strong>
                 </span>
                 <span class="text-[10px] font-mono-num text-emerald-400/90 flex items-center gap-1">
                   <span>🔒</span>
-                  <span>OAE1 Encrypted</span>
+                  <span>Keep PIN private</span>
                 </span>
               </div>
+            </div>
+
+            <div id="indexReferralInputWrap" class="pt-0.5">
+              <label for="inputAuthReferralCode" class="block text-[11px] font-bold uppercase tracking-wider text-emerald-300 mb-1.5">
+                🎁 Referral Code (Optional — Awards +50 XP to Inviter on Sign Up)
+              </label>
+              <input
+                id="inputAuthReferralCode"
+                type="text"
+                maxlength="40"
+                placeholder="e.g. OAE-VIRAT_18-50XP (Auto-filled from invite link)"
+                class="obsidian-input w-full px-4 py-2.5 rounded-xl font-mono-num text-xs font-bold uppercase text-emerald-200 placeholder:normal-case placeholder:font-sans placeholder:text-zinc-600"
+              />
             </div>
 
             <div class="pt-1 space-y-3">
@@ -325,7 +341,7 @@
                 class="w-full py-3.5 px-6 rounded-xl font-black text-sm sm:text-base arena-cta-btn flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span id="btnSubmitAuthText">SIGN IN TO ARENA</span>
-                <span>→</span>
+
               </button>
 
               <div class="relative flex items-center gap-3">
@@ -371,7 +387,7 @@
       </div>
       <div class="flex items-center gap-3">
         <span class="px-3 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-zinc-950 text-[#a3d96c] border border-[#81b64c]/40">
-          Version 2
+          Version 2.5
         </span>
       </div>
     </div>
@@ -476,14 +492,6 @@
         'oddandeven-world-hub-v1-3',
         'oddandeven-world-hub-v1-4'
       ];
-
-      // Administrator Master Credentials
-      const ADMIN_CONFIG = {
-        username: 'ADMIN',
-        countryCode: '+91',
-        pin: '99999',
-        masterKey: 'ODDADMIN2026'
-      };
 
       let authMode = 'LOGIN'; // 'LOGIN' | 'SIGNUP'
       let globalHubPeer = null;
@@ -663,20 +671,7 @@
         return querySuffix ? `${baseTarget}${querySuffix}` : baseTarget;
       }
 
-      try {
-        if (localStorage.getItem(RELEASE_CLEAN_SLATE_KEY) !== 'v1_clean') {
-          localStorage.removeItem(AUTH_STORAGE_KEY);
-          localStorage.removeItem(SESSION_STORAGE_KEY);
-          localStorage.removeItem(WORLDWIDE_PLAYERS_KEY);
-          localStorage.removeItem('hc_arena_elo_v2');
-          localStorage.removeItem('hc_arena_stats_v1');
-          localStorage.removeItem(SCORECARD_HISTORY_KEY);
-          localStorage.removeItem('oddandeven_just_logged_in');
-          localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
-          sessionStorage.removeItem(SESSION_STORAGE_KEY);
-          localStorage.setItem(RELEASE_CLEAN_SLATE_KEY, 'v1_clean');
-        }
-      } catch (e) {}
+      // v2.5 preserves existing accounts and statistics; no release-time wipe.
 
       function fnv1aHash(str) {
         let h = 0x811c9dc5;
@@ -823,24 +818,35 @@
         const clean = String(uname || '').trim().toUpperCase();
         if (!clean) return;
         unmarkAccountPurgedLocal(clean);
+        try {
+          const rawPendDel = localStorage.getItem('oddandeven_pending_cloud_delete_v1');
+          if (rawPendDel) {
+            const pObj = JSON.parse(rawPendDel);
+            if (pObj && String(pObj.username || '').trim().toUpperCase() === clean) {
+              localStorage.removeItem('oddandeven_pending_cloud_delete_v1');
+            }
+          }
+        } catch (e) {}
         if (fbDb && fbDeleteDoc && fbDoc) {
           try {
             await Promise.allSettled([
-              fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts', clean)),
-              fbDeleteDoc(fbDoc(fbDb, 'purged_accounts', clean))
+              fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts', clean))
             ]);
           } catch (e) {}
         }
       }
 
-      async function deleteOrphanCloudDocs(uname) {
+      async function deleteOrphanCloudDocs(uname, forceEvenIfRecent = false) {
         const clean = String(uname || '').trim().toUpperCase();
-        if (!clean || !fbDb || !fbDeleteDoc || !fbDoc || isRecentSignup(clean)) return;
+        if (!clean || !fbDb || !fbDeleteDoc || !fbDoc || (!forceEvenIfRecent && isRecentSignup(clean))) return;
         try {
           await Promise.allSettled([
             fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean)),
-            fbDeleteDoc(fbDoc(fbDb, 'accounts', clean)),
             fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean)),
+            fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'friends', clean)),
+            fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'friend_requests', clean)),
+            fbDeleteDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'invites', clean)),
+            fbDeleteDoc(fbDoc(fbDb, 'accounts', clean)),
             fbDeleteDoc(fbDoc(fbDb, 'leaderboard', clean))
           ]);
         } catch (e) {}
@@ -1231,6 +1237,7 @@
       }
 
       function setMode(mode) {
+        if (authBusy) return;
         authMode = mode;
         const activeCls = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition bg-[#81b64c] text-white shadow-md';
         const idleCls = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition text-zinc-400 hover:text-white';
@@ -1245,6 +1252,9 @@
             : 'Register your Username & Country Code on the Global Pitch';
         }
         el.btnSubmitAuthText.textContent = mode === 'LOGIN' ? 'SIGN IN TO ARENA' : 'CREATE ACCOUNT & PLAY';
+        el.inputAuthPin5.autocomplete = mode === 'LOGIN' ? 'current-password' : 'new-password';
+        const referral = document.getElementById('indexReferralInputWrap');
+        if (referral) referral.classList.toggle('hidden', mode !== 'SIGNUP');
         el.authStatusBanner.classList.add('hidden');
       }
 
@@ -1254,7 +1264,7 @@
         const worldMap = loadWorldwidePlayersMap();
         const worldCount = getAuthoritativeRealPlayerCount();
         if (el.worldSyncText) {
-          el.worldSyncText.textContent = `Global Live • ${worldCount} Player${worldCount === 1 ? '' : 's'}`;
+          el.worldSyncText.textContent = fbReady ? `Arena connected • ${worldCount} players` : 'Connecting to arena…';
         }
 
         const selOpt = el.selectAuthCountry && el.selectAuthCountry.options[el.selectAuthCountry.selectedIndex];
@@ -1262,7 +1272,7 @@
         const flag = (selOpt && selOpt.getAttribute('data-flag')) || '🇮🇳';
         const pinVal = (el.inputAuthPin5.value || '').replace(/\D/g, '').slice(0, 5);
         el.inputAuthPin5.value = pinVal;
-        el.keyPreviewBadge.innerHTML = `Vault Key: <strong class="text-amber-300/90">${flag} ${dial}-${pinVal.padEnd(5, '•')}</strong>`;
+        el.keyPreviewBadge.innerHTML = `Player region: <strong class="text-amber-300/90">${flag} ${dial}-${'•'.repeat(5)}</strong>`;
 
         if (el.activeSessionCard) {
           el.activeSessionCard.classList.add('hidden');
@@ -1387,15 +1397,16 @@
             fbApp = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
             fbAuth = getAuth(fbApp);
             fbDb = getFirestore(fbApp);
+            await fbAuth.authStateReady();
 
             // Only await getRedirectResult if a Google redirect was actually initiated
             let hasGooglePending = false;
             try { hasGooglePending = Boolean(sessionStorage.getItem(GOOGLE_PENDING_KEY)); } catch (e) {}
             if (hasGooglePending) {
               try {
-                fbRedirectResult = await withTimeout(getRedirectResult(fbAuth), 4000, 'redirect-timeout');
+                fbRedirectResult = await withTimeout(getRedirectResult(fbAuth), 20000, 'redirect-timeout');
               } catch (e) {
-                fbRedirectError = (e && e.code === 'redirect-timeout') ? null : e;
+                fbRedirectError = e;
               }
             }
 
@@ -1432,10 +1443,10 @@
             if (typeof fbAuth.authStateReady === 'function') await withTimeout(fbAuth.authStateReady(), 1200, 'auth-ready-timeout');
           } catch (e) {}
 
-          if (!fbAuth.currentUser && !googleFlowActive) {
+          if (!fbAuth.currentUser && !googleFlowActive && !authBusy) {
             try {
               const authMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
-              if (!fbAuth.currentUser && !googleFlowActive) {
+              if (!fbAuth.currentUser && !googleFlowActive && !authBusy) {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                   await withTimeout(authMod.signInWithCustomToken(fbAuth, __initial_auth_token), 1500, 'anon-timeout');
                 } else {
@@ -1449,9 +1460,27 @@
 
           fbUser = fbAuth.currentUser || null;
           try {
+            // Flush any pending account deletions first so removed accounts are 100% deleted from artifacts/accounts & artifacts/leaderboard
+            const purgedToFlush = new Set(loadPurgedAccountsList());
+            try {
+              const rawPendDel = localStorage.getItem('oddandeven_pending_cloud_delete_v1');
+              if (rawPendDel) {
+                const pendObj = JSON.parse(rawPendDel);
+                if (pendObj && pendObj.username) {
+                  purgedToFlush.add(String(pendObj.username).trim().toUpperCase());
+                }
+                localStorage.removeItem('oddandeven_pending_cloud_delete_v1');
+              }
+            } catch (e) {}
+            for (const delUser of purgedToFlush) {
+              if (delUser && !isRecentSignup(delUser)) {
+                await deleteOrphanCloudDocs(delUser, true);
+              }
+            }
+
             await withTimeout(pullCloudAccountsIntoLocal(), 4000, 'pull-timeout');
             attachLiveCloudAccountListeners();
-            migrateLocalAccountsToFirebase();
+            // Account writes happen only for the player signing in.
           } catch (e) {
             console.warn('Cloud sync skipped', e);
           }
@@ -1460,222 +1489,25 @@
         return fbInitPromise;
       }
 
-      // Fires browser-level keepalive REST calls to Firebase Auth & Cloud Firestore so writes
-      // are 100% guaranteed to complete even during instant page navigation.
-      async function fireKeepaliveRestSync(accountRecord, pin5, existingIdToken = null) {
-        if (!accountRecord || !accountRecord.username) return;
-        const clean = String(accountRecord.username).trim().toUpperCase();
-        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return;
-
-        const apiKey = FIREBASE_CONFIG.apiKey;
-        const projectId = FIREBASE_CONFIG.projectId;
-        const authEmail = `${clean.toLowerCase()}@oddandeven.in`;
-        const safePin = pin5 && /^\d{5}$/.test(String(pin5).trim()) ? String(pin5).trim() : '12345';
-        const authPassword = `OAE#${safePin}_${clean.toLowerCase()}`;
-
-        let idToken = existingIdToken || null;
-        let restUid = accountRecord.firebaseUid || accountRecord.googleUid || null;
-
-        try {
-          if (!idToken && fbAuth && fbAuth.currentUser && typeof fbAuth.currentUser.getIdToken === 'function') {
-            idToken = await fbAuth.currentUser.getIdToken();
-            restUid = fbAuth.currentUser.uid;
-          }
-        } catch (e) {}
-
-        // If SDK hasn't produced an idToken yet, register/sign-in directly via IdentityToolkit REST API with keepalive
-        if (!idToken && apiKey) {
-          try {
-            const signUpRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
-              method: 'POST',
-              keepalive: true,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email: authEmail,
-                password: authPassword,
-                displayName: clean,
-                returnSecureToken: true
-              })
-            });
-            if (signUpRes.ok) {
-              const data = await signUpRes.json();
-              idToken = data.idToken;
-              restUid = data.localId;
-            } else {
-              const errData = await signUpRes.json().catch(() => ({}));
-              const errMsg = (errData && errData.error && errData.error.message) || '';
-              if (errMsg.includes('EMAIL_EXISTS')) {
-                const signInRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
-                  method: 'POST',
-                  keepalive: true,
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email: authEmail, password: authPassword, returnSecureToken: true })
-                });
-                if (signInRes.ok) {
-                  const sData = await signInRes.json();
-                  idToken = sData.idToken;
-                  restUid = sData.localId;
-                }
-              }
-              // Fallback: Anonymous signUp via IdentityToolkit if Email/Password is disabled in Console
-              if (!idToken) {
-                const anonRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
-                  method: 'POST',
-                  keepalive: true,
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ returnSecureToken: true })
-                });
-                if (anonRes.ok) {
-                  const aData = await anonRes.json();
-                  idToken = aData.idToken;
-                  restUid = aData.localId;
-                  fetch(`https://identitytoolkit.googleapis.com/v1/accounts:update?key=${apiKey}`, {
-                    method: 'POST',
-                    keepalive: true,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idToken, displayName: clean, returnSecureToken: false })
-                  }).catch(() => {});
-                }
-              }
-            }
-          } catch (e) {}
-        }
-
-        // Write account & leaderboard documents via Firestore REST API with keepalive: true
-        if (projectId) {
-          const headers = { 'Content-Type': 'application/json' };
-          if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
-          const nowMs = String(Date.now());
-          const accDocBody = JSON.stringify({
-            fields: {
-              username: { stringValue: clean },
-              countryCode: { stringValue: accountRecord.countryCode || '+91' },
-              countryName: { stringValue: accountRecord.countryName || 'India' },
-              countryFlag: { stringValue: accountRecord.countryFlag || '🇮🇳' },
-              encryptedAuth: accountRecord.encryptedAuth ? { stringValue: String(accountRecord.encryptedAuth) } : { nullValue: null },
-              googleUid: accountRecord.googleUid ? { stringValue: String(accountRecord.googleUid) } : { nullValue: null },
-              firebaseUid: restUid ? { stringValue: String(restUid) } : { nullValue: null },
-              googleEmail: { nullValue: null },
-              authProvider: { stringValue: accountRecord.authProvider || (accountRecord.googleUid ? 'google' : 'pin') },
-              createdAt: { stringValue: accountRecord.createdAt || new Date().toISOString() },
-              updatedAt: { integerValue: nowMs },
-              migratedAt: { integerValue: nowMs }
-            }
-          });
-          const lbDocBody = JSON.stringify({
-            fields: {
-              name: { stringValue: clean },
-              countryCode: { stringValue: accountRecord.countryCode || '+91' },
-              countryFlag: { stringValue: accountRecord.countryFlag || '🇮🇳' },
-              countryName: { stringValue: accountRecord.countryName || 'India' },
-              isRealRegisteredUser: { booleanValue: true },
-              elo: { integerValue: '1500' },
-              peak: { integerValue: '1500' },
-              wins: { integerValue: '0' },
-              losses: { integerValue: '0' },
-              matches: { integerValue: '0' },
-              rankedMatches: { integerValue: '0' },
-              totalRuns: { integerValue: '0' },
-              totalBalls: { integerValue: '0' },
-              highScore: { integerValue: '0' },
-              wicketsTaken: { integerValue: '0' },
-              wicketsLost: { integerValue: '0' },
-              ballsBowled: { integerValue: '0' },
-              weeklyEloGain: { integerValue: '0' },
-              weeklyWins: { integerValue: '0' },
-              weeklyLosses: { integerValue: '0' },
-              weeklyMatches: { integerValue: '0' },
-              weeklyRuns: { integerValue: '0' },
-              weeklyWickets: { integerValue: '0' },
-              statsEpoch: { stringValue: 'v3_mp_only_leaderboard_2026_11_01' },
-              updatedAt: { integerValue: nowMs }
-            }
-          });
-
-          const baseFsUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents`;
-          fetch(`${baseFsUrl}/artifacts/${FIREBASE_APP_ID}/public/data/accounts/${clean}`, {
-            method: 'PATCH', keepalive: true, headers, body: accDocBody
-          }).catch(() => {});
-          fetch(`${baseFsUrl}/accounts/${clean}`, {
-            method: 'PATCH', keepalive: true, headers, body: accDocBody
-          }).catch(() => {});
-          fetch(`${baseFsUrl}/artifacts/${FIREBASE_APP_ID}/public/data/leaderboard/${clean}`, {
-            method: 'PATCH', keepalive: true, headers, body: lbDocBody
-          }).catch(() => {});
-          fetch(`${baseFsUrl}/leaderboard/${clean}`, {
-            method: 'PATCH', keepalive: true, headers, body: lbDocBody
-          }).catch(() => {});
-        }
-      }
-
       // Ensures the player is officially registered and active in Firebase Authentication (Users table in Console)
       async function ensureUserRegisteredInFirebaseAuth(username, pin5, isNewSignup = false) {
-        if (!username) return null;
-        const clean = String(username).trim().toUpperCase();
-        if (!clean || FAKE_SEED_NAMES.includes(clean) || RESERVED_USERNAMES.includes(clean)) return null;
-
-        await ensureFirebaseReady(2500);
-        if (!fbAuth) return null;
-
+        if (!await ensureFirebaseReady(12000)) throw new Error('cloud-unavailable');
+        const clean = String(username || '').trim().toUpperCase();
+        if (!/^[A-Z0-9_]{3,16}$/.test(clean) || !/^\d{5}$/.test(String(pin5))) throw new Error('invalid-credentials');
         const authEmail = `${clean.toLowerCase()}@oddandeven.in`;
-        const safePin = pin5 && /^\d{5}$/.test(String(pin5).trim()) ? String(pin5).trim() : '12345';
-        const authPassword = `OAE#${safePin}_${clean.toLowerCase()}`;
-
-        let user = fbAuth.currentUser;
-        if (user && user.email && user.email.toLowerCase() === authEmail.toLowerCase()) {
-          if (typeof fbUpdateProfile === 'function' && user.displayName !== clean) {
-            try { await fbUpdateProfile(user, { displayName: clean }); } catch (e) {}
-          }
-          return user;
-        }
-
+        const authPassword = `OAE#${pin5}_${clean.toLowerCase()}`;
+        const action = isNewSignup ? fbCreateUserWithEmailAndPassword : fbSignInWithEmailAndPassword;
+        let credential;
         try {
-          if (typeof fbCreateUserWithEmailAndPassword === 'function') {
-            const cred = await fbCreateUserWithEmailAndPassword(fbAuth, authEmail, authPassword);
-            user = cred.user;
-          }
-        } catch (err) {
-          const code = (err && err.code) || '';
-          if (code === 'auth/email-already-in-use') {
-            try {
-              if (typeof fbSignInWithEmailAndPassword === 'function') {
-                const cred = await fbSignInWithEmailAndPassword(fbAuth, authEmail, authPassword);
-                user = cred.user;
-              }
-            } catch (signInErr) {}
-          }
-          // Fallback for ANY other error (e.g. auth/operation-not-allowed, auth/configuration-not-found, etc.):
-          // Mint a fresh authenticated user via signInAnonymously so request.auth != null and user appears in Firebase Auth!
-          if (!user || (isNewSignup && user.isAnonymous && user.displayName && user.displayName !== clean)) {
-            try {
-              if (isNewSignup && fbAuth.currentUser && fbAuth.currentUser.isAnonymous && typeof window.__fbSignOutFn === 'function') {
-                await window.__fbSignOutFn(fbAuth).catch(() => {});
-              }
-              if (typeof fbSignInAnonymously === 'function' && !fbAuth.currentUser) {
-                const cred = await fbSignInAnonymously(fbAuth);
-                user = cred.user;
-              } else {
-                user = fbAuth.currentUser;
-              }
-            } catch (anonErr) {}
-          }
+          credential = await action(fbAuth, authEmail, authPassword);
+        } catch (error) {
+          // Retry a signup whose Auth user was saved but whose profile write failed.
+          // Matching credentials are required; never substitute an anonymous user.
+          if (!isNewSignup || error.code !== 'auth/email-already-in-use') throw error;
+          credential = await fbSignInWithEmailAndPassword(fbAuth, authEmail, authPassword);
         }
-
-        if (!user && fbAuth && !fbAuth.currentUser && typeof fbSignInAnonymously === 'function') {
-          try {
-            const cred = await fbSignInAnonymously(fbAuth);
-            user = cred.user;
-          } catch (e) {}
-        }
-
-        user = user || (fbAuth && fbAuth.currentUser) || null;
-        if (user && typeof fbUpdateProfile === 'function') {
-          try {
-            await fbUpdateProfile(user, { displayName: clean });
-          } catch (e) {}
-        }
-
-        return user;
+        if (fbUpdateProfile) await fbUpdateProfile(credential.user, { displayName: clean });
+        return credential.user;
       }
 
       async function pushAccountToFirebase(accountRecord, authUser = null) {
@@ -1705,21 +1537,11 @@
         };
         try {
           const promises = [
-            fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean), payload, { merge: true }),
-            fbSetDoc(fbDoc(fbDb, 'accounts', clean), payload, { merge: true })
+            fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', clean), payload, { merge: true })
           ];
           if (currentUid) {
             promises.push(
               fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', currentUid, 'profile', 'main'), {
-                uid: currentUid,
-                username: clean,
-                authProvider: payload.authProvider,
-                countryCode: payload.countryCode,
-                countryName: payload.countryName,
-                countryFlag: payload.countryFlag,
-                updatedAt: Date.now()
-              }, { merge: true }),
-              fbSetDoc(fbDoc(fbDb, 'users', currentUid), {
                 uid: currentUid,
                 username: clean,
                 authProvider: payload.authProvider,
@@ -1732,9 +1554,8 @@
           }
           const results = await Promise.allSettled(promises);
           const artAcc = results[0] && results[0].status === 'fulfilled';
-          const rootAcc = results[1] && results[1].status === 'fulfilled';
-          updateCloudSyncedColsForUser(clean, { artAcc, rootAcc });
-          return artAcc || rootAcc;
+          updateCloudSyncedColsForUser(clean, { artAcc, rootAcc: false });
+          return artAcc;
         } catch (e) {
           console.warn('pushAccountToFirebase notice:', e);
           return false;
@@ -1780,13 +1601,11 @@
         };
         try {
           const results = await Promise.allSettled([
-            fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean), payload, { merge: true }),
-            fbSetDoc(fbDoc(fbDb, 'leaderboard', clean), payload, { merge: true })
+            fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard', clean), payload, { merge: true })
           ]);
           const artLb = results[0] && results[0].status === 'fulfilled';
-          const rootLb = results[1] && results[1].status === 'fulfilled';
-          updateCloudSyncedColsForUser(clean, { artLb, rootLb });
-          return artLb || rootLb;
+          updateCloudSyncedColsForUser(clean, { artLb, rootLb: false });
+          return artLb;
         } catch (e) {
           console.warn('pushLeaderboardSeedToFirebase notice:', e);
           return false;
@@ -1855,13 +1674,8 @@
 
         try {
           fbOnSnapshot(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts'), handleCollectionRemovals, () => {});
-          fbOnSnapshot(fbCollection(fbDb, 'accounts'), handleCollectionRemovals, () => {});
           fbOnSnapshot(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard'), handleCollectionRemovals, () => {});
-          fbOnSnapshot(fbCollection(fbDb, 'leaderboard'), handleCollectionRemovals, () => {});
           fbOnSnapshot(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts'), () => {
-            pullCloudAccountsIntoLocal();
-          }, () => {});
-          fbOnSnapshot(fbCollection(fbDb, 'purged_accounts'), () => {
             pullCloudAccountsIntoLocal();
           }, () => {});
         } catch (e) {}
@@ -1881,14 +1695,18 @@
           let artLbOk = false;
           let rootLbOk = false;
 
-          const [rP1, rP2, rA1, rA2, rL1, rL2] = await Promise.allSettled([
+          const localPurgedArr = loadPurgedAccountsList();
+          localPurgedArr.forEach((u) => {
+            if (u && !isRecentSignup(u)) cloudPurgedSet.add(u);
+          });
+          const [rP1, rA1, rL1] = await Promise.allSettled([
             fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'purged_accounts')),
-            fbGetDocs(fbCollection(fbDb, 'purged_accounts')),
             fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts')),
-            fbGetDocs(fbCollection(fbDb, 'accounts')),
-            fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard')),
-            fbGetDocs(fbCollection(fbDb, 'leaderboard'))
+            fbGetDocs(fbCollection(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'leaderboard'))
           ]);
+          const rP2 = { status: 'rejected' };
+          const rA2 = { status: 'rejected' };
+          const rL2 = { status: 'rejected' };
 
           if (rP1.status === 'fulfilled' && rP1.value) {
             rP1.value.forEach((d) => {
@@ -2088,11 +1906,11 @@
               changed = true;
             }
 
-            // Auto-heal missing cloud documents so all collections are 100% synchronized!
-            if (!artLbMap[clean] || !rootLbMap[clean]) {
+            // Auto-heal missing cloud documents inside artifacts only
+            if (!artLbMap[clean]) {
               pushLeaderboardSeedToFirebase(clean, data).catch(() => {});
             }
-            if (!artAccMap[clean] || !rootAccMap[clean]) {
+            if (!artAccMap[clean]) {
               pushAccountToFirebase(data).catch(() => {});
             }
           });
@@ -2171,6 +1989,40 @@
         }
         broadcastWorldwideSync(true);
 
+        if (authMode === 'SIGNUP') {
+          try {
+            const refInp = document.getElementById('inputAuthReferralCode');
+            const urlParams = new URLSearchParams(window.location.search);
+            const rawRef = (refInp && refInp.value.trim()) || urlParams.get('ref') || localStorage.getItem('oddandeven_pending_referral_code_v1') || '';
+            if (rawRef) {
+              let cleanCode = String(rawRef).trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+              let refUser = '';
+              if (cleanCode.startsWith('OAE-')) {
+                const body = cleanCode.slice(4);
+                const lastDash = body.lastIndexOf('-');
+                refUser = lastDash > 0 ? body.slice(0, lastDash) : body;
+              } else {
+                refUser = cleanCode;
+                cleanCode = 'OAE-' + refUser + '-50XP';
+              }
+              if (refUser && refUser.length >= 3 && refUser !== uname && !localStorage.getItem('oddandeven_redeemed_ref_by_' + uname)) {
+                const curRefXp = parseInt(localStorage.getItem('oddandeven_referral_xp_' + refUser) || '0', 10) || 0;
+                const rawRefF = localStorage.getItem('oddandeven_referred_friends_' + refUser);
+                const refFriends = rawRefF ? (JSON.parse(rawRefF) || []) : [];
+                refFriends.unshift({ username: uname, code: cleanCode, xp: 50, timestamp: Date.now() });
+                const nextRefXp = Math.max(curRefXp + 50, refFriends.length * 50);
+                localStorage.setItem('oddandeven_referral_xp_' + refUser, String(nextRefXp));
+                localStorage.setItem('oddandeven_referred_friends_' + refUser, JSON.stringify(refFriends));
+                localStorage.setItem('oddandeven_redeemed_ref_by_' + uname, refUser);
+                localStorage.removeItem('oddandeven_pending_referral_code_v1');
+                const qRaw = localStorage.getItem('oddandeven_pending_referral_credit_v1');
+                const qArr = qRaw ? (JSON.parse(qRaw) || []) : [];
+                qArr.push({ referrer: refUser, newUser: uname, code: cleanCode, timestamp: Date.now() });
+                localStorage.setItem('oddandeven_pending_referral_credit_v1', JSON.stringify(qArr));
+              }
+            }
+          } catch (e) {}
+        }
         updateUIState();
         showBanner(`✓ Connected as ${activeProf.countryFlag || '🇮🇳'} ${uname}! Launching Arena…`, true);
 
@@ -2184,23 +2036,30 @@
           localStorage.setItem('hc_arena_elo_v2', JSON.stringify(desktopObj));
         } catch (e) {}
 
-        const rawPin = activeProf.pin5 || (el.inputAuthPin5 ? el.inputAuthPin5.value : '') || '12345';
+        if (activeProf.authProvider === 'google' || activeProf.googleUid) {
+          await withTimeout(Promise.allSettled([
+            pushAccountToFirebase(activeProf, fbAuth.currentUser),
+            pushLeaderboardSeedToFirebase(uname, activeProf)
+          ]), 6000, 'profile-sync-timeout').catch(() => {});
+          navigateToHandCricketArena('?from=login&screen=PITCH');
+          return;
+        }
+        const rawPin = activeProf.pin5 || (el.inputAuthPin5 ? el.inputAuthPin5.value : '');
         try {
           localStorage.setItem('oddandeven_pending_cloud_sync_v1', JSON.stringify(Object.assign({}, activeProf, {
             username: uname,
             pin5: rawPin,
-            isNewSignup: authMode === 'SIGNUP',
+            isNewSignup: false,
             queuedAt: Date.now()
           })));
         } catch (e) {}
 
-        // 1. Fire keepalive REST requests immediately (guaranteed by browser to survive navigation)
-        fireKeepaliveRestSync(activeProf, rawPin).catch(() => {});
+        // The Firebase SDK owns authentication; do not race it with REST sign-up.
 
         // 2. Run SDK Auth + Firestore write in parallel with a fast 400ms max bound so redirect is instant
         const sdkSyncTask = (async () => {
           try {
-            const authUser = await ensureUserRegisteredInFirebaseAuth(uname, rawPin, authMode === 'SIGNUP');
+            const authUser = await ensureUserRegisteredInFirebaseAuth(uname, rawPin, false);
             if (authUser && authUser.uid) {
               activeProf.firebaseUid = authUser.uid;
               sessObj.firebaseUid = authUser.uid;
@@ -2272,6 +2131,8 @@
         authBusy = busy;
         if (el.btnGoogleSignIn) el.btnGoogleSignIn.disabled = busy;
         if (el.btnSubmitAuth) el.btnSubmitAuth.disabled = busy;
+        [el.tabAuthLogin, el.tabAuthSignup].forEach(button => { if (button) button.disabled = busy; });
+        if (el.btnSubmitAuth) el.btnSubmitAuth.setAttribute('aria-busy', String(busy));
       }
 
       function googleErrorMessage(e) {
@@ -2300,8 +2161,7 @@
           try {
             const [r1, r2] = await withTimeout(
               Promise.allSettled([
-                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidate)),
-                fbGetDoc(fbDoc(fbDb, 'accounts', candidate))
+                fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', candidate))
               ]),
               1800,
               'taken-check-timeout'
@@ -2649,9 +2509,7 @@
             await withTimeout(
               Promise.allSettled([
                 fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', name), accountPayload, { merge: true }),
-                fbSetDoc(fbDoc(fbDb, 'accounts', name), accountPayload, { merge: true }),
                 fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), profilePayload, { merge: true }),
-                fbSetDoc(fbDoc(fbDb, 'users', gUser.uid), profilePayload, { merge: true }),
                 pushLeaderboardSeedToFirebase(name, accountPayload)
               ]),
               2500,
@@ -2753,7 +2611,7 @@
         showBanner('Opening Google Sign-In…', true);
         try {
           // Firebase is preloaded on page load, so the popup opens synchronously inside the click.
-          // Only if it is still loading do we wait (browsers may then block the popup -> redirect fallback).
+          // A blocked popup can be retried from a fresh click after SDK loading.
           if (!fbAuth || !GoogleAuthProviderCtor || !fbSignInWithPopupFn) {
             showBanner('Loading Google Sign-In…', true);
             let ok = false;
@@ -2777,9 +2635,7 @@
           } catch (e) {
             const code = (e && e.code) || '';
             if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
-              try { sessionStorage.setItem(GOOGLE_PENDING_KEY, JSON.stringify(sel)); } catch (err) {}
-              showBanner('Popup blocked — redirecting to Google…', true);
-              await signInWithRedirectFn(fbAuth, provider);
+              showBanner('Your browser blocked the sign-in window. Allow popups for this site, then select Continue with Google again.', false);
               return;
             }
             throw e;
@@ -2803,8 +2659,10 @@
         try {
           const raw = sessionStorage.getItem(GOOGLE_PENDING_KEY);
           if (raw) sel = JSON.parse(raw);
-          sessionStorage.removeItem(GOOGLE_PENDING_KEY);
         } catch (e) {}
+        if (!sel) return;
+        googleFlowActive = true;
+        setAuthBusy(true);
         try {
           const ok = await initFirebaseCore();
           if (!ok) return;
@@ -2821,10 +2679,14 @@
         } catch (e) {
           console.warn('Redirect result handling error', e);
           showBanner(googleErrorMessage(e), false);
+        } finally {
+          try { sessionStorage.removeItem(GOOGLE_PENDING_KEY); } catch (e) {}
+          googleFlowActive = false;
+          setAuthBusy(false);
         }
       }
 
-            async function handleAuthSubmit() {
+      async function handleAuthSubmit() {
         if (authBusy) return;
         const uname = (el.inputAuthUsername.value || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
         const pin5 = (el.inputAuthPin5.value || '').trim();
@@ -2839,18 +2701,8 @@
           }
         }
 
-        // 2. Admin Check
-        const isAdminMatch = (uname === ADMIN_CONFIG.username && pin5 === ADMIN_CONFIG.pin && dial === ADMIN_CONFIG.countryCode) ||
-                             (uname === ADMIN_CONFIG.username && (pin5 === ADMIN_CONFIG.pin || pin5 === ADMIN_CONFIG.masterKey));
-        if (isAdminMatch) {
-          sessionStorage.setItem('oddandeven_admin_auth', '1');
-          showBanner('✓ Administrator Verified! Launching Control Panel...', true);
-          setTimeout(() => navigateToAdminConsole(), 200);
-          return;
-        }
-
         // 3. Validation
-        if (uname.length < 3) {
+        if (uname.length < 3 || uname.length > 16) {
           showBanner('Username must be at least 3 alphanumeric characters.', false);
           return;
         }
@@ -2890,65 +2742,34 @@
               setAuthBusy(false);
               return;
             }
-            // Instantly detect non-existent account if cloud accounts are already synced
-            if (cloudAuthoritativeAccounts !== null && !rec && !cloudAuthoritativeAccounts[uname]) {
-              showBanner('Username not found', false);
-              setAuthBusy(false);
-              return;
-            }
             // If account is found locally, verify credentials instantly with zero lag
             if (rec) {
+              if (rec.authProvider === 'google' || rec.googleUid) {
+                showBanner('This player uses Google. Select Continue with Google to sign in.', false);
+                return;
+              }
               if (!rec.encryptedAuth || !verifyUserCredentials(rec, dial, pin5)) {
                 showBanner('Username or password is wrong', false);
                 setAuthBusy(false);
                 return;
               }
               showBanner('✓ Signed in as ' + cFlag + ' ' + uname + '! Launching Arena…', true);
+              rec.pin5 = pin5;
               await finalizePlayerSession(rec);
               setAuthBusy(false);
               return;
             }
           }
 
-          // In SIGNUP mode, if username is not in local vault or synced cloud cache, create & redirect instantly!
-          if (authMode === 'SIGNUP') {
-            showBanner('✓ Account created for ' + cFlag + ' ' + uname + '! Entering Arena…', true);
-            stampRecentSignup(uname);
-            unmarkAccountPurgedLocal(uname);
-            unpurgeCloudAccount(uname).catch(() => {});
-
-            const worldMap = loadWorldwidePlayersMap();
-            delete worldMap[uname];
-            saveWorldwidePlayersMap(worldMap);
-
-            const profile = {
-              username: uname,
-              countryCode: dial,
-              countryName: cName,
-              countryFlag: cFlag,
-              encryptedAuth: derivePasswordVerifier(uname, dial, pin5),
-              authProvider: 'pin',
-              pin5: pin5,
-              createdAt: new Date().toISOString()
-            };
-            usersMap = loadEncryptedUsersMap();
-            usersMap[uname] = profile;
-            saveEncryptedUsersMap(usersMap);
-            if (cloudAuthoritativeAccounts) {
-              cloudAuthoritativeAccounts[uname] = profile;
-            }
-            await finalizePlayerSession(profile);
-            setAuthBusy(false);
-            return;
-          }
-
           // LOGIN mode fallback when account isn't in local cache yet: query Firebase
           showBanner('Verifying ' + cFlag + ' ' + uname + '…', true);
 
-          await ensureFirebaseReady(500);
+          const cloudReady = await ensureFirebaseReady(12000);
+          let accountLookupComplete = false;
+          if (!cloudReady) throw new Error('cloud-unavailable');
           if (fbDb) {
             try {
-              const timeoutWindow = rec ? 500 : 800;
+              const timeoutWindow = 12000;
               const [rArt, rRoot, rPurgeArt, rPurgeRoot] = await withTimeout(
                 Promise.allSettled([
                   fbGetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname)),
@@ -2964,6 +2785,7 @@
               const snapPurgeArt = rPurgeArt && rPurgeArt.status === 'fulfilled' ? rPurgeArt.value : null;
               const snapPurgeRoot = rPurgeRoot && rPurgeRoot.status === 'fulfilled' ? rPurgeRoot.value : null;
 
+              accountLookupComplete = rArt.status === 'fulfilled' && rRoot.status === 'fulfilled';
               const inArt = Boolean(snapArt && snapArt.exists());
               const inRoot = Boolean(snapRoot && snapRoot.exists());
               const isPurgedInCloud = ((snapPurgeArt && snapPurgeArt.exists()) || (snapPurgeRoot && snapPurgeRoot.exists())) && !isRecentSignup(uname);
@@ -2995,10 +2817,14 @@
                 updateCloudSyncedColsForUser(uname, { artAcc: inArt, rootAcc: inRoot });
               }
             } catch (e) {
-              // Network timeout / offline fallback
+              console.warn('Account lookup unavailable', e);
             }
           }
 
+          if (!rec && !accountLookupComplete) {
+            showBanner('Could not verify this account online. Check your connection and try again.', false);
+            return;
+          }
           if (authMode === 'SIGNUP') {
             if (rec) {
               showBanner('Username already created', false);
@@ -3007,16 +2833,7 @@
             }
 
             // Creating a brand-new account
-            showBanner('✓ Account created for ' + cFlag + ' ' + uname + '! Entering Arena…', true);
-            stampRecentSignup(uname);
-            unmarkAccountPurgedLocal(uname);
-            unpurgeCloudAccount(uname).catch(() => {});
-
-            // Ensure fresh 1500 ELO stats on Sign Up
-            const worldMap = loadWorldwidePlayersMap();
-            delete worldMap[uname];
-            saveWorldwidePlayersMap(worldMap);
-
+            showBanner('Creating your account…', true);
             const profile = {
               username: uname,
               countryCode: dial,
@@ -3027,6 +2844,26 @@
               pin5: pin5,
               createdAt: new Date().toISOString()
             };
+            const registered = await ensureUserRegisteredInFirebaseAuth(uname, pin5, true);
+            if (!registered || registered.isAnonymous) throw new Error('cloud-unavailable');
+            profile.firebaseUid = registered.uid;
+            await fbRunTransaction(fbDb, async transaction => {
+              const ref = fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', uname);
+              const snapshot = await transaction.get(ref);
+              if (snapshot.exists() && snapshot.data().firebaseUid !== registered.uid) {
+                const error = new Error('Username already registered');
+                error.code = 'auth/email-already-in-use';
+                throw error;
+              }
+              const publicProfile = { ...profile };
+              delete publicProfile.pin5;
+              transaction.set(ref, publicProfile);
+            });
+            const saved = await pushAccountToFirebase(profile, registered);
+            if (!saved) throw new Error('profile-save-failed');
+            stampRecentSignup(uname);
+            unmarkAccountPurgedLocal(uname);
+            unpurgeCloudAccount(uname).catch(() => {});
             usersMap = loadEncryptedUsersMap();
             usersMap[uname] = profile;
             saveEncryptedUsersMap(usersMap);
@@ -3045,6 +2882,10 @@
             return;
           }
 
+          if (rec.authProvider === 'google' || rec.googleUid) {
+            showBanner('This player uses Google. Select Continue with Google to sign in.', false);
+            return;
+          }
           if (!rec.encryptedAuth || !verifyUserCredentials(rec, dial, pin5)) {
             showBanner('Username or password is wrong', false);
             setAuthBusy(false);
@@ -3058,7 +2899,8 @@
 
         } catch (e) {
           console.warn('Auth submit error', e);
-          showBanner('Something went wrong. Please try again.', false);
+          showBanner(e.code === 'auth/email-already-in-use' ? 'This username is already registered. Choose Login.' : 'Could not finish signing in online. Check your connection and try again.', false);
+        } finally {
           setAuthBusy(false);
         }
       }
@@ -3093,15 +2935,13 @@
           }
         }
 
+        googleFlowActive = googlePending;
+        if (googlePending) setAuthBusy(true);
         initWorldwideLeaderboardHub();
         initFirebaseCore().then((ok) => { if (ok) checkRedirectResult(); });
 
         const usersMap = loadEncryptedUsersMap();
-        if (Object.keys(usersMap).length === 0) {
-          setMode('SIGNUP');
-        } else {
-          setMode('LOGIN');
-        }
+        setMode('LOGIN');
 
         if (removedParam) {
           showBanner('Username not found! That account was removed. You can create it again in the Sign Up option.', false);
@@ -3143,6 +2983,19 @@
         });
         el.selectAuthCountry.addEventListener('change', updateUIState);
         el.btnSubmitAuth.addEventListener('click', handleAuthSubmit);
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlRef = urlParams.get('ref') || urlParams.get('referral') || urlParams.get('invite');
+          if (urlRef) {
+            localStorage.setItem('oddandeven_pending_referral_code_v1', String(urlRef).trim().toUpperCase());
+            setMode('SIGNUP');
+          }
+          const savedRef = localStorage.getItem('oddandeven_pending_referral_code_v1');
+          const refEl = document.getElementById('inputAuthReferralCode');
+          if (savedRef && refEl) {
+            refEl.value = savedRef;
+          }
+        } catch (e) {}
         if (el.btnGoogleSignIn) {
           el.btnGoogleSignIn.addEventListener('click', () => { handleGoogleSignIn(); });
         }
@@ -3165,7 +3018,8 @@
         }
 
         el.btnContinueSession.addEventListener('click', () => navigateToHandCricketArena('?from=login&screen=PITCH'));
-        el.btnLogoutSessionHere.addEventListener('click', () => {
+        el.btnLogoutSessionHere.addEventListener('click', async () => {
+          if (fbAuth && window.__fbSignOutFn) await window.__fbSignOutFn(fbAuth).catch(() => {});
           try {
             sessionStorage.removeItem(SESSION_STORAGE_KEY);
             localStorage.removeItem(SESSION_STORAGE_KEY);
@@ -3177,16 +3031,6 @@
         });
 
         window.addEventListener('resize', updateUIState);
-
-        // Enter only submits from the form inputs (it used to fire from anywhere, e.g. while on the Google button).
-        [el.inputAuthUsername, el.inputAuthPin5].forEach((inp) => {
-          inp.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleAuthSubmit();
-            }
-          });
-        });
 
         updateUIState();
       }

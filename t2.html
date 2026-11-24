@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OddAndEven.in — Who will be the first ever Odd and Even champion on 7 nov</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0c12;
+      --card: #16151c;
+      --card-elev: #1d1b26;
+      --line: rgba(255,255,255,.09);
+      --lime: #a3d96c;
+      --amber: #f5b83d;
+      --cyan: #5ad1e6;
+      --rose: #fb7185;
+      --stub: 250px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: #f4f4f5; min-height: 100vh; overflow-x: hidden; line-height: 1.55; }
+    .font-brand { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+    .font-mono-num { font-family: 'JetBrains Mono', monospace; }
+    :focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; border-radius: 8px; }
+
+    /* mown-outfield stripes behind the hero */
+    .outfield {
+      background:
+        linear-gradient(180deg, transparent 55%, var(--bg) 100%),
+        repeating-linear-gradient(90deg, rgba(129,182,76,.07) 0 64px, transparent 64px 128px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* ticket */
+    .ticket { position: relative; display: grid; background: var(--card); border: 1px solid var(--line); border-radius: 22px; scroll-margin-top: 90px; }
+    .ticket-main { padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+    .stub { position: relative; background: var(--c); color: #0d0c12; padding: 24px 22px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; border-radius: 0 21px 21px 0; border-left: 2px dashed rgba(13,12,18,.35); }
+    .stub::before, .stub::after { content: ''; position: absolute; left: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
+    .stub::before { top: -12px; }
+    .stub::after { bottom: -12px; }
+    @media (min-width: 768px) { .ticket { grid-template-columns: 1fr var(--stub); } }
+    @media (max-width: 767px) {
+      .stub { border-radius: 0 0 21px 21px; border-left: 0; border-top: 2px dashed rgba(13,12,18,.35); }
+      .stub::before { left: -12px; top: -12px; }
+      .stub::after { left: auto; right: -12px; top: -12px; bottom: auto; }
+    }
+    .cd { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .cd div { background: rgba(13,12,18,.9); color: var(--c); border-radius: 10px; padding: 8px 0 6px; text-align: center; }
+    .cd b { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .cd span { font-size: 9px; letter-spacing: .08em; color: #a1a1aa; }
+    .cta { background: #0d0c12; color: #fff; font-weight: 800; font-size: .85rem; padding: 12px 16px; border-radius: 12px; width: 100%; transition: transform .12s ease, background .12s ease; }
+    .cta:hover:not(:disabled) { transform: translateY(-1px); background: #1d1b25; }
+    .cta:active:not(:disabled) { transform: translateY(1px); }
+    .cta:disabled { opacity: .55; cursor: not-allowed; }
+    .cta[data-joined="1"] { background: transparent; color: #0d0c12; box-shadow: inset 0 0 0 2px #0d0c12; }
+    .chip { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; background: rgba(255,255,255,.02); }
+    .chip small { display: block; font-size: 11px; color: #a1a1aa; }
+    .chip strong { font-size: .9rem; font-weight: 700; }
+
+    /* Main 4 Tournament Tabs */
+    .tourney-tab-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #a1a1aa;
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.08);
+      transition: all .18s ease;
+      cursor: pointer;
+    }
+    .tourney-tab-btn:hover {
+      color: #f4f4f5;
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.16);
+    }
+    .tourney-tab-btn.active {
+      color: #0d0c12;
+      background: linear-gradient(135deg, #f5b83d 0%, #a3d96c 100%);
+      border-color: transparent;
+      box-shadow: 0 8px 24px -6px rgba(163, 217, 108, 0.4);
+    }
+    .tourney-tab-btn.active .tab-pill {
+      background: rgba(13,12,18,.82);
+      color: #f5b83d;
+    }
+    .tab-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: #d4d4d8;
+    }
+
+    /* Bracket Cards & Tree */
+    .bracket-scroll {
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(163,217,108,.35) rgba(255,255,255,.04);
+    }
+    .fixture-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+    }
+    .fixture-card:hover {
+      border-color: rgba(255,255,255,.22);
+      transform: translateY(-1px);
+    }
+    .fixture-card.wb-card { border-left: 3px solid var(--lime); }
+    .fixture-card.lb-card { border-left: 3px solid var(--amber); }
+    .fixture-card.gf-card { border-left: 3px solid var(--cyan); }
+
+    .slot-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      font-size: 0.8rem;
+      transition: all .15s ease;
+    }
+    .slot-row.slot-winner {
+      background: rgba(163, 217, 108, 0.14);
+      border-color: rgba(163, 217, 108, 0.45);
+      color: #ecfccb;
+    }
+    .slot-row.slot-loser {
+      background: rgba(245, 184, 61, 0.08);
+      border-color: rgba(245, 184, 61, 0.25);
+      color: #a1a1aa;
+    }
+    .slot-row.slot-eliminated {
+      background: rgba(251, 113, 133, 0.08);
+      border-color: rgba(251, 113, 133, 0.25);
+      color: #fda4af;
+      text-decoration: line-through;
+    }
+
+    #toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 24px); opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 60; max-width: min(92vw, 460px); }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+    /* Exact 6-Column Tournament Bracket Tree (Round of 32 -> Champion) */
+    .bracket-tree-shell {
+      background: #111017;
+      border: 1px solid rgba(163, 217, 108, 0.28);
+      border-radius: 20px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.55);
+    }
+    .ascii-bracket-pre {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.38;
+      color: #e4e4e7;
+      white-space: pre;
+      margin: 0;
+      user-select: text;
+      letter-spacing: 0;
+    }
+    .ascii-bracket-pre .br-hdr-main {
+      color: #a3d96c;
+      font-weight: 800;
+    }
+    .ascii-bracket-pre .br-hdr-sub {
+      color: #f5b83d;
+      font-weight: 700;
+    }
+    .ascii-bracket-pre .br-rule {
+      color: rgba(255, 255, 255, 0.26);
+    }
+    .br-node-btn {
+      display: inline;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      padding: 0 2px;
+      margin: 0 -2px;
+      border-radius: 4px;
+      border: 0;
+      background: transparent;
+      color: #f4f4f5;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.14s ease, color 0.14s ease;
+    }
+    .br-node-btn:hover {
+      background: rgba(163, 217, 108, 0.22);
+      color: #a3d96c;
+    }
+    .br-node-btn.br-team {
+      color: #5ad1e6;
+    }
+    .br-node-btn.br-r1 {
+      color: #a3d96c;
+    }
+    .br-node-btn.br-r2 {
+      color: #f5b83d;
+    }
+    .br-node-btn.br-r3 {
+      color: #c084fc;
+    }
+    .br-node-btn.br-r4 {
+      color: #fb7185;
+    }
+    .br-node-btn.br-champ {
+      color: #fde047;
+      background: rgba(250, 204, 21, 0.14);
+      padding: 1px 5px;
+      border: 1px solid rgba(250, 204, 21, 0.35);
+    }
+    .br-node-btn.br-decided {
+      background: rgba(163, 217, 108, 0.2);
+      color: #ecfccb;
+      box-shadow: 0 0 0 1px rgba(163, 217, 108, 0.45);
+    }
+
+    /* Visual 6-Column Interactive Bracket Grid (Wide Screen Layout) */
+    .visual-tree-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(235px, 1fr));
+      gap: 14px;
+      width: 100%;
+      min-width: 1480px;
+      align-items: stretch;
+    }
+    .vt-col {
+      display: flex;
+      flex-direction: column;
+      padding: 0 4px;
+      position: relative;
+    }
+    .vt-col-hdr {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    .vt-col-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      gap: 12px;
+    }
+    .vt-pair {
+      position: relative;
+      background: #16151c;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-left: 4px solid var(--lime);
+      border-radius: 12px;
+      padding: 9px 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      transition: transform 0.14s ease, border-color 0.14s ease;
+    }
+    .vt-pair:hover {
+      border-color: rgba(255,255,255,0.26);
+      transform: translateY(-1px);
+    }
+    .vt-pair::after {
+      content: '───┐';
+      position: absolute;
+      right: -17px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(163, 217, 108, 0.65);
+      pointer-events: none;
+    }
+    .vt-pair.vt-lb-pair::after {
+      color: rgba(245, 184, 61, 0.65);
+    }
+    .vt-col:last-child .vt-pair::after {
+      display: none;
+    }
+    .vt-slot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.14s ease;
+    }
+    .vt-slot:hover {
+      background: rgba(163, 217, 108, 0.16);
+      border-color: rgba(163, 217, 108, 0.4);
+    }
+    .vt-slot.vt-picked {
+      background: rgba(163, 217, 108, 0.22);
+      border-color: rgba(163, 217, 108, 0.55);
+      color: #ecfccb;
+      font-weight: 800;
+    }
+    .vt-slot.vt-dropped {
+      background: rgba(245, 184, 61, 0.08);
+      border-color: rgba(245, 184, 61, 0.25);
+      color: #a1a1aa;
+    }
+    .vt-slot.vt-eliminated {
+      background: rgba(251, 113, 133, 0.08);
+      border-color: rgba(251, 113, 133, 0.25);
+      color: #fda4af;
+      text-decoration: line-through;
+    }
+  </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
+</head>
+<body class="flex flex-col">
+
+  <!-- TOP SITE HEADER -->
+  <header class="w-full bg-[#0d0c12]/90 border-b border-white/10 px-4 sm:px-8 py-3.5 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-[1860px] w-full mx-auto flex items-center justify-between gap-3">
+      <a href="hand_cricket.html" class="flex items-center gap-3" aria-label="OddAndEven.in Arena">
+        <span class="w-10 h-10 rounded-xl bg-[#16151c] border border-white/10 flex items-center justify-center text-lg">🏏</span>
+        <span class="font-brand font-bold text-lg tracking-tight leading-none">
+          <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span><span class="font-mono-num text-xs text-[#a3d96c]">.in</span>
+          <span class="block text-[11px] font-sans font-medium text-zinc-400 mt-1">Events &amp; Double-Elimination Championship</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-2 flex-wrap justify-end" aria-label="Site">
+        <span id="navPlayerBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-[#16151c] text-emerald-300 border border-white/10"></span>
+        <a href="t1.html" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition shadow flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span><span>📺 Live Spectator (t1.html)</span></a>
+        <a href="hand_cricket.html" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 transition shadow">🏏 Play Arena</a>
+        <a href="mobile.html" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#81b64c]/15 hover:bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/35 transition">Mobile Arena</a>
+        <a href="index.html" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/10 transition">Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- TOURNAMENT HEADER + DATE ARRIVAL BAR + FIRST FOUR TABS (HOME, GAMES, RESULTS, SCHEDULE) -->
+  <section class="outfield">
+    <div class="max-w-[1860px] w-full mx-auto px-4 sm:px-8 pt-8 pb-8 space-y-6">
+
+      <!-- Date Arrival Status Banner + Mode Switcher -->
+      <div class="rounded-2xl border border-amber-400/30 bg-[#16151c]/95 p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <div id="portalStatusDot" class="w-11 h-11 rounded-2xl bg-amber-400/15 border border-amber-400/40 flex items-center justify-center text-xl shrink-0">🏆</div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="portalGateBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 TOURNAMENT PORTAL OPEN</span>
+              <span class="font-mono-num text-xs font-bold text-amber-300">7 NOV 2026 · 7:00 PM IST</span>
+              <span class="font-mono-num text-[11px] text-zinc-400 hidden sm:inline">· 16 Online Slots · 32 Playable Matches · Double Elimination</span>
+            </div>
+            <h1 id="tournamentMainTitle" class="font-brand text-2xl sm:text-4xl font-extrabold tracking-tight text-white mt-1">
+              Who will be the first ever Odd and Even champion on 7 nov
+            </h1>
+            <p class="text-xs sm:text-sm text-zinc-400 mt-1">
+              16-Player Double Elimination Online Fixtures (No Hardcoded Players) — <span class="text-[#a3d96c] font-semibold">1st Loss drops to Losers Bracket</span> · <span class="text-amber-300 font-semibold">Winner advances in Winners Bracket</span> · <span class="text-cyan-300 font-semibold">32 Playable Matches</span>.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button id="toggleDateArrivalBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-mono-num font-extrabold bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/40 transition flex items-center gap-2">
+            <span id="toggleDateIcon">⚡</span>
+            <span id="toggleDateLabel">Mode: Tournament Open (7 Nov Live)</span>
+          </button>
+          <a href="t1.html" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 transition">
+            📺 Spectate Live Split-Screen
+          </a>
+        </div>
+      </div>
+
+      <!-- FIRST FOUR TABS: HOME, GAMES, RESULTS, SCHEDULE -->
+      <div id="tournamentTabsHeader" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+        <div class="flex items-center gap-2.5 flex-wrap" role="tablist" aria-label="Tournament Navigation Tabs">
+          <button type="button" role="tab" aria-selected="false" data-tab="home" class="tourney-tab-btn">
+            <span>🏠 Home</span>
+            <span class="tab-pill">Overview</span>
+          </button>
+          <button type="button" role="tab" aria-selected="true" data-tab="games" class="tourney-tab-btn active">
+            <span>🎮 Games</span>
+            <span class="tab-pill" id="gamesTabPill">32 Fixtures</span>
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-tab="results" class="tourney-tab-btn">
+            <span>📊 Results</span>
+            <span class="tab-pill" id="resultsTabPill">0/32 Done</span>
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-tab="schedule" class="tourney-tab-btn">
+            <span>🗓️ Schedule</span>
+            <span class="tab-pill">11 Waves</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs font-mono-num text-zinc-400">
+          <span class="px-3 py-1.5 rounded-xl bg-[#16151c] border border-white/10">
+            Online Slots: <strong class="text-white">16 (TBD Fixtures)</strong>
+          </span>
+          <span class="px-3 py-1.5 rounded-xl bg-[#16151c] border border-white/10">
+            Playable Matches: <strong class="text-[#a3d96c]" id="headerResolvedCount">0 / 32</strong>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MAIN TOURNAMENT PORTAL CONTENT -->
+  <main class="max-w-[1860px] w-full mx-auto w-full flex-1 px-4 sm:px-8 py-8 space-y-8">
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: HOME (Tournament Overview, Countdown Ticket, Double-Elim Rules) -->
+    <!-- ===================================================================== -->
+    <section id="tab-panel-home" data-tab-panel="home" class="hidden space-y-8">
+
+      <!-- Quick KPI Summary Row -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="rounded-2xl border border-white/10 bg-[#16151c] p-4">
+          <span class="text-[11px] font-mono-num uppercase tracking-wider text-zinc-400">Format &amp; Seeding</span>
+          <div class="font-brand text-2xl font-extrabold text-white mt-1">16 Online Slots</div>
+          <p class="text-xs text-zinc-400 mt-1">Pure online fixture slots (#1–#16), no pre-filled players</p>
+        </div>
+        <div class="rounded-2xl border border-[#a3d96c]/30 bg-[#16151c] p-4">
+          <span class="text-[11px] font-mono-num uppercase tracking-wider text-[#a3d96c]">Winners Bracket</span>
+          <div class="font-brand text-2xl font-extrabold text-[#a3d96c] mt-1">15 Matches</div>
+          <p class="text-xs text-zinc-400 mt-1">Winner stays in Winners Bracket; 1st loss drops to Losers</p>
+        </div>
+        <div class="rounded-2xl border border-amber-400/30 bg-[#16151c] p-4">
+          <span class="text-[11px] font-mono-num uppercase tracking-wider text-amber-300">Losers Bracket</span>
+          <div class="font-brand text-2xl font-extrabold text-amber-300 mt-1">14 Matches</div>
+          <p class="text-xs text-zinc-400 mt-1">Second-chance survival gauntlet across 6 rounds</p>
+        </div>
+        <div class="rounded-2xl border border-cyan-400/30 bg-[#16151c] p-4">
+          <span class="text-[11px] font-mono-num uppercase tracking-wider text-cyan-300">Finals &amp; Total</span>
+          <div class="font-brand text-2xl font-extrabold text-cyan-300 mt-1">32 Playable</div>
+          <p class="text-xs text-zinc-400 mt-1">Includes 3rd Place (M30), Grand Final (M31) &amp; Reset (M32)</p>
+        </div>
+      </div>
+
+      <!-- Original Official Tournament Ticket + Registration + Countdown -->
+      <article id="solo" class="ticket" style="--c: var(--amber)" data-event="solo">
+        <div class="ticket-main">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono-num text-xs font-bold" style="color:var(--c)">Championship · 16-Player Double Elimination (32 Matches)</span>
+            <span class="js-state px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border"></span>
+          </div>
+          <div class="space-y-2">
+            <h2 class="font-brand text-2xl sm:text-3xl font-bold tracking-tight">Who will be the first ever Odd and Even champion on 7 nov</h2>
+            <p class="text-sm text-zinc-400 max-w-2xl">
+              Step up to the inaugural championship on 7 November! Compete across 32 high-stakes online fixtures in a 16-player Double Elimination bracket. Your first loss moves you to the Losers Bracket while winners advance through the Winners Bracket. Outwit your opponents, raise the special champion crown, and claim your place in the Hall of Fame with 2000 XPs.
+            </p>
+          </div>
+          <div class="grid sm:grid-cols-3 gap-3 mt-auto">
+            <div class="chip"><small>Format</small><strong>16-Player Double Elimination (32 Matches)</strong></div>
+            <div class="chip"><small>Tournament Date</small><strong>7 November 2026 · 7:00 PM IST</strong></div>
+            <div class="chip"><small>Prize</small><strong style="color:var(--c)">Special champion crown and hall of frame with 2000 XPs</strong></div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 pt-2">
+            <button type="button" data-goto-tab="games" class="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-[#a3d96c] hover:bg-[#b5e682] text-slate-950 transition shadow">
+              🎮 View 32 Double-Elimination Games →
+            </button>
+            <button type="button" data-goto-tab="results" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 transition">
+              📊 Open Match Results (32)
+            </button>
+            <button type="button" data-goto-tab="schedule" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 transition">
+              🗓️ Full 32-Match Schedule
+            </button>
+          </div>
+        </div>
+        <div class="stub">
+          <div>
+            <div class="font-mono-num text-xs font-bold opacity-70"><span class="js-wd"></span> · <span class="js-time"></span></div>
+            <div class="font-brand text-5xl font-bold leading-none mt-1"><span class="js-day"></span> <span class="js-mon text-3xl"></span></div>
+          </div>
+          <div class="cd" role="timer" aria-label="Time until kickoff"><div><b class="js-d">--</b><span>DAYS</span></div><div><b class="js-h">--</b><span>HRS</span></div><div><b class="js-m">--</b><span>MIN</span></div><div><b class="js-s">--</b><span>SEC</span></div></div>
+          <button type="button" class="cta js-join">Register for tournament</button>
+          <a href="t1.html" class="mt-1.5 inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 rounded-xl font-extrabold text-xs bg-[#16151c] hover:bg-[#22202c] text-[#a3d96c] border border-[#0d0c12]/40 transition shadow text-center">📺 Watch Live Split-Screen (t1.html) →</a>
+        </div>
+      </article>
+
+      <!-- Double Elimination Architecture & Season Calendar Grid -->
+      <div class="grid lg:grid-cols-[1.35fr_1fr] gap-6">
+        <div class="rounded-2xl border border-white/10 bg-[#16151c] p-6 space-y-4">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <h3 class="font-brand text-lg font-bold text-white">⚡ How the 16-Player Double Elimination (32 Matches) Works</h3>
+            <span class="font-mono-num text-[11px] px-2.5 py-1 rounded-lg bg-white/5 text-amber-300 border border-white/10">Online Fixtures Only · No Fixed Players</span>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3.5 text-xs text-zinc-300">
+            <div class="p-3.5 rounded-xl bg-white/[0.02] border border-[#a3d96c]/25 space-y-1.5">
+              <div class="font-mono-num font-bold text-[#a3d96c]">1. WINNERS BRACKET (15 MATCHES)</div>
+              <p class="text-zinc-400">All 16 online slots start in <strong>Winners Round 1 (M1–M8)</strong>. Winners stay in the Winners Bracket through Quarterfinals (<strong>M13–M16</strong>), Semifinals (<strong>M21–M22</strong>), and the Winners Final (<strong>M27</strong>).</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/[0.02] border border-amber-400/25 space-y-1.5">
+              <div class="font-mono-num font-bold text-amber-300">2. FIRST LOSS → LOSERS BRACKET (14 MATCHES)</div>
+              <p class="text-zinc-400">The <strong>first time an online contender loses</strong> in the Winners Bracket, they are not eliminated—they drop into the <strong>Losers Bracket (M9–M12, M17–M20, M23–M26, M28–M29)</strong>.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/[0.02] border border-rose-400/25 space-y-1.5">
+              <div class="font-mono-num font-bold text-rose-300">3. SECOND LOSS ELIMINATION &amp; PODIUM (M30)</div>
+              <p class="text-zinc-400">Any contender suffering a loss inside the Losers Bracket is eliminated upon their 2nd tournament defeat. The final two Losers Bracket contenders contest <strong>Match #30 (3rd Place Podium Decider)</strong>.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/[0.02] border border-cyan-400/25 space-y-1.5">
+              <div class="font-mono-num font-bold text-cyan-300">4. GRAND FINAL &amp; BRACKET RESET (M31 &amp; M32)</div>
+              <p class="text-zinc-400">The undefeated Winners Champion faces the Losers Champion in <strong>M31 (Grand Final)</strong>. If the Losers Champion wins M31 (giving the WB Champ their 1st loss), <strong>M32 (Bracket Reset)</strong> decides the title!</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="rounded-2xl border border-white/10 bg-[#16151c] p-6 flex flex-col justify-between gap-4" aria-label="Season calendar">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-brand font-bold text-base text-white">🗓️ Season Calendar &amp; Quick Access</h3>
+              <a href="hand_cricket.html?screen=events" class="text-[11px] font-mono-num font-bold text-[#a3d96c] hover:underline">← Arena Events</a>
+            </div>
+            <ol id="calendar" class="divide-y divide-white/10"></ol>
+          </div>
+
+          <div class="rounded-xl bg-[#0d0c12] border border-white/10 p-4 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Online Fixture Slots</span>
+              <span class="font-mono-num font-bold text-white">Online Slot #1 – #16</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Player Assignment</span>
+              <span class="font-mono-num font-bold text-amber-300">Dynamic Online Fixtures Only</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Total Playable Matches</span>
+              <span class="font-mono-num font-bold text-[#a3d96c]">32 Matches (M1 – M32)</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: GAMES (Exact Tournament Bracket Tree + 32 Online Fixtures)     -->
+    <!-- ===================================================================== -->
+    <section id="tab-panel-games" data-tab-panel="games" class="space-y-6">
+
+      <!-- 6-COLUMN VISUAL CARD TREE ONLY (WIDE SCREEN) -->
+      <div id="visualSixColTreeSection" class="rounded-2xl border border-cyan-400/30 bg-[#16151c]/95 p-4 sm:p-6 space-y-6 shadow-2xl">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-white/10 pb-4">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2.5 py-0.5 rounded-md text-[11px] font-mono-num font-extrabold bg-[#a3d96c]/15 text-[#a3d96c] border border-[#a3d96c]/35">6-COLUMN VISUAL CARD TREE · 16 PLAYERS (32 MATCHES)</span>
+              <span class="font-mono-num text-xs text-zinc-400">Col 1: 8 Matches (16 Players) · Beside (Cols 2–6): Winner Bracket &amp; Finals · Below: Loser Bracket</span>
+            </div>
+            <h2 class="font-brand text-xl sm:text-2xl font-extrabold text-white mt-1">
+              16-Player Double Elimination — 6-Column Visual Card Tree
+            </h2>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <div id="championBannerMini" class="px-3.5 py-2 rounded-xl text-xs font-mono-num font-bold bg-[#0d0c12] border border-amber-400/30 text-zinc-300">
+              👑 CHAMPION: <strong id="championSlotLabel" class="text-amber-300">TBD</strong>
+            </div>
+            <button type="button" id="btnSimulateNextWave" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#a3d96c] hover:bg-[#b4e680] text-slate-950 transition shadow">
+              ⚡ Resolve Next Round
+            </button>
+            <button type="button" id="btnSimulateAll32" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 transition">
+              🎲 Auto-Simulate All 32
+            </button>
+            <button type="button" id="btnResetBracket" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-white/10 transition">
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- UPPER 6-COLUMN VISUAL CARD TREE: COL 1 = 8 MATCHES (16 PLAYERS) | BESIDE (COLS 2-6) = WINNER BRACKET & CHAMPION -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between gap-2 flex-wrap px-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-extrabold bg-[#a3d96c]/15 text-[#a3d96c] border border-[#a3d96c]/35">🟢 UPPER 6-COLUMN TREE</span>
+              <span class="font-brand text-sm sm:text-base font-bold text-white">First: 8 Opening Matches (16 Players) → Beside: Winner Bracket (Quarterfinals, Semifinals, WB Final, Grand Finals &amp; Champion)</span>
+            </div>
+            <span class="font-mono-num text-xs text-zinc-400">Click any player/slot card to pick winner · Winner advances right → · 1st Loss drops to Loser Bracket below ↓</span>
+          </div>
+          <div class="bracket-scroll">
+            <div id="visualSixColGrid" class="visual-tree-grid"></div>
+          </div>
+        </div>
+
+        <!-- LOWER 6-COLUMN VISUAL CARD TREE (BELOW): LOSER BRACKET (6 COLUMNS) -->
+        <div class="space-y-3 pt-4 border-t border-white/10">
+          <div class="flex items-center justify-between gap-2 flex-wrap px-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono-num font-extrabold bg-amber-400/15 text-amber-300 border border-amber-400/35">🟡 LOSER BRACKET (BELOW)</span>
+              <span class="font-brand text-sm sm:text-base font-bold text-white">Below: 6-Column Loser Bracket Card Tree (1st-Loss Contenders Fight Back to Grand Final)</span>
+            </div>
+            <span class="font-mono-num text-xs text-amber-300/90">1st Loss from Opening 8 Matches &amp; Winner Bracket drops here · 2nd Loss = Eliminated</span>
+          </div>
+          <div class="bracket-scroll">
+            <div id="visualLoserSixColGrid" class="visual-tree-grid"></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: RESULTS (32-Match Results & Winner/Loser Routing Ledger)       -->
+    <!-- ===================================================================== -->
+    <section id="tab-panel-results" data-tab-panel="results" class="hidden space-y-6">
+
+      <div class="rounded-2xl border border-white/10 bg-[#16151c] p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <span class="font-mono-num text-xs font-bold text-[#a3d96c]">OFFICIAL TOURNAMENT LEDGER · 32 PLAYABLE MATCHES</span>
+          <h2 class="font-brand text-xl sm:text-2xl font-bold text-white mt-0.5">Match Results &amp; Double-Elimination Routing</h2>
+          <p class="text-xs text-zinc-400">
+            Tracks every completed and pending online fixture across all 32 matches, showing which slot advanced in the Winners Bracket and which slot dropped to the Losers Bracket.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap" id="resultsFilterBar">
+          <button type="button" data-res-filter="all" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-[#a3d96c] text-slate-950">All (32)</button>
+          <button type="button" data-res-filter="completed" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-zinc-300 border border-white/10">Completed</button>
+          <button type="button" data-res-filter="pending" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-zinc-300 border border-white/10">Pending</button>
+          <button type="button" data-res-filter="WB" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-[#a3d96c] border border-white/10">Winners Bracket</button>
+          <button type="button" data-res-filter="LB" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-amber-300 border border-white/10">Losers Bracket</button>
+        </div>
+      </div>
+
+      <!-- Summary Counters -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="rounded-xl bg-[#16151c] border border-white/10 p-3.5">
+          <div class="text-[11px] font-mono-num text-zinc-400">Completed Matches</div>
+          <div id="resStatCompleted" class="font-brand text-2xl font-bold text-[#a3d96c] mt-0.5">0 / 32</div>
+        </div>
+        <div class="rounded-xl bg-[#16151c] border border-white/10 p-3.5">
+          <div class="text-[11px] font-mono-num text-zinc-400">Pending Online Fixtures</div>
+          <div id="resStatPending" class="font-brand text-2xl font-bold text-amber-300 mt-0.5">32 / 32</div>
+        </div>
+        <div class="rounded-xl bg-[#16151c] border border-white/10 p-3.5">
+          <div class="text-[11px] font-mono-num text-zinc-400">Sent to Losers Bracket</div>
+          <div id="resStatDropped" class="font-brand text-2xl font-bold text-cyan-300 mt-0.5">0 Slots</div>
+        </div>
+        <div class="rounded-xl bg-[#16151c] border border-white/10 p-3.5">
+          <div class="text-[11px] font-mono-num text-zinc-400">Eliminated (2 Losses)</div>
+          <div id="resStatEliminated" class="font-brand text-2xl font-bold text-rose-300 mt-0.5">0 Slots</div>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="rounded-2xl border border-white/10 bg-[#16151c] overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-white/10 bg-white/[0.03] font-mono-num text-[11px] uppercase text-zinc-400">
+                <th class="py-3.5 px-4">Match</th>
+                <th class="py-3.5 px-4">Bracket &amp; Stage</th>
+                <th class="py-3.5 px-4">Online Fixture (No Players)</th>
+                <th class="py-3.5 px-4">Score / Status</th>
+                <th class="py-3.5 px-4">Winner Routing (Advances)</th>
+                <th class="py-3.5 px-4">Loser Routing (Losers Bracket / Out)</th>
+                <th class="py-3.5 px-4 text-right">Quick Action</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody" class="divide-y divide-white/10"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: SCHEDULE (Full Chronological 32-Match Schedule on 7 Nov 2026)  -->
+    <!-- ===================================================================== -->
+    <section id="tab-panel-schedule" data-tab-panel="schedule" class="hidden space-y-6">
+
+      <div class="rounded-2xl border border-white/10 bg-[#16151c] p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <span class="font-mono-num text-xs font-bold text-amber-300">7 NOVEMBER 2026 · 7:00 PM TO 11:15 PM IST · 11 WAVES</span>
+          <h2 class="font-brand text-xl sm:text-2xl font-bold text-white mt-0.5">Official 32-Match Double Elimination Schedule</h2>
+          <p class="text-xs text-zinc-400">
+            Synchronized online room waves from Match #1 (Winners Round 1) through Match #32 (Grand Final Bracket Reset). All times in IST.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap" id="scheduleFilterBar">
+          <button type="button" data-sched-filter="all" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-amber-400 text-slate-950">All 11 Waves (32 Matches)</button>
+          <button type="button" data-sched-filter="WB" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-[#a3d96c] border border-white/10">Winners Waves (15)</button>
+          <button type="button" data-sched-filter="LB" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-amber-300 border border-white/10">Losers Waves (14)</button>
+          <button type="button" data-sched-filter="GF" class="px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-cyan-300 border border-white/10">Finals Waves (3)</button>
+        </div>
+      </div>
+
+      <div id="scheduleWavesContainer" class="space-y-4"></div>
+
+    </section>
+
+  </main>
+
+  <div id="toast" class="rounded-2xl bg-[#1d1b25] border border-white/15 px-4 py-3 text-sm shadow-2xl" role="status" aria-live="polite"></div>
+
+  <footer class="w-full border-t border-white/10 px-4 sm:px-8 py-4 mt-auto">
+    <div class="max-w-[1860px] w-full mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
+      <span><span class="font-brand font-bold text-zinc-300">OddAndEven.in</span> — 16-Player Double Elimination Championship Hub (32 Matches)</span>
+      <span class="font-mono-num text-[11px] text-[#a3d96c]">All times in IST · Online Fixtures Only</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ---- TOURNAMENT METADATA ----
+      const EVENTS = [
+        {
+          id: 'solo',
+          name: 'Who will be the first ever Odd and Even champion on 7 nov',
+          color: 'var(--amber)',
+          start: '2026-11-07T19:00:00+05:30',
+          closes: '2026-11-05T23:59:00+05:30',
+          ctaDefault: 'Register for tournament',
+          joined: "You're registered for the tournament! Bracket spot saved. Warm up in the Arena."
+        }
+      ];
+
+      const SESSION_KEY = 'oddandeven_active_session_v1';
+      const SIGNED_OUT_KEY = 'oddandeven_signed_out_v1';
+      const REG_KEY = 'oddandeven_event_regs_v1';
+      const REG_MAP_KEY = 'oddandeven_event_regs_map_v1';
+      const BRACKET_STATE_KEY = 'oddandeven_t2_de32_fixtures_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+      const TZ = 'Asia/Kolkata';
+      const $ = (sel, root) => (root || document).querySelector(sel);
+      const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+      // ---- 32 PLAYABLE MATCHES: 16-PLAYER DOUBLE ELIMINATION BLUEPRINT ----
+      // Pure Online Fixtures (No hardcoded player names — only Online Slot #1..#16 and Winner/Loser references)
+      const INITIAL_FIXTURES = [
+        // ================= WINNERS BRACKET ROUND 1 (8 Matches: M1 - M8) =================
+        {
+          id: 1, code: 'M1', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:00 PM IST', room: 'OAE-DE-01',
+          defaultA: '[Player 1] (Slot #1)', defaultB: '[Player 2] (Slot #2)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 13, slot: 'A', label: 'Advances to M13 (Winners QF 1)' },
+          loseNext: { matchId: 9, slot: 'A', label: 'Drops to M9 (Losers Round 1)' }
+        },
+        {
+          id: 2, code: 'M2', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:00 PM IST', room: 'OAE-DE-02',
+          defaultA: '[Player 3] (Slot #3)', defaultB: '[Player 4] (Slot #4)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 13, slot: 'B', label: 'Advances to M13 (Winners QF 1)' },
+          loseNext: { matchId: 9, slot: 'B', label: 'Drops to M9 (Losers Round 1)' }
+        },
+        {
+          id: 3, code: 'M3', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:00 PM IST', room: 'OAE-DE-03',
+          defaultA: '[Player 5] (Slot #5)', defaultB: '[Player 6] (Slot #6)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 14, slot: 'A', label: 'Advances to M14 (Winners QF 2)' },
+          loseNext: { matchId: 10, slot: 'A', label: 'Drops to M10 (Losers Round 1)' }
+        },
+        {
+          id: 4, code: 'M4', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:00 PM IST', room: 'OAE-DE-04',
+          defaultA: '[Player 7] (Slot #7)', defaultB: '[Player 8] (Slot #8)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 14, slot: 'B', label: 'Advances to M14 (Winners QF 2)' },
+          loseNext: { matchId: 10, slot: 'B', label: 'Drops to M10 (Losers Round 1)' }
+        },
+        {
+          id: 5, code: 'M5', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:10 PM IST', room: 'OAE-DE-05',
+          defaultA: '[Player 9] (Slot #9)', defaultB: '[Player 10] (Slot #10)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 15, slot: 'A', label: 'Advances to M15 (Winners QF 3)' },
+          loseNext: { matchId: 11, slot: 'A', label: 'Drops to M11 (Losers Round 1)' }
+        },
+        {
+          id: 6, code: 'M6', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:10 PM IST', room: 'OAE-DE-06',
+          defaultA: '[Player 11] (Slot #11)', defaultB: '[Player 12] (Slot #12)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 15, slot: 'B', label: 'Advances to M15 (Winners QF 3)' },
+          loseNext: { matchId: 11, slot: 'B', label: 'Drops to M11 (Losers Round 1)' }
+        },
+        {
+          id: 7, code: 'M7', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:10 PM IST', room: 'OAE-DE-07',
+          defaultA: '[Player 13] (Slot #13)', defaultB: '[Player 14] (Slot #14)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 16, slot: 'A', label: 'Advances to M16 (Winners QF 4)' },
+          loseNext: { matchId: 12, slot: 'A', label: 'Drops to M12 (Losers Round 1)' }
+        },
+        {
+          id: 8, code: 'M8', bracket: 'WB', roundCode: 'WB-R1', roundName: 'Winners Round 1 (Round of 16)',
+          wave: 1, timeIst: '7:10 PM IST', room: 'OAE-DE-08',
+          defaultA: '[Player 15] (Slot #15)', defaultB: '[Player 16] (Slot #16)',
+          sourceA: null, sourceB: null,
+          winNext: { matchId: 16, slot: 'B', label: 'Advances to M16 (Winners QF 4)' },
+          loseNext: { matchId: 12, slot: 'B', label: 'Drops to M12 (Losers Round 1)' }
+        },
+
+        // ================= LOSERS BRACKET ROUND 1 (4 Matches: M9 - M12) =================
+        {
+          id: 9, code: 'M9', bracket: 'LB', roundCode: 'LB-R1', roundName: 'Losers Round 1 (1st-Loss Survival)',
+          wave: 2, timeIst: '7:30 PM IST', room: 'OAE-DE-09',
+          defaultA: 'Loser of M1 (WB R1)', defaultB: 'Loser of M2 (WB R1)',
+          sourceA: { matchId: 1, type: 'loser' }, sourceB: { matchId: 2, type: 'loser' },
+          winNext: { matchId: 17, slot: 'A', label: 'Advances to M17 (Losers Round 2)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 13th–16th)' }
+        },
+        {
+          id: 10, code: 'M10', bracket: 'LB', roundCode: 'LB-R1', roundName: 'Losers Round 1 (1st-Loss Survival)',
+          wave: 2, timeIst: '7:30 PM IST', room: 'OAE-DE-10',
+          defaultA: 'Loser of M3 (WB R1)', defaultB: 'Loser of M4 (WB R1)',
+          sourceA: { matchId: 3, type: 'loser' }, sourceB: { matchId: 4, type: 'loser' },
+          winNext: { matchId: 18, slot: 'A', label: 'Advances to M18 (Losers Round 2)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 13th–16th)' }
+        },
+        {
+          id: 11, code: 'M11', bracket: 'LB', roundCode: 'LB-R1', roundName: 'Losers Round 1 (1st-Loss Survival)',
+          wave: 2, timeIst: '7:30 PM IST', room: 'OAE-DE-11',
+          defaultA: 'Loser of M5 (WB R1)', defaultB: 'Loser of M6 (WB R1)',
+          sourceA: { matchId: 5, type: 'loser' }, sourceB: { matchId: 6, type: 'loser' },
+          winNext: { matchId: 19, slot: 'A', label: 'Advances to M19 (Losers Round 2)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 13th–16th)' }
+        },
+        {
+          id: 12, code: 'M12', bracket: 'LB', roundCode: 'LB-R1', roundName: 'Losers Round 1 (1st-Loss Survival)',
+          wave: 2, timeIst: '7:30 PM IST', room: 'OAE-DE-12',
+          defaultA: 'Loser of M7 (WB R1)', defaultB: 'Loser of M8 (WB R1)',
+          sourceA: { matchId: 7, type: 'loser' }, sourceB: { matchId: 8, type: 'loser' },
+          winNext: { matchId: 20, slot: 'A', label: 'Advances to M20 (Losers Round 2)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 13th–16th)' }
+        },
+
+        // ================= WINNERS BRACKET QUARTERFINALS (4 Matches: M13 - M16) =================
+        {
+          id: 13, code: 'M13', bracket: 'WB', roundCode: 'WB-QF', roundName: 'Winners Quarterfinals',
+          wave: 3, timeIst: '7:55 PM IST', room: 'OAE-DE-13',
+          defaultA: 'Winner of M1', defaultB: 'Winner of M2',
+          sourceA: { matchId: 1, type: 'winner' }, sourceB: { matchId: 2, type: 'winner' },
+          winNext: { matchId: 21, slot: 'A', label: 'Advances to M21 (Winners SF 1)' },
+          loseNext: { matchId: 17, slot: 'B', label: 'Drops to M17 (Losers Round 2)' }
+        },
+        {
+          id: 14, code: 'M14', bracket: 'WB', roundCode: 'WB-QF', roundName: 'Winners Quarterfinals',
+          wave: 3, timeIst: '7:55 PM IST', room: 'OAE-DE-14',
+          defaultA: 'Winner of M3', defaultB: 'Winner of M4',
+          sourceA: { matchId: 3, type: 'winner' }, sourceB: { matchId: 4, type: 'winner' },
+          winNext: { matchId: 21, slot: 'B', label: 'Advances to M21 (Winners SF 1)' },
+          loseNext: { matchId: 18, slot: 'B', label: 'Drops to M18 (Losers Round 2)' }
+        },
+        {
+          id: 15, code: 'M15', bracket: 'WB', roundCode: 'WB-QF', roundName: 'Winners Quarterfinals',
+          wave: 3, timeIst: '7:55 PM IST', room: 'OAE-DE-15',
+          defaultA: 'Winner of M5', defaultB: 'Winner of M6',
+          sourceA: { matchId: 5, type: 'winner' }, sourceB: { matchId: 6, type: 'winner' },
+          winNext: { matchId: 22, slot: 'A', label: 'Advances to M22 (Winners SF 2)' },
+          loseNext: { matchId: 19, slot: 'B', label: 'Drops to M19 (Losers Round 2)' }
+        },
+        {
+          id: 16, code: 'M16', bracket: 'WB', roundCode: 'WB-QF', roundName: 'Winners Quarterfinals',
+          wave: 3, timeIst: '7:55 PM IST', room: 'OAE-DE-16',
+          defaultA: 'Winner of M7', defaultB: 'Winner of M8',
+          sourceA: { matchId: 7, type: 'winner' }, sourceB: { matchId: 8, type: 'winner' },
+          winNext: { matchId: 22, slot: 'B', label: 'Advances to M22 (Winners SF 2)' },
+          loseNext: { matchId: 20, slot: 'B', label: 'Drops to M20 (Losers Round 2)' }
+        },
+
+        // ================= LOSERS BRACKET ROUND 2 (4 Matches: M17 - M20) =================
+        {
+          id: 17, code: 'M17', bracket: 'LB', roundCode: 'LB-R2', roundName: 'Losers Round 2',
+          wave: 4, timeIst: '8:20 PM IST', room: 'OAE-DE-17',
+          defaultA: 'Winner of M9 (LB R1)', defaultB: 'Loser of M13 (WB QF)',
+          sourceA: { matchId: 9, type: 'winner' }, sourceB: { matchId: 13, type: 'loser' },
+          winNext: { matchId: 23, slot: 'A', label: 'Advances to M23 (Losers Round 3)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 9th–12th)' }
+        },
+        {
+          id: 18, code: 'M18', bracket: 'LB', roundCode: 'LB-R2', roundName: 'Losers Round 2',
+          wave: 4, timeIst: '8:20 PM IST', room: 'OAE-DE-18',
+          defaultA: 'Winner of M10 (LB R1)', defaultB: 'Loser of M14 (WB QF)',
+          sourceA: { matchId: 10, type: 'winner' }, sourceB: { matchId: 14, type: 'loser' },
+          winNext: { matchId: 23, slot: 'B', label: 'Advances to M23 (Losers Round 3)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 9th–12th)' }
+        },
+        {
+          id: 19, code: 'M19', bracket: 'LB', roundCode: 'LB-R2', roundName: 'Losers Round 2',
+          wave: 4, timeIst: '8:20 PM IST', room: 'OAE-DE-19',
+          defaultA: 'Winner of M11 (LB R1)', defaultB: 'Loser of M15 (WB QF)',
+          sourceA: { matchId: 11, type: 'winner' }, sourceB: { matchId: 15, type: 'loser' },
+          winNext: { matchId: 24, slot: 'A', label: 'Advances to M24 (Losers Round 3)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 9th–12th)' }
+        },
+        {
+          id: 20, code: 'M20', bracket: 'LB', roundCode: 'LB-R2', roundName: 'Losers Round 2',
+          wave: 4, timeIst: '8:20 PM IST', room: 'OAE-DE-20',
+          defaultA: 'Winner of M12 (LB R1)', defaultB: 'Loser of M16 (WB QF)',
+          sourceA: { matchId: 12, type: 'winner' }, sourceB: { matchId: 16, type: 'loser' },
+          winNext: { matchId: 24, slot: 'B', label: 'Advances to M24 (Losers Round 3)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 9th–12th)' }
+        },
+
+        // ================= WINNERS BRACKET SEMIFINALS (2 Matches: M21 - M22) =================
+        {
+          id: 21, code: 'M21', bracket: 'WB', roundCode: 'WB-SF', roundName: 'Winners Semifinals',
+          wave: 5, timeIst: '8:45 PM IST', room: 'OAE-DE-21',
+          defaultA: 'Winner of M13 (WB QF 1)', defaultB: 'Winner of M14 (WB QF 2)',
+          sourceA: { matchId: 13, type: 'winner' }, sourceB: { matchId: 14, type: 'winner' },
+          winNext: { matchId: 27, slot: 'A', label: 'Advances to M27 (Winners Final)' },
+          loseNext: { matchId: 25, slot: 'B', label: 'Drops to M25 (Losers Semifinal 1)' }
+        },
+        {
+          id: 22, code: 'M22', bracket: 'WB', roundCode: 'WB-SF', roundName: 'Winners Semifinals',
+          wave: 5, timeIst: '8:45 PM IST', room: 'OAE-DE-22',
+          defaultA: 'Winner of M15 (WB QF 3)', defaultB: 'Winner of M16 (WB QF 4)',
+          sourceA: { matchId: 15, type: 'winner' }, sourceB: { matchId: 16, type: 'winner' },
+          winNext: { matchId: 27, slot: 'B', label: 'Advances to M27 (Winners Final)' },
+          loseNext: { matchId: 26, slot: 'B', label: 'Drops to M26 (Losers Semifinal 2)' }
+        },
+
+        // ================= LOSERS BRACKET ROUND 3 (2 Matches: M23 - M24) =================
+        {
+          id: 23, code: 'M23', bracket: 'LB', roundCode: 'LB-R3', roundName: 'Losers Round 3',
+          wave: 6, timeIst: '9:05 PM IST', room: 'OAE-DE-23',
+          defaultA: 'Winner of M17 (LB R2)', defaultB: 'Winner of M18 (LB R2)',
+          sourceA: { matchId: 17, type: 'winner' }, sourceB: { matchId: 18, type: 'winner' },
+          winNext: { matchId: 25, slot: 'A', label: 'Advances to M25 (Losers Semifinal 1)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 7th–8th)' }
+        },
+        {
+          id: 24, code: 'M24', bracket: 'LB', roundCode: 'LB-R3', roundName: 'Losers Round 3',
+          wave: 6, timeIst: '9:05 PM IST', room: 'OAE-DE-24',
+          defaultA: 'Winner of M19 (LB R2)', defaultB: 'Winner of M20 (LB R2)',
+          sourceA: { matchId: 19, type: 'winner' }, sourceB: { matchId: 20, type: 'winner' },
+          winNext: { matchId: 26, slot: 'A', label: 'Advances to M26 (Losers Semifinal 2)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 7th–8th)' }
+        },
+
+        // ================= LOSERS BRACKET ROUND 4 / SEMIFINALS (2 Matches: M25 - M26) =================
+        {
+          id: 25, code: 'M25', bracket: 'LB', roundCode: 'LB-R4', roundName: 'Losers Semifinals (Round 4)',
+          wave: 7, timeIst: '9:25 PM IST', room: 'OAE-DE-25',
+          defaultA: 'Winner of M23 (LB R3)', defaultB: 'Loser of M21 (WB SF 1)',
+          sourceA: { matchId: 23, type: 'winner' }, sourceB: { matchId: 21, type: 'loser' },
+          winNext: { matchId: 28, slot: 'A', label: 'Advances to M28 (Losers Round 5)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 5th–6th)' }
+        },
+        {
+          id: 26, code: 'M26', bracket: 'LB', roundCode: 'LB-R4', roundName: 'Losers Semifinals (Round 4)',
+          wave: 7, timeIst: '9:25 PM IST', room: 'OAE-DE-26',
+          defaultA: 'Winner of M24 (LB R3)', defaultB: 'Loser of M22 (WB SF 2)',
+          sourceA: { matchId: 24, type: 'winner' }, sourceB: { matchId: 22, type: 'loser' },
+          winNext: { matchId: 28, slot: 'B', label: 'Advances to M28 (Losers Round 5)' },
+          loseNext: { matchId: null, slot: null, label: 'Eliminated (2nd Loss — 5th–6th)' }
+        },
+
+        // ================= WINNERS BRACKET FINAL (1 Match: M27) =================
+        {
+          id: 27, code: 'M27', bracket: 'WB', roundCode: 'WB-F', roundName: 'Winners Bracket Final',
+          wave: 8, timeIst: '9:45 PM IST', room: 'OAE-DE-27',
+          defaultA: 'Winner of M21 (WB SF 1)', defaultB: 'Winner of M22 (WB SF 2)',
+          sourceA: { matchId: 21, type: 'winner' }, sourceB: { matchId: 22, type: 'winner' },
+          winNext: { matchId: 31, slot: 'A', label: 'Advances to M31 (Grand Final)' },
+          loseNext: { matchId: 29, slot: 'B', label: 'Drops to M29 (Losers Bracket Final)' }
+        },
+
+        // ================= LOSERS BRACKET ROUND 5 (1 Match: M28) =================
+        {
+          id: 28, code: 'M28', bracket: 'LB', roundCode: 'LB-R5', roundName: 'Losers Round 5',
+          wave: 9, timeIst: '10:05 PM IST', room: 'OAE-DE-28',
+          defaultA: 'Winner of M25 (LB SF 1)', defaultB: 'Winner of M26 (LB SF 2)',
+          sourceA: { matchId: 25, type: 'winner' }, sourceB: { matchId: 26, type: 'winner' },
+          winNext: { matchId: 29, slot: 'A', label: 'Advances to M29 (Losers Bracket Final)' },
+          loseNext: { matchId: 30, slot: 'A', label: 'Moves to M30 (Podium 3rd-Place Match)' }
+        },
+
+        // ================= LOSERS BRACKET FINAL (1 Match: M29) =================
+        {
+          id: 29, code: 'M29', bracket: 'LB', roundCode: 'LB-F', roundName: 'Losers Bracket Final',
+          wave: 10, timeIst: '10:25 PM IST', room: 'OAE-DE-29',
+          defaultA: 'Winner of M28 (LB R5)', defaultB: 'Loser of M27 (WB Final)',
+          sourceA: { matchId: 28, type: 'winner' }, sourceB: { matchId: 27, type: 'loser' },
+          winNext: { matchId: 31, slot: 'B', label: 'Advances to M31 (Grand Final)' },
+          loseNext: { matchId: 30, slot: 'B', label: 'Moves to M30 (Podium 3rd-Place Match)' }
+        },
+
+        // ================= CHAMPIONSHIP & PLACEMENT FINALS (3 Matches: M30, M31, M32 = 32 TOTAL) =================
+        {
+          id: 30, code: 'M30', bracket: 'GF', roundCode: 'GF-3RD', roundName: 'Bronze Podium Decider (Match #30)',
+          wave: 10, timeIst: '10:35 PM IST', room: 'OAE-DE-30',
+          defaultA: 'Loser of M28 (LB R5)', defaultB: 'Loser of M29 (LB Final)',
+          sourceA: { matchId: 28, type: 'loser' }, sourceB: { matchId: 29, type: 'loser' },
+          winNext: { matchId: null, slot: null, label: 'Claims 3rd Place Podium Honour' },
+          loseNext: { matchId: null, slot: null, label: 'Finishes 4th Place Overall' }
+        },
+        {
+          id: 31, code: 'M31', bracket: 'GF', roundCode: 'GF-1', roundName: 'Grand Final (Match #31)',
+          wave: 11, timeIst: '10:50 PM IST', room: 'OAE-DE-31',
+          defaultA: 'Winner of M27 (WB Champion)', defaultB: 'Winner of M29 (LB Champion)',
+          sourceA: { matchId: 27, type: 'winner' }, sourceB: { matchId: 29, type: 'winner' },
+          winNext: { matchId: 32, slot: 'A', label: 'If WB Champ Wins → Champion! If LB Champ Wins → Triggers M32 Reset' },
+          loseNext: { matchId: 32, slot: 'B', label: 'If WB Champ Loses (1st Loss) → Enters M32 Bracket Reset' }
+        },
+        {
+          id: 32, code: 'M32', bracket: 'GF', roundCode: 'GF-RESET', roundName: 'Grand Final Bracket Reset (Match #32 — True Double Elim)',
+          wave: 11, timeIst: '11:10 PM IST', room: 'OAE-DE-32',
+          defaultA: 'Winner of M31 (Finalist A)', defaultB: 'Loser of M31 (Finalist B — 1 Loss Each)',
+          sourceA: { matchId: 31, type: 'winner' }, sourceB: { matchId: 31, type: 'loser' },
+          winNext: { matchId: null, slot: null, label: 'Crowned First Ever OddAndEven Champion (7 Nov)!' },
+          loseNext: { matchId: null, slot: null, label: 'Championship Runner-Up (2nd Loss)' }
+        }
+      ];
+
+      // State
+      let activeTab = 'games';
+      let gamesBracketFilter = 'all';
+      let resultsFilter = 'all';
+      let scheduleFilter = 'all';
+      let dateArrivedOverride = true; // Defaults to Open so user immediately sees all 4 tabs and active tournament view
+      let matchDecisions = {}; // { [matchId]: { winnerSide: 'A' | 'B', scoreA: number, scoreB: number } }
+
+
+      // ---- 32-TEAM BRACKET TREE STATE (ROUND OF 32 -> CHAMPION) ----
+      const TREE_STATE_KEY = 'oddandeven_t2_r32_tree_v1';
+      let treeWinners = {}; // { [matchNum 1..31]: 'A' | 'B' }
+      let showResolvedTeamNamesInTree = false; // Default false so exact "M1 Winner" .. "M30 Winner" & "WINNER / CHAMPION" labels appear clearly, or toggleable!
+
+      function loadTreeState() {
+        try {
+          const raw = localStorage.getItem(TREE_STATE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') treeWinners = parsed;
+          }
+        } catch (e) {
+          treeWinners = {};
+        }
+      }
+
+      function saveTreeState() {
+        try {
+          localStorage.setItem(TREE_STATE_KEY, JSON.stringify(treeWinners));
+        } catch (e) {}
+      }
+
+      // Compute who holds each slot in the 32-team tree (M1..M31)
+      function computeTreeSlots() {
+        const teamLabel = (i) => '[Team ' + i + ']';
+        const matchWinnerTeam = {};
+        // Round 1: M1..M16 ([Team 1]..[Team 32])
+        for (let m = 1; m <= 16; m++) {
+          const tA = teamLabel(2 * m - 1);
+          const tB = teamLabel(2 * m);
+          const pick = treeWinners[m];
+          matchWinnerTeam[m] = pick === 'A' ? tA : (pick === 'B' ? tB : null);
+        }
+        // Round 2: M17..M24 (M1 Winner vs M2 Winner, etc.)
+        for (let m = 17; m <= 24; m++) {
+          const prevA = (m - 17) * 2 + 1;
+          const prevB = prevA + 1;
+          const nameA = matchWinnerTeam[prevA] || ('M' + prevA + ' Winner');
+          const nameB = matchWinnerTeam[prevB] || ('M' + prevB + ' Winner');
+          const pick = treeWinners[m];
+          matchWinnerTeam[m] = pick === 'A' ? nameA : (pick === 'B' ? nameB : null);
+        }
+        // Round 3 (Quarterfinals): M25..M28 (M17 Winner vs M18 Winner, etc.)
+        for (let m = 25; m <= 28; m++) {
+          const prevA = (m - 25) * 2 + 17;
+          const prevB = prevA + 1;
+          const nameA = matchWinnerTeam[prevA] || ('M' + prevA + ' Winner');
+          const nameB = matchWinnerTeam[prevB] || ('M' + prevB + ' Winner');
+          const pick = treeWinners[m];
+          matchWinnerTeam[m] = pick === 'A' ? nameA : (pick === 'B' ? nameB : null);
+        }
+        // Round 4 (Semifinals): M29..M30 (M25 Winner vs M26 Winner, M27 Winner vs M28 Winner)
+        for (let m = 29; m <= 30; m++) {
+          const prevA = (m - 29) * 2 + 25;
+          const prevB = prevA + 1;
+          const nameA = matchWinnerTeam[prevA] || ('M' + prevA + ' Winner');
+          const nameB = matchWinnerTeam[prevB] || ('M' + prevB + ' Winner');
+          const pick = treeWinners[m];
+          matchWinnerTeam[m] = pick === 'A' ? nameA : (pick === 'B' ? nameB : null);
+        }
+        // Round 5 (Finals): M31 (M29 Winner vs M30 Winner -> WINNER / CHAMPION)
+        {
+          const nameA = matchWinnerTeam[29] || 'M29 Winner';
+          const nameB = matchWinnerTeam[30] || 'M30 Winner';
+          const pick = treeWinners[31];
+          matchWinnerTeam[31] = pick === 'A' ? nameA : (pick === 'B' ? nameB : null);
+        }
+        return matchWinnerTeam;
+      }
+
+      // Format fixed-width node button for the exact ASCII schematic so column alignment never shifts
+      function makeAsciiNodeBtn(matchId, side, defaultLabel, width, colorClass, resolvedTeam) {
+        const isPicked = treeWinners[matchId] === side;
+        let displayStr = defaultLabel;
+        if (showResolvedTeamNamesInTree && resolvedTeam) {
+          displayStr = resolvedTeam;
+        }
+        // Pad or trim to exact width so ASCII connectors stay 100% aligned
+        const padded = displayStr.length > width
+          ? displayStr.slice(0, width)
+          : displayStr.padEnd(width, ' ');
+        const decidedCls = (isPicked || (resolvedTeam && showResolvedTeamNamesInTree)) ? ' br-decided' : '';
+        const titleTip = resolvedTeam
+          ? (defaultLabel + ' (' + resolvedTeam + ') — Click to advance')
+          : (defaultLabel + ' — Click to advance');
+        return '<button type="button" class="br-node-btn ' + colorClass + decidedCls + '" data-tree-match="' + matchId + '" data-tree-side="' + side + '" title="' + titleTip + '">' + padded + '</button>';
+      }
+
+      function renderExactAsciiBracket() {
+        const pre = $('#exactAsciiBracketPre');
+        if (!pre) return;
+        const winners = computeTreeSlots();
+
+        // Helper for [Team N] leaf buttons (width 9: "[Team 1] " or "[Team 10]")
+        const T = (teamIdx) => {
+          const m = Math.ceil(teamIdx / 2);
+          const side = (teamIdx % 2 === 1) ? 'A' : 'B';
+          const raw = '[Team ' + teamIdx + ']';
+          const padded = raw.padEnd(9, ' ');
+          const picked = treeWinners[m] === side ? ' br-decided' : '';
+          return '<button type="button" class="br-node-btn br-team' + picked + '" data-tree-match="' + m + '" data-tree-side="' + side + '" title="Click to advance ' + raw + ' to M' + m + ' Winner">' + padded + '</button>';
+        };
+
+        // Helper for M1..M16 Winner nodes (width 9 for M1..M9, width 10 for M10..M16 to preserve exact ──┐ vs ─┐ bars)
+        const W_R1 = (m) => {
+          const nextMatch = 17 + Math.floor((m - 1) / 2);
+          const nextSide = (m % 2 === 1) ? 'A' : 'B';
+          const w = m < 10 ? 9 : 10;
+          const defLbl = ('M' + m + ' Winner').padEnd(w, ' ');
+          return makeAsciiNodeBtn(nextMatch, nextSide, defLbl, w, 'br-r1', winners[m]);
+        };
+
+        // Helper for M17..M24 Winner nodes (width 10: "M17 Winner")
+        const W_R2 = (m) => {
+          const nextMatch = 25 + Math.floor((m - 17) / 2);
+          const nextSide = (m % 2 === 1) ? 'A' : 'B';
+          const defLbl = 'M' + m + ' Winner';
+          return makeAsciiNodeBtn(nextMatch, nextSide, defLbl, 10, 'br-r2', winners[m]);
+        };
+
+        // Helper for M25..M28 Winner nodes (width 10: "M25 Winner")
+        const W_R3 = (m) => {
+          const nextMatch = 29 + Math.floor((m - 25) / 2);
+          const nextSide = (m % 2 === 1) ? 'A' : 'B';
+          const defLbl = 'M' + m + ' Winner';
+          return makeAsciiNodeBtn(nextMatch, nextSide, defLbl, 10, 'br-r3', winners[m]);
+        };
+
+        // Helper for M29..M30 Winner nodes (width 10: "M29 Winner")
+        const W_R4 = (m) => {
+          const nextMatch = 31;
+          const nextSide = (m === 29) ? 'A' : 'B';
+          const defLbl = 'M' + m + ' Winner';
+          return makeAsciiNodeBtn(nextMatch, nextSide, defLbl, 10, 'br-r4', winners[m]);
+        };
+
+        // Champion node
+        const champResolved = winners[31];
+        const champText = (showResolvedTeamNamesInTree && champResolved)
+          ? ('🏆 ' + champResolved + ' (CHAMPION)')
+          : (champResolved ? ('WINNER / CHAMPION (' + champResolved + ')') : 'WINNER / CHAMPION');
+        const CHAMP_NODE = '<button type="button" class="br-node-btn br-champ' + (champResolved ? ' br-decided' : '') + '" data-tree-champ="1" title="Tournament Champion Slot">' + champText + '</button>';
+
+        const lines = [
+          '<span class="br-hdr-main">ROUND OF 32            ROUND OF 16            QUARTERFINALS          SEMIFINALS             FINALS              CHAMPION</span>',
+          '<span class="br-hdr-sub">(Round 1)              (Round 2)              (Round 3)              (Round 4)              (Round 5)</span>',
+          '<span class="br-rule">─────────────────────────────────────────────────────────────────────────────────────────────────────────────</span>',
+          T(1)  + ' ───┐',
+          '             ├─ ' + W_R1(1)  + ' ──┐',
+          T(2)  + ' ───┘              │',
+          '                            ├─ ' + W_R2(17) + ' ─┐',
+          T(3)  + ' ───┐              │              │',
+          '             ├─ ' + W_R1(2)  + ' ─┘              │',
+          T(4)  + ' ───┘                             │',
+          '                                           ├─ ' + W_R3(25) + ' ─┐',
+          T(5)  + ' ───┐                             │              │',
+          '             ├─ ' + W_R1(3)  + ' ─┐              │              │',
+          T(6)  + ' ───┘              │              │              │',
+          '                            ├─ ' + W_R2(18) + ' ─┘              │',
+          T(7)  + ' ───┐              │                             │',
+          '             ├─ ' + W_R1(4)  + ' ─┘                             │',
+          T(8)  + ' ───┘                                            │',
+          '                                                          ├─ ' + W_R4(29) + ' ─┐',
+          T(9)  + ' ───┐                                            │              │',
+          '             ├─ ' + W_R1(5)  + ' ─┐                             │              │',
+          T(10) + ' ───┘              │                             │              │',
+          '                            ├─ ' + W_R2(19) + ' ─┐              │              │',
+          T(11) + ' ───┐              │              │              │              │',
+          '             ├─ ' + W_R1(6)  + ' ─┘              │              │              │',
+          T(12) + ' ───┘                             │              │              │',
+          '                                           ├─ ' + W_R3(26) + ' ─┘              │',
+          T(13) + ' ───┐                             │                             │',
+          '             ├─ ' + W_R1(7)  + ' ─┐              │                             │',
+          T(14) + ' ───┘              │              │                             │',
+          '                            ├─ ' + W_R2(20) + ' ─┘                             │',
+          T(15) + ' ───┐              │                                            │',
+          '             ├─ ' + W_R1(8)  + ' ─┘                                            │',
+          T(16) + ' ───┘                                                           │',
+          '                                                                         ├─ ' + CHAMP_NODE,
+          T(17) + ' ───┐                                                           │',
+          '             ├─ ' + W_R1(9)  + ' ─┐                                            │',
+          T(18) + ' ───┘              │                                            │',
+          '                            ├─ ' + W_R2(21) + ' ─┐                             │',
+          T(19) + ' ───┐              │              │                             │',
+          '             ├─ ' + W_R1(10) + ' ─┘              │                             │',
+          T(20) + ' ───┘                             │                             │',
+          '                                           ├─ ' + W_R3(27) + ' ─┐              │',
+          T(21) + ' ───┐                             │              │              │',
+          '             ├─ ' + W_R1(11) + ' ─┐              │              │              │',
+          T(22) + ' ───┘              │              │              │              │',
+          '                            ├─ ' + W_R2(22) + ' ─┘              │              │',
+          T(23) + ' ───┐              │                             │              │',
+          '             ├─ ' + W_R1(12) + ' ─┘                             │              │',
+          T(24) + ' ───┘                                            │              │',
+          '                                                          ├─ ' + W_R4(30) + ' ─┘',
+          T(25) + ' ───┐                                            │',
+          '             ├─ ' + W_R1(13) + ' ─┐                             │',
+          T(26) + ' ───┘              │                             │',
+          '                            ├─ ' + W_R2(23) + ' ─┐              │',
+          T(27) + ' ───┐              │              │              │',
+          '             ├─ ' + W_R1(14) + ' ─┘              │              │',
+          T(28) + ' ───┘                             │              │',
+          '                                           ├─ ' + W_R3(28) + ' ─┘',
+          T(29) + ' ───┐                             │',
+          '             ├─ ' + W_R1(15) + ' ─┐              │',
+          T(30) + ' ───┘              │              │',
+          '                            ├─ ' + W_R2(24) + ' ─┘',
+          T(31) + ' ───┐              │',
+          '             ├─ ' + W_R1(16) + ' ─┘',
+          T(32) + ' ───┘'
+        ];
+
+        pre.innerHTML = lines.join('\n');
+      }
+
+      // Render the 6-Column Visual Card Tree (Top: 8 Matches w/ 16 Players + Winner Bracket beside; Bottom: Loser Bracket below)
+      function renderVisualSixColTree(allFixturesInput) {
+        const upperGrid = $('#visualSixColGrid');
+        const lowerGrid = $('#visualLoserSixColGrid');
+        if (!upperGrid && !lowerGrid) return;
+
+        const allFixtures = allFixturesInput || computeAllFixtures();
+        const byId = {};
+        allFixtures.forEach((f) => { byId[f.id] = f; });
+
+        const buildMatchPairCard = (fx, outLabel, borderCol, isLoserBracket) => {
+          if (!fx) return '';
+          const pickA = fx.winnerSide === 'A';
+          const pickB = fx.winnerSide === 'B';
+          const isElim = isLoserBracket || fx.roundCode === 'GF-RESET';
+          const clsA = pickA ? 'vt-picked' : (pickB ? (isElim ? 'vt-eliminated' : 'vt-dropped') : '');
+          const clsB = pickB ? 'vt-picked' : (pickA ? (isElim ? 'vt-eliminated' : 'vt-dropped') : '');
+          const resolvedWinner = fx.winnerName ? fx.winnerName : 'Click slot to advance';
+          const dropNote = isElim
+            ? ('🔴 Loser: ' + fx.loseNext.label)
+            : ('🟡 1st Loss → ' + fx.loseNext.label);
+
+          return (
+            '<div class="vt-pair ' + (isLoserBracket ? 'vt-lb-pair' : '') + '" style="border-left-color:' + borderCol + '">' +
+              '<div class="flex items-center justify-between text-[10px] text-zinc-400 mb-1 px-1">' +
+                '<span class="font-extrabold text-white">' + fx.code + ' · ' + fx.timeIst + '</span>' +
+                '<span class="px-1.5 py-0.5 rounded bg-white/5 text-[9px]">' + fx.room + '</span>' +
+              '</div>' +
+              '<div class="vt-slot ' + clsA + '" data-win-match="' + fx.id + '" data-win-side="A" title="Click to set ' + fx.slotA + ' as winner of ' + fx.code + '">' +
+                '<span class="truncate font-semibold">' + fx.slotA + '</span>' +
+                '<span class="text-[10px] font-bold shrink-0">' + (pickA ? '✓ WIN' : '───┐') + '</span>' +
+              '</div>' +
+              '<div class="text-[10px] font-extrabold px-2 py-1 text-amber-300 border-y border-white/5 my-1 flex items-center justify-between gap-2 bg-white/[0.015] rounded">' +
+                '<span class="shrink-0">├─ ' + outLabel + '</span>' +
+                '<span class="text-[10px] text-[#a3d96c] truncate">' + resolvedWinner + '</span>' +
+              '</div>' +
+              '<div class="vt-slot ' + clsB + '" data-win-match="' + fx.id + '" data-win-side="B" title="Click to set ' + fx.slotB + ' as winner of ' + fx.code + '">' +
+                '<span class="truncate font-semibold">' + fx.slotB + '</span>' +
+                '<span class="text-[10px] font-bold shrink-0">' + (pickB ? '✓ WIN' : '───┘') + '</span>' +
+              '</div>' +
+              '<div class="mt-1.5 pt-1 border-t border-white/5 text-[9px] text-zinc-400 flex items-center justify-between gap-1">' +
+                '<span class="truncate text-[#a3d96c]">🟢 ' + fx.winNext.label + '</span>' +
+              '</div>' +
+              '<div class="text-[9px] truncate ' + (isElim ? 'text-rose-300/90' : 'text-amber-300/90') + '">' + dropNote + '</div>' +
+            '</div>'
+          );
+        };
+
+        // =========================================================================
+        // UPPER 6-COLUMN VISUAL CARD TREE:
+        // Column 1: 8 Matches containing 16 Players (M1 - M8)
+        // Columns 2-6 (Beside 8 Matches): Winner Bracket (M13-M16, M21-M22, M27, M31-M32, Champion)
+        // =========================================================================
+        if (upperGrid) {
+          const col1_8Matches = [1, 2, 3, 4, 5, 6, 7, 8].map((id) =>
+            buildMatchPairCard(byId[id], 'M' + id + ' Winner', 'var(--cyan)', false)
+          ).join('');
+
+          const col2_wbQF = [13, 14, 15, 16].map((id) =>
+            buildMatchPairCard(byId[id], 'M' + id + ' Winner', 'var(--lime)', false)
+          ).join('');
+
+          const col3_wbSF = [21, 22].map((id) =>
+            buildMatchPairCard(byId[id], 'M' + id + ' Winner', 'var(--lime)', false)
+          ).join('');
+
+          const col4_wbFinal = buildMatchPairCard(byId[27], 'M27 Winner (WB Champ)', '#a3d96c', false);
+
+          const col5_grandFinals = [31, 32].map((id) =>
+            buildMatchPairCard(byId[id], id === 31 ? 'M31 Winner' : 'M32 Reset Winner', 'var(--rose)', id === 32)
+          ).join('');
+
+          const m31 = byId[31];
+          const m32 = byId[32];
+          let champName = 'Awaiting Grand Final (M31 / M32)';
+          let champSub = 'Undefeated WB Champ or M32 Reset Winner';
+          if (m32 && m32.winnerName) {
+            champName = '🏆 ' + m32.winnerName;
+            champSub = 'Won M32 Grand Final Bracket Reset';
+          } else if (m31 && m31.winnerSide === 'A' && m31.winnerName) {
+            champName = '🏆 ' + m31.winnerName;
+            champSub = 'Undefeated Winner Bracket Champion (M31)';
+          } else if (m31 && m31.winnerSide === 'B' && m31.winnerName) {
+            champName = '⚡ ' + m31.winnerName + ' forced M32 Reset!';
+            champSub = 'Select winner in M32 Bracket Reset';
+          }
+
+          const col6_champion = (
+            '<div class="vt-pair" style="border-left-color:#fde047; background:linear-gradient(145deg, rgba(250,204,21,0.14), rgba(163,217,108,0.08)); padding:18px;">' +
+              '<div class="text-[11px] font-mono-num uppercase tracking-wider text-amber-300 font-extrabold">├─ TOURNAMENT CHAMPION</div>' +
+              '<div class="font-brand text-xl font-extrabold text-yellow-300 mt-1.5">WINNER / CHAMPION</div>' +
+              '<div class="font-mono-num text-sm text-[#a3d96c] mt-2 font-extrabold break-words">' + champName + '</div>' +
+              '<div class="font-mono-num text-[11px] text-zinc-300 mt-1">' + champSub + '</div>' +
+              '<div class="mt-3 pt-2.5 border-t border-white/10 text-[10px] font-mono-num text-amber-200">👑 Special Champion Crown + Hall of Fame + 2000 XPs</div>' +
+            '</div>'
+          );
+
+          const upperCols = [
+            { title: '16 PLAYERS · 8 MATCHES', sub: 'Opening Round 1 (M1 – M8)', body: col1_8Matches, color: 'text-cyan-300' },
+            { title: 'WINNER BRACKET QF', sub: 'Quarterfinals (M13 – M16)', body: col2_wbQF, color: 'text-[#a3d96c]' },
+            { title: 'WINNER BRACKET SF', sub: 'Semifinals (M21 – M22)', body: col3_wbSF, color: 'text-[#a3d96c]' },
+            { title: 'WINNER BRACKET FINAL', sub: 'Upper Final (M27)', body: col4_wbFinal, color: 'text-emerald-300' },
+            { title: 'GRAND FINALS', sub: 'Final (M31) & Reset (M32)', body: col5_grandFinals, color: 'text-rose-300' },
+            { title: 'CHAMPION', sub: 'First Ever 7 Nov Champion', body: col6_champion, color: 'text-yellow-300' }
+          ];
+
+          upperGrid.innerHTML = upperCols.map((c) => (
+            '<div class="vt-col">' +
+              '<div class="vt-col-hdr">' +
+                '<div class="font-brand font-extrabold text-xs sm:text-sm ' + c.color + '">' + c.title + '</div>' +
+                '<div class="font-mono-num text-[10px] text-zinc-400 mt-0.5">' + c.sub + '</div>' +
+              '</div>' +
+              '<div class="vt-col-body">' + c.body + '</div>' +
+            '</div>'
+          )).join('');
+        }
+
+        // =========================================================================
+        // LOWER 6-COLUMN VISUAL CARD TREE (BELOW):
+        // Loser Bracket (M9-M12, M17-M20, M23-M24, M25-M26, M28, M29 + M30 Podium)
+        // =========================================================================
+        if (lowerGrid) {
+          const lbCol1 = [9, 10, 11, 12].map((id) =>
+            buildMatchPairCard(byId[id], 'M' + id + ' Winner', 'var(--amber)', true)
+          ).join('');
+
+          const lbCol2 = [17, 18, 19, 20].map((id) =>
+            buildMatchPairCard(byId[id], 'M' + id + ' Winner', 'var(--amber)', true)
+          ).join('');
+
+          const lbCol3 = [23, 24].map((id) =>
+            buildMatchPairCard(byId[id], 'M' + id + ' Winner', 'var(--amber)', true)
+          ).join('');
+
+          const lbCol4 = [25, 26].map((id) =>
+            buildMatchPairCard(byId[id], 'M' + id + ' Winner', 'var(--amber)', true)
+          ).join('');
+
+          const lbCol5 = buildMatchPairCard(byId[28], 'M28 Winner', '#f59e0b', true);
+
+          const lbCol6 = [29, 30].map((id) =>
+            buildMatchPairCard(
+              byId[id],
+              id === 29 ? 'M29 Winner (LB Champ → M31)' : 'M30 Winner (3rd Place 🥉)',
+              id === 29 ? '#f59e0b' : 'var(--cyan)',
+              true
+            )
+          ).join('');
+
+          const lowerCols = [
+            { title: 'LOSER BRACKET R1', sub: 'M1–M8 Losers (M9 – M12)', body: lbCol1, color: 'text-amber-300' },
+            { title: 'LOSER BRACKET R2', sub: 'LB R1 vs WB QF Losers (M17 – M20)', body: lbCol2, color: 'text-amber-300' },
+            { title: 'LOSER BRACKET R3', sub: 'Survival Round 3 (M23 – M24)', body: lbCol3, color: 'text-amber-300' },
+            { title: 'LOSER BRACKET SF', sub: 'LB R3 vs WB SF Losers (M25 – M26)', body: lbCol4, color: 'text-amber-300' },
+            { title: 'LOSER BRACKET R5', sub: 'Survival Semi (M28)', body: lbCol5, color: 'text-orange-300' },
+            { title: 'LOSER FINAL & 3RD PLACE', sub: 'LB Final (M29) & Bronze (M30)', body: lbCol6, color: 'text-cyan-300' }
+          ];
+
+          lowerGrid.innerHTML = lowerCols.map((c) => (
+            '<div class="vt-col">' +
+              '<div class="vt-col-hdr">' +
+                '<div class="font-brand font-extrabold text-xs sm:text-sm ' + c.color + '">' + c.title + '</div>' +
+                '<div class="font-mono-num text-[10px] text-zinc-400 mt-0.5">' + c.sub + '</div>' +
+              '</div>' +
+              '<div class="vt-col-body">' + c.body + '</div>' +
+            '</div>'
+          )).join('');
+        }
+      }
+
+      function loadBracketDecisions() {
+        try {
+          const raw = localStorage.getItem(BRACKET_STATE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') {
+              matchDecisions = parsed;
+            }
+          }
+        } catch (e) {
+          matchDecisions = {};
+        }
+      }
+
+      function saveBracketDecisions() {
+        try {
+          localStorage.setItem(BRACKET_STATE_KEY, JSON.stringify(matchDecisions));
+        } catch (e) {}
+      }
+
+      // Compute dynamic slot names and results across all 32 matches
+      function computeAllFixtures() {
+        const resolved = {};
+        INITIAL_FIXTURES.forEach((fx) => {
+          let slotA = fx.defaultA;
+          let slotB = fx.defaultB;
+
+          if (fx.sourceA && resolved[fx.sourceA.matchId]) {
+            const src = resolved[fx.sourceA.matchId];
+            if (fx.sourceA.type === 'winner' && src.winnerName) slotA = src.winnerName;
+            if (fx.sourceA.type === 'loser' && src.loserName) slotA = src.loserName;
+          }
+          if (fx.sourceB && resolved[fx.sourceB.matchId]) {
+            const src = resolved[fx.sourceB.matchId];
+            if (fx.sourceB.type === 'winner' && src.winnerName) slotB = src.winnerName;
+            if (fx.sourceB.type === 'loser' && src.loserName) slotB = src.loserName;
+          }
+
+          const dec = matchDecisions[fx.id] || null;
+          let winnerSide = dec ? dec.winnerSide : null;
+          let winnerName = null;
+          let loserName = null;
+          let scoreText = 'Online Fixture Ready';
+
+          if (winnerSide === 'A') {
+            winnerName = slotA;
+            loserName = slotB;
+            scoreText = (dec.scoreA || 48) + '/1 vs ' + (dec.scoreB || 41) + '/2';
+          } else if (winnerSide === 'B') {
+            winnerName = slotB;
+            loserName = slotA;
+            scoreText = (dec.scoreA || 39) + '/2 vs ' + (dec.scoreB || 44) + '/1';
+          }
+
+          resolved[fx.id] = Object.assign({}, fx, {
+            slotA,
+            slotB,
+            winnerSide,
+            winnerName,
+            loserName,
+            scoreText,
+            isCompleted: Boolean(winnerSide)
+          });
+        });
+        return INITIAL_FIXTURES.map((fx) => resolved[fx.id]);
+      }
+
+      function setMatchWinner(matchId, side) {
+        const current = matchDecisions[matchId];
+        if (current && current.winnerSide === side) {
+          delete matchDecisions[matchId];
+          toast('Cleared result for <strong>M' + matchId + '</strong>. Downstream online fixtures updated.');
+        } else {
+          const baseRuns = 36 + ((matchId * 7) % 28);
+          const winRuns = baseRuns + 6;
+          const loseRuns = baseRuns;
+          matchDecisions[matchId] = {
+            winnerSide: side,
+            scoreA: side === 'A' ? winRuns : loseRuns,
+            scoreB: side === 'B' ? winRuns : loseRuns
+          };
+          const all = computeAllFixtures();
+          const m = all.find((x) => x.id === matchId);
+          if (m) {
+            toast(
+              '<strong>' + m.code + ' Decided:</strong> <span class="text-[#a3d96c]">' + m.winnerName +
+              '</span> advances (' + m.winNext.label + ') · <span class="text-amber-300">' + m.loserName +
+              '</span> → ' + m.loseNext.label
+            );
+          }
+        }
+        saveBracketDecisions();
+        renderAllPortalViews();
+      }
+
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const raw = decodeURIComponent(escape(atob(parts[2])));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function getActivePlayer() {
+        try {
+          if (localStorage.getItem(SIGNED_OUT_KEY) === '1') return null;
+          const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+          if (!raw) return null;
+          const dec = decryptPayload(raw);
+          if (dec && dec.username) return dec;
+          return { username: 'PLAYER', countryFlag: '🇮🇳' };
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function signedIn() {
+        return Boolean(getActivePlayer());
+      }
+
+      function loadRegs() {
+        try {
+          const player = getActivePlayer();
+          if (player && player.username) {
+            const mapRaw = localStorage.getItem(REG_MAP_KEY);
+            const map = mapRaw ? JSON.parse(mapRaw) : {};
+            if (Array.isArray(map[player.username])) return map[player.username];
+          }
+          return JSON.parse(localStorage.getItem(REG_KEY)) || [];
+        } catch (e) { return []; }
+      }
+
+      function saveRegs(list) {
+        try {
+          localStorage.setItem(REG_KEY, JSON.stringify(list));
+          const player = getActivePlayer();
+          if (player && player.username) {
+            const mapRaw = localStorage.getItem(REG_MAP_KEY);
+            const map = (mapRaw && JSON.parse(mapRaw)) || {};
+            map[player.username] = list;
+            localStorage.setItem(REG_MAP_KEY, JSON.stringify(map));
+          }
+        } catch (e) {}
+      }
+
+      let toastTimer;
+      function toast(html) {
+        const t = $('#toast');
+        if (!t) return;
+        t.innerHTML = html;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+      }
+
+      const fmt = (d, opts) => new Intl.DateTimeFormat('en-IN', Object.assign({ timeZone: TZ }, opts)).format(d);
+      const pad = (n) => String(n).padStart(2, '0');
+
+      // ---- TAB NAVIGATION ----
+      function switchTab(tabName) {
+        activeTab = tabName;
+        $$('[data-tab]').forEach((btn) => {
+          const isTarget = btn.dataset.tab === tabName;
+          btn.classList.toggle('active', isTarget);
+          btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+        });
+        $$('[data-tab-panel]').forEach((panel) => {
+          const isTarget = panel.dataset.tabPanel === tabName;
+          panel.classList.toggle('hidden', !isTarget);
+        });
+      }
+
+      $$('[data-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      $$('[data-goto-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          switchTab(btn.dataset.gotoTab);
+          const hdr = $('#tournamentTabsHeader');
+          if (hdr) hdr.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      // ---- RENDER FIXTURE CARD HELPER ----
+      function buildFixtureCardHtml(fx) {
+        const cardBorderClass = fx.bracket === 'WB' ? 'wb-card' : (fx.bracket === 'LB' ? 'lb-card' : 'gf-card');
+        const badgeColor = fx.bracket === 'WB'
+          ? 'bg-[#a3d96c]/15 text-[#a3d96c] border-[#a3d96c]/30'
+          : (fx.bracket === 'LB'
+            ? 'bg-amber-400/15 text-amber-300 border-amber-400/30'
+            : 'bg-cyan-400/15 text-cyan-300 border-cyan-400/30');
+
+        const isElimMatch = fx.bracket === 'LB' || fx.roundCode === 'GF-RESET';
+        const slotAClass = fx.winnerSide === 'A'
+          ? 'slot-winner'
+          : (fx.winnerSide === 'B' ? (isElimMatch ? 'slot-eliminated' : 'slot-loser') : '');
+        const slotBClass = fx.winnerSide === 'B'
+          ? 'slot-winner'
+          : (fx.winnerSide === 'A' ? (isElimMatch ? 'slot-eliminated' : 'slot-loser') : '');
+
+        return (
+          '<div class="fixture-card ' + cardBorderClass + ' space-y-2.5" data-fixture-id="' + fx.id + '">' +
+            '<div class="flex items-center justify-between gap-2">' +
+              '<div class="flex items-center gap-1.5">' +
+                '<span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-extrabold border ' + badgeColor + '">' + fx.code + ' · ' + fx.bracket + '</span>' +
+                '<span class="font-mono-num text-[10px] text-zinc-400">' + fx.timeIst + '</span>' +
+              '</div>' +
+              '<span class="font-mono-num text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-zinc-400">' + fx.room + '</span>' +
+            '</div>' +
+
+            '<div class="space-y-1.5">' +
+              '<div class="slot-row ' + slotAClass + '">' +
+                '<span class="font-semibold truncate" title="' + fx.slotA + '">' + fx.slotA + '</span>' +
+                '<button type="button" data-win-match="' + fx.id + '" data-win-side="A" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold ' +
+                  (fx.winnerSide === 'A' ? 'bg-[#a3d96c] text-slate-950' : 'bg-white/10 hover:bg-[#a3d96c]/30 text-zinc-200') +
+                ' transition shrink-0">' + (fx.winnerSide === 'A' ? '✓ Winner' : 'Win A') + '</button>' +
+              '</div>' +
+              '<div class="slot-row ' + slotBClass + '">' +
+                '<span class="font-semibold truncate" title="' + fx.slotB + '">' + fx.slotB + '</span>' +
+                '<button type="button" data-win-match="' + fx.id + '" data-win-side="B" class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold ' +
+                  (fx.winnerSide === 'B' ? 'bg-[#a3d96c] text-slate-950' : 'bg-white/10 hover:bg-[#a3d96c]/30 text-zinc-200') +
+                ' transition shrink-0">' + (fx.winnerSide === 'B' ? '✓ Winner' : 'Win B') + '</button>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="pt-1 border-t border-white/10 space-y-1 text-[10px] font-mono-num">' +
+              '<div class="text-[#a3d96c] truncate" title="' + fx.winNext.label + '">🟢 W: ' + fx.winNext.label + '</div>' +
+              '<div class="' + (isElimMatch ? 'text-rose-300' : 'text-amber-300') + ' truncate" title="' + fx.loseNext.label + '">' +
+                (isElimMatch ? '🔴 L: ' : '🟡 L: ') + fx.loseNext.label +
+              '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }
+
+      // ---- RENDER GAMES TAB (6-COLUMN VISUAL CARD TREE ONLY) ----
+      function renderGamesTab(allFixtures) {
+        renderVisualSixColTree(allFixtures);
+      }
+
+      // ---- RENDER RESULTS TAB ----
+      function renderResultsTab(allFixtures) {
+        const completedCount = allFixtures.filter((f) => f.isCompleted).length;
+        const pendingCount = 32 - completedCount;
+        const wbDroppedCount = allFixtures.filter((f) => f.bracket === 'WB' && f.isCompleted).length;
+        const lbElimCount = allFixtures.filter((f) => f.bracket === 'LB' && f.isCompleted).length;
+
+        const elComp = $('#resStatCompleted');
+        const elPend = $('#resStatPending');
+        const elDrop = $('#resStatDropped');
+        const elElim = $('#resStatEliminated');
+        if (elComp) elComp.textContent = completedCount + ' / 32';
+        if (elPend) elPend.textContent = pendingCount + ' / 32';
+        if (elDrop) elDrop.textContent = wbDroppedCount + ' Slots';
+        if (elElim) elElim.textContent = lbElimCount + ' Slots';
+
+        const filtered = allFixtures.filter((fx) => {
+          if (resultsFilter === 'completed') return fx.isCompleted;
+          if (resultsFilter === 'pending') return !fx.isCompleted;
+          if (resultsFilter === 'WB') return fx.bracket === 'WB';
+          if (resultsFilter === 'LB') return fx.bracket === 'LB';
+          return true;
+        });
+
+        const tbody = $('#resultsTableBody');
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-zinc-400 font-mono-num">No matches match this filter yet. Use the Games tab or Quick Action buttons to resolve online fixtures.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtered.map((fx) => {
+          const bracketBadge = fx.bracket === 'WB'
+            ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-[#a3d96c]/15 text-[#a3d96c]">WINNERS</span>'
+            : (fx.bracket === 'LB'
+              ? '<span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-amber-400/15 text-amber-300">LOSERS</span>'
+              : '<span class="px-2 py-0.5 rounded text-[10px] font-mono-num font-bold bg-cyan-400/15 text-cyan-300">FINALS</span>');
+
+          const statusHtml = fx.isCompleted
+            ? '<span class="text-emerald-300 font-mono-num font-bold">' + fx.scoreText + '</span>'
+            : '<span class="text-zinc-400 font-mono-num">Pending Online Fixture</span>';
+
+          const winnerHtml = fx.winnerName
+            ? '<div class="font-semibold text-[#a3d96c]">' + fx.winnerName + '</div><div class="text-[10px] text-zinc-400">' + fx.winNext.label + '</div>'
+            : '<div class="text-zinc-400">' + fx.winNext.label + '</div>';
+
+          const loserHtml = fx.loserName
+            ? '<div class="font-semibold text-amber-300">' + fx.loserName + '</div><div class="text-[10px] text-zinc-400">' + fx.loseNext.label + '</div>'
+            : '<div class="text-zinc-400">' + fx.loseNext.label + '</div>';
+
+          return (
+            '<tr class="hover:bg-white/[0.02] transition">' +
+              '<td class="py-3 px-4 font-mono-num font-bold text-white">' + fx.code + '<div class="text-[10px] text-zinc-500">' + fx.timeIst + '</div></td>' +
+              '<td class="py-3 px-4">' + bracketBadge + '<div class="text-[11px] text-zinc-300 mt-1">' + fx.roundName + '</div></td>' +
+              '<td class="py-3 px-4"><div class="font-semibold text-zinc-100">' + fx.slotA + '</div><div class="text-[10px] text-zinc-500">vs</div><div class="font-semibold text-zinc-100">' + fx.slotB + '</div></td>' +
+              '<td class="py-3 px-4">' + statusHtml + '</td>' +
+              '<td class="py-3 px-4">' + winnerHtml + '</td>' +
+              '<td class="py-3 px-4">' + loserHtml + '</td>' +
+              '<td class="py-3 px-4 text-right whitespace-nowrap">' +
+                '<button type="button" data-win-match="' + fx.id + '" data-win-side="A" class="px-2 py-1 rounded text-[10px] font-mono-num font-bold bg-white/10 hover:bg-[#a3d96c] hover:text-slate-950 mr-1">Win A</button>' +
+                '<button type="button" data-win-match="' + fx.id + '" data-win-side="B" class="px-2 py-1 rounded text-[10px] font-mono-num font-bold bg-white/10 hover:bg-[#a3d96c] hover:text-slate-950">Win B</button>' +
+              '</td>' +
+            '</tr>'
+          );
+        }).join('');
+      }
+
+      // ---- RENDER SCHEDULE TAB (11 WAVES · 32 PLAYABLE MATCHES) ----
+      function renderScheduleTab(allFixtures) {
+        const waveDescriptions = {
+          1: { title: 'Wave 1 · Winners Bracket Round 1 (Matches M1–M8)', time: '7:00 PM – 7:25 PM IST', desc: 'All 16 Online Slots kick off. 8 Winners advance to WB Quarterfinals; 8 Losers drop to Losers Round 1.' },
+          2: { title: 'Wave 2 · Losers Bracket Round 1 (Matches M9–M12)', time: '7:30 PM – 7:50 PM IST', desc: 'First-round losers face off in the Losers Bracket. Winners advance to LB Round 2; Losers suffer their 2nd loss.' },
+          3: { title: 'Wave 3 · Winners Bracket Quarterfinals (Matches M13–M16)', time: '7:55 PM – 8:15 PM IST', desc: 'Undefeated contenders battle for WB Semifinal spots. Losers drop into Losers Round 2.' },
+          4: { title: 'Wave 4 · Losers Bracket Round 2 (Matches M17–M20)', time: '8:20 PM – 8:40 PM IST', desc: 'LB Round 1 survivors take on WB Quarterfinal losers.' },
+          5: { title: 'Wave 5 · Winners Bracket Semifinals (Matches M21–M22)', time: '8:45 PM – 9:00 PM IST', desc: 'Top 4 undefeated slots clash for the Winners Final. Losers cross over to Losers Semifinals.' },
+          6: { title: 'Wave 6 · Losers Bracket Round 3 (Matches M23–M24)', time: '9:05 PM – 9:20 PM IST', desc: 'Losers Bracket contenders narrow the field to 2.' },
+          7: { title: 'Wave 7 · Losers Bracket Semifinals / R4 (Matches M25–M26)', time: '9:25 PM – 9:40 PM IST', desc: 'LB R3 winners meet the WB Semifinal losers.' },
+          8: { title: 'Wave 8 · Winners Bracket Final (Match M27)', time: '9:45 PM – 10:00 PM IST', desc: 'Crowns the undefeated Winners Bracket Champion (advances to Grand Final M31). Loser drops to LB Final M29.' },
+          9: { title: 'Wave 9 · Losers Bracket Round 5 (Match M28)', time: '10:05 PM – 10:20 PM IST', desc: 'Winner advances to LB Final (M29); Loser enters Bronze Podium Match (M30).' },
+          10: { title: 'Wave 10 · Losers Final (M29) & Bronze Podium Match (M30)', time: '10:25 PM – 10:45 PM IST', desc: 'M29 crowns the Losers Bracket Champion for the Grand Final; M30 decides 3rd Place.' },
+          11: { title: 'Wave 11 · Grand Final (M31) & Grand Final Bracket Reset (M32)', time: '10:50 PM – 11:15 PM IST', desc: 'Championship finale! M32 is the true Double-Elimination Bracket Reset if the WB Champion suffers their first loss in M31.' }
+        };
+
+        const container = $('#scheduleWavesContainer');
+        if (!container) return;
+
+        const wavesHtml = [];
+        for (let w = 1; w <= 11; w++) {
+          const waveMatches = allFixtures.filter((fx) => {
+            if (fx.wave !== w) return false;
+            if (scheduleFilter === 'all') return true;
+            return fx.bracket === scheduleFilter;
+          });
+          if (waveMatches.length === 0) continue;
+          const meta = waveDescriptions[w];
+
+          wavesHtml.push(
+            '<div class="rounded-2xl border border-white/10 bg-[#16151c] p-4 sm:p-5 space-y-3.5">' +
+              '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">' +
+                '<div>' +
+                  '<div class="font-brand font-bold text-base text-white">' + meta.title + '</div>' +
+                  '<p class="text-xs text-zinc-400">' + meta.desc + '</p>' +
+                '</div>' +
+                '<span class="font-mono-num text-xs font-extrabold px-3 py-1 rounded-xl bg-amber-400/15 text-amber-300 border border-amber-400/30 shrink-0">' + meta.time + '</span>' +
+              '</div>' +
+              '<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">' +
+                waveMatches.map((fx) => (
+                  '<div class="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">' +
+                    '<div class="flex items-center justify-between text-[11px] font-mono-num">' +
+                      '<strong class="text-white">' + fx.code + ' (' + fx.bracket + ')</strong>' +
+                      '<span class="text-zinc-400">' + fx.timeIst + '</span>' +
+                    '</div>' +
+                    '<div class="text-xs font-semibold text-zinc-200 truncate">' + fx.slotA + '</div>' +
+                    '<div class="text-[10px] font-mono-num text-zinc-500">vs</div>' +
+                    '<div class="text-xs font-semibold text-zinc-200 truncate">' + fx.slotB + '</div>' +
+                    '<div class="pt-1 border-t border-white/5 text-[10px] font-mono-num text-[#a3d96c] truncate">W → ' + fx.winNext.label + '</div>' +
+                    '<div class="text-[10px] font-mono-num text-amber-300 truncate">L → ' + fx.loseNext.label + '</div>' +
+                  '</div>'
+                )).join('') +
+              '</div>' +
+            '</div>'
+          );
+        }
+
+        container.innerHTML = wavesHtml.join('');
+      }
+
+      // ---- MASTER RENDER FOR ALL PORTAL TABS ----
+      function renderAllPortalViews() {
+        const allFixtures = computeAllFixtures();
+        const completedCount = allFixtures.filter((f) => f.isCompleted).length;
+
+        const hdrCount = $('#headerResolvedCount');
+        if (hdrCount) hdrCount.textContent = completedCount + ' / 32';
+
+        const resPill = $('#resultsTabPill');
+        if (resPill) resPill.textContent = completedCount + '/32 Done';
+
+        const m32 = allFixtures.find((f) => f.id === 32);
+        const m31 = allFixtures.find((f) => f.id === 31);
+        const champLabel = $('#championSlotLabel');
+        if (champLabel) {
+          if (m32 && m32.winnerName) {
+            champLabel.textContent = '🏆 ' + m32.winnerName + ' (Won M32 Bracket Reset)';
+          } else if (m31 && m31.winnerSide === 'A' && m31.winnerName) {
+            champLabel.textContent = '🏆 ' + m31.winnerName + ' (Undefeated WB Champion)';
+          } else {
+            champLabel.textContent = 'TBD (Complete M31 / M32)';
+          }
+        }
+
+        renderGamesTab(allFixtures);
+        renderResultsTab(allFixtures);
+        renderScheduleTab(allFixtures);
+      }
+
+      // Delegate match winner clicks across Bracket Tree, Games & Results tabs
+      document.addEventListener('click', (e) => {
+        const treeBtn = e.target.closest('[data-tree-match]');
+        if (treeBtn) {
+          const m = parseInt(treeBtn.dataset.treeMatch, 10);
+          const side = treeBtn.dataset.treeSide;
+          if (m >= 1 && m <= 31 && (side === 'A' || side === 'B')) {
+            if (treeWinners[m] === side) {
+              delete treeWinners[m];
+            } else {
+              treeWinners[m] = side;
+            }
+            saveTreeState();
+            // Also sync to matchDecisions[m] so Results/Schedule stay live
+            setMatchWinner(m, side);
+            return;
+          }
+        }
+        const winBtn = e.target.closest('[data-win-match]');
+        if (winBtn) {
+          const matchId = parseInt(winBtn.dataset.winMatch, 10);
+          const side = winBtn.dataset.winSide;
+          if (matchId && (side === 'A' || side === 'B')) {
+            treeWinners[matchId] = side;
+            saveTreeState();
+            setMatchWinner(matchId, side);
+          }
+        }
+      });
+
+      const btnTreeMode = $('#btnTreeModeLabels');
+      if (btnTreeMode) {
+        btnTreeMode.addEventListener('click', () => {
+          showResolvedTeamNamesInTree = !showResolvedTeamNamesInTree;
+          btnTreeMode.textContent = showResolvedTeamNamesInTree
+            ? '🏷️ Node Labels: Advancing [Team #]'
+            : '🏷️ Node Labels: Match Winners (M1..M30)';
+          renderExactAsciiBracket();
+          renderVisualSixColTree();
+          toast(
+            showResolvedTeamNamesInTree
+              ? 'Showing advancing <strong>[Team #]</strong> names inside M1–M30 Winner slots.'
+              : 'Showing canonical <strong>M1 Winner – M30 Winner</strong> labels in the bracket tree.'
+          );
+        });
+      }
+
+      // Filter buttons in Games Tab
+      $$('#gamesBracketFilterBar [data-bracket-filter]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          gamesBracketFilter = btn.dataset.bracketFilter;
+          $$('#gamesBracketFilterBar [data-bracket-filter]').forEach((b) => {
+            const active = b.dataset.bracketFilter === gamesBracketFilter;
+            b.className = active
+              ? 'px-3.5 py-2 rounded-xl text-xs font-mono-num font-bold bg-[#a3d96c] text-slate-950 transition'
+              : 'px-3.5 py-2 rounded-xl text-xs font-mono-num font-bold bg-[#16151c] hover:bg-white/10 text-zinc-300 border border-white/10 transition';
+          });
+          renderAllPortalViews();
+        });
+      });
+
+      // Filter buttons in Results Tab
+      $$('#resultsFilterBar [data-res-filter]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          resultsFilter = btn.dataset.resFilter;
+          $$('#resultsFilterBar [data-res-filter]').forEach((b) => {
+            const active = b.dataset.resFilter === resultsFilter;
+            b.className = active
+              ? 'px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-[#a3d96c] text-slate-950'
+              : 'px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-zinc-300 border border-white/10';
+          });
+          renderAllPortalViews();
+        });
+      });
+
+      // Filter buttons in Schedule Tab
+      $$('#scheduleFilterBar [data-sched-filter]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          scheduleFilter = btn.dataset.schedFilter;
+          $$('#scheduleFilterBar [data-sched-filter]').forEach((b) => {
+            const active = b.dataset.schedFilter === scheduleFilter;
+            b.className = active
+              ? 'px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-amber-400 text-slate-950'
+              : 'px-3 py-1.5 rounded-xl text-xs font-mono-num font-bold bg-white/5 text-zinc-300 border border-white/10';
+          });
+          renderAllPortalViews();
+        });
+      });
+
+      // Simulate Next Pending Wave
+      const btnNextWave = $('#btnSimulateNextWave');
+      if (btnNextWave) {
+        btnNextWave.addEventListener('click', () => {
+          const all = computeAllFixtures();
+          const nextPending = all.find((f) => !f.isCompleted);
+          if (!nextPending) {
+            toast('All 32 playable matches are already resolved! Click Reset to clear.');
+            return;
+          }
+          const targetWave = nextPending.wave;
+          all.filter((f) => f.wave === targetWave && !f.isCompleted).forEach((fx) => {
+            const side = (fx.id % 2 === 1) ? 'A' : 'B';
+            matchDecisions[fx.id] = {
+              winnerSide: side,
+              scoreA: side === 'A' ? 52 : 44,
+              scoreB: side === 'B' ? 52 : 44
+            };
+          });
+          saveBracketDecisions();
+          renderAllPortalViews();
+          toast('Resolved Wave ' + targetWave + ' online fixtures! Winners advanced to Winners Bracket, Losers routed to Losers Bracket.');
+        });
+      }
+
+      // Simulate All 32 Fixtures
+      const btnSimAll = $('#btnSimulateAll32');
+      if (btnSimAll) {
+        btnSimAll.addEventListener('click', () => {
+          INITIAL_FIXTURES.forEach((fx) => {
+            const side = ((fx.id * 3) % 2 === 1) ? 'A' : 'B';
+            matchDecisions[fx.id] = {
+              winnerSide: side,
+              scoreA: side === 'A' ? 56 : 47,
+              scoreB: side === 'B' ? 56 : 47
+            };
+            if (fx.id <= 31) treeWinners[fx.id] = side;
+          });
+          saveTreeState();
+          saveBracketDecisions();
+          renderAllPortalViews();
+          toast('Simulated all 32 Double-Elimination online fixtures! Inspect Games and Results tabs.');
+        });
+      }
+
+      // Reset All 32 Fixtures
+      const btnReset = $('#btnResetBracket');
+      if (btnReset) {
+        btnReset.addEventListener('click', () => {
+          matchDecisions = {};
+          treeWinners = {};
+          saveTreeState();
+          saveBracketDecisions();
+          renderAllPortalViews();
+          toast('Reset all 32 matches back to clean Online Fixture Slots (#1–#16).');
+        });
+      }
+
+      // Date-Arrival Mode Toggle
+      const toggleDateBtn = $('#toggleDateArrivalBtn');
+      if (toggleDateBtn) {
+        toggleDateBtn.addEventListener('click', () => {
+          dateArrivedOverride = !dateArrivedOverride;
+          renderCountdownAndHeader();
+          if (dateArrivedOverride) {
+            toast('🟢 Tournament Open Mode active: viewing 7 Nov live tournament portal (Home, Games, Results, Schedule).');
+          } else {
+            toast('⏳ Pre-Kickoff Countdown Mode active: live timer counting down to 7 Nov 2026, 7:00 PM IST.');
+          }
+        });
+      }
+
+      // Static fields + Season Calendar on Home tab
+      const cal = $('#calendar');
+      EVENTS.forEach((ev) => {
+        const start = new Date(ev.start);
+        const card = $('[data-event="' + ev.id + '"]');
+        if (card) {
+          $('.js-wd', card).textContent = fmt(start, { weekday: 'short' });
+          $('.js-day', card).textContent = fmt(start, { day: 'numeric' });
+          $('.js-mon', card).textContent = fmt(start, { month: 'short' });
+          $('.js-time', card).textContent = fmt(start, { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+
+        if (cal) {
+          const li = document.createElement('li');
+          li.innerHTML =
+            '<a href="#' + ev.id + '" class="flex items-center gap-4 py-3 group">' +
+              '<span class="font-mono-num text-xs font-bold w-14 shrink-0" style="color:' + ev.color + '">' + fmt(start, { day: 'numeric', month: 'short' }) + '</span>' +
+              '<span class="flex-1 text-sm font-semibold group-hover:underline">' + ev.name + '</span>' +
+              '<span class="js-rel font-mono-num text-[11px] text-zinc-500"></span>' +
+            '</a>';
+          li.dataset.cal = ev.id;
+          cal.appendChild(li);
+        }
+      });
+
+      function renderCountdownAndHeader() {
+        const now = Date.now();
+        const regs = loadRegs();
+        const player = getActivePlayer();
+        const badge = $('#navPlayerBadge');
+        if (badge) {
+          if (player && player.username) {
+            const isRegistered = regs.includes('solo');
+            badge.textContent = (player.countryFlag || '🇮🇳') + ' ' + player.username + ' · ' + (isRegistered ? '1/1 Registered' : '0/1 Registered');
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+
+        EVENTS.forEach((ev) => {
+          const card = $('[data-event="' + ev.id + '"]');
+          if (!card) return;
+          const start = new Date(ev.start).getTime();
+          const closes = new Date(ev.closes).getTime();
+          const isTournamentOpen = (now >= start) || dateArrivedOverride;
+
+          const gateBadge = $('#portalGateBadge');
+          const toggleLabel = $('#toggleDateLabel');
+          if (gateBadge) {
+            if (isTournamentOpen) {
+              gateBadge.textContent = '🟢 TOURNAMENT PORTAL OPEN · 32 MATCHES LIVE';
+              gateBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+            } else {
+              gateBadge.textContent = '⏳ COUNTDOWN TO 7 NOV KICKOFF';
+              gateBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-mono-num font-extrabold bg-amber-400/20 text-amber-300 border border-amber-400/40';
+            }
+          }
+          if (toggleLabel) {
+            toggleLabel.textContent = isTournamentOpen
+              ? 'Mode: Tournament Open (7 Nov Arrived)'
+              : 'Mode: Pre-Kickoff Countdown (Click to Open)';
+          }
+
+          const left = isTournamentOpen ? 0 : Math.max(0, start - now);
+          const s = Math.floor(left / 1000);
+          $('.js-d', card).textContent = pad(Math.floor(s / 86400));
+          $('.js-h', card).textContent = pad(Math.floor((s % 86400) / 3600));
+          $('.js-m', card).textContent = pad(Math.floor((s % 3600) / 60));
+          $('.js-s', card).textContent = pad(s % 60);
+
+          const state = $('.js-state', card);
+          const btn = $('.js-join', card);
+          const joined = regs.includes(ev.id);
+          let label, cls;
+          if (isTournamentOpen) {
+            label = 'Tournament Open · 32 Matches Live';
+            cls = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+          } else if (now >= closes) {
+            label = 'Registration closed';
+            cls = 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30';
+          } else {
+            label = 'Registration open';
+            cls = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+          }
+          state.textContent = label;
+          state.className = 'js-state px-2 py-0.5 rounded-md text-[11px] font-mono-num font-bold border ' + cls;
+
+          const open = now < closes;
+          btn.disabled = !open && !joined;
+          btn.dataset.joined = joined ? '1' : '0';
+          if (joined) btn.textContent = open ? "You're registered ✓ (tap to withdraw)" : "You're registered ✓";
+          else btn.textContent = open ? (ev.ctaDefault || 'Register for tournament') : label;
+
+          const rel = $('[data-cal="' + ev.id + '"] .js-rel');
+          if (rel) {
+            const days = Math.ceil(Math.max(0, start - now) / 86400000);
+            rel.textContent = isTournamentOpen ? 'open now (32 matches)' : (days <= 1 ? 'today/tomorrow' : 'in ' + days + ' days');
+          }
+        });
+      }
+
+      $$('.js-join').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const card = btn.closest('[data-event]');
+          const id = card ? card.dataset.event : 'solo';
+          const ev = EVENTS.find((e) => e.id === id) || EVENTS[0];
+          if (!signedIn()) {
+            toast('Sign in to register. <a class="underline font-bold text-[#a3d96c]" href="index.html?stay=1">Go to Portal →</a>');
+            return;
+          }
+          let regs = loadRegs();
+          if (regs.includes(id)) {
+            if (Date.now() >= new Date(ev.closes).getTime()) return;
+            regs = regs.filter((x) => x !== id);
+            toast('Registration withdrawn.');
+          } else {
+            regs.push(id);
+            toast(ev.joined || "You're registered for the tournament! Bracket spot saved.");
+          }
+          saveRegs(regs);
+          renderCountdownAndHeader();
+        });
+      });
+
+      window.addEventListener('storage', (ev) => {
+        if (ev && (ev.key === REG_KEY || ev.key === REG_MAP_KEY || ev.key === SESSION_KEY || ev.key === BRACKET_STATE_KEY)) {
+          loadTreeState();
+      loadBracketDecisions();
+          renderCountdownAndHeader();
+          renderAllPortalViews();
+        }
+      });
+
+      // Initialize
+      loadBracketDecisions();
+      renderCountdownAndHeader();
+      renderAllPortalViews();
+      setInterval(renderCountdownAndHeader, 1000);
+    })();
+  </script>
+</body>
+</html>

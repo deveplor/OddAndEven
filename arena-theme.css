@@ -1,0 +1,121 @@
+/* OddAndEven v2.5 — midnight stadium design system */
+:root {
+  color-scheme: dark;
+  --arena-bg: #080f1c;
+  --arena-panel: #101d30;
+  --arena-line: #27394f;
+  --arena-accent: #79e8b0;
+  --bg-primary: #080f1c;
+  --bg-elevated: #101d30;
+  --brand-green: #79e8b0;
+}
+html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
+body, body.bg-black-grid {
+  background-color: var(--arena-bg) !important;
+  background-image: radial-gradient(ellipse at 8% 0%, #164c493b, transparent 48%), radial-gradient(ellipse at 95% 30%, #22446c40, transparent 45%) !important;
+  background-attachment: fixed;
+  color: #edf3fc;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+body > header, body > footer, body > div > header {
+  background: #0b1526f2 !important;
+  border-color: var(--arena-line) !important;
+  backdrop-filter: blur(18px);
+}
+body > nav { background: #0b1526 !important; border-color: var(--arena-line) !important; }
+body > div > header > div { flex-wrap: wrap; }
+body > div > header > div > div { min-width: 0; }
+body > div > header > div > div:nth-child(2) { flex: 1 1 36rem; justify-content: flex-start; }
+#userScoreCard, #aiScoreCard, #cardInn1Row, #cardInn2Row {
+  background: #101f33 !important; border-color: #30465e !important;
+}
+#userScoreCard { border-top: 3px solid #79e8b0 !important; }
+#aiScoreCard { border-top: 3px solid #7bb8f5 !important; }
+#userMainScore, #aiMainScore { font-size: clamp(2.5rem, 4vw, 3.5rem); }
+#btnBotWall { border-color: #cfa971 !important; background: linear-gradient(140deg, #392d27, #152339) !important; }
+#screenBotSetup button[id^="btnBot"] { text-align: left; }
+#screenBotSetup button[id^="btnBot"] > div:first-child { flex-wrap: wrap; gap: .5rem; }
+@media (min-width: 1024px) {
+  body > div > header h1 { display: none; }
+}
+.glass-card, .obsidian-card, .version-card {
+  background: linear-gradient(145deg, #14243aee, #0d182aee) !important;
+  border: 1px solid var(--arena-line) !important;
+  box-shadow: 0 16px 45px #00000030, inset 0 1px #ffffff06 !important;
+  border-radius: 1.25rem;
+}
+.obsidian-subcard { background: #111e31 !important; border-color: var(--arena-line) !important; }
+.obsidian-input, input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea {
+  background-color: #0a1425 !important;
+  border-color: #354b65 !important;
+  color: #f0f6ff;
+  min-height: 44px;
+  font-size: 1rem !important;
+}
+input::placeholder, textarea::placeholder { color: #91a2b8 !important; }
+button, a, input, select { touch-action: manipulation; }
+button { transition: background-color .18s, border-color .18s, transform .18s, box-shadow .18s; }
+button:not(:disabled) { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid #79e8b0 !important;
+  outline-offset: 4px;
+}
+.arena-cta-btn, #btnSubmitAuth {
+  background: #79e8b0 !important;
+  color: #08271c !important;
+  border: 1px solid #a5f3cd !important;
+  box-shadow: 0 6px 24px #42d89720 !important;
+  text-shadow: none !important;
+  min-height: 50px;
+}
+.arena-cta-btn:hover:not(:disabled), #btnSubmitAuth:hover:not(:disabled) { background: #a3f4cb !important; }
+.num-btn {
+  min-height: 56px;
+  background: linear-gradient(180deg, #233c56, #14273e) !important;
+  border: 1px solid #3d5c77 !important;
+  box-shadow: 0 4px 0 #050d18 !important;
+  color: #f0f7ff !important;
+  font-size: 1.25rem !important;
+  border-radius: 14px !important;
+}
+.num-btn:hover:not(:disabled), .num-btn:focus-visible {
+  background: #79e8b0 !important; color: #08271c !important; border-color: #acffd4 !important;
+  transform: translateY(-2px);
+}
+.num-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: none !important; }
+.num-btn:disabled { opacity: .4; }
+#turnTimerBar { background: #0a1526 !important; border-color: #30475e !important; }
+#timerDigitalDisplay { background: #101e31 !important; color: #9af5c5 !important; font-variant-numeric: tabular-nums; }
+#timerProgressBar { background: linear-gradient(90deg, #36c68a, #9af5c5) !important; }
+[id$="Score"], [id$="ScoreVal"], [id$="ScoreValue"] { font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.text-zinc-400, .text-slate-400 { color: #a6b6cb !important; }
+.text-zinc-500, .text-slate-500 { color: #96a8bd !important; }
+body [class*="text-[8px]"], body [class*="text-[9px]"], body [class*="text-[10px]"] { font-size: .75rem; }
+body [class*="text-[11px]"], label { font-size: .8125rem; }
+#authStatusBanner { line-height: 1.6; font-size: .9rem; }
+.arena-release { color: #79e8b0; text-transform: uppercase; letter-spacing: .16em; font-size: .75rem; font-weight: 800; }
+.arena-welcome { padding: 1.5rem; border: 1px solid #314c62; border-radius: 1.25rem; background: linear-gradient(110deg, #143d3c, #12223b 70%); }
+.arena-welcome h2 { margin: .4rem 0; font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; line-height: 1.2; letter-spacing: -.035em; }
+.arena-welcome p { color: #b8cbdc; font-size: .9rem; margin: .5rem 0 0; }
+.arena-welcome a { color: #9af5c5; text-decoration: underline; text-underline-offset: 4px; }
+.release-notes { padding: clamp(1.25rem, 4vw, 2.5rem); margin-bottom: 1.5rem; border: 1px solid #578e79; border-radius: 1.5rem; background: linear-gradient(125deg, #16413b, #101e32 70%); }
+.release-notes h2 { font-size: clamp(1.6rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -.04em; }
+.release-notes ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 1.5rem 0 0; }
+.release-notes li { list-style: none; padding: 1rem; background: #08152580; border: 1px solid #426159; border-radius: 1rem; color: #bdd1df; font-size: .95rem; }
+.release-notes strong { display: block; color: #eafff3; margin-bottom: .4rem; }
+.arena-skip { position: fixed; top: -100px; left: 1rem; z-index: 99999; padding: .75rem 1rem; background: #79e8b0; color: #08271c; border-radius: .75rem; }
+.arena-skip:focus { top: 1rem; }
+@media (max-width: 640px) {
+  body > header > div, body > div > header > div { flex-wrap: wrap; }
+  header button, nav button, nav a { min-height: 40px; }
+  #worldSyncChip { font-size: .7rem; padding: .4rem .5rem; }
+  main { min-width: 0; }
+  .release-notes ul { grid-template-columns: 1fr; }
+  .num-btn { min-height: 52px; }
+  .arena-welcome { padding: 1.1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

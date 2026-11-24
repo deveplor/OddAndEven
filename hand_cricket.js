@@ -1,5 +1,9 @@
 (function () {
       'use strict';
+      if (typeof window !== 'undefined') {
+        if (window.__hcMainEngineInitialized) return;
+        window.__hcMainEngineInitialized = true;
+      }
 
       // ==========================================
       // 1. SYNTHESIZED SOUND ENGINE (Web Audio API)
@@ -103,7 +107,7 @@
       // =========================================================================
       // ENCRYPTED LOCALSTORAGE AUTHENTICATION VAULT (Shared with login.html)
       // =========================================================================
-      
+
       // =========================================================================
       // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
       // =========================================================================
@@ -146,7 +150,11 @@
           weeklyRuns: 0,
           weeklyWickets: 0,
           tournamentWins: 0,
-          xp: 0,
+          xp: Number(rec.referralXp) || 0,
+          referralXp: Number(rec.referralXp) || 0,
+          referralCount: Number(rec.referralCount) || 0,
+          referredFriends: Array.isArray(rec.referredFriends) ? rec.referredFriends : [],
+          referralCode: rec.referralCode || null,
           maxWinStreak: 0,
           currentWinStreak: 0,
           maxBoundariesInMatch: 0,
@@ -273,20 +281,7 @@
       }
 
       // One-time Version 1 clean slate wipe so all old test leaderboard data & test login/signup accounts are removed for publishing
-      try {
-        if (localStorage.getItem(RELEASE_CLEAN_SLATE_KEY) !== 'v1_clean') {
-          localStorage.removeItem(AUTH_STORAGE_KEY);
-          localStorage.removeItem(SESSION_STORAGE_KEY);
-          localStorage.removeItem('oddandeven_worldwide_players_v1');
-          localStorage.removeItem('hc_arena_elo_v2');
-          localStorage.removeItem('hc_arena_stats_v1');
-          localStorage.removeItem(SCORECARD_HISTORY_KEY);
-          localStorage.removeItem('oddandeven_just_logged_in');
-          localStorage.removeItem('oddandeven_signed_out_v1');
-          sessionStorage.removeItem(SESSION_STORAGE_KEY);
-          localStorage.setItem(RELEASE_CLEAN_SLATE_KEY, 'v1_clean');
-        }
-      } catch (e) {}
+      // v2.5 preserves existing accounts and statistics; no release-time wipe.
 
       function fnv1aHash(str) {
         let h = 0x811c9dc5;
@@ -652,6 +647,19 @@
         firstBatter: null, // 'USER' | 'AI'
         currentBatter: null, // 'USER' | 'AI'
         currentInnings: 0, // 1 or 2
+
+        mpFormat: '1V1', // '1V1' | '2V2'
+        mp2v2InvitedFriends: [], // up to 3 invited friend usernames
+        mp2v2Teammate: null, // 1 friend chosen for Host's team (rest 2 go to Opponent Team)
+        mp2v2OppCaptain: null, // Opponent Team Captain assigned by Host
+        mp2v2TeamAOrderSwapped: false,
+        mp2v2TeamBOrderSwapped: false,
+        userInningsWickets: 0,
+        aiInningsWickets: 0,
+        userBatterScores: [0, 0],
+        userBatterBalls: [0, 0],
+        aiBatterScores: [0, 0],
+        aiBatterBalls: [0, 0],
 
         userScore: 0,
         userBalls: 0,
@@ -1895,6 +1903,14 @@
       // Smart AI number selection across the 4 Elo Tiers (250-700, 700-1400, 1400-2200, 2200-2800)
       function generateBotNumber(isBotBatting, userNum) {
         const diff = STATE.botDifficulty || 'TACTICIAN';
+        if (diff === 'WALL' && window.OAEGrandmaster) {
+          const roleHistory = isBotBatting ? STATE.userBowlingHistory : STATE.userBattingHistory;
+          return window.OAEGrandmaster.choose({
+            history: roleHistory || [],
+            batting: isBotBatting,
+            runsNeeded: STATE.currentInnings === 2 ? STATE.target - (isBotBatting ? STATE.aiScore : STATE.userScore) : null
+          });
+        }
         const hist = STATE.userNumHistory;
         const patternScores = analyzeUserPatterns(hist);
         const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
@@ -1958,130 +1974,7 @@
           }
         }
 
-                // TIER 4: MASTER BOT (2650 ELO, 2200-2800) — APEX ORACLE: 100% UNBEATABLE & PREDICTS NEXT MOVES OF USER!
-        if (diff === 'WALL') {
-          if (!STATE.masterBotRecentPicks) {
-            STATE.masterBotRecentPicks = [];
-          }
 
-          if (!isBotBatting) {
-            // Master Bot is BOWLING (User is Batting):
-            // Pure predictive bowling based on user history, Markov patterns, and psychology — NO finger tracking!
-            const wallScores = { ...patternScores };
-            const len = hist ? hist.length : 0;
-
-            // Situational adjustments for 2nd innings chase
-            if (STATE.currentInnings === 2) {
-              const target = STATE.target || 999;
-              const currentScore = STATE.userScore || 0;
-              const need = target - currentScore;
-              if (need >= 1 && need <= 10) {
-                // User is under pressure and very likely to attempt a winning shot
-                wallScores[need] = (wallScores[need] || 1) + 4.5;
-              }
-            }
-
-            // Repetition habit adjustment: humans rarely repeat the same number 3+ times
-            if (len >= 2 && hist[len - 1] === hist[len - 2]) {
-              const repNum = hist[len - 1];
-              wallScores[repNum] = Math.max(0.5, (wallScores[repNum] || 1) * 0.4);
-            }
-
-            const wallRanked = Object.keys(wallScores).map(Number).sort((a, b) => wallScores[b] - wallScores[a]);
-
-            // Opening delivery when user history is empty
-            if (len === 0) {
-              const openingPicks = [
-                { num: 7, weight: 30 },
-                { num: 6, weight: 25 },
-                { num: 4, weight: 15 },
-                { num: 10, weight: 15 },
-                { num: 8, weight: 10 },
-                { num: 5, weight: 5 }
-              ];
-              const rand = Math.random() * 100;
-              let acc = 0;
-              for (const item of openingPicks) {
-                acc += item.weight;
-                if (rand < acc) return item.num;
-              }
-              return 7;
-            }
-
-            // Weighted probabilistic selection:
-            // 55% top predicted shot, 25% 2nd predicted, 12% 3rd predicted, 8% tactical variation
-            const roll = Math.random();
-            if (roll < 0.55 && wallRanked[0]) {
-              return wallRanked[0];
-            } else if (roll < 0.80 && wallRanked[1]) {
-              return wallRanked[1];
-            } else if (roll < 0.92 && wallRanked[2]) {
-              return wallRanked[2];
-            } else {
-              const tacticalTraps = [4, 5, 6, 7, 8, 10];
-              return tacticalTraps[Math.floor(Math.random() * tacticalTraps.length)];
-            }
-          } else {
-            // Master Bot is BATTING (User is Bowling):
-            // Plays fair strategic shots without inspecting bowler's current number.
-            // Avoids predicted bowler danger traps and selects high-scoring boundary runs.
-            const dangerDeliveries = rankedUserNums.slice(0, 2);
-
-            // In 2nd Innings: Smart chase calculation
-            if (STATE.currentInnings === 2) {
-              const target = STATE.target || 999;
-              const currentScore = STATE.aiScore || 0;
-              const need = Math.max(1, target - currentScore);
-              if (need <= 10) {
-                const winningShots = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1].filter(n => n >= need && n !== STATE.lastAiNum);
-                const safeWinning = winningShots.filter(n => !dangerDeliveries.includes(n));
-                const candidates = safeWinning.length > 0 ? safeWinning : winningShots;
-                if (candidates.length > 0) {
-                  const pick = candidates.includes(need) ? need : candidates[0];
-                  STATE.masterBotRecentPicks.push(pick);
-                  return pick;
-                }
-              }
-            }
-
-            // High-scoring candidates (10, 8, 7, 9, 6, 5, 4) avoiding consecutive repetition
-            let candidates = [10, 8, 7, 9, 6, 5, 4].filter(n => n !== STATE.lastAiNum);
-
-            // Prevent repetitive 9/10 ping-pong
-            const rec = STATE.masterBotRecentPicks;
-            const rLen = rec.length;
-            if (rLen >= 2 && rec[rLen - 1] >= 9 && rec[rLen - 2] >= 9) {
-              const sub = candidates.filter(n => n < 9);
-              if (sub.length > 0) candidates = sub;
-            }
-
-            // 85% probability of dodging the bowler's top anticipated delivery
-            if (dangerDeliveries.length > 0 && Math.random() < 0.85) {
-              const safeCandidates = candidates.filter(n => !dangerDeliveries.includes(n));
-              if (safeCandidates.length > 0) {
-                candidates = safeCandidates;
-              }
-            }
-
-            let chosen;
-            if (candidates.length >= 3) {
-              const topPicks = candidates.slice(0, 3);
-              chosen = topPicks[Math.floor(Math.random() * topPicks.length)];
-            } else if (candidates.length > 0) {
-              chosen = candidates[0];
-            } else {
-              chosen = randomInt1To10();
-            }
-
-            STATE.masterBotRecentPicks.push(chosen);
-            if (STATE.masterBotRecentPicks.length > 10) {
-              STATE.masterBotRecentPicks.shift();
-            }
-            return chosen;
-          }
-        }
-
-        // Default fallback
         return randomInt1To10();
       }
 
@@ -2266,12 +2159,144 @@
         return STATE.mode === 'ONLINE_2P';
       }
 
+      function is2v2Match() {
+        return isMultiplayer() && STATE.mpFormat === '2V2';
+      }
+
+      function getMaxWicketsPerInnings() {
+        return is2v2Match() ? 2 : 1;
+      }
+
+      function sync2v2TeamsAndCaptains() {
+        const hostName = ((STATE.onlineRole === 'GUEST' ? STATE.p1Name : STATE.myUsername) || STATE.p1Name || 'PLAYER_1').trim().toUpperCase();
+        if (!Array.isArray(STATE.mp2v2InvitedFriends)) STATE.mp2v2InvitedFriends = [];
+        STATE.mp2v2InvitedFriends = Array.from(
+          new Set(
+            STATE.mp2v2InvitedFriends
+              .map((u) => String(u || '').trim().toUpperCase())
+              .filter((u) => u && u !== hostName && u !== 'WAITING...')
+          )
+        ).slice(0, 3);
+
+        if (STATE.p2Joined && STATE.p2Name && STATE.p2Name !== 'WAITING...' && STATE.p2Name !== hostName) {
+          const cleanP2 = STATE.p2Name.trim().toUpperCase();
+          if (!STATE.mp2v2InvitedFriends.includes(cleanP2) && STATE.mp2v2InvitedFriends.length < 3) {
+            STATE.mp2v2InvitedFriends.unshift(cleanP2);
+          }
+        }
+
+        if (!STATE.mp2v2Teammate || !STATE.mp2v2InvitedFriends.includes(STATE.mp2v2Teammate)) {
+          STATE.mp2v2Teammate = STATE.mp2v2InvitedFriends[0] || null;
+        }
+
+        const oppPlayers = STATE.mp2v2InvitedFriends.filter((u) => u !== STATE.mp2v2Teammate);
+        if (!STATE.mp2v2OppCaptain || !oppPlayers.includes(STATE.mp2v2OppCaptain)) {
+          STATE.mp2v2OppCaptain = oppPlayers[0] || null;
+        }
+
+        return {
+          hostName,
+          teammate: STATE.mp2v2Teammate || 'TEAMMATE_2',
+          opp1: oppPlayers[0] || 'OPPONENT_1',
+          opp2: oppPlayers[1] || 'OPPONENT_2',
+          teamACaptain: hostName,
+          teamBCaptain: STATE.mp2v2OppCaptain || oppPlayers[0] || 'OPPONENT_1',
+          invitedCount: STATE.mp2v2InvitedFriends.length,
+          isSquadComplete: STATE.mp2v2InvitedFriends.length >= 3
+        };
+      }
+
+      function get2v2TeamLineups() {
+        const sq = sync2v2TeamsAndCaptains();
+        const teamABase = [sq.hostName, sq.teammate];
+        const teamBBase = [sq.opp1, sq.opp2];
+        const teamAOrder = STATE.mp2v2TeamAOrderSwapped ? [teamABase[1], teamABase[0]] : [teamABase[0], teamABase[1]];
+        const teamBOrder = STATE.mp2v2TeamBOrderSwapped ? [teamBBase[1], teamBBase[0]] : [teamBBase[0], teamBBase[1]];
+        return {
+          teamACaptain: sq.teamACaptain,
+          teamBCaptain: sq.teamBCaptain,
+          teamAMembers: teamABase,
+          teamBMembers: teamBBase,
+          teamABattingOrder: teamAOrder,
+          teamBBattingOrder: teamBOrder,
+          teamABowlingOrder: teamAOrder,
+          teamBBowlingOrder: teamBOrder,
+          teamALabel: `${sq.hostName} (C) & ${sq.teammate}`,
+          teamBLabel: `${sq.teamBCaptain} (C) & ${sq.teamBCaptain === sq.opp1 ? sq.opp2 : sq.opp1}`,
+          isSquadComplete: sq.isSquadComplete,
+          invitedCount: sq.invitedCount
+        };
+      }
+
+      function getActiveBatterIndex(isTeamABatting) {
+        if (!is2v2Match()) return 0;
+        const wkts = isTeamABatting ? (STATE.userInningsWickets || 0) : (STATE.aiInningsWickets || 0);
+        return wkts >= 1 ? 1 : 0;
+      }
+
+      function getActiveBatterName(isTeamABatting) {
+        if (!is2v2Match()) {
+          return isTeamABatting ? getP1Label() : getP2Label();
+        }
+        const lu = get2v2TeamLineups();
+        const order = isTeamABatting ? lu.teamABattingOrder : lu.teamBBattingOrder;
+        return order[getActiveBatterIndex(isTeamABatting)] || order[0];
+      }
+
+      function getPartnerBatterName(isTeamABatting) {
+        if (!is2v2Match()) return null;
+        const lu = get2v2TeamLineups();
+        const order = isTeamABatting ? lu.teamABattingOrder : lu.teamBBattingOrder;
+        const activeIdx = getActiveBatterIndex(isTeamABatting);
+        return order[activeIdx === 0 ? 1 : 0] || order[1];
+      }
+
+      function getActiveBowlerIndex(isTeamABatting, ballsOverride = null) {
+        if (!is2v2Match()) return 0;
+        const completedBalls = ballsOverride !== null
+          ? ballsOverride
+          : (isTeamABatting ? (STATE.userBalls || 0) : (STATE.aiBalls || 0));
+        // Switches every 6 balls (Over 0: balls 0..5 -> idx 0, Over 1: balls 6..11 -> idx 1, etc.)
+        return Math.floor(Math.max(0, completedBalls) / 6) % 2;
+      }
+
+      function getActiveBowlerName(isTeamABatting, ballsOverride = null) {
+        if (!is2v2Match()) {
+          return isTeamABatting ? getP2Label() : getP1Label();
+        }
+        const lu = get2v2TeamLineups();
+        const bowlOrder = isTeamABatting ? lu.teamBBowlingOrder : lu.teamABowlingOrder;
+        return bowlOrder[getActiveBowlerIndex(isTeamABatting, ballsOverride)] || bowlOrder[0];
+      }
+
+      function getOtherBowlerName(isTeamABatting, ballsOverride = null) {
+        if (!is2v2Match()) return null;
+        const lu = get2v2TeamLineups();
+        const bowlOrder = isTeamABatting ? lu.teamBBowlingOrder : lu.teamABowlingOrder;
+        const curIdx = getActiveBowlerIndex(isTeamABatting, ballsOverride);
+        return bowlOrder[curIdx === 0 ? 1 : 0] || bowlOrder[1];
+      }
+
+      function formatCricketOver(balls) {
+        const b = Math.max(0, Number(balls) || 0);
+        return `${Math.floor(b / 6)}.${b % 6}`;
+      }
+
       function isMultiplayerReadyToPlay() {
-        return !isMultiplayer() || (Boolean(STATE.p2Joined) && Boolean(STATE.roomLocked) && STATE.p2Name && STATE.p2Name !== 'WAITING...');
+        if (!isMultiplayer()) return true;
+        if (STATE.mpFormat === '2V2') {
+          const sq = sync2v2TeamsAndCaptains();
+          return sq.isSquadComplete && Boolean(STATE.roomCode);
+        }
+        return Boolean(STATE.p2Joined) && Boolean(STATE.roomLocked) && STATE.p2Name && STATE.p2Name !== 'WAITING...';
       }
 
       function getP1Label() {
         if (isMultiplayer()) {
+          if (STATE.mpFormat === '2V2') {
+            const sq = sync2v2TeamsAndCaptains();
+            return sq.teamACaptain;
+          }
           if (STATE.onlineRole === 'GUEST') {
             if (STATE.p1Name && STATE.p1Name !== STATE.myUsername) {
               return STATE.p1Name.trim().toUpperCase();
@@ -2286,6 +2311,10 @@
 
       function getP2Label() {
         if (isMultiplayer()) {
+          if (STATE.mpFormat === '2V2') {
+            const sq = sync2v2TeamsAndCaptains();
+            return sq.teamBCaptain;
+          }
           const p1 = getP1Label();
           let p2 = (STATE.p2Name || (STATE.onlineRole === 'GUEST' ? STATE.myUsername : 'WAITING...')).trim().toUpperCase();
           if (STATE.roomLocked && STATE.p2Joined && (p2 === p1 || p2 === 'WAITING...')) {
@@ -2295,6 +2324,184 @@
         }
         const prof = BOT_PROFILES[STATE.botDifficulty] || BOT_PROFILES.TACTICIAN;
         return prof.name;
+      }
+
+      function broadcast2v2SquadConfig() {
+        if (!STATE.roomCode) return;
+        const sq = sync2v2TeamsAndCaptains();
+        sendNetMessage({
+          type: 'SQUAD_2V2_SYNC',
+          roomCode: STATE.roomCode,
+          mpFormat: STATE.mpFormat,
+          mp2v2InvitedFriends: STATE.mp2v2InvitedFriends,
+          mp2v2Teammate: STATE.mp2v2Teammate,
+          mp2v2OppCaptain: STATE.mp2v2OppCaptain,
+          mp2v2TeamAOrderSwapped: STATE.mp2v2TeamAOrderSwapped,
+          mp2v2TeamBOrderSwapped: STATE.mp2v2TeamBOrderSwapped,
+          p1Name: sq.teamACaptain,
+          p2Name: sq.teamBCaptain
+        });
+      }
+
+      function setMultiplayerFormat(fmt) {
+        if (!requireAccountAndPassword()) return;
+        SoundFX.click();
+        STATE.mpFormat = fmt === '2V2' ? '2V2' : '1V1';
+        if (STATE.mpFormat === '2V2') {
+          if (!STATE.roomCode) {
+            createMultiplayerRoom();
+          }
+          sync2v2TeamsAndCaptains();
+          if (STATE.mp2v2InvitedFriends.length >= 3) {
+            const sq = sync2v2TeamsAndCaptains();
+            STATE.p2Name = sq.teamBCaptain;
+            STATE.p2Joined = true;
+            STATE.roomLocked = true;
+          }
+        }
+        broadcast2v2SquadConfig();
+        renderAll();
+      }
+
+      function inviteFriendTo2v2Squad(rawUsername) {
+        if (!requireAccountAndPassword()) return;
+        SoundFX.click();
+        const target = String(rawUsername || '').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+        const me = (STATE.myUsername || 'PLAYER_1').trim().toUpperCase();
+        if (!target || target.length < 3 || isPlaceholderUsername(target)) {
+          updateNetStatusUI('⚠️ Enter a valid friend username (3+ characters) to invite!', false);
+          renderAll();
+          return;
+        }
+        if (target === me) {
+          updateNetStatusUI('⚠️ You are already Team Alpha Captain! Invite 3 friends.', false);
+          renderAll();
+          return;
+        }
+        if (!STATE.roomCode) {
+          createMultiplayerRoom();
+        }
+        STATE.mpFormat = '2V2';
+        ensureHumanPlayerRecord(target, 1500, { countryCode: '+91', countryFlag: '🇮🇳', countryName: 'India' }, true);
+
+        if (!Array.isArray(STATE.mp2v2InvitedFriends)) STATE.mp2v2InvitedFriends = [];
+        if (!STATE.mp2v2InvitedFriends.includes(target)) {
+          if (STATE.mp2v2InvitedFriends.length >= 3) {
+            updateNetStatusUI('⚠️ All 3 Friend Slots are full (4/4 Players)! Remove a slot first to swap.', true);
+            renderAll();
+            return;
+          }
+          STATE.mp2v2InvitedFriends.push(target);
+        }
+
+        const sq = sync2v2TeamsAndCaptains();
+        if (sq.isSquadComplete) {
+          STATE.p2Name = sq.teamBCaptain;
+          STATE.p2Joined = true;
+          STATE.roomLocked = true;
+          updateNetStatusUI(`🔒 2v2 Squad Ready (4/4): ${sq.hostName} (C) & ${sq.teammate} vs ${sq.teamBCaptain} (C) & ${sq.teamBCaptain === sq.opp1 ? sq.opp2 : sq.opp1}`, true);
+        } else {
+          updateNetStatusUI(`📨 Invited @${target} to 2v2 Squad (${sq.invitedCount}/3 Friends Invited)`, false);
+        }
+
+        broadcastFriendEventPacket({
+          type: 'FRIEND_MATCH_INVITE',
+          fromUser: me,
+          fromFlag: STATE.myCountryFlag || '🇮🇳',
+          fromCode: STATE.myCountryCode || '+91',
+          fromElo: STATE.eloRating || 1500,
+          toUser: target,
+          roomCode: STATE.roomCode,
+          mpFormat: '2V2',
+          autoStart: false,
+          timestamp: Date.now()
+        });
+        if (typeof window.__sendCloudFriendInvite === 'function') {
+          try { window.__sendCloudFriendInvite(target, me, STATE.myCountryFlag || '🇮🇳', STATE.roomCode); } catch (e) {}
+        }
+
+        broadcast2v2SquadConfig();
+        renderAll();
+      }
+
+      function removeFriendFrom2v2Squad(username) {
+        SoundFX.click();
+        const clean = String(username || '').trim().toUpperCase();
+        if (!Array.isArray(STATE.mp2v2InvitedFriends)) return;
+        STATE.mp2v2InvitedFriends = STATE.mp2v2InvitedFriends.filter((u) => u !== clean);
+        const sq = sync2v2TeamsAndCaptains();
+        if (!sq.isSquadComplete && !STATE.onlineConnected) {
+          STATE.roomLocked = false;
+          STATE.p2Joined = false;
+        }
+        broadcast2v2SquadConfig();
+        renderAll();
+      }
+
+      function select2v2Teammate(username) {
+        SoundFX.click();
+        const clean = String(username || '').trim().toUpperCase();
+        if (!STATE.mp2v2InvitedFriends.includes(clean)) return;
+        STATE.mp2v2Teammate = clean;
+        const sq = sync2v2TeamsAndCaptains();
+        if (sq.isSquadComplete) {
+          STATE.p2Name = sq.teamBCaptain;
+        }
+        broadcast2v2SquadConfig();
+        renderAll();
+      }
+
+      function assign2v2OpponentCaptain(username) {
+        SoundFX.click();
+        const clean = String(username || '').trim().toUpperCase();
+        const sq = sync2v2TeamsAndCaptains();
+        if (clean === sq.opp1 || clean === sq.opp2) {
+          STATE.mp2v2OppCaptain = clean;
+          STATE.p2Name = clean;
+          updateNetStatusUI(`👑 Assigned @${clean} as Opponent Team Captain!`, sq.isSquadComplete);
+          broadcast2v2SquadConfig();
+          renderAll();
+        }
+      }
+
+      function swap2v2TeamOrder(teamSide) {
+        SoundFX.click();
+        if (teamSide === 'A') {
+          STATE.mp2v2TeamAOrderSwapped = !STATE.mp2v2TeamAOrderSwapped;
+        } else {
+          STATE.mp2v2TeamBOrderSwapped = !STATE.mp2v2TeamBOrderSwapped;
+        }
+        broadcast2v2SquadConfig();
+        renderAll();
+      }
+
+      function autoFill2v2SquadFromFriends() {
+        if (!requireAccountAndPassword()) return;
+        SoundFX.click();
+        if (!STATE.roomCode) {
+          createMultiplayerRoom();
+        }
+        STATE.mpFormat = '2V2';
+        const me = (STATE.myUsername || 'PLAYER_1').trim().toUpperCase();
+        const myFriends = getMyFriendsList().filter((u) => u && u !== me);
+        const dirPlayers = Object.keys(STATE.humanPlayers || {}).map((u) => u.trim().toUpperCase()).filter((u) => u && u !== me && !isPlaceholderUsername(u) && !FAKE_SEED_NAMES.includes(u));
+        const fallbackSquad = ['ROHIT_45', 'VIRAT_18', 'DHONI_07', 'BUMRAH_93'];
+        const pool = Array.from(new Set([...STATE.mp2v2InvitedFriends, ...myFriends, ...dirPlayers, ...fallbackSquad])).filter((u) => u && u !== me);
+
+        while (STATE.mp2v2InvitedFriends.length < 3 && pool.length > 0) {
+          const nextU = pool.shift();
+          if (nextU && !STATE.mp2v2InvitedFriends.includes(nextU)) {
+            ensureHumanPlayerRecord(nextU, 1500, { countryCode: '+91', countryFlag: '🇮🇳', countryName: 'India' }, true);
+            STATE.mp2v2InvitedFriends.push(nextU);
+          }
+        }
+        const sq = sync2v2TeamsAndCaptains();
+        STATE.p2Name = sq.teamBCaptain;
+        STATE.p2Joined = true;
+        STATE.roomLocked = true;
+        updateNetStatusUI(`🔒 2v2 Squad Locked: ${sq.hostName} (C) & ${sq.teammate} vs ${sq.teamBCaptain} (C) & ${sq.teamBCaptain === sq.opp1 ? sq.opp2 : sq.opp1}`, true);
+        broadcast2v2SquadConfig();
+        renderAll();
       }
 
       function handleIncomingMatchInvite(data) {
@@ -3052,6 +3259,18 @@
           return;
         }
 
+        if (msg.type === 'SQUAD_2V2_SYNC') {
+          if (msg.mpFormat) STATE.mpFormat = msg.mpFormat;
+          if (Array.isArray(msg.mp2v2InvitedFriends)) STATE.mp2v2InvitedFriends = msg.mp2v2InvitedFriends;
+          if (msg.mp2v2Teammate !== undefined) STATE.mp2v2Teammate = msg.mp2v2Teammate;
+          if (msg.mp2v2OppCaptain !== undefined) STATE.mp2v2OppCaptain = msg.mp2v2OppCaptain;
+          if (typeof msg.mp2v2TeamAOrderSwapped === 'boolean') STATE.mp2v2TeamAOrderSwapped = msg.mp2v2TeamAOrderSwapped;
+          if (typeof msg.mp2v2TeamBOrderSwapped === 'boolean') STATE.mp2v2TeamBOrderSwapped = msg.mp2v2TeamBOrderSwapped;
+          sync2v2TeamsAndCaptains();
+          renderAll();
+          return;
+        }
+
         if (msg.type === 'JOIN_HELLO' || msg.type === 'GUEST_JOINED') {
           // Only Host processes JOIN_HELLO / GUEST_JOINED
           if (STATE.onlineRole !== 'HOST') return;
@@ -3060,16 +3279,24 @@
             incomingP2 = incomingP2 + ' (Guest)';
           }
 
-          // If room is already locked with a different player, reject 3rd player!
-          if (STATE.roomLocked && STATE.p2Joined && STATE.p2Name && STATE.p2Name !== 'WAITING...' && STATE.p2Name !== incomingP2) {
-            sendNetMessage({
-              type: 'ROOM_LOCKED_REJECT',
-              roomCode: STATE.roomCode,
-              targetUser: incomingP2,
-              p1Name: STATE.p1Name,
-              p2Name: STATE.p2Name
-            });
-            return;
+          if (STATE.mpFormat === '2V2') {
+            if (!Array.isArray(STATE.mp2v2InvitedFriends)) STATE.mp2v2InvitedFriends = [];
+            if (!STATE.mp2v2InvitedFriends.includes(incomingP2) && STATE.mp2v2InvitedFriends.length < 3) {
+              STATE.mp2v2InvitedFriends.push(incomingP2);
+            }
+            sync2v2TeamsAndCaptains();
+          } else {
+            // If 1v1 room is already locked with a different player, reject 3rd player!
+            if (STATE.roomLocked && STATE.p2Joined && STATE.p2Name && STATE.p2Name !== 'WAITING...' && STATE.p2Name !== incomingP2) {
+              sendNetMessage({
+                type: 'ROOM_LOCKED_REJECT',
+                roomCode: STATE.roomCode,
+                targetUser: incomingP2,
+                p1Name: STATE.p1Name,
+                p2Name: STATE.p2Name
+              });
+              return;
+            }
           }
 
           // Lock the room immediately with P1 vs P2!
@@ -3215,6 +3442,12 @@
           }
         } else if (msg.type === 'HOST_START_MATCH') {
           STATE.mode = 'ONLINE_2P';
+          if (msg.mpFormat) STATE.mpFormat = msg.mpFormat;
+          if (Array.isArray(msg.mp2v2InvitedFriends)) STATE.mp2v2InvitedFriends = msg.mp2v2InvitedFriends;
+          if (msg.mp2v2Teammate !== undefined) STATE.mp2v2Teammate = msg.mp2v2Teammate;
+          if (msg.mp2v2OppCaptain !== undefined) STATE.mp2v2OppCaptain = msg.mp2v2OppCaptain;
+          if (typeof msg.mp2v2TeamAOrderSwapped === 'boolean') STATE.mp2v2TeamAOrderSwapped = msg.mp2v2TeamAOrderSwapped;
+          if (typeof msg.mp2v2TeamBOrderSwapped === 'boolean') STATE.mp2v2TeamBOrderSwapped = msg.mp2v2TeamBOrderSwapped;
           if (msg.p1Name) STATE.p1Name = msg.p1Name;
           if (msg.p2Name) STATE.p2Name = msg.p2Name;
           if (msg.p1CountryFlag) STATE.p1CountryFlag = msg.p1CountryFlag;
@@ -3927,7 +4160,21 @@
       }
 
       function hostTriggerMultiplayerMatchStart() {
-        if (!isMultiplayerReadyToPlay() || STATE.onlineRole !== 'HOST') {
+        if (STATE.mpFormat === '2V2') {
+          if (!STATE.roomCode) createMultiplayerRoom();
+          const sq = sync2v2TeamsAndCaptains();
+          if (!sq.isSquadComplete) {
+            updateNetStatusUI(`⏳ Invite ${3 - sq.invitedCount} more friend${3 - sq.invitedCount === 1 ? '' : 's'} (or click Auto-Fill Squad) to start 2v2 Match!`, false);
+            renderAll();
+            return;
+          }
+          STATE.p1Name = sq.teamACaptain;
+          STATE.p2Name = sq.teamBCaptain;
+          STATE.p2Joined = true;
+          STATE.roomLocked = true;
+          STATE.onlineRole = STATE.onlineRole || 'HOST';
+        }
+        if (!isMultiplayerReadyToPlay() || (STATE.onlineRole !== 'HOST' && STATE.mpFormat !== '2V2')) {
           updateNetStatusUI(`⏳ Cannot start yet! Waiting for Friend (Player 2) to join Room ${STATE.roomCode || ''}...`, false);
           if (el.inlineLobbyWaitHint) {
             el.inlineLobbyWaitHint.textContent = `⚠️ Match cannot start until your friend joins Room ${STATE.roomCode || ''}! Share the Room Code first.`;
@@ -3944,8 +4191,14 @@
         }
         sendNetMessage({
           type: 'HOST_START_MATCH',
-          p1Name: STATE.p1Name,
-          p2Name: STATE.p2Name,
+          mpFormat: STATE.mpFormat,
+          mp2v2InvitedFriends: STATE.mp2v2InvitedFriends,
+          mp2v2Teammate: STATE.mp2v2Teammate,
+          mp2v2OppCaptain: STATE.mp2v2OppCaptain,
+          mp2v2TeamAOrderSwapped: STATE.mp2v2TeamAOrderSwapped,
+          mp2v2TeamBOrderSwapped: STATE.mp2v2TeamBOrderSwapped,
+          p1Name: getP1Label(),
+          p2Name: getP2Label(),
           p1CountryFlag: STATE.p1CountryFlag,
           p1CountryCode: STATE.p1CountryCode,
           p2CountryFlag: STATE.p2CountryFlag,
@@ -3993,8 +4246,8 @@
 
       function enforceMandatoryAuthGate(customBannerMessage = null) {
         syncAuthAndPurgeFakeSeeds();
+        if (el.btnCloseAuthModal) el.btnCloseAuthModal.classList.remove('hidden');
         if (STATE.isAuthenticated && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
-          if (el.btnCloseAuthModal) el.btnCloseAuthModal.classList.remove('hidden');
           if (el.modalAccountActionsWrap) el.modalAccountActionsWrap.classList.remove('hidden');
           if (el.modalAuthTitle) {
             el.modalAuthTitle.innerHTML = '<span>🔐</span><span>Player Account &amp; Security</span>';
@@ -4008,41 +4261,43 @@
               localStorage.removeItem('oddandeven_just_logged_in');
               sessionStorage.removeItem('oddandeven_show_v2_box');
             } catch (e) {}
-            if (typeof window.openVersion2Showcase === 'function') {
-              window.openVersion2Showcase();
-            }
           }
           return true;
         }
 
-        // User is NOT authenticated: hide Version 2 showcase box, stop timer & lock screen with mandatory Login / Sign Up modal
-        if (typeof window.closeVersion2Showcase === 'function') {
-          window.closeVersion2Showcase();
-        }
-        stopTurnTimer();
-        if (el.authModal) {
-          el.authModal.classList.remove('hidden');
-          el.authModal.classList.add('flex');
-        }
-        if (el.btnCloseAuthModal) el.btnCloseAuthModal.classList.add('hidden');
+        // Guest / Unauthenticated state: do NOT auto-lock the page on startup unless customBannerMessage is explicitly passed
         if (el.modalAccountActionsWrap) el.modalAccountActionsWrap.classList.add('hidden');
         if (el.modalRemoveConfirmBox) el.modalRemoveConfirmBox.classList.add('hidden');
         if (el.modalAuthTitle) {
-          el.modalAuthTitle.innerHTML = '<span>🔒</span><span>Account &amp; Password Required</span>';
+          el.modalAuthTitle.innerHTML = '<span>🔐</span><span>Sign In or Create Free Account</span>';
         }
         if (el.modalAuthSubtitle) {
-          el.modalAuthSubtitle.textContent = 'You must Sign In or Sign Up with a 5-Digit PIN password to play';
+          el.modalAuthSubtitle.textContent = 'Sign in or create an account with your 5-Digit PIN to save stats & play Ranked';
         }
-        if (customBannerMessage && el.modalAuthAlert) {
-          el.modalAuthAlert.classList.remove('hidden');
-          el.modalAuthAlert.className = 'p-2.5 rounded-xl text-xs font-bold border bg-amber-500/15 border-amber-400/40 text-amber-200';
-          el.modalAuthAlert.textContent = customBannerMessage;
+        if (customBannerMessage) {
+          if (el.authModal) {
+            el.authModal.classList.remove('hidden');
+            el.authModal.classList.add('flex');
+          }
+          if (el.modalAuthAlert) {
+            el.modalAuthAlert.classList.remove('hidden');
+            el.modalAuthAlert.className = 'p-2.5 rounded-xl text-xs font-bold border bg-amber-500/15 border-amber-400/40 text-amber-200';
+            el.modalAuthAlert.textContent = customBannerMessage;
+          }
+          return false;
         }
-        return false;
+        return true;
       }
 
       function requireAccountAndPassword() {
-        return enforceMandatoryAuthGate('🔒 Account & 5-Digit PIN Password required! Sign in or create an account below to play.');
+        syncAuthAndPurgeFakeSeeds();
+        if (STATE.isAuthenticated && STATE.myUsername && !isPlaceholderUsername(STATE.myUsername)) {
+          return true;
+        }
+        if (!isMultiplayer() && (STATE.activeScreen === 'PITCH' || STATE.activeScreen === 'BOT_SETUP')) {
+          return true;
+        }
+        return enforceMandatoryAuthGate('🔒 Please Sign In or Sign Up with a 5-Digit PIN to use this feature.');
       }
 
       function isTimerActiveState() {
@@ -4377,6 +4632,25 @@
 
         sendNetMessage({ type: 'PICK_NUM', player: mySlot, num, lockedSec });
 
+        // In 2v2 Squad Mode when remote opponent peer is not live-connected on a second browser,
+        // automatically generate the Opponent Captain / active Opponent player's hand so 2v2 plays seamlessly!
+        if (is2v2Match() && !STATE.onlineConnected && mySlot === 'P1' && STATE.pendingP2Num === null) {
+          startTurnTimer();
+          renderAll();
+          setTimeout(() => {
+            if (STATE.pendingP1Num !== null && STATE.pendingP2Num === null && (STATE.phase === 'TOSS' || STATE.phase === 'INNINGS_1' || STATE.phase === 'INNINGS_2')) {
+              const oppNum = STATE.phase === 'TOSS'
+                ? randomInt1To10()
+                : generateBotNumber(STATE.currentBatter === 'AI', num);
+              STATE.pendingP2Num = oppNum;
+              STATE.p2LockedSec = Math.max(1, STATE.turnSecondsLeft - 1);
+              checkAndResolveMultiplayerTurn();
+              renderAll();
+            }
+          }, 320);
+          return;
+        }
+
         if (STATE.pendingP1Num !== null && STATE.pendingP2Num === null) {
           // Lock P1 countdown and unlock 15s countdown for P2!
           startTurnTimer();
@@ -4445,14 +4719,16 @@
           badgeColor: p1Won ? 'emerald' : 'cyan'
         });
 
+        const capSuffixA = is2v2Match() ? ' (Team A Captain)' : ' (P1)';
+        const capSuffixB = is2v2Match() ? ' (Opponent Captain)' : ' (P2)';
         if (p1Won) {
           SoundFX.runScored(6);
-          STATE.lastOutcomeText = `🎉 ${p1} (P1) Won the Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
-          triggerCanvasReveal(`${p1} (P1) WON TOSS!`, `Sum is ${sum} (${sumParity}) — ${p1} chooses Bat or Bowl`, '#81b64c', true);
-        } else if (isMultiplayer()) {
+          STATE.lastOutcomeText = `🎉 👑 ${p1}${capSuffixA} Won the Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
+          triggerCanvasReveal(`${p1} WON TOSS!`, `Sum is ${sum} (${sumParity}) — Captain ${p1} chooses Bat or Bowl`, '#81b64c', true);
+        } else if (isMultiplayer() && (!is2v2Match() || STATE.onlineConnected)) {
           SoundFX.runScored(6);
-          STATE.lastOutcomeText = `🎉 ${p2} (P2) Won the Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
-          triggerCanvasReveal(`${p2} (P2) WON TOSS!`, `Sum is ${sum} (${sumParity}) — ${p2} chooses Bat or Bowl`, '#38bdf8', true);
+          STATE.lastOutcomeText = `🎉 👑 ${p2}${capSuffixB} Won the Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
+          triggerCanvasReveal(`${p2} WON TOSS!`, `Sum is ${sum} (${sumParity}) — Captain ${p2} chooses Bat or Bowl`, '#38bdf8', true);
         } else {
           const aiChoosesBat = Math.random() < 0.6;
           STATE.firstBatter = aiChoosesBat ? 'AI' : 'USER';
@@ -4506,19 +4782,28 @@
         STATE.currentBatter = STATE.firstBatter;
         STATE.lastUserNum = null;
         STATE.lastAiNum = null;
+        STATE.userInningsWickets = 0;
+        STATE.aiInningsWickets = 0;
 
         const p1 = getP1Label();
         const p2 = getP2Label();
         const p1Batting = STATE.currentBatter === 'USER';
-        const batterName = p1Batting ? `${p1} (P1)` : (isMultiplayer() ? `${p2} (P2)` : p2);
-        const bowlerName = p1Batting ? (isMultiplayer() ? `${p2} (P2)` : p2) : `${p1} (P1)`;
+        const activeStriker = getActiveBatterName(p1Batting);
+        const activeBowler = getActiveBowlerName(p1Batting, 0);
+        const batterName = is2v2Match()
+          ? `${activeStriker} (Team ${p1Batting ? p1 : p2})`
+          : (p1Batting ? `${p1} (P1)` : (isMultiplayer() ? `${p2} (P2)` : p2));
+        const bowlerName = is2v2Match()
+          ? `${activeBowler} (Over 1 • 6-Ball Spell)`
+          : (p1Batting ? (isMultiplayer() ? `${p2} (P2)` : p2) : `${p1} (P1)`);
 
         const p1WonToss = STATE.tossWinner === 'USER';
-        const tossWinnerName = p1WonToss ? `${p1} (P1)` : (isMultiplayer() ? `${p2} (P2)` : p2);
-        const tossLoserName = p1WonToss ? (isMultiplayer() ? `${p2} (P2)` : p2) : `${p1} (P1)`;
+        const capTag1 = is2v2Match() ? '👑 Captain ' : '';
+        const tossWinnerName = p1WonToss ? `${capTag1}${p1}` : (isMultiplayer() ? `${capTag1}${p2}` : p2);
+        const tossLoserName = p1WonToss ? (isMultiplayer() ? `${capTag1}${p2}` : p2) : `${capTag1}${p1}`;
         const winnerPicked = decisionChoice || ((p1WonToss && p1Batting) || (!p1WonToss && !p1Batting) ? 'BAT' : 'BOWL');
         const autoAssignedOther = winnerPicked === 'BOWL' ? 'BAT' : 'BOWL';
-        const chosenRoleText = `🪙 ${tossWinnerName} won the toss & chose ${winnerPicked} → ${tossLoserName} automatically assigned ${autoAssignedOther}! (🏏 ${batterName} Batting vs ⚾ ${bowlerName} Bowling)`;
+        const chosenRoleText = `🪙 ${tossWinnerName} won the toss & chose ${winnerPicked} → ${tossLoserName} assigned ${autoAssignedOther}! (🏏 ${batterName} Batting vs ⚾ ${bowlerName} Bowling)`;
 
         STATE.lastTossDecisionSummary = chosenRoleText;
         STATE.lastOutcomeText = chosenRoleText;
@@ -4566,8 +4851,10 @@
         }
         recordNumberPickTelemetry(userNum);
         const isBotBatting = STATE.currentBatter === 'AI';
-        const botNum = generateBotNumber(isBotBatting, userNum);
+        const botNum = generateBotNumber(isBotBatting);
         STATE.userNumHistory.push(userNum);
+        const roleKey = isBotBatting ? 'userBowlingHistory' : 'userBattingHistory';
+        (STATE[roleKey] ||= []).push(userNum);
         resolveGameplayNumbers(userNum, botNum);
       }
 
@@ -4584,25 +4871,49 @@
         const p1 = getP1Label();
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
-        const p1Rec = (mpMatch && !isPlaceholderUsername(p1)) ? ensureHumanPlayerRecord(p1, 1500, {
-          countryCode: STATE.p1CountryCode || STATE.myCountryCode,
-          countryFlag: STATE.p1CountryFlag || STATE.myCountryFlag,
-          countryName: STATE.p1CountryName || STATE.myCountryName
-        }, true) : null;
-        const p2Rec = (mpMatch && !isPlaceholderUsername(p2)) ? ensureHumanPlayerRecord(p2, STATE.friendEloRating, {
-          countryCode: STATE.p2CountryCode,
-          countryFlag: STATE.p2CountryFlag,
-          countryName: STATE.p2CountryName
-        }, true) : null;
+        const squadMode = is2v2Match();
+        const activeBatterIdxBeforeBall = getActiveBatterIndex(isUserBatting);
+        const ballsBeforeDelivery = isUserBatting ? STATE.userBalls : STATE.aiBalls;
+        const activeBatterActor = getActiveBatterName(isUserBatting);
+        const activeBowlerActor = getActiveBowlerName(isUserBatting, ballsBeforeDelivery);
+
+        const p1Rec = (mpMatch && !isPlaceholderUsername(activeBatterActor) && isUserBatting)
+          ? ensureHumanPlayerRecord(activeBatterActor, 1500, {
+              countryCode: STATE.p1CountryCode || STATE.myCountryCode,
+              countryFlag: STATE.p1CountryFlag || STATE.myCountryFlag,
+              countryName: STATE.p1CountryName || STATE.myCountryName
+            }, true)
+          : ((mpMatch && !isPlaceholderUsername(activeBowlerActor) && !isUserBatting)
+              ? ensureHumanPlayerRecord(activeBowlerActor, 1500, {
+                  countryCode: STATE.p1CountryCode || STATE.myCountryCode,
+                  countryFlag: STATE.p1CountryFlag || STATE.myCountryFlag,
+                  countryName: STATE.p1CountryName || STATE.myCountryName
+                }, true)
+              : null);
+        const p2Rec = (mpMatch && !isPlaceholderUsername(activeBowlerActor) && isUserBatting)
+          ? ensureHumanPlayerRecord(activeBowlerActor, STATE.friendEloRating, {
+              countryCode: STATE.p2CountryCode,
+              countryFlag: STATE.p2CountryFlag,
+              countryName: STATE.p2CountryName
+            }, true)
+          : ((mpMatch && !isPlaceholderUsername(activeBatterActor) && !isUserBatting)
+              ? ensureHumanPlayerRecord(activeBatterActor, STATE.friendEloRating, {
+                  countryCode: STATE.p2CountryCode,
+                  countryFlag: STATE.p2CountryFlag,
+                  countryName: STATE.p2CountryName
+                }, true)
+              : null);
         if (mpMatch && p1Rec) { p1Rec.mpStatsVerified = true; p1Rec.statsEpoch = STATS_RESET_EPOCH; }
         if (mpMatch && p2Rec) { p2Rec.mpStatsVerified = true; p2Rec.statsEpoch = STATS_RESET_EPOCH; }
 
         if (isUserBatting) {
           STATE.userBalls += 1;
+          STATE.userBatterBalls[activeBatterIdxBeforeBall] = (STATE.userBatterBalls[activeBatterIdxBeforeBall] || 0) + 1;
           if (mpMatch && p1Rec) p1Rec.totalBalls = (p1Rec.totalBalls || 0) + 1;
           if (mpMatch && p2Rec) p2Rec.ballsBowled = (p2Rec.ballsBowled || 0) + 1;
         } else {
           STATE.aiBalls += 1;
+          STATE.aiBatterBalls[activeBatterIdxBeforeBall] = (STATE.aiBatterBalls[activeBatterIdxBeforeBall] || 0) + 1;
           if (mpMatch && p1Rec) p1Rec.ballsBowled = (p1Rec.ballsBowled || 0) + 1;
           if (mpMatch && p2Rec) p2Rec.totalBalls = (p2Rec.totalBalls || 0) + 1;
         }
@@ -4610,8 +4921,10 @@
         const ballNumber = isUserBatting ? STATE.userBalls : STATE.aiBalls;
         const inningsTag = STATE.currentInnings === 1 ? 'INN 1' : 'INN 2';
 
-        const batterName = isUserBatting ? p1 : p2;
-        const bowlerName = isUserBatting ? p2 : p1;
+        const batterName = activeBatterActor;
+        const bowlerName = activeBowlerActor;
+        const didOverFinish = squadMode && (ballNumber > 0 && ballNumber % 6 === 0);
+        const nextOverBowlerName = didOverFinish ? getActiveBowlerName(isUserBatting, ballNumber) : bowlerName;
 
         // CASE A: WICKET (Both numbers matched!)
         if (isOut) {
@@ -4680,6 +4993,7 @@
           STATE.currentStreak = 0;
 
           if (isUserBatting) {
+            STATE.userInningsWickets = (STATE.userInningsWickets || 0) + 1;
             STATE.aiMatchWickets += 1;
             if (mpMatch && p1Rec) {
               p1Rec.wicketsLost = (p1Rec.wicketsLost || 0) + 1;
@@ -4691,6 +5005,7 @@
               p2Rec.updatedAt = Date.now();
             }
           } else {
+            STATE.aiInningsWickets = (STATE.aiInningsWickets || 0) + 1;
             STATE.userMatchWickets += 1;
             if (mpMatch && p1Rec) {
               p1Rec.wicketsTaken = (p1Rec.wicketsTaken || 0) + 1;
@@ -4707,25 +5022,63 @@
             scheduleDebouncedGlobalSync();
           }
 
+          const wicketsDownNow = isUserBatting ? STATE.userInningsWickets : STATE.aiInningsWickets;
+          const maxWicketsAllowed = getMaxWicketsPerInnings();
+          const currentTeamScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+
           const wComm = buildEngagingCommentary('WICKET', {
             u: userNum,
             batter: batterName,
             bowler: bowlerName,
-            score: isUserBatting ? STATE.userScore : STATE.aiScore,
+            score: currentTeamScore,
             balls: ballNumber
           });
           STATE.liveBroadcastQuote = wComm.quote;
           STATE.liveExcitementLabel = wComm.tag;
 
+          // 2v2 MODE: 1st Wicket falls (1/2) -> Next Batter comes to the crease and innings continues!
+          if (wicketsDownNow < maxWicketsAllowed) {
+            const incomingBatter = getActiveBatterName(isUserBatting);
+            const bowlerSwitchNote = didOverFinish
+              ? ` • 🔄 Over ${ballNumber / 6} complete! Bowler switches to ${nextOverBowlerName}!`
+              : '';
+            const firstWicketMsg = `☝️ 1ST WICKET (1/${maxWicketsAllowed})! ${batterName} is OUT on ${userNum} (Bowled by ${bowlerName})! Next batter ${incomingBatter} walks in at ${currentTeamScore}/1!${bowlerSwitchNote}`;
+            STATE.lastOutcomeText = firstWicketMsg;
+            STATE.liveBroadcastQuote = `"${firstWicketMsg}"`;
+            STATE.liveExcitementLabel = '1ST WICKET • NEXT BATTER IN';
+
+            STATE.history.unshift({
+              id: Date.now() + Math.random(),
+              tag: `${inningsTag} • B${ballNumber}`,
+              title: `1ST WICKET! ${batterName} OUT on ${userNum} • ${incomingBatter} comes in to bat!`,
+              detail: `Bowled by ${bowlerName} • Team Score: ${currentTeamScore}/1 (${ballNumber}b)${bowlerSwitchNote}`,
+              commentary: wComm.quote,
+              badge: '1/2 OUT',
+              badgeColor: 'amber'
+            });
+
+            triggerCanvasReveal(
+              `1ST WICKET! (${batterName} OUT)`,
+              `Next Batter: ${incomingBatter} walks in at ${currentTeamScore}/1!`,
+              '#f59e0b',
+              true
+            );
+
+            renderAll();
+            startTurnTimer(true);
+            return;
+          }
+
+          // ALL OUT (1/1 in 1v1, or 2/2 in 2v2 when both batters are dismissed!)
           STATE.history.unshift({
             id: Date.now() + Math.random(),
             tag: `${inningsTag} • B${ballNumber}`,
-            title: `HOWZAT! Both played ${userNum}! (${bowlerName} +1 Wicket)`,
+            title: `HOWZAT! ${batterName} OUT on ${userNum}! (${bowlerName} +1 Wicket • ${wicketsDownNow}/${maxWicketsAllowed} All Out)`,
             detail: isUserBatting
-              ? `${p1} OUT for ${STATE.userScore} (${STATE.userBalls} balls)`
-              : `${p2} OUT for ${STATE.aiScore} (${STATE.aiBalls} balls) • ${p1} Wickets: ${p1Rec ? p1Rec.wicketsTaken : STATE.userMatchWickets}`,
+              ? `${batterName} OUT • Team Total: ${STATE.userScore}/${wicketsDownNow} (${STATE.userBalls} balls)`
+              : `${batterName} OUT • Team Total: ${STATE.aiScore}/${wicketsDownNow} (${STATE.aiBalls} balls)`,
             commentary: wComm.quote,
-            badge: 'WICKET!',
+            badge: squadMode ? 'ALL OUT (2/2)!' : 'WICKET!',
             badgeColor: 'rose'
           });
 
@@ -4733,10 +5086,13 @@
             const firstInningsScore = isUserBatting ? STATE.userScore : STATE.aiScore;
             STATE.target = firstInningsScore + 1;
             STATE.phase = 'INNINGS_BREAK';
-            STATE.lastOutcomeText = STATE.commentaryStyle === 'ROAST' ? `${wComm.quote.replace(/^"|"$/g, '')} • Target: ${STATE.target}` : `OUT! Both played ${userNum}! (${bowlerName} takes wicket) • Target: ${STATE.target}.`;
+            const allOutPrefix = squadMode ? `ALL OUT (2/2 Wickets)! ${batterName} dismissed on ${userNum} by ${bowlerName}` : `OUT! Both played ${userNum}! (${bowlerName} takes wicket)`;
+            STATE.lastOutcomeText = STATE.commentaryStyle === 'ROAST'
+              ? `${wComm.quote.replace(/^"|"$/g, '')} • Opponent Team Target: ${STATE.target}`
+              : `${allOutPrefix} • Opponent Team gets Target: ${STATE.target} Runs!`;
             triggerCanvasReveal(
-              `OUT ON ${userNum}!`,
-              `Wicket by ${bowlerName} • Target: ${STATE.target} Runs`,
+              squadMode ? `ALL OUT (2/2) ON ${userNum}!` : `OUT ON ${userNum}!`,
+              `Wicket by ${bowlerName} • Target for Opponent Team: ${STATE.target} Runs`,
               '#f43f5e',
               true
             );
@@ -4745,16 +5101,15 @@
             const secondInningsScore = isUserBatting ? STATE.userScore : STATE.aiScore;
             const runsShort = firstInningsScore - secondInningsScore;
             if (runsShort === 0) {
-              // Match drawn! Both sides bowled out on the exact same score
               finishMatch(
                 'DRAW',
-                `🤝 What a thriller! Both players were bowled out on ${firstInningsScore} runs (${firstInningsScore} vs ${secondInningsScore}) — Match is Drawn!`
+                `🤝 What a thriller! Both teams were bowled out on ${firstInningsScore} runs (${firstInningsScore} vs ${secondInningsScore}) — Match is Drawn!`
               );
             } else {
               const defendingWinner = isUserBatting ? 'AI' : 'USER';
               finishMatch(
                 defendingWinner,
-                `OUT on ${userNum}! ${defendingWinner === 'USER' ? p1 : p2} took the winning wicket and won by ${runsShort} run${runsShort === 1 ? '' : 's'}!`
+                `${squadMode ? 'All Out (2/2) on ' : 'OUT on '}${userNum}! ${bowlerName} took the winning wicket for Team ${defendingWinner === 'USER' ? p1 : p2} to win by ${runsShort} run${runsShort === 1 ? '' : 's'}!`
               );
             }
           }
@@ -4766,6 +5121,7 @@
         // CASE B: RUNS SCORED
         if (isUserBatting) {
           STATE.userScore += batterNum;
+          STATE.userBatterScores[activeBatterIdxBeforeBall] = (STATE.userBatterScores[activeBatterIdxBeforeBall] || 0) + batterNum;
           if (mpMatch && p1Rec) {
             p1Rec.totalRuns = (p1Rec.totalRuns || 0) + batterNum;
             p1Rec.weeklyRuns = (p1Rec.weeklyRuns || 0) + batterNum;
@@ -4778,6 +5134,7 @@
           }
         } else {
           STATE.aiScore += batterNum;
+          STATE.aiBatterScores[activeBatterIdxBeforeBall] = (STATE.aiBatterScores[activeBatterIdxBeforeBall] || 0) + batterNum;
           if (mpMatch && p2Rec) {
             p2Rec.totalRuns += batterNum;
             p2Rec.weeklyRuns += batterNum;
@@ -4854,13 +5211,29 @@
           STATE.currentInnings === 2
             ? ` • Need ${Math.max(0, STATE.target - currentBatScore)} more`
             : '';
+        const overSwitchBanner = didOverFinish
+          ? ` • 🔄 OVER ${ballNumber / 6} COMPLETE (6 Balls)! Bowler switches from ${bowlerName} to ${nextOverBowlerName}!`
+          : '';
 
-        STATE.lastOutcomeText = `${batterName} hit +${batterNum}! (${p1}: ${userNum}, ${p2}: ${aiNum})${remainingNote}`;
+        if (didOverFinish) {
+          STATE.history.unshift({
+            id: Date.now() + Math.random(),
+            tag: `${inningsTag} • OVER ${ballNumber / 6}`,
+            title: `🔄 6 Balls Completed! Bowler Switches: ${bowlerName} → ${nextOverBowlerName}`,
+            detail: `Over ${ballNumber / 6} finished • ${nextOverBowlerName} takes the ball for Over ${(ballNumber / 6) + 1}`,
+            badge: 'BOWLER SWITCH',
+            badgeColor: 'cyan'
+          });
+        }
+
+        STATE.lastOutcomeText = `${batterName} hit +${batterNum} off ${bowlerName}! (${userNum} vs ${aiNum})${remainingNote}${overSwitchBanner}`;
         triggerCanvasReveal(
-          `+${batterNum} RUN${batterNum > 1 ? 'S' : ''}!`,
-          `${p1} played ${userNum} vs ${p2} ${aiNum}${remainingNote}`,
+          didOverFinish ? `+${batterNum} & BOWLER SWITCH!` : `+${batterNum} RUN${batterNum > 1 ? 'S' : ''}!`,
+          didOverFinish
+            ? `Over ${ballNumber / 6} Done! Next Bowler: ${nextOverBowlerName}`
+            : `${batterName} (${userNum}) vs ${bowlerName} (${aiNum})${remainingNote}`,
           batterNum >= 6 ? '#10b981' : '#38bdf8',
-          batterNum >= 8
+          batterNum >= 8 || didOverFinish
         );
 
         renderAll();
@@ -5268,6 +5641,12 @@
         STATE.aiScore = 0;
         STATE.aiBalls = 0;
         STATE.aiMatchWickets = 0;
+        STATE.userInningsWickets = 0;
+        STATE.aiInningsWickets = 0;
+        STATE.userBatterScores = [0, 0];
+        STATE.userBatterBalls = [0, 0];
+        STATE.aiBatterScores = [0, 0];
+        STATE.aiBatterBalls = [0, 0];
 
         const p1StartRec = ensureHumanPlayerRecord(getP1Label(), 1500, {
           countryCode: STATE.p1CountryCode || STATE.myCountryCode,
@@ -5298,6 +5677,8 @@
         STATE.history = [];
         STATE.currentStreak = 0;
         STATE.userNumHistory = [];
+        STATE.userBattingHistory = [];
+        STATE.userBowlingHistory = [];
 
         if (isMultiplayer() && !isMultiplayerReadyToPlay()) {
           stopTurnTimer();
@@ -5363,8 +5744,14 @@
           }
         } catch(e) {}
 
-        el.p1CardTitle.textContent = mpActive ? `${p1Flag} ${p1Name} (P1)${equippedCardTag}` : `${myFlag} ${p1Name} (${myDial})${equippedCardTag}`;
-        el.p2CardTitle.textContent = mpActive ? `${p2Flag} ${p2Name} (P2)` : `${botProf.badge}`;
+        const is2v2 = is2v2Match();
+        const lu2v2 = is2v2 ? get2v2TeamLineups() : null;
+        el.p1CardTitle.textContent = mpActive
+          ? (is2v2 ? `🟢 TEAM ${lu2v2.teamACaptain} (C) & ${lu2v2.teamAMembers[1]}` : `${p1Flag} ${p1Name} (P1)${equippedCardTag}`)
+          : `${myFlag} ${p1Name} (${myDial})${equippedCardTag}`;
+        el.p2CardTitle.textContent = mpActive
+          ? (is2v2 ? `🔵 TEAM ${lu2v2.teamBCaptain} (C) & ${lu2v2.teamBMembers[0] === lu2v2.teamBCaptain ? lu2v2.teamBMembers[1] : lu2v2.teamBMembers[0]}` : `${p2Flag} ${p2Name} (P2)`)
+          : `${botProf.badge}`;
 
         // Update Multiplayer Lobby Matchup & Room Lock Controls (Inline & Modal)
         if (el.inlineLobbyP1Display) {
@@ -5465,6 +5852,168 @@
           }
         }
 
+        // Render 1v1 vs 2v2 Mode Switcher, Friend Invite Strips, Team Assignment & Captaincy in #screenMpSetup
+        const btnFmt1v1 = document.getElementById('btnMpFormat1v1');
+        const btnFmt2v2 = document.getElementById('btnMpFormat2v2');
+        const strip1v1 = document.getElementById('mp1v1FriendInviteStrip');
+        const panel2v2 = document.getElementById('mp2v2SquadPanel');
+        const fmtActiveCls = 'py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-lg';
+        const fmt2v2ActiveCls = 'py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-400 text-slate-950 shadow-lg';
+        const fmtIdleCls = 'py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center justify-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800';
+
+        if (btnFmt1v1 && btnFmt2v2) {
+          btnFmt1v1.className = STATE.mpFormat === '2V2' ? fmtIdleCls : fmtActiveCls;
+          btnFmt2v2.className = STATE.mpFormat === '2V2' ? fmt2v2ActiveCls : fmtIdleCls;
+        }
+        if (strip1v1) strip1v1.classList.toggle('hidden', STATE.mpFormat === '2V2');
+        if (panel2v2) panel2v2.classList.toggle('hidden', STATE.mpFormat !== '2V2');
+
+        const quickCandidateFriends = Array.from(new Set([
+          ...getMyFriendsList(),
+          ...Object.keys(STATE.humanPlayers || {}).map((u) => u.trim().toUpperCase()).filter((u) => u && u !== myCleanName && !isPlaceholderUsername(u) && !FAKE_SEED_NAMES.includes(u))
+        ])).filter((u) => u && u !== myCleanName).slice(0, 8);
+
+        const q1v1El = document.getElementById('mp1v1QuickFriendsList');
+        if (q1v1El) {
+          q1v1El.innerHTML = quickCandidateFriends.length > 0
+            ? quickCandidateFriends.map((fName) => `
+                <button type="button" data-mp1v1-invite="${fName}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/35 transition">
+                  📞 Invite @${fName}
+                </button>
+              `).join('')
+            : `<span class="text-[11px] text-slate-400">Type any friend's username above to send a live 1v1 match invite!</span>`;
+        }
+
+        if (STATE.mpFormat === '2V2') {
+          const sq = sync2v2TeamsAndCaptains();
+          const lu = get2v2TeamLineups();
+          const poolCountEl = document.getElementById('mp2v2PoolCountLabel');
+          if (poolCountEl) poolCountEl.textContent = `${sq.invitedCount}/3`;
+
+          const q2v2El = document.getElementById('mp2v2QuickFriendsList');
+          if (q2v2El) {
+            const availFor2v2 = quickCandidateFriends.filter((u) => !STATE.mp2v2InvitedFriends.includes(u));
+            q2v2El.innerHTML = availFor2v2.length > 0
+              ? availFor2v2.map((fName) => `
+                  <button type="button" data-mp2v2-invite="${fName}" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-purple-500/15 hover:bg-purple-500/30 text-purple-200 border border-purple-400/40 transition">
+                    ➕ Invite @${fName}
+                  </button>
+                `).join('')
+              : `<span class="text-[11px] text-slate-400">Invite friends by username above or click "⚡ Auto-Fill Squad from Friends" to fill all 3 slots!</span>`;
+          }
+
+          const slotsGridEl = document.getElementById('mp2v2InvitedSlotsGrid');
+          if (slotsGridEl) {
+            const slotHtml = [0, 1, 2].map((idx) => {
+              const invitedName = STATE.mp2v2InvitedFriends[idx];
+              if (!invitedName) {
+                return `
+                  <div class="p-3 rounded-xl bg-slate-950/80 border border-dashed border-slate-700 text-center flex flex-col justify-center items-center gap-1">
+                    <span class="text-[10px] font-bold uppercase text-slate-400">Friend Slot #${idx + 1}</span>
+                    <span class="text-xs font-extrabold text-slate-500">⏳ Invite a Friend Above</span>
+                  </div>
+                `;
+              }
+              const isTeammate = invitedName === sq.teammate;
+              const isOppCap = !isTeammate && invitedName === sq.teamBCaptain;
+              return `
+                <div class="p-3 rounded-xl border transition-all space-y-2 ${
+                  isTeammate
+                    ? 'bg-emerald-950/60 border-emerald-400 shadow-md'
+                    : 'bg-cyan-950/45 border-cyan-500/40'
+                }">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <span class="text-xs font-black text-white truncate">🇮🇳 @${invitedName}</span>
+                    <button type="button" data-mp2v2-remove="${invitedName}" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-rose-500/30 text-[10px] font-bold text-slate-400 hover:text-rose-200 border border-slate-700" title="Remove">✕</button>
+                  </div>
+                  <div class="text-[10px] font-bold ${isTeammate ? 'text-emerald-300' : 'text-cyan-300'}">
+                    ${isTeammate ? '🟢 Selected for Your Team' : `🔵 Opponent Team${isOppCap ? ' (👑 Captain)' : ''}`}
+                  </div>
+                  <button type="button" data-mp2v2-pick-teammate="${invitedName}" class="w-full py-1.5 px-2 rounded-lg text-[10px] font-extrabold transition ${
+                    isTeammate
+                      ? 'bg-emerald-400 text-slate-950 shadow'
+                      : 'bg-slate-800 hover:bg-emerald-500/25 text-slate-200 hover:text-emerald-200 border border-slate-700'
+                  }">
+                    ${isTeammate ? '✓ In Your Team' : '🤝 Pick for My Team'}
+                  </button>
+                </div>
+              `;
+            }).join('');
+            slotsGridEl.innerHTML = slotHtml;
+          }
+
+          const teamAListEl = document.getElementById('mp2v2TeamAList');
+          if (teamAListEl) {
+            teamAListEl.innerHTML = lu.teamABattingOrder.map((uName, orderIdx) => {
+              const isCap = uName === lu.teamACaptain;
+              const isPendingSlot = uName === 'TEAMMATE_2' && !sq.isSquadComplete && !STATE.mp2v2Teammate;
+              return `
+                <div class="p-2.5 rounded-xl bg-slate-950/90 border ${isCap ? 'border-emerald-400/60' : 'border-slate-800'} flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-mono-num font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">#${orderIdx + 1}</span>
+                    <span class="font-extrabold text-white truncate">${isPendingSlot ? '⏳ Pick Teammate Above' : `@${uName}`}</span>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase shrink-0 ${
+                    isCap ? 'bg-amber-400 text-slate-950' : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                  }">
+                    ${isCap ? '👑 CAPTAIN (YOU)' : '🤝 TEAMMATE'}
+                  </span>
+                </div>
+              `;
+            }).join('');
+          }
+
+          const oppCapPillEl = document.getElementById('mp2v2OppCaptainPill');
+          if (oppCapPillEl) {
+            oppCapPillEl.textContent = `👑 Captain: @${lu.teamBCaptain}`;
+          }
+
+          const teamBListEl = document.getElementById('mp2v2TeamBList');
+          if (teamBListEl) {
+            teamBListEl.innerHTML = lu.teamBBattingOrder.map((uName, orderIdx) => {
+              const isCap = uName === lu.teamBCaptain;
+              const isPlaceholderOpp = uName.startsWith('OPPONENT_') && !STATE.mp2v2InvitedFriends.includes(uName);
+              return `
+                <div class="p-2.5 rounded-xl bg-slate-950/90 border ${isCap ? 'border-amber-400/70' : 'border-slate-800'} flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-mono-num font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">#${orderIdx + 1}</span>
+                    <span class="font-extrabold text-white truncate">${isPlaceholderOpp ? `⏳ ${uName} (Invite Friend)` : `@${uName}`}</span>
+                  </div>
+                  ${isPlaceholderOpp
+                    ? `<span class="text-[10px] text-slate-500 font-bold">Waiting</span>`
+                    : `<button type="button" data-mp2v2-assign-opp-cap="${uName}" class="px-2.5 py-1 rounded-lg text-[10px] font-black transition shrink-0 ${
+                        isCap
+                          ? 'bg-amber-400 text-slate-950 shadow'
+                          : 'bg-slate-800 hover:bg-amber-500/25 text-slate-300 hover:text-amber-200 border border-slate-700'
+                      }">
+                        ${isCap ? '👑 OPP CAPTAIN ✓' : '👑 Make Captain'}
+                      </button>`
+                  }
+                </div>
+              `;
+            }).join('');
+          }
+
+          if (el.inlineLobbyP1Display) {
+            el.inlineLobbyP1Display.textContent = `🟢 ${lu.teamACaptain} (C) & ${lu.teamAMembers[1]}`;
+          }
+          if (el.inlineLobbyP2Display) {
+            el.inlineLobbyP2Display.textContent = sq.isSquadComplete
+              ? `🔵 ${lu.teamBCaptain} (C) & ${lu.teamBMembers[0] === lu.teamBCaptain ? lu.teamBMembers[1] : lu.teamBMembers[0]}`
+              : `⏳ Invite ${3 - sq.invitedCount} more friend${3 - sq.invitedCount === 1 ? '' : 's'}...`;
+            el.inlineLobbyP2Display.className = sq.isSquadComplete
+              ? 'text-sm sm:text-base font-black text-cyan-300 mt-0.5 truncate'
+              : 'text-sm sm:text-base font-black text-slate-400 mt-0.5 truncate';
+          }
+          if (el.btnLaunchMpMatch) {
+            el.btnLaunchMpMatch.disabled = !sq.isSquadComplete;
+            el.btnLaunchMpIcon.textContent = sq.isSquadComplete ? '🛡️' : '⏳';
+            el.btnLaunchMpText.textContent = sq.isSquadComplete
+              ? `START 2v2 SQUAD MATCH (👑 ${lu.teamACaptain} vs 👑 ${lu.teamBCaptain} TOSS) →`
+              : `INVITE ${3 - sq.invitedCount} MORE FRIEND${3 - sq.invitedCount === 1 ? '' : 'S'} (OR CLICK AUTO-FILL SQUAD) TO START 2v2`;
+          }
+        }
+
         // Update Modal Start Button state
         if (el.btnApplyMpMode) {
           if (STATE.selectedModalMode === 'AI') {
@@ -5559,10 +6108,11 @@
         if (el.sideNavStoreSub && !isPlaceholderUsername(myCleanName)) {
           try {
             const spent = parseInt(localStorage.getItem('oddandeven_spent_xp_' + myCleanName) || '0', 10);
+            const refXp = Math.max(Number(myRec.referralXp) || 0, parseInt(localStorage.getItem('oddandeven_referral_xp_' + myCleanName) || '0', 10) || 0);
             const achs = computePlayerAchievements(myRec);
             const aXp = achs.filter(a => a.current >= a.target).reduce((s, a) => s + a.xp, 0);
             const mXp = ((myRec.totalRuns || 0) * 2) + ((myRec.wicketsTaken || 0) * 25) + ((myRec.wins || 0) * 50) + ((myRec.matches || 0) * 15);
-            const avail = Math.max(0, aXp + mXp - spent);
+            const avail = Math.max(0, aXp + mXp + refXp - spent);
             el.sideNavStoreSub.textContent = `${avail.toLocaleString()} XP • Cards & Flex`;
             if (el.sideNavStoreBadge) {
               el.sideNavStoreBadge.textContent = avail >= 5000 ? 'UNLOCKED' : `${avail} XP`;
@@ -5634,6 +6184,10 @@
         if (el.sideNavStore) {
           el.sideNavStore.className = STATE.activeScreen === 'STORE' ? navActiveCls : navIdleCls;
         }
+        const sideNavUpdatesEl = document.getElementById('sideNavUpdates');
+        if (sideNavUpdatesEl) {
+          sideNavUpdatesEl.className = STATE.activeScreen === 'UPDATES' ? navActiveCls : navIdleCls;
+        }
 
         el.sideBotSubLabel.textContent = botProf.name;
         el.sidebarOpponentBadge.innerHTML = mpActive
@@ -5642,15 +6196,17 @@
 
         const styleNames = { HYPE: '🎙️ Hype Broadcast', TACTICAL: '🧠 Tactical Analyst', CLASSIC: '📻 Classic Feed', ROAST: '💀 Roast Broadcast' };
         el.sidebarCommentaryStyleBadge.textContent = styleNames[STATE.commentaryStyle] || styleNames.HYPE;
-        el.commentaryMoodChip.textContent = STATE.commentaryStyle + ' MODE';
+        if (el.commentaryMoodChip) el.commentaryMoodChip.textContent = STATE.commentaryStyle + ' MODE';
 
         // Update Elo displays across Header, Sidebar, Start Hub & Leaderboard
         el.headerEloValue.textContent = `${STATE.eloRating} ELO`;
         el.sideNavEloSub.textContent = mpActive ? `${STATE.eloRating} ELO (±8)` : `${STATE.eloRating} ELO ❄️`;
         el.sidebarEloDisplay.textContent = mpActive ? `${STATE.eloRating} ELO` : `${STATE.eloRating} ELO (❄️ Frozen)`;
-        el.startHubEloChip.textContent = mpActive
-          ? `♟️ ${myCleanName}: ${STATE.eloRating} ELO (Ranked ±8) • ${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`
-          : `♟️ ${myCleanName}: ${STATE.eloRating} ELO (❄️ Frozen vs Bots) • ${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`;
+        if (el.startHubEloChip) {
+          el.startHubEloChip.textContent = mpActive
+            ? `♟️ ${myCleanName}: ${STATE.eloRating} ELO (Ranked ±8) • ${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`
+            : `♟️ ${myCleanName}: ${STATE.eloRating} ELO (❄️ Frozen vs Bots) • ${myRec.totalRuns || 0} Runs • ${myRec.wicketsTaken || 0} Wkts`;
+        }
 
         if (!mpActive) {
           // When playing against Bots, explicitly show that Rating is FROZEN
@@ -5723,11 +6279,16 @@
         if (scrStore) {
           scrStore.classList.toggle('hidden', STATE.activeScreen !== 'STORE');
         }
-        try { renderEventsTabAndCountdowns(); } catch (e) { console.error(e); }
-        try { renderAchievementsSection(); } catch (e) { console.error(e); }
-        try { renderProfileSection(); } catch (e) { console.error(e); }
-        try { renderStoreSection(); } catch (e) { console.error(e); }
-        try { if (typeof updateAllGamerCardUI === 'function') updateAllGamerCardUI(); } catch (e) { console.error(e); }
+        const scrUpdates = document.getElementById('screenUpdates');
+        if (scrUpdates) {
+          scrUpdates.classList.toggle('hidden', STATE.activeScreen !== 'UPDATES');
+        }
+        try { if (STATE.activeScreen === 'EVENTS') renderEventsTabAndCountdowns(); } catch (e) { console.error(e); }
+        try { if (STATE.activeScreen === 'ACHIEVEMENTS') renderAchievementsSection(); } catch (e) { console.error(e); }
+        try { if (STATE.activeScreen === 'PROFILE') renderProfileSection(); } catch (e) { console.error(e); }
+        try { if (STATE.activeScreen === 'STORE') renderStoreSection(); } catch (e) { console.error(e); }
+        try { if (typeof updateAllGamerCardUI === 'function') updateAllGamerCardUI(false); } catch (e) { console.error(e); }
+        try { if (window.OddAndEvenReferrals && typeof window.OddAndEvenReferrals.refreshAllBanners === 'function') window.OddAndEvenReferrals.refreshAllBanners(); } catch (e) {}
 
         // Render Large Incoming Friend Match Call Banner & Sidebar Badge
         const myFriends = getMyFriendsList();
@@ -5975,7 +6536,7 @@
         }
         el.liveCommentaryBanner.classList.remove('hidden');
         el.activePitchWrapper.classList.toggle('hidden', STATE.activeScreen !== 'PITCH');
-        el.btnToggleShowcaseCompact.textContent = 'Minimize ▲';
+        if (el.btnToggleShowcaseCompact) el.btnToggleShowcaseCompact.textContent = 'Minimize ▲';
 
         // Update Right Sidebar Commentary Options active button state
         if (el.btnCommOptHype && el.btnCommOptTactical && el.btnCommOptClassic) {
@@ -6410,15 +6971,77 @@
           el.aiScoreCard.className = 'glass-card rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden transition-all';
         }
 
-        // 3. Scores, Balls, Last Played Numbers
+        // 3. Scores, Balls, Last Played Numbers & Live 2v2 Squad HUD
         const p1Rec = ensureHumanPlayerRecord(p1Name, 1500);
-        el.userMainScore.textContent = STATE.userScore;
-        el.userSubMeta.textContent = `${STATE.userBalls}b • SR ${formatSR(STATE.userScore, STATE.userBalls)} • W:${STATE.userMatchWickets}`;
+        const maxWkts = getMaxWicketsPerInnings();
+        el.userMainScore.textContent = is2v2 ? `${STATE.userScore}/${STATE.userInningsWickets || 0}` : STATE.userScore;
+        el.userSubMeta.textContent = is2v2
+          ? `Ov ${formatCricketOver(STATE.userBalls)} (${STATE.userBalls}b) • Wkts Lost: ${STATE.userInningsWickets || 0}/${maxWkts}`
+          : `${STATE.userBalls}b • SR ${formatSR(STATE.userScore, STATE.userBalls)} • W:${STATE.userMatchWickets}`;
         el.userLastPlayedBadge.textContent = STATE.lastUserNum !== null ? STATE.lastUserNum : '-';
 
-        el.aiMainScore.textContent = STATE.aiScore;
-        el.aiSubMeta.textContent = `${STATE.aiBalls}b • SR ${formatSR(STATE.aiScore, STATE.aiBalls)} • W:${STATE.aiMatchWickets}`;
+        el.aiMainScore.textContent = is2v2 ? `${STATE.aiScore}/${STATE.aiInningsWickets || 0}` : STATE.aiScore;
+        el.aiSubMeta.textContent = is2v2
+          ? `Ov ${formatCricketOver(STATE.aiBalls)} (${STATE.aiBalls}b) • Wkts Lost: ${STATE.aiInningsWickets || 0}/${maxWkts}`
+          : `${STATE.aiBalls}b • SR ${formatSR(STATE.aiScore, STATE.aiBalls)} • W:${STATE.aiMatchWickets}`;
         el.aiLastPlayedBadge.textContent = STATE.lastAiNum !== null ? STATE.lastAiNum : '-';
+
+        const hud2v2El = document.getElementById('mp2v2LiveHudBanner');
+        if (hud2v2El) {
+          hud2v2El.classList.toggle('hidden', !is2v2);
+          if (is2v2 && lu2v2) {
+            const p1BattingNow = STATE.currentBatter ? STATE.currentBatter === 'USER' : true;
+            const activeBalls = p1BattingNow ? STATE.userBalls : STATE.aiBalls;
+            const activeWkts = p1BattingNow ? (STATE.userInningsWickets || 0) : (STATE.aiInningsWickets || 0);
+            const striker = getActiveBatterName(p1BattingNow);
+            const partner = getPartnerBatterName(p1BattingNow);
+            const bowler = getActiveBowlerName(p1BattingNow, activeBalls);
+            const nextBowler = getOtherBowlerName(p1BattingNow, activeBalls);
+            const ballsIntoOver = activeBalls % 6;
+            const ballsUntilSwitch = 6 - ballsIntoOver;
+            const batScores = p1BattingNow ? STATE.userBatterScores : STATE.aiBatterScores;
+            const batBalls = p1BattingNow ? STATE.userBatterBalls : STATE.aiBatterBalls;
+            const strikerIdx = getActiveBatterIndex(p1BattingNow);
+            const otherIdx = strikerIdx === 0 ? 1 : 0;
+
+            const capTxt = document.getElementById('mp2v2HudCaptainsText');
+            if (capTxt) capTxt.textContent = `👑 Captains: @${lu2v2.teamACaptain} (Your Team) vs @${lu2v2.teamBCaptain} (Opponent Team)`;
+            const ovBadge = document.getElementById('mp2v2HudOverBadge');
+            if (ovBadge) ovBadge.textContent = `Over ${formatCricketOver(activeBalls)} • Bowler switches in ${ballsUntilSwitch} ball${ballsUntilSwitch === 1 ? '' : 's'}`;
+            const batLbl = document.getElementById('mp2v2HudBattingTeamLabel');
+            if (batLbl) batLbl.textContent = `🏏 BATTING: ${p1BattingNow ? 'YOUR TEAM' : 'OPPONENT TEAM'} (${activeWkts}/2 WICKETS)`;
+            const strTxt = document.getElementById('mp2v2HudStrikerText');
+            if (strTxt) strTxt.textContent = `Striker: @${striker} (${batScores[strikerIdx] || 0}* off ${batBalls[strikerIdx] || 0}b)`;
+            const partTxt = document.getElementById('mp2v2HudPartnerText');
+            if (partTxt) {
+              partTxt.textContent = activeWkts === 0
+                ? `⏳ Next Batter (On 1st Wicket): @${partner}`
+                : `❌ 1st Wicket Out: @${partner} (${batScores[otherIdx] || 0} off ${batBalls[otherIdx] || 0}b)`;
+            }
+            const wktPill = document.getElementById('mp2v2HudWicketsPill');
+            if (wktPill) wktPill.textContent = `${activeWkts}/2 OUT`;
+
+            const bwlLbl = document.getElementById('mp2v2HudBowlingTeamLabel');
+            if (bwlLbl) bwlLbl.textContent = `⚾ BOWLING: ${p1BattingNow ? 'OPPONENT TEAM' : 'YOUR TEAM'} (6-BALL ROTATION)`;
+            const bwlTxt = document.getElementById('mp2v2HudBowlerText');
+            if (bwlTxt) bwlTxt.textContent = `Active Bowler: @${bowler}`;
+            const nxtBwlTxt = document.getElementById('mp2v2HudNextBowlerText');
+            if (nxtBwlTxt) nxtBwlTxt.textContent = `🔄 Switches to @${nextBowler} after ${ballsUntilSwitch} more ball${ballsUntilSwitch === 1 ? '' : 's'}`;
+            const spellPill = document.getElementById('mp2v2HudSpellBallsPill');
+            if (spellPill) spellPill.textContent = `Ball ${ballsIntoOver}/6`;
+          }
+        }
+
+        const tossOrderBox = document.getElementById('mp2v2TossOrderBox');
+        if (tossOrderBox) {
+          tossOrderBox.classList.toggle('hidden', !(is2v2 && STATE.phase === 'TOSS_DECISION'));
+          if (is2v2 && lu2v2) {
+            const opA = document.getElementById('mp2v2TossTeamAOpener');
+            if (opA) opA.textContent = `#1 @${lu2v2.teamABattingOrder[0]} → #2 @${lu2v2.teamABattingOrder[1]}`;
+            const opB = document.getElementById('mp2v2TossTeamBOpener');
+            if (opB) opB.textContent = `#1 @${lu2v2.teamBBattingOrder[0]} → #2 @${lu2v2.teamBBattingOrder[1]}`;
+          }
+        }
 
         // 4. Center Target & Match Equation Card
         if (STATE.currentInnings === 0) {
@@ -6489,10 +7112,12 @@
           const sumParity = STATE.tossSum % 2 === 1 ? 'ODD' : 'EVEN';
           el.tossMathSummary.textContent = `${p1Name}: ${STATE.tossUserNum} + ${p2Name}: ${STATE.tossAiNum} = ${STATE.tossSum} (${sumParity})`;
 
-          if (isMultiplayer()) {
+          if (isMultiplayer() && (!is2v2 || STATE.tossWinner === 'USER' || STATE.onlineConnected)) {
             const p1Won = STATE.tossWinner === 'USER';
-            const winnerTitle = p1Won ? `${p1Name} (P1)` : `${p2Name} (P2)`;
-            const loserTitle = p1Won ? `${p2Name} (P2)` : `${p1Name} (P1)`;
+            const roleA = is2v2 ? 'Team A Captain' : 'P1';
+            const roleB = is2v2 ? 'Opponent Captain' : 'P2';
+            const winnerTitle = p1Won ? `👑 ${p1Name} (${roleA})` : `👑 ${p2Name} (${roleB})`;
+            const loserTitle = p1Won ? `👑 ${p2Name} (${roleB})` : `👑 ${p1Name} (${roleA})`;
             const mySlot = STATE.onlineRole === 'GUEST' ? 'P2' : 'P1';
             const winnerSlot = p1Won ? 'P1' : 'P2';
             const didIWinToss = mySlot === winnerSlot;
@@ -6540,7 +7165,15 @@
 
         if (isPlayPhase) {
           const p1Batting = STATE.currentBatter === 'USER';
-          if (isMultiplayer()) {
+          if (is2v2) {
+            const activeBalls = p1Batting ? STATE.userBalls : STATE.aiBalls;
+            const activeWkts = p1Batting ? (STATE.userInningsWickets || 0) : (STATE.aiInningsWickets || 0);
+            const striker = getActiveBatterName(p1Batting);
+            const bowler = getActiveBowlerName(p1Batting, activeBalls);
+            const ballsLeftInOver = 6 - (activeBalls % 6);
+            el.gameplayHeading.innerHTML = `<span>🏏</span><span>Striker: @${striker} (${activeWkts}/2 Out) • ⚾ Bowler: @${bowler} (Ov ${formatCricketOver(activeBalls)})</span>`;
+            el.gameplayHint.textContent = `2v2 Rules: Bowler switches every 6 balls (${ballsLeftInOver} ball${ballsLeftInOver === 1 ? '' : 's'} left in spell) • ${activeWkts === 0 ? 'On 1st wicket, next batter comes in!' : '1 wicket down — next wicket ends innings!'}`;
+          } else if (isMultiplayer()) {
             const amIGuest = STATE.onlineRole === 'GUEST';
             const amIBatting = (amIGuest && !p1Batting) || (!amIGuest && p1Batting);
             const myDisplay = amIGuest ? `${p2Name} (P2)` : `${p1Name} (P1)`;
@@ -7103,12 +7736,25 @@
         ctx.restore();
       }
 
+      let _lastArenaStateSig = '';
       function startAnimationLoop() {
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
         }
         function tick() {
-          drawArenaFrame();
+          if (STATE.activeScreen === 'PITCH' && el.arenaCanvas) {
+            const isAnimating =
+              STATE.anim.flashAlpha > 0.01 ||
+              STATE.anim.revealProgress < 1 ||
+              (STATE.anim.particles && STATE.anim.particles.length > 0);
+            const sig = isAnimating
+              ? ''
+              : `${STATE.phase}|${STATE.lastUserNum}|${STATE.lastAiNum}|${STATE.pendingP1Num}|${STATE.pendingP2Num}|${STATE.anim.calloutText}|${STATE.anim.calloutSub}|${el.arenaCanvas.width}|${el.arenaCanvas.height}|${STATE.myUsername}`;
+            if (isAnimating || sig !== _lastArenaStateSig) {
+              drawArenaFrame();
+              _lastArenaStateSig = sig;
+            }
+          }
           rafId = requestAnimationFrame(tick);
         }
         rafId = requestAnimationFrame(tick);
@@ -7117,7 +7763,7 @@
       // ==========================================
       // 9. EVENT LISTENERS & KEYBOARD SHORTCUTS
       // ==========================================
-      
+
       // ==========================================
       // CONNECTED EVENTS (events.html) & ACHIEVEMENTS ENGINE
       // ==========================================
@@ -7751,7 +8397,9 @@
 
         // XP Milestones (3000 XP & 5000 XP)
         const earnedBaseXp = baseList.filter((a) => a.current >= a.target).reduce((sum, a) => sum + a.xp, 0);
-        const careerMatchXp = totalMatches * 20 + totalWins * 40 + Math.floor(totalRuns * 1.5) + totalWickets * 30 + (centuriesCount * 100);
+        const cleanRecUser = String(rec.name || rec.username || STATE.myUsername || '').trim().toUpperCase();
+        const refBonusXp = Math.max(Number(rec.referralXp) || 0, cleanRecUser ? (parseInt(localStorage.getItem('oddandeven_referral_xp_' + cleanRecUser) || '0', 10) || 0) : 0);
+        const careerMatchXp = totalMatches * 20 + totalWins * 40 + Math.floor(totalRuns * 1.5) + totalWickets * 30 + (centuriesCount * 100) + refBonusXp;
         const totalPlayerXp = Math.max(rec.xp || 0, careerMatchXp + earnedBaseXp);
 
         const ach3000 = {
@@ -8195,7 +8843,8 @@
           tourneyWins = Math.max(tourneyWins, parseInt(localStorage.getItem('oddandeven_tourney_wins_' + cleanMe) || '0', 10) || 0);
         } catch (e) {}
         const activeDays = typeof getPlayerActiveDaysCount === "function" ? getPlayerActiveDaysCount(cleanMe, rec) : 0;
-        const matchXp = (totalRuns * 2) + (totalWickets * 25) + (totalWins * 50) + (totalMatches * 15) + (tourneyWins * 500);
+        const referralXp = Math.max(Number(rec.referralXp) || 0, parseInt(localStorage.getItem('oddandeven_referral_xp_' + cleanMe) || '0', 10) || 0);
+        const matchXp = (totalRuns * 2) + (totalWickets * 25) + (totalWins * 50) + (totalMatches * 15) + (tourneyWins * 500) + referralXp;
         const totalEarnedXp = achXp + matchXp;
         let spentXp = 0;
         try {
@@ -8962,7 +9611,8 @@
           }
         } catch (e) {}
 
-        const earnedCoins = (totalRuns * 2) + (wicketsTaken * 25) + (wins * 50) + (matches * 20) + achXp;
+        const referralXp = Math.max(Number(rec.referralXp) || 0, parseInt(localStorage.getItem('oddandeven_referral_xp_' + uname) || '0', 10) || 0);
+        const earnedCoins = (totalRuns * 2) + (wicketsTaken * 25) + (wins * 50) + (matches * 20) + achXp + referralXp;
         let spentCoins = 0;
         try {
           spentCoins = parseInt(localStorage.getItem('oddandeven_spent_coins_' + uname) || '0', 10) || 0;
@@ -9551,7 +10201,7 @@
         updateAllGamerCardUI();
       }
 
-      function updateAllGamerCardUI() {
+      function updateAllGamerCardUI(forceCanvas = true) {
         const st = getActiveEsportsPlayerStats();
         const skin = st.equippedSkin;
 
@@ -9649,11 +10299,17 @@
           rankBannerEl.textContent = `${st.rankInfo.badgeText} • ⏳ Grandmaster: On Wait`;
         }
 
-        // 5. Render HD Canvases
-        const modalCanvas = document.getElementById('esportsGamerCardCanvas');
-        if (modalCanvas) renderEsportsCardToCanvas(modalCanvas);
-        const profCanvas = document.getElementById('hcProfileGamerCardCanvas');
-        if (profCanvas) renderEsportsCardToCanvas(profCanvas);
+        // 5. Render HD Canvases lazily (only when visible or explicitly requested to eliminate main-thread lag)
+        const gcModal = document.getElementById('esportsGamerCardModal');
+        const isModalOpen = Boolean(gcModal && !gcModal.classList.contains('hidden'));
+        if (forceCanvas || isModalOpen) {
+          const modalCanvas = document.getElementById('esportsGamerCardCanvas');
+          if (modalCanvas) renderEsportsCardToCanvas(modalCanvas);
+        }
+        if (forceCanvas || STATE.activeScreen === 'PROFILE') {
+          const profCanvas = document.getElementById('hcProfileGamerCardCanvas');
+          if (profCanvas) renderEsportsCardToCanvas(profCanvas);
+        }
       }
 
       function openEsportsGamerCardModal() {
@@ -9803,6 +10459,13 @@
         // Sidebar & Inline Setup Screen Navigation
         function switchCenterScreen(screenName) {
           SoundFX.click();
+          ['authModal', 'rulesModal', 'mpModal', 'esportsGamerCardModal'].forEach((mId) => {
+            const mEl = document.getElementById(mId);
+            if (mEl && !mEl.classList.contains('hidden')) {
+              mEl.classList.add('hidden');
+              mEl.classList.remove('flex');
+            }
+          });
           if (screenName === 'PITCH' && isMultiplayer() && !isMultiplayerReadyToPlay()) {
             // If user started multiplayer mode and friend hasn't joined yet, do not start the match on the pitch!
             stopTurnTimer();
@@ -9828,6 +10491,16 @@
             stopTurnTimer();
           }
           renderAll();
+          if (screenName === 'PROFILE') {
+            try { renderProfileSection(); } catch (e) {}
+            try { if (typeof updateAllGamerCardUI === 'function') updateAllGamerCardUI(true); } catch (e) {}
+          } else if (screenName === 'STORE') {
+            try { renderStoreSection(); } catch (e) {}
+          } else if (screenName === 'ACHIEVEMENTS') {
+            try { renderAchievementsSection(); } catch (e) {}
+          } else if (screenName === 'EVENTS') {
+            try { renderEventsTabAndCountdowns(); } catch (e) {}
+          }
         }
         try { window.switchCenterScreen = switchCenterScreen; } catch (e) {}
 
@@ -9872,6 +10545,9 @@
         bindInlineScreenLink(el.sidebarPlayerCard, 'PROFILE');
         bindInlineScreenLink(el.sideNavStore, 'STORE');
         bindInlineScreenLink(el.btnHeaderStore, 'STORE');
+        bindInlineScreenLink(document.getElementById('sideNavUpdates'), 'UPDATES');
+        const btnBackFromUpdates = document.getElementById('btnBackFromUpdates');
+        if (btnBackFromUpdates) btnBackFromUpdates.addEventListener('click', () => switchCenterScreen('PITCH'));
         bindInlineScreenLink(document.getElementById('btnAchOpenStoreInline'), 'STORE');
 
         const btnBackFromProfile = document.getElementById('btnBackFromProfile');
@@ -10001,8 +10677,8 @@
         if (el.btnJoinEventSolo) {
           el.btnJoinEventSolo.addEventListener('click', () => toggleEventRegistration('solo'));
         }
-        el.sideNavBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
-        el.sideNavMultiplayer.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
+        if (el.sideNavBot) el.sideNavBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
+        if (el.sideNavMultiplayer) el.sideNavMultiplayer.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
         if (el.sideNavFriends) {
           el.sideNavFriends.addEventListener('click', () => switchCenterScreen('FRIENDS'));
         }
@@ -10248,11 +10924,6 @@
         };
 
         const closeAuthModal = () => {
-          // Do not allow closing the modal if the user is not authenticated!
-          if (!STATE.isAuthenticated || isPlaceholderUsername(STATE.myUsername)) {
-            enforceMandatoryAuthGate('🔒 You cannot play without logging in or creating an account with a 5-digit PIN.');
-            return;
-          }
           SoundFX.click();
           if (!el.authModal) return;
           if (el.modalRemoveConfirmBox) el.modalRemoveConfirmBox.classList.add('hidden');
@@ -10388,7 +11059,15 @@
           STATE.peakElo = 1500;
           STATE.lastEloDelta = null;
 
-          // 3. Permanently delete from Firestore Database AND Firebase Authentication before redirecting
+          // 3. Queue deletion & permanently delete from Firestore Database (/artifacts/.../accounts & /leaderboard) AND Firebase Authentication
+          try {
+            localStorage.setItem('oddandeven_pending_cloud_delete_v1', JSON.stringify({
+              username: unameToRemove,
+              googleUid: targetGoogleUid || null,
+              timestamp: Date.now()
+            }));
+          } catch (e) {}
+
           if (typeof window.__purgeCloudAccount === 'function') {
             try {
               await Promise.race([
@@ -10637,12 +11316,17 @@
               try { window.__syncCloudLeaderboard(STATE.humanPlayers, usersMap, STATE.myUsername); } catch (e) {}
             }
             window.__v2ShownThisPageLoad = true;
+            if (modalAuthMode === 'SIGNUP' && window.OddAndEvenReferrals && typeof window.OddAndEvenReferrals.handleSignupReferral === 'function') {
+              const refInp = document.getElementById('modalInputReferralCode');
+              const enteredRef = refInp ? refInp.value.trim() : '';
+              window.OddAndEvenReferrals.handleSignupReferral(STATE.myUsername, enteredRef);
+            }
+            if (window.OddAndEvenReferrals && typeof window.OddAndEvenReferrals.refreshAllBanners === 'function') {
+              window.OddAndEvenReferrals.refreshAllBanners();
+            }
             enforceMandatoryAuthGate();
             closeAuthModal();
             switchCenterScreen('PITCH');
-            if (typeof window.openVersion2Showcase === 'function') {
-              window.openVersion2Showcase();
-            }
           });
         }
 
@@ -10670,10 +11354,10 @@
                   try { window.__syncCloudLeaderboard(STATE.humanPlayers, loadEncryptedUsersMap(), STATE.myUsername); } catch (e) {}
                 }
                 STATE.activeScreen = 'PITCH';
-                renderAll();
-                if (typeof window.openVersion2Showcase === 'function') {
-                  window.openVersion2Showcase();
+                if (window.OddAndEvenReferrals && typeof window.OddAndEvenReferrals.refreshAllBanners === 'function') {
+                  window.OddAndEvenReferrals.refreshAllBanners();
                 }
+                renderAll();
               }
             };
           } catch (e) {}
@@ -10731,33 +11415,37 @@
           el.btnCommOptRoast.addEventListener('click', () => setCommentaryModeDirect('ROAST'));
         }
 
-        el.cardQuickBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
-        el.cardQuickMp.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
-        el.cardQuickCommentary.addEventListener('click', () => {
-          SoundFX.click();
-          const order = ['HYPE', 'TACTICAL', 'CLASSIC', 'ROAST'];
-          const next = order[(order.indexOf(STATE.commentaryStyle) + 1) % order.length];
-          STATE.commentaryStyle = next;
-          el.botSetupCommentaryStyle.value = next;
-          STATE.liveBroadcastQuote = `"Broadcast style switched to ${next} MODE! Every ball now carries fresh commentary flavor!"`;
-          STATE.liveExcitementLabel = next + ' BROADCAST';
-          renderAll();
-        });
+        if (el.cardQuickBot) el.cardQuickBot.addEventListener('click', () => switchCenterScreen('BOT_SETUP'));
+        if (el.cardQuickMp) el.cardQuickMp.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
+        if (el.cardQuickCommentary) {
+          el.cardQuickCommentary.addEventListener('click', () => {
+            SoundFX.click();
+            const order = ['HYPE', 'TACTICAL', 'CLASSIC', 'ROAST'];
+            const next = order[(order.indexOf(STATE.commentaryStyle) + 1) % order.length];
+            STATE.commentaryStyle = next;
+            if (el.botSetupCommentaryStyle) el.botSetupCommentaryStyle.value = next;
+            STATE.liveBroadcastQuote = `"Broadcast style switched to ${next} MODE! Every ball now carries fresh commentary flavor!"`;
+            STATE.liveExcitementLabel = next + ' BROADCAST';
+            renderAll();
+          });
+        }
 
-        el.btnToggleShowcaseCompact.addEventListener('click', () => {
-          SoundFX.click();
-          STATE.activeScreen = 'PITCH';
-          renderAll();
-          setTimeout(resizeCanvas, 20);
-        });
+        if (el.btnToggleShowcaseCompact) {
+          el.btnToggleShowcaseCompact.addEventListener('click', () => {
+            SoundFX.click();
+            STATE.activeScreen = 'PITCH';
+            renderAll();
+            setTimeout(resizeCanvas, 20);
+          });
+        }
 
-        el.btnBackFromBotSetup.addEventListener('click', () => switchCenterScreen('PITCH'));
-        el.btnBackFromMpSetup.addEventListener('click', () => switchCenterScreen('PITCH'));
+        if (el.btnBackFromBotSetup) el.btnBackFromBotSetup.addEventListener('click', () => switchCenterScreen('PITCH'));
+        if (el.btnBackFromMpSetup) el.btnBackFromMpSetup.addEventListener('click', () => switchCenterScreen('PITCH'));
 
-        el.btnBotRookie.addEventListener('click', () => highlightBotCard('ROOKIE'));
-        el.btnBotTactician.addEventListener('click', () => highlightBotCard('TACTICIAN'));
-        el.btnBotAggressor.addEventListener('click', () => highlightBotCard('AGGRESSOR'));
-        el.btnBotWall.addEventListener('click', () => highlightBotCard('WALL'));
+        if (el.btnBotRookie) el.btnBotRookie.addEventListener('click', () => highlightBotCard('ROOKIE'));
+        if (el.btnBotTactician) el.btnBotTactician.addEventListener('click', () => highlightBotCard('TACTICIAN'));
+        if (el.btnBotAggressor) el.btnBotAggressor.addEventListener('click', () => highlightBotCard('AGGRESSOR'));
+        if (el.btnBotWall) el.btnBotWall.addEventListener('click', () => highlightBotCard('WALL'));
 
         el.btnLaunchBotMatch.addEventListener('click', () => {
           if (!requireAccountAndPassword()) return;
@@ -10768,6 +11456,95 @@
           resetGame(true);
           setTimeout(resizeCanvas, 20);
         });
+
+        const btnMpFormat1v1 = document.getElementById('btnMpFormat1v1');
+        const btnMpFormat2v2 = document.getElementById('btnMpFormat2v2');
+        if (btnMpFormat1v1) btnMpFormat1v1.addEventListener('click', () => setMultiplayerFormat('1V1'));
+        if (btnMpFormat2v2) btnMpFormat2v2.addEventListener('click', () => setMultiplayerFormat('2V2'));
+
+        const btn1v1SendInvite = document.getElementById('btn1v1SendInvite');
+        const input1v1InviteFriend = document.getElementById('input1v1InviteFriend');
+        if (btn1v1SendInvite && input1v1InviteFriend) {
+          btn1v1SendInvite.addEventListener('click', () => {
+            const val = (input1v1InviteFriend.value || '').trim().toUpperCase();
+            if (val) {
+              input1v1InviteFriend.value = '';
+              playWithFriend(val);
+            }
+          });
+        }
+        const mp1v1QuickFriendsList = document.getElementById('mp1v1QuickFriendsList');
+        if (mp1v1QuickFriendsList) {
+          mp1v1QuickFriendsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-mp1v1-invite]');
+            if (btn) playWithFriend(btn.getAttribute('data-mp1v1-invite'));
+          });
+        }
+
+        const btn2v2AddInviteFriend = document.getElementById('btn2v2AddInviteFriend');
+        const input2v2InviteFriend = document.getElementById('input2v2InviteFriend');
+        if (btn2v2AddInviteFriend && input2v2InviteFriend) {
+          btn2v2AddInviteFriend.addEventListener('click', () => {
+            const val = (input2v2InviteFriend.value || '').trim().toUpperCase();
+            if (val) {
+              input2v2InviteFriend.value = '';
+              inviteFriendTo2v2Squad(val);
+            }
+          });
+          input2v2InviteFriend.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              btn2v2AddInviteFriend.click();
+            }
+          });
+        }
+
+        const btn2v2AutoFillSquad = document.getElementById('btn2v2AutoFillSquad');
+        if (btn2v2AutoFillSquad) {
+          btn2v2AutoFillSquad.addEventListener('click', () => autoFill2v2SquadFromFriends());
+        }
+
+        const mp2v2QuickFriendsList = document.getElementById('mp2v2QuickFriendsList');
+        if (mp2v2QuickFriendsList) {
+          mp2v2QuickFriendsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-mp2v2-invite]');
+            if (btn) inviteFriendTo2v2Squad(btn.getAttribute('data-mp2v2-invite'));
+          });
+        }
+
+        const mp2v2InvitedSlotsGrid = document.getElementById('mp2v2InvitedSlotsGrid');
+        if (mp2v2InvitedSlotsGrid) {
+          mp2v2InvitedSlotsGrid.addEventListener('click', (e) => {
+            const remBtn = e.target.closest('[data-mp2v2-remove]');
+            if (remBtn) {
+              removeFriendFrom2v2Squad(remBtn.getAttribute('data-mp2v2-remove'));
+              return;
+            }
+            const pickBtn = e.target.closest('[data-mp2v2-pick-teammate]');
+            if (pickBtn) {
+              select2v2Teammate(pickBtn.getAttribute('data-mp2v2-pick-teammate'));
+            }
+          });
+        }
+
+        const mp2v2TeamBList = document.getElementById('mp2v2TeamBList');
+        if (mp2v2TeamBList) {
+          mp2v2TeamBList.addEventListener('click', (e) => {
+            const capBtn = e.target.closest('[data-mp2v2-assign-opp-cap]');
+            if (capBtn) {
+              assign2v2OpponentCaptain(capBtn.getAttribute('data-mp2v2-assign-opp-cap'));
+            }
+          });
+        }
+
+        const btn2v2SwapTeamAOrder = document.getElementById('btn2v2SwapTeamAOrder');
+        if (btn2v2SwapTeamAOrder) btn2v2SwapTeamAOrder.addEventListener('click', () => swap2v2TeamOrder('A'));
+        const btn2v2SwapTeamBOrder = document.getElementById('btn2v2SwapTeamBOrder');
+        if (btn2v2SwapTeamBOrder) btn2v2SwapTeamBOrder.addEventListener('click', () => swap2v2TeamOrder('B'));
+        const btn2v2TossSwapTeamA = document.getElementById('btn2v2TossSwapTeamA');
+        if (btn2v2TossSwapTeamA) btn2v2TossSwapTeamA.addEventListener('click', () => swap2v2TeamOrder('A'));
+        const btn2v2TossSwapTeamB = document.getElementById('btn2v2TossSwapTeamB');
+        if (btn2v2TossSwapTeamB) btn2v2TossSwapTeamB.addEventListener('click', () => swap2v2TeamOrder('B'));
 
         if (el.btnInlineCreateRoom) {
           el.btnInlineCreateRoom.addEventListener('click', () => {
@@ -10849,8 +11626,10 @@
         window.addEventListener('resize', resizeCanvas);
       }
 
-      // Initialize on window.onload per Core Rule 5
-      window.onload = function () {
+      // Initialize reliably on DOMContentLoaded / window.onload / immediate readyState
+      function bootHandCricketDesktopArena() {
+        if (window.__hcDesktopBootDone) return;
+        window.__hcDesktopBootDone = true;
         syncAuthAndPurgeFakeSeeds();
         buildNumberButtons();
         bindEvents();
@@ -10878,7 +11657,9 @@
         startAnimationLoop();
         renderEventsTabAndCountdowns();
         renderAchievementsSection();
-        setInterval(renderEventsTabAndCountdowns, 1000);
+        setInterval(() => {
+          if (STATE.activeScreen === 'EVENTS') renderEventsTabAndCountdowns();
+        }, 1000);
         try {
           const urlParams = new URLSearchParams(window.location.search);
           const fromLogin = urlParams.get('from') === 'login';
@@ -10891,7 +11672,13 @@
             switchCenterScreen('PITCH');
           }
         } catch (e) {}
-      };
+      }
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(bootHandCricketDesktopArena, 0);
+      } else {
+        document.addEventListener('DOMContentLoaded', bootHandCricketDesktopArena);
+      }
+      window.addEventListener('load', bootHandCricketDesktopArena);
     })();
 
 // ==========================================
@@ -10899,6 +11686,10 @@
 // ==========================================
 (function initFirebaseCloudModule() {
   'use strict';
+  if (typeof window !== 'undefined') {
+    if (window.__hcFirebaseCloudInitialized) return;
+    window.__hcFirebaseCloudInitialized = true;
+  }
   const firebaseConfigRaw = typeof __firebase_config !== 'undefined' && __firebase_config ? __firebase_config : null;
 
   let firebaseConfig = null;
@@ -10935,6 +11726,7 @@
 
       const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
       const auth = getAuth(app);
+      await auth.authStateReady();
       const db = getFirestore(app);
 
       let currentUser = null;
@@ -11002,7 +11794,12 @@
 
       const recomputeAuthoritativeCloudState = () => {
         if (!artAccLoaded && !rootAccLoaded) return;
-        cloudPurged = Array.from(new Set([...artPurged, ...rootPurged])).filter((u) => !isRecentCloudSignup(u));
+        let localPurgedList = [];
+        try {
+          const rawLp = localStorage.getItem('oddandeven_purged_accounts_v1');
+          if (rawLp) localPurgedList = JSON.parse(rawLp) || [];
+        } catch (e) {}
+        cloudPurged = Array.from(new Set([...artPurged, ...rootPurged, ...localPurgedList.map((x) => String(x || '').trim().toUpperCase())])).filter((u) => u && !isRecentCloudSignup(u));
 
         const syncedColsMap = loadCloudSyncedCols();
         let localVault = {};
@@ -11064,6 +11861,50 @@
               sanitizedBasePlayer.weeklyRuns = 0;
               sanitizedBasePlayer.weeklyWickets = 0;
             }
+            const cloudRefXp = Math.max(
+              Number(nextAccounts[clean] && nextAccounts[clean].referralXp) || 0,
+              Number(sanitizedBasePlayer && sanitizedBasePlayer.referralXp) || 0,
+              parseInt(localStorage.getItem('oddandeven_referral_xp_' + clean) || '0', 10) || 0
+            );
+            let cloudRefFriends = [];
+            try {
+              const localRF = JSON.parse(localStorage.getItem('oddandeven_referred_friends_' + clean) || '[]');
+              const accRF = Array.isArray(nextAccounts[clean] && nextAccounts[clean].referredFriends) ? nextAccounts[clean].referredFriends : [];
+              const lbRF = Array.isArray(sanitizedBasePlayer && sanitizedBasePlayer.referredFriends) ? sanitizedBasePlayer.referredFriends : [];
+              const byUser = {};
+              [...localRF, ...accRF, ...lbRF].forEach((item) => {
+                if (!item) return;
+                const u = typeof item === 'string' ? item.trim().toUpperCase() : String(item.username || '').trim().toUpperCase();
+                if (u && u !== clean) {
+                  byUser[u] = typeof item === 'object' ? Object.assign({}, item, { username: u, xp: 50 }) : { username: u, xp: 50, timestamp: Date.now() };
+                }
+              });
+              cloudRefFriends = Object.values(byUser);
+            } catch (e) {}
+            const effectiveRefXp = Math.max(cloudRefXp, cloudRefFriends.length * 50);
+            if (effectiveRefXp > 0) {
+              try {
+                const prevLocalRefXp = parseInt(localStorage.getItem('oddandeven_referral_xp_' + clean) || '0', 10) || 0;
+                localStorage.setItem('oddandeven_referral_xp_' + clean, String(effectiveRefXp));
+                if (cloudRefFriends.length > 0) {
+                  localStorage.setItem('oddandeven_referred_friends_' + clean, JSON.stringify(cloudRefFriends));
+                }
+                if (effectiveRefXp > prevLocalRefXp && clean === String(window.__activeReferralUsername || '').trim().toUpperCase() && window.OddAndEvenReferrals) {
+                  setTimeout(() => {
+                    if (window.OddAndEvenReferrals && typeof window.OddAndEvenReferrals.refreshAllBanners === 'function') {
+                      window.OddAndEvenReferrals.refreshAllBanners();
+                    }
+                  }, 60);
+                }
+              } catch (e) {}
+            }
+            nextAccounts[clean].referralXp = effectiveRefXp;
+            nextAccounts[clean].referralCount = cloudRefFriends.length;
+            nextAccounts[clean].referredFriends = cloudRefFriends;
+            sanitizedBasePlayer.referralXp = effectiveRefXp;
+            sanitizedBasePlayer.referralCount = cloudRefFriends.length;
+            sanitizedBasePlayer.referredFriends = cloudRefFriends;
+
             nextPlayers[clean] = Object.assign({
               name: clean,
               countryCode: nextAccounts[clean].countryCode || '+91',
@@ -11104,7 +11945,6 @@
             if (artLbLoaded && (!inArtLb || needsV3CloudPurge) && !window.__hcSeededLbSet.has(clean)) {
               window.__hcSeededLbSet.add(clean);
               setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), nextPlayers[clean], { merge: true }).catch(() => {});
-              setDoc(doc(db, 'leaderboard', clean), nextPlayers[clean], { merge: true }).catch(() => {});
             }
             if (artAccLoaded && localVault[clean] && !inArtAcc && !window.__hcSeededAccSet.has(clean)) {
               window.__hcSeededAccSet.add(clean);
@@ -11159,7 +11999,7 @@
           const cred = await signInWithCustomToken(auth, __initial_auth_token);
           currentUser = cred.user;
         } else {
-          const cred = await signInAnonymously(auth);
+          const cred = (auth.currentUser ? { user: auth.currentUser } : await signInAnonymously(auth));
           currentUser = cred.user;
         }
       } catch (e) {
@@ -11173,7 +12013,7 @@
               const pendingProf = JSON.parse(rawPending);
               if (pendingProf && pendingProf.username) {
                 const pClean = String(pendingProf.username).trim().toUpperCase();
-                const pUser = await ensureUserRegisteredInFirebaseAuth(pClean, pendingProf.pin5 || '12345', Boolean(pendingProf.isNewSignup));
+                const pUser = await ensureUserRegisteredInFirebaseAuth(pClean, pendingProf.pin5, Boolean(pendingProf.isNewSignup));
                 const pPayload = Object.assign({}, pendingProf, {
                   username: pClean,
                   authProvider: pendingProf.authProvider || (pendingProf.googleUid ? 'google' : 'pin'),
@@ -11185,34 +12025,12 @@
                 delete pPayload.isNewSignup;
                 delete pPayload.queuedAt;
                 await Promise.allSettled([
-                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', pClean), pPayload, { merge: true }),
-                  setDoc(doc(db, 'accounts', pClean), pPayload, { merge: true })
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', pClean), pPayload, { merge: true })
                 ]);
                 localStorage.removeItem('oddandeven_pending_cloud_sync_v1');
               }
             }
-            const vault = loadEncryptedUsersMap() || {};
-            for (const uname of Object.keys(vault)) {
-              const clean = uname.trim().toUpperCase();
-              if (clean && !isPlaceholderUsername(clean) && !FAKE_SEED_NAMES.includes(clean)) {
-                const uRec = vault[uname] || {};
-                let authUser = null;
-                try {
-                  authUser = await ensureUserRegisteredInFirebaseAuth(clean, uRec.pin5 || '12345');
-                } catch (e) {}
-                const uPayload = Object.assign({}, uRec, {
-                  username: clean,
-                  authProvider: uRec.authProvider || (uRec.googleUid ? 'google' : 'pin'),
-                  googleUid: uRec.googleUid || null,
-                  firebaseUid: (authUser && authUser.uid) || uRec.firebaseUid || null,
-                  updatedAt: Date.now()
-                });
-                await Promise.allSettled([
-                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true }),
-                  setDoc(doc(db, 'accounts', clean), uPayload, { merge: true })
-                ]);
-              }
-            }
+            // Cached players are read-only; only the active player is synchronized.
           } catch (e) {}
         }, 100);
       // Live snapshot listeners for real-time multiplayer & deletion synchronization
@@ -11271,67 +12089,20 @@
         console.warn('Snapshot listeners setup notice:', e);
       }
 
-      // Root collection listeners
-      try {
-        onSnapshot(collection(db, 'accounts'), (snapshot) => {
-          handleRemovedDocsInSnapshot(snapshot, rootAccounts);
-          rootAccounts = {};
-          snapshot.forEach((docSnap) => {
-            if (docSnap.exists()) {
-              const d = docSnap.data();
-              const c = String((d && d.username) || docSnap.id).trim().toUpperCase();
-              if (c) {
-                rootAccounts[c] = d;
-                try {
-                  const localM = loadEncryptedUsersMap();
-                  if (!localM[c]) {
-                    localM[c] = d;
-                    saveEncryptedUsersMap(localM);
-                  }
-                } catch (e) {}
-              }
-            }
-          });
-          rootAccLoaded = true;
-          recomputeAuthoritativeCloudState();
-          if (typeof window.populateDesktopModalSavedAccounts === 'function') window.populateDesktopModalSavedAccounts();
-        }, () => {});
-
-        onSnapshot(collection(db, 'leaderboard'), (snapshot) => {
-          handleRemovedDocsInSnapshot(snapshot, rootPlayers);
-          rootPlayers = {};
-          snapshot.forEach((docSnap) => {
-            if (docSnap.exists()) {
-              const d = docSnap.data();
-              const c = String((d && (d.name || d.username)) || docSnap.id).trim().toUpperCase();
-              if (c) rootPlayers[c] = d;
-            }
-          });
-          rootLbLoaded = true;
-          recomputeAuthoritativeCloudState();
-        }, () => {});
-
-        onSnapshot(collection(db, 'purged_accounts'), (snapshot) => {
-          rootPurged = [];
-          snapshot.forEach((docSnap) => {
-            if (docSnap.exists()) {
-              rootPurged.push(docSnap.id.toUpperCase());
-            }
-          });
-          recomputeAuthoritativeCloudState();
-        }, () => {});
-      } catch (e) {}
+      // Root collections outside /artifacts are intentionally disabled so all data stays inside /artifacts/{appId}/public/data/...
+      rootAccLoaded = true;
+      rootLbLoaded = true;
 
       window.__verifyCloudAccount = async function (username) {
         const clean = String(username || '').trim().toUpperCase();
         if (!db || !clean) return { checked: false, exists: false, data: null };
         try {
-          const [rArt, rRoot, rPArt, rPRoot] = await Promise.allSettled([
+          const [rArt, rPArt] = await Promise.allSettled([
             getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
-            getDoc(doc(db, 'accounts', clean)),
-            getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean)),
-            getDoc(doc(db, 'purged_accounts', clean))
+            getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean))
           ]);
+          const rRoot = { status: 'rejected' };
+          const rPRoot = { status: 'rejected' };
           const sArt = rArt.status === 'fulfilled' ? rArt.value : null;
           const sRoot = rRoot.status === 'fulfilled' ? rRoot.value : null;
           const pArt = rPArt.status === 'fulfilled' ? rPArt.value : null;
@@ -11357,6 +12128,69 @@
         }
       };
 
+      window.__creditReferralInCloud = async function (referrerUser, newFriendUser, refCodeUsed) {
+        const cleanRef = String(referrerUser || '').trim().toUpperCase();
+        const cleanNew = String(newFriendUser || '').trim().toUpperCase();
+        if (!db || !cleanRef || !cleanNew || cleanRef === cleanNew) return;
+        try {
+          const [accSnap, lbSnap] = await Promise.allSettled([
+            getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', cleanRef)),
+            getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', cleanRef))
+          ]);
+          const accData = (accSnap.status === 'fulfilled' && accSnap.value && accSnap.value.exists()) ? accSnap.value.data() : {};
+          const lbData = (lbSnap.status === 'fulfilled' && lbSnap.value && lbSnap.value.exists()) ? lbSnap.value.data() : {};
+          let localFriends = [];
+          try {
+            localFriends = JSON.parse(localStorage.getItem('oddandeven_referred_friends_' + cleanRef) || '[]');
+          } catch (e) {}
+          const mergedMap = {};
+          [...(Array.isArray(accData.referredFriends) ? accData.referredFriends : []), ...(Array.isArray(lbData.referredFriends) ? lbData.referredFriends : []), ...localFriends].forEach((it) => {
+            const u = typeof it === 'string' ? it.trim().toUpperCase() : String(it && it.username || '').trim().toUpperCase();
+            if (u && u !== cleanRef) {
+              mergedMap[u] = typeof it === 'object' ? Object.assign({}, it, { username: u, xp: 50 }) : { username: u, xp: 50, timestamp: Date.now() };
+            }
+          });
+          mergedMap[cleanNew] = { username: cleanNew, code: refCodeUsed || ('OAE-' + cleanRef + '-50XP'), xp: 50, timestamp: Date.now() };
+          const updatedFriends = Object.values(mergedMap);
+          const updatedXp = Math.max(
+            (Number(accData.referralXp) || 0),
+            (Number(lbData.referralXp) || 0),
+            updatedFriends.length * 50
+          );
+          try {
+            localStorage.setItem('oddandeven_referral_xp_' + cleanRef, String(updatedXp));
+            localStorage.setItem('oddandeven_referred_friends_' + cleanRef, JSON.stringify(updatedFriends));
+          } catch (e) {}
+          const patchPayload = {
+            referralXp: updatedXp,
+            referralCount: updatedFriends.length,
+            referredFriends: updatedFriends,
+            updatedAt: Date.now()
+          };
+          await Promise.allSettled([
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', cleanRef), Object.assign({ username: cleanRef }, patchPayload), { merge: true }),
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', cleanRef), Object.assign({ name: cleanRef }, patchPayload), { merge: true })
+          ]);
+        } catch (e) {}
+      };
+
+      try {
+        const pendingRefCreditRaw = localStorage.getItem('oddandeven_pending_referral_credit_v1');
+        if (pendingRefCreditRaw) {
+          const pendingCredits = JSON.parse(pendingRefCreditRaw);
+          if (Array.isArray(pendingCredits) && pendingCredits.length > 0) {
+            setTimeout(async () => {
+              for (const item of pendingCredits) {
+                if (item && item.referrer && item.newUser && typeof window.__creditReferralInCloud === 'function') {
+                  await window.__creditReferralInCloud(item.referrer, item.newUser, item.code);
+                }
+              }
+              localStorage.removeItem('oddandeven_pending_referral_credit_v1');
+            }, 350);
+          }
+        }
+      } catch (e) {}
+
       window.__unpurgeCloudAccount = async function (username) {
         if (!db || !username) return;
         const clean = String(username).trim().toUpperCase();
@@ -11365,76 +12199,32 @@
         cloudPurged = cloudPurged.filter((u) => u !== clean);
         try {
           await Promise.allSettled([
-            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean)),
-            deleteDoc(doc(db, 'purged_accounts', clean))
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean))
           ]);
         } catch (e) {}
       };
 
       async function ensureUserRegisteredInFirebaseAuth(username, pin5, isNewSignup = false) {
         if (!auth || !username) return null;
+        await auth.authStateReady();
         const clean = String(username).trim().toUpperCase();
-        if (isPlaceholderUsername(clean)) return null;
-        const authEmail = `${clean.toLowerCase()}@oddandeven.in`;
-        const safePin = pin5 && /^\d{5}$/.test(String(pin5).trim()) ? String(pin5).trim() : '12345';
-        const authPassword = `OAE#${safePin}_${clean.toLowerCase()}`;
-
-        let user = auth.currentUser;
-        if (user && user.email && user.email.toLowerCase() === authEmail.toLowerCase()) {
-          if (typeof updateProfile === 'function' && user.displayName !== clean) {
-            try { await updateProfile(user, { displayName: clean }); } catch (e) {}
-          }
-          return user;
+        const email = `${clean.toLowerCase()}@oddandeven.in`;
+        const current = auth.currentUser;
+        if (current && !current.isAnonymous) {
+          if (current.email === email) return current;
+          if ((current.providerData || []).some(provider => provider.providerId === 'google.com')) return current;
         }
-
-        try {
-          if (typeof createUserWithEmailAndPassword === 'function') {
-            const cred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
-            user = cred.user;
-          }
-        } catch (err) {
-          const code = (err && err.code) || '';
-          if (code === 'auth/email-already-in-use') {
-            try {
-              if (typeof signInWithEmailAndPassword === 'function') {
-                const cred = await signInWithEmailAndPassword(auth, authEmail, authPassword);
-                user = cred.user;
-              }
-            } catch (e) {}
-          }
-          // Fallback for ANY other error (e.g. auth/configuration-not-found, auth/operation-not-allowed):
-          // Ensure an authenticated Firebase user exists and update displayName!
-          if (!user || (isNewSignup && user.isAnonymous && user.displayName && user.displayName !== clean)) {
-            try {
-              if (isNewSignup && auth.currentUser && auth.currentUser.isAnonymous && typeof signOut === 'function') {
-                await signOut(auth).catch(() => {});
-              }
-              if (typeof signInAnonymously === 'function' && !auth.currentUser) {
-                const cred = await signInAnonymously(auth);
-                user = cred.user;
-              } else {
-                user = auth.currentUser;
-              }
-            } catch (e) {}
-          }
-        }
-        if (!user && !auth.currentUser && typeof signInAnonymously === 'function') {
-          try {
-            const cred = await signInAnonymously(auth);
-            user = cred.user;
-          } catch (e) {}
-        }
-        user = user || auth.currentUser;
-        if (user && typeof updateProfile === 'function') {
-          try { await updateProfile(user, { displayName: clean }); } catch (e) {}
-        }
-        return user;
+        if (!/^\d{5}$/.test(String(pin5))) return null;
+        // Login never creates replacement identities or fabricates default credentials.
+        const credential = await signInWithEmailAndPassword(auth, email, `OAE#${pin5}_${clean.toLowerCase()}`);
+        return credential.user;
       }
 
       window.__syncCloudLeaderboard = async function (humanPlayersMap, usersVault, activeUsername) {
         if (!db) return;
         try {
           const canPushUser = (clean) => {
+            if (clean !== String(activeUsername || '').trim().toUpperCase()) return false;
             if (!clean || clean.length < 3 || isPlaceholderUsername(clean)) return false;
             if (cloudPurged.includes(clean)) return false;
             return true;
@@ -11447,7 +12237,7 @@
                 const rawUp = usersVault[k] || {};
                 let authUser = null;
                 try {
-                  authUser = await ensureUserRegisteredInFirebaseAuth(clean, rawUp.pin5 || '12345');
+                  authUser = await ensureUserRegisteredInFirebaseAuth(clean, rawUp.pin5);
                 } catch (e) {}
                 const uPayload = Object.assign({}, rawUp, {
                   username: clean,
@@ -11456,9 +12246,9 @@
                   firebaseUid: (authUser && authUser.uid) || rawUp.firebaseUid || null,
                   updatedAt: Date.now()
                 });
+                delete uPayload.pin5;
                 await Promise.allSettled([
-                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true }),
-                  setDoc(doc(db, 'accounts', clean), uPayload, { merge: true })
+                  setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean), uPayload, { merge: true })
                 ]);
                 artAccounts[clean] = uPayload;
                 rootAccounts[clean] = uPayload;
@@ -11494,8 +12284,7 @@
                   rootPlayers[clean] = seedRec;
                   cloudPlayers[clean] = seedRec;
                   await Promise.allSettled([
-                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), seedRec, { merge: true }),
-                    setDoc(doc(db, 'leaderboard', clean), seedRec, { merge: true })
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), seedRec, { merge: true })
                   ]);
                 }
               }
@@ -11523,8 +12312,7 @@
                 matches: Math.max(mergedRec.matches || 0, cloudFloor + (mergedRec.matches || 0))
               });
               await Promise.allSettled([
-                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), firestorePayload, { merge: true }),
-                setDoc(doc(db, 'leaderboard', clean), firestorePayload, { merge: true })
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean), firestorePayload, { merge: true })
               ]);
             }
           }
@@ -11537,6 +12325,9 @@
         try {
           localStorage.removeItem('oddandeven_recent_signup_' + clean);
         } catch (e) {}
+        if (!artPurged.includes(clean)) artPurged.push(clean);
+        if (!cloudPurged.includes(clean)) cloudPurged.push(clean);
+
         const uidToDelete = googleUid || (cloudAccounts[clean] && cloudAccounts[clean].googleUid) || (artAccounts[clean] && artAccounts[clean].googleUid) || (rootAccounts[clean] && rootAccounts[clean].googleUid) || (auth && auth.currentUser ? auth.currentUser.uid : null);
 
         delete artAccounts[clean];
@@ -11549,23 +12340,49 @@
           delete window.__cloudAuthoritativeAccounts[clean];
         }
 
-        // 1. Permanently delete all account & player documents from Firestore Database
+        // Ensure Firebase Auth session is active BEFORE calling deleteDoc so signedIn() in firestore.rules is satisfied!
+        if (auth && !auth.currentUser && typeof signInAnonymously === 'function') {
+          try {
+            const cred = (auth.currentUser ? { user: auth.currentUser } : await signInAnonymously(auth));
+            currentUser = cred.user;
+          } catch (e) {}
+        }
+
+        // Fire browser-level keepalive REST DELETE calls so deletion completes even if page redirects immediately
+        try {
+          let idToken = null;
+          if (auth && auth.currentUser && typeof auth.currentUser.getIdToken === 'function') {
+            idToken = await auth.currentUser.getIdToken();
+          }
+          const headers = idToken ? { 'Authorization': `Bearer ${idToken}` } : {};
+          const baseFsUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents`;
+          const delPaths = [
+            `artifacts/${appId}/public/data/accounts/${clean}`,
+            `artifacts/${appId}/public/data/leaderboard/${clean}`,
+            `artifacts/${appId}/public/data/friends/${clean}`,
+            `artifacts/${appId}/public/data/friend_requests/${clean}`,
+            `artifacts/${appId}/public/data/invites/${clean}`,
+            `accounts/${clean}`,
+            `leaderboard/${clean}`
+          ];
+          delPaths.forEach((p) => {
+            fetch(`${baseFsUrl}/${p}`, { method: 'DELETE', keepalive: true, headers }).catch(() => {});
+          });
+        } catch (e) {}
+
+        // 1. Permanently delete all account & player documents from Firestore Database (/artifacts/{appId}/...)
         if (db) {
           try {
             const purgeDoc = { username: clean, purgedAt: Date.now() };
             const tasks = [
               setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purged_accounts', clean), purgeDoc),
-              setDoc(doc(db, 'purged_accounts', clean), purgeDoc),
               deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', clean)),
-              deleteDoc(doc(db, 'leaderboard', clean)),
               deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'accounts', clean)),
-              deleteDoc(doc(db, 'accounts', clean)),
               deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', clean)),
-              deleteDoc(doc(db, 'friends', clean)),
               deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', clean)),
-              deleteDoc(doc(db, 'friend_requests', clean)),
               deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean)),
-              deleteDoc(doc(db, 'invites', clean))
+              deleteDoc(doc(db, 'leaderboard', clean)),
+              deleteDoc(doc(db, 'accounts', clean))
             ];
             if (uidToDelete) {
               tasks.push(deleteDoc(doc(db, 'artifacts', appId, 'users', uidToDelete, 'profile', 'main')));
@@ -11589,7 +12406,7 @@
           }
           currentUser = null;
           try {
-            const cred = await signInAnonymously(auth);
+            const cred = (auth.currentUser ? { user: auth.currentUser } : await signInAnonymously(auth));
             currentUser = cred.user;
           } catch (e) {}
         }
@@ -11634,10 +12451,8 @@
           });
         };
         const u1 = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', cleanCode), handleRoomSnap, () => {});
-        const u2 = onSnapshot(doc(db, 'rooms', cleanCode), handleRoomSnap, () => {});
         roomUnsub = () => {
           try { u1(); } catch (e) {}
-          try { u2(); } catch (e) {}
         };
       };
 
@@ -11668,7 +12483,6 @@
         }
         try {
           setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', cleanCode), roomPayload, { merge: true }).catch(() => {});
-          setDoc(doc(db, 'rooms', cleanCode), roomPayload, { merge: true }).catch(() => {});
         } catch (e) {}
       };
 
@@ -11700,9 +12514,7 @@
         try {
           await Promise.allSettled([
             setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanTarget), payload),
-            setDoc(doc(db, 'invites', cleanTarget), payload),
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), payload),
-            setDoc(doc(db, 'invites', 'GLOBAL_LATEST'), payload)
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), payload)
           ]);
         } catch (e) {}
       };
@@ -11712,8 +12524,7 @@
         const clean = String(username).trim().toUpperCase();
         try {
           await Promise.allSettled([
-            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean)),
-            deleteDoc(doc(db, 'invites', clean))
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean))
           ]);
         } catch (e) {}
       };
@@ -11730,8 +12541,7 @@
         };
         try {
           await Promise.allSettled([
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanHost), payload),
-            setDoc(doc(db, 'invites', cleanHost), payload)
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanHost), payload)
           ]);
         } catch (e) {}
       };
@@ -11762,8 +12572,7 @@
         try {
           let currentList = [];
           try {
-            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget)).catch(() => null)
-              || await getDoc(doc(db, 'friend_requests', cleanTarget)).catch(() => null);
+            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget)).catch(() => null);
             if (snap && snap.exists() && Array.isArray(snap.data().requests)) {
               currentList = snap.data().requests;
             }
@@ -11796,9 +12605,7 @@
 
           await Promise.allSettled([
             setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanTarget), docPayload, { merge: true }),
-            setDoc(doc(db, 'friend_requests', cleanTarget), docPayload, { merge: true }),
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), docPayload),
-            setDoc(doc(db, 'friend_requests', 'GLOBAL_LATEST'), docPayload)
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), docPayload)
           ]);
         } catch (e) {}
       };
@@ -11824,9 +12631,7 @@
           };
           await Promise.allSettled([
             setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', cleanResp), reqDocPayload, { merge: true }),
-            setDoc(doc(db, 'friend_requests', cleanResp), reqDocPayload, { merge: true }),
-            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), reqDocPayload),
-            setDoc(doc(db, 'friend_requests', 'GLOBAL_LATEST'), reqDocPayload)
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), reqDocPayload)
           ]);
 
           if (action === 'ACCEPT') {
@@ -11849,11 +12654,8 @@
             };
             await Promise.allSettled([
               setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanResp), friendsPayloadResp, { merge: true }),
-              setDoc(doc(db, 'friends', cleanResp), friendsPayloadResp, { merge: true }),
               setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', cleanReq), friendsPayloadReq, { merge: true }),
-              setDoc(doc(db, 'friends', cleanReq), friendsPayloadReq, { merge: true }),
-              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), globalFriendsPayload),
-              setDoc(doc(db, 'friends', 'GLOBAL_LATEST'), globalFriendsPayload)
+              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), globalFriendsPayload)
             ]);
           }
         } catch (e) {}
@@ -11967,17 +12769,11 @@
 
         const unsubs = [
           onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', clean), handleSnap, () => {}),
-          onSnapshot(doc(db, 'invites', clean), handleSnap, () => {}),
           onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), handleSnap, () => {}),
-          onSnapshot(doc(db, 'invites', 'GLOBAL_LATEST'), handleSnap, () => {}),
           onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', clean), handleReqSnap, () => {}),
-          onSnapshot(doc(db, 'friend_requests', clean), handleReqSnap, () => {}),
           onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friend_requests', 'GLOBAL_LATEST'), handleReqSnap, () => {}),
-          onSnapshot(doc(db, 'friend_requests', 'GLOBAL_LATEST'), handleReqSnap, () => {}),
           onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', clean), handleFriendsSnap, () => {}),
-          onSnapshot(doc(db, 'friends', clean), handleFriendsSnap, () => {}),
-          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), handleFriendsSnap, () => {}),
-          onSnapshot(doc(db, 'friends', 'GLOBAL_LATEST'), handleFriendsSnap, () => {})
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'friends', 'GLOBAL_LATEST'), handleFriendsSnap, () => {})
         ];
         inviteUnsub = () => {
           unsubs.forEach((u) => { try { u(); } catch (e) {} });
@@ -12009,193 +12805,488 @@
 
 
 /* ============================================================================
- * VERSION 2.0 INTERACTIVE SHOWCASE MODAL CONTROLLER (Close & Try Out Integration)
+ * WEBSITE REFERRAL CODE & URL INVITATION ENGINE (+50 XP PER FRIEND SIGNUP)
  * ============================================================================ */
-(function initVersion2ShowcaseEngine() {
+(function initOddAndEvenReferralEngine() {
   if (typeof window === 'undefined') return;
+  if (window.__hcReferralEngineInitialized) return;
+  window.__hcReferralEngineInitialized = true;
 
-  const V2_FEATURES = {
-    roast: {
-      index: 1,
-      icon: '💀',
-      badge: '💀 ROAST MODE',
-      badgeClass: 'bg-rose-500/25 text-rose-200 border-rose-400/40',
-      caption: 'Savage stadium humiliation & Golden Duck roasts on every wicket!',
-      title: 'New Roast Commentary Mode (Savage Wicket Humiliation)',
-      tag: 'AUDIO + SCOREBOARD ROASTS',
-      tagClass: 'bg-rose-500/20 text-rose-300 border-rose-400/30',
-      desc: 'Switch your announcer to <strong class="text-rose-300">💀 Roast</strong> mode for zero-mercy commentary whenever a batter gets dismissed—complete with dedicated Golden Duck (0-run) humiliation lines and live voice synthesis!',
-      tryHint: '💀 Roast Commentary Mode',
-      tryBtn: '🔥 Try Out Roast Mode',
-      tabActiveClass: 'bg-rose-500/15 border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.2)]'
-    },
-    security: {
-      index: 2,
-      icon: '🛡️',
-      badge: '🛡️ SECURITY 2.0',
-      badgeClass: 'bg-emerald-500/25 text-emerald-200 border-emerald-400/40',
-      caption: 'Upgraded Firebase API Key, OAE1 Vault & full account removal across Cloud + Auth.',
-      title: 'Security Update & Complete Account Removal',
-      tag: 'FIREBASE AUTH + FIRESTORE WIPE',
-      tagClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30',
-      desc: 'Powered by the upgraded Firebase security configuration, salted OAE1 password protection, and 1-click <strong class="text-emerald-300">Remove Account</strong> that permanently purges your profile from the website, Firestore, and Firebase Authentication so your username can be freshly re-registered anytime.',
-      tryHint: '🛡️ Account & Security Controls',
-      tryBtn: '🛡️ Try Out Security Controls',
-      tabActiveClass: 'bg-emerald-500/15 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
-    },
-    cloud: {
-      index: 3,
-      icon: '☁️',
-      badge: '☁️ CLOUD SYNC 2.0',
-      badgeClass: 'bg-cyan-500/25 text-cyan-200 border-cyan-400/40',
-      caption: 'Instant real-time cross-device sync for Global Elo, Weekly Rankings & Friends.',
-      title: 'Real-Time Cloud Sync Across Desktop & Mobile',
-      tag: 'DUAL-COLLECTION FIRESTORE',
-      tagClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30',
-      desc: 'Every run, wicket, achievement, friend invite, and Elo rating change syncs automatically across <code class="text-cyan-300">handcricket_users</code> and <code class="text-cyan-300">profiles</code> in real time—with instant deleted-account detection.',
-      tryHint: '☁️ Live Cloud Sync & Leaderboard',
-      tryBtn: '☁️ Try Out Cloud Sync',
-      tabActiveClass: 'bg-cyan-500/15 border-cyan-400/60 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
-    },
-    google: {
-      index: 4,
-      icon: '🔑',
-      badge: '🔑 GOOGLE SIGN-IN',
-      badgeClass: 'bg-amber-500/25 text-amber-200 border-amber-400/40',
-      caption: '1-Tap Continue with Google authentication with smart username reservation.',
-      title: '1-Tap Google Sign-In & Smart Player Portal',
-      tag: 'OAUTH 2.0 INSTANT LOGIN',
-      tagClass: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
-      desc: 'Skip passwords with one-tap <strong class="text-amber-300">Continue with Google</strong> sign-in, automatic account linking, custom player username reservation, and device-aware routing between Desktop and Mobile.',
-      tryHint: '🔑 Google Sign-In & Account Portal',
-      tryBtn: '🔑 Try Out Google Sign-In',
-      tabActiveClass: 'bg-amber-500/15 border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
-    },
-    gameplay: {
-      index: 5,
-      icon: '🤝',
-      badge: '🤝 FAIR AI & DRAWS',
-      badgeClass: 'bg-purple-500/25 text-purple-200 border-purple-400/40',
-      caption: 'Official Match Drawn tie rules (0 Elo delta) & non-tracking Predictive Master Bot.',
-      title: 'Match Drawn Rules & Fair Predictive Master Bot',
-      tag: 'COMPETITIVE FAIR PLAY',
-      tagClass: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
-      desc: 'When 2nd-innings scores level (score === target - 1), the match officially finishes as <strong class="text-purple-300">MATCH DRAWN</strong> across Bot &amp; Multiplayer modes. Plus, Master Bot now uses fair predictive pattern psychology instead of reading your camera fingers!',
-      tryHint: '🤝 Fair Master Bot & Match Drawn Engine',
-      tryBtn: '🏏 Try Out In Arena',
-      tabActiveClass: 'bg-purple-500/15 border-purple-400/60 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
-    }
-  };
+  const PENDING_REF_KEY = 'oddandeven_pending_referral_code_v1';
+  const PENDING_CLOUD_CREDIT_KEY = 'oddandeven_pending_referral_credit_v1';
+  const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
+  const LAST_USER_KEY = 'oddandeven_last_user_v1';
+  const WORLDWIDE_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+  const ELO_STORAGE_KEY = 'hc_arena_elo_v2';
+  const PLACEHOLDERS = new Set(['PLAYER', 'PLAYER_1', 'PLAYER_2', 'GUEST', 'YOU', 'FRIEND', 'HOST', 'LOGIN REQUIRED', 'UNAUTHENTICATED']);
 
-  window.openVersion2Showcase = function() {
-    const modal = document.getElementById('version2ShowcaseModal');
-    if (!modal) return;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  };
+  function isRealUser(u) {
+    const clean = String(u || '').trim().toUpperCase();
+    return clean.length >= 3 && !PLACEHOLDERS.has(clean);
+  }
 
-  window.closeVersion2Showcase = function() {
-    const modal = document.getElementById('version2ShowcaseModal');
-    if (!modal) return;
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  };
+  function getActiveUsername() {
+    try {
+      const elUser = document.getElementById('headerAuthUsername');
+      if (elUser && elUser.textContent) {
+        const m = elUser.textContent.trim().split(/\s+/)[0].toUpperCase();
+        if (isRealUser(m) && m !== 'LOGIN') {
+          window.__activeReferralUsername = m;
+          return m;
+        }
+      }
+      const lastU = (localStorage.getItem(LAST_USER_KEY) || '').trim().toUpperCase();
+      if (isRealUser(lastU)) {
+        window.__activeReferralUsername = lastU;
+        return lastU;
+      }
+    } catch (e) {}
+    return 'PLAYER';
+  }
 
-  window.selectVersion2Feature = function(key) {
-    const feat = V2_FEATURES[key] || V2_FEATURES.roast;
-    window.__currentV2Feature = key;
-
-    const tabs = document.querySelectorAll('[data-v2-tab]');
-    tabs.forEach((t) => {
-      const k = t.getAttribute('data-v2-tab');
-      t.className = 'v2-feature-tab ' + (k === 'gameplay' ? 'col-span-2 sm:col-span-1 ' : '') +
-        'group text-left p-2.5 rounded-2xl border transition-all ' +
-        (k === key ? feat.tabActiveClass : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06]');
-    });
-
-    const imgBadge = document.getElementById('v2ImageLiveBadge');
-    if (imgBadge) {
-      imgBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black uppercase border shrink-0 ' + feat.badgeClass;
-      imgBadge.textContent = feat.badge;
-    }
-    const imgCap = document.getElementById('v2ImageLiveCaption');
-    if (imgCap) imgCap.textContent = feat.caption;
-
-    const counter = document.getElementById('v2FeatureCounter');
-    if (counter) counter.textContent = feat.index + ' / 5 Selected';
-    const icon = document.getElementById('v2DetailIcon');
-    if (icon) icon.textContent = feat.icon;
-    const title = document.getElementById('v2DetailTitle');
-    if (title) title.textContent = feat.title;
-    const tag = document.getElementById('v2DetailTag');
-    if (tag) {
-      tag.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-black border ' + feat.tagClass;
-      tag.textContent = feat.tag;
-    }
-    const desc = document.getElementById('v2DetailDesc');
-    if (desc) desc.innerHTML = feat.desc;
-
-    const hint = document.getElementById('v2TryOutHint');
-    if (hint) hint.innerHTML = 'Ready to activate: <strong class="text-white">' + feat.tryHint + '</strong>';
-    const btnLbl = document.getElementById('btnTryOutV2Label');
-    if (btnLbl) btnLbl.textContent = feat.tryBtn;
-
-    const subWidget = document.getElementById('v2InteractiveSubWidget');
-    if (subWidget) {
-      if (key === 'roast') subWidget.classList.remove('hidden');
-      else subWidget.classList.add('hidden');
-    }
-  };
-
-  window.tryOutVersion2Feature = function() {
-    const key = window.__currentV2Feature || 'roast';
-    window.closeVersion2Showcase();
-
-    if (key === 'roast') {
+  function getOrCreateUserReferralCode(username, forceNew = false) {
+    const clean = isRealUser(username) ? String(username).trim().toUpperCase() : 'PLAYER';
+    const storageKey = 'oddandeven_my_referral_code_' + clean;
+    if (!forceNew) {
       try {
-        if (typeof state !== 'undefined' && state) {
-          state.commentaryStyle = 'roast';
+        const saved = localStorage.getItem(storageKey);
+        if (saved && saved.startsWith('OAE-' + clean + '-')) {
+          return saved;
         }
       } catch (e) {}
-      const sel = document.getElementById('selectCommentaryStyle');
-      if (sel) {
-        sel.value = 'roast';
-        sel.dispatchEvent(new Event('change', { bubbles: true }));
-        try { sel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    }
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let suffix = forceNew ? '' : '50XP';
+    if (forceNew) {
+      for (let i = 0; i < 4; i++) {
+        suffix += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      if (typeof setCommentary === 'function') {
-        setCommentary('💀 ROAST MODE ARMED! Every wicket will now trigger savage stadium humiliation!', 'wicket');
+    }
+    const code = `OAE-${clean}-${suffix}`;
+    try {
+      localStorage.setItem(storageKey, code);
+    } catch (e) {}
+    return code;
+  }
+
+  function buildShareableReferralUrl(code) {
+    const cleanCode = String(code || 'OAE-PLAYER-50XP').trim().toUpperCase();
+    try {
+      const loc = window.location;
+      const proto = String(loc.protocol || '').toLowerCase();
+      const host = String(loc.hostname || '').toLowerCase();
+      const isSandbox = proto === 'blob:' || proto === 'about:' || proto === 'data:' || host.includes('usercontent.goog') || host.includes('googleusercontent.com');
+      if (!isSandbox && (proto === 'http:' || proto === 'https:')) {
+        const basePath = loc.pathname.replace(/\/(hand_cricket|handcricket|mobile|store|profile)\.html$/i, '/index.html');
+        return `${loc.origin}${basePath}?ref=${encodeURIComponent(cleanCode)}`;
       }
-      if (typeof window.triggerVersion2Sample === 'function') {
-        window.triggerVersion2Sample();
+    } catch (e) {}
+    return `https://oddeven-two.vercel.app/?ref=${encodeURIComponent(cleanCode)}`;
+  }
+
+  function parseReferrerFromCodeOrInput(rawInput) {
+    if (!rawInput) return { referrer: null, code: null };
+    let str = String(rawInput).trim();
+    try {
+      if (str.includes('ref=')) {
+        const u = new URL(str, 'https://oddeven-two.vercel.app');
+        const p = u.searchParams.get('ref');
+        if (p) str = p.trim();
       }
-      return;
+    } catch (e) {
+      const m = str.match(/[?&]ref=([^&#\s]+)/i);
+      if (m && m[1]) str = decodeURIComponent(m[1]);
+    }
+    const cleanCode = str.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (!cleanCode) return { referrer: null, code: null };
+
+    if (cleanCode.startsWith('OAE-')) {
+      const body = cleanCode.slice(4);
+      const lastDash = body.lastIndexOf('-');
+      const uname = lastDash > 0 ? body.slice(0, lastDash) : body;
+      if (isRealUser(uname)) {
+        return { referrer: uname, code: cleanCode };
+      }
+    }
+    if (isRealUser(cleanCode)) {
+      return { referrer: cleanCode, code: `OAE-${cleanCode}-50XP` };
+    }
+    return { referrer: null, code: null };
+  }
+
+  function getReferralStatsForUser(username) {
+    const clean = isRealUser(username) ? String(username).trim().toUpperCase() : '';
+    if (!clean) return { xp: 0, count: 0, friends: [] };
+    let friends = [];
+    try {
+      const rawF = localStorage.getItem('oddandeven_referred_friends_' + clean);
+      if (rawF) {
+        const parsed = JSON.parse(rawF);
+        if (Array.isArray(parsed)) friends = parsed;
+      }
+    } catch (e) {}
+    let storedXp = 0;
+    try {
+      storedXp = parseInt(localStorage.getItem('oddandeven_referral_xp_' + clean) || '0', 10) || 0;
+    } catch (e) {}
+    try {
+      const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+      if (wRaw) {
+        const wMap = JSON.parse(wRaw) || {};
+        if (wMap[clean]) {
+          storedXp = Math.max(storedXp, Number(wMap[clean].referralXp) || 0);
+          if (Array.isArray(wMap[clean].referredFriends) && wMap[clean].referredFriends.length > friends.length) {
+            friends = wMap[clean].referredFriends;
+          }
+        }
+      }
+    } catch (e) {}
+    const totalXp = Math.max(storedXp, friends.length * 50);
+    return {
+      xp: totalXp,
+      count: Math.max(friends.length, Math.floor(totalXp / 50)),
+      friends
+    };
+  }
+
+  function awardReferralXpToReferrer(referrerUsername, newSignupUsername, codeUsed) {
+    const cleanRef = String(referrerUsername || '').trim().toUpperCase();
+    const cleanNew = String(newSignupUsername || '').trim().toUpperCase();
+    if (!isRealUser(cleanRef) || !isRealUser(cleanNew)) {
+      return { ok: false, message: 'Please sign in with a valid player username first.' };
+    }
+    if (cleanRef === cleanNew) {
+      return { ok: false, message: 'You cannot use your own referral code!' };
     }
 
-    if (key === 'security') {
-      const sideAcct = document.getElementById('sideNavAccount') || document.getElementById('drawerNavAccount') || document.getElementById('btnOpenAuthModal');
-      if (sideAcct) sideAcct.click();
-      return;
-    }
-
-    if (key === 'cloud') {
-      if (typeof syncUserProfileToCloud === 'function') {
-        try { syncUserProfileToCloud(); } catch (e) {}
+    try {
+      const alreadyRedeemedByNew = localStorage.getItem('oddandeven_redeemed_ref_by_' + cleanNew);
+      if (alreadyRedeemedByNew) {
+        return { ok: false, message: `@${cleanNew} has already redeemed a referral code (@${alreadyRedeemedByNew}).` };
       }
-      const sideLb = document.getElementById('sideNavLeaderboard') || document.getElementById('drawerNavLeaderboard');
-      if (sideLb) sideLb.click();
-      return;
+    } catch (e) {}
+
+    const stats = getReferralStatsForUser(cleanRef);
+    const alreadyInList = stats.friends.some((f) => {
+      const u = typeof f === 'string' ? f.trim().toUpperCase() : String(f && f.username || '').trim().toUpperCase();
+      return u === cleanNew;
+    });
+    if (alreadyInList) {
+      return { ok: false, message: `@${cleanNew} was already counted for @${cleanRef}'s referral bonus!` };
     }
 
-    if (key === 'google') {
-      const googleBtn = document.getElementById('btnGoogleSignIn') || document.getElementById('btnOpenAuthModal') || document.getElementById('sideNavAccount');
-      if (googleBtn) googleBtn.click();
-      return;
+    const finalCode = codeUsed || `OAE-${cleanRef}-50XP`;
+    const nextFriends = [
+      { username: cleanNew, code: finalCode, xp: 50, timestamp: Date.now() },
+      ...stats.friends
+    ];
+    const nextXp = Math.max(stats.xp + 50, nextFriends.length * 50);
+
+    try {
+      localStorage.setItem('oddandeven_referral_xp_' + cleanRef, String(nextXp));
+      localStorage.setItem('oddandeven_referred_friends_' + cleanRef, JSON.stringify(nextFriends));
+      localStorage.setItem('oddandeven_redeemed_ref_by_' + cleanNew, cleanRef);
+      localStorage.removeItem(PENDING_REF_KEY);
+    } catch (e) {}
+
+    // Update worldwide & desktop player maps
+    try {
+      const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+      const wMap = wRaw ? JSON.parse(wRaw) : {};
+      if (!wMap[cleanRef]) {
+        wMap[cleanRef] = { name: cleanRef, isRealRegisteredUser: true, elo: 1500, peak: 1500, wins: 0, losses: 0, matches: 0, totalRuns: 0, wicketsTaken: 0 };
+      }
+      wMap[cleanRef].referralXp = nextXp;
+      wMap[cleanRef].referralCount = nextFriends.length;
+      wMap[cleanRef].referredFriends = nextFriends;
+      wMap[cleanRef].xp = Math.max(Number(wMap[cleanRef].xp) || 0, nextXp);
+      wMap[cleanRef].updatedAt = Date.now();
+      localStorage.setItem(WORLDWIDE_PLAYERS_KEY, JSON.stringify(wMap));
+    } catch (e) {}
+
+    try {
+      const eRaw = localStorage.getItem(ELO_STORAGE_KEY);
+      const eObj = eRaw ? JSON.parse(eRaw) : {};
+      eObj.humanPlayers = eObj.humanPlayers || {};
+      if (!eObj.humanPlayers[cleanRef]) {
+        eObj.humanPlayers[cleanRef] = { name: cleanRef, isRealRegisteredUser: true, elo: 1500, peak: 1500, wins: 0, losses: 0, matches: 0, totalRuns: 0, wicketsTaken: 0 };
+      }
+      eObj.humanPlayers[cleanRef].referralXp = nextXp;
+      eObj.humanPlayers[cleanRef].referralCount = nextFriends.length;
+      eObj.humanPlayers[cleanRef].referredFriends = nextFriends;
+      eObj.humanPlayers[cleanRef].xp = Math.max(Number(eObj.humanPlayers[cleanRef].xp) || 0, nextXp);
+      localStorage.setItem(ELO_STORAGE_KEY, JSON.stringify(eObj));
+    } catch (e) {}
+
+    // Queue & trigger Firestore cloud credit
+    try {
+      const qRaw = localStorage.getItem(PENDING_CLOUD_CREDIT_KEY);
+      const qArr = qRaw ? JSON.parse(qRaw) : [];
+      qArr.push({ referrer: cleanRef, newUser: cleanNew, code: finalCode, timestamp: Date.now() });
+      localStorage.setItem(PENDING_CLOUD_CREDIT_KEY, JSON.stringify(qArr));
+    } catch (e) {}
+
+    if (typeof window.__creditReferralInCloud === 'function') {
+      window.__creditReferralInCloud(cleanRef, cleanNew, finalCode).then(() => {
+        try { localStorage.removeItem(PENDING_CLOUD_CREDIT_KEY); } catch (e) {}
+      }).catch(() => {});
     }
 
-    const playBtn = document.getElementById('sideNavPlayBot') || document.getElementById('btnStartMatch') || document.getElementById('selectCommentaryStyle');
-    if (playBtn) {
-      try { playBtn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    // Broadcast across tabs
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('oddandeven_store_sync');
+        bc.postMessage({ type: 'REFERRAL_XP_AWARDED', referrer: cleanRef, newUser: cleanNew, xp: 50, totalReferralXp: nextXp, timestamp: Date.now() });
+      }
+      localStorage.setItem('oddandeven_store_bus', JSON.stringify({ type: 'REFERRAL_XP_AWARDED', referrer: cleanRef, newUser: cleanNew, xp: 50, time: Date.now() }));
+    } catch (e) {}
+
+    refreshAllBanners();
+    return {
+      ok: true,
+      referrer: cleanRef,
+      newUser: cleanNew,
+      xpAwarded: 50,
+      totalReferralXp: nextXp,
+      message: `🎉 +50 XP awarded to @${cleanRef} for referring @${cleanNew}!`
+    };
+  }
+
+  function showWidgetFeedback(widget, msg, isSuccess = true) {
+    if (!widget) return;
+    const box = widget.querySelector('[data-ref-feedback]');
+    if (!box) return;
+    box.classList.remove('hidden');
+    box.className = 'p-2.5 rounded-xl text-xs font-bold border relative z-10 ' + (
+      isSuccess
+        ? 'bg-emerald-500/15 text-emerald-200 border-emerald-400/45'
+        : 'bg-rose-500/15 text-rose-200 border-rose-400/45'
+    );
+    box.textContent = msg;
+    clearTimeout(box._hideTimer);
+    box._hideTimer = setTimeout(() => {
+      box.classList.add('hidden');
+    }, 5500);
+  }
+
+  function refreshAllBanners() {
+    const activeUser = getActiveUsername();
+    const code = getOrCreateUserReferralCode(activeUser, false);
+    const shareUrl = buildShareableReferralUrl(code);
+    const stats = getReferralStatsForUser(activeUser);
+
+    const widgets = document.querySelectorAll('[data-referral-widget]');
+    widgets.forEach((w) => {
+      const codeEl = w.querySelector('[data-ref-code-display]');
+      if (codeEl) codeEl.textContent = code;
+
+      const urlInp = w.querySelector('[data-ref-url-input]');
+      if (urlInp) urlInp.value = shareUrl;
+
+      const earnedPill = w.querySelector('[data-ref-earned-pill]');
+      if (earnedPill) {
+        earnedPill.textContent = `🏆 +${stats.xp} XP Earned (${stats.count} Joined)`;
+      }
+
+      const milestoneTarget = Math.max(5, Math.ceil((stats.count + 1) / 5) * 5);
+      const milestoneXp = milestoneTarget * 50;
+      const pct = Math.min(100, Math.round((stats.count / milestoneTarget) * 100));
+
+      const progLbl = w.querySelector('[data-ref-progress-label]');
+      if (progLbl) {
+        progLbl.textContent = `${stats.count} / ${milestoneTarget} Friends (${stats.xp} / ${milestoneXp} XP)`;
+      }
+
+      const progBar = w.querySelector('[data-ref-progress-bar]');
+      if (progBar) {
+        progBar.style.width = `${pct}%`;
+      }
+
+      const friendsListEl = w.querySelector('[data-ref-friends-list]');
+      if (friendsListEl) {
+        if (stats.friends.length > 0) {
+          friendsListEl.innerHTML = stats.friends.slice(0, 6).map((f) => {
+            const u = typeof f === 'string' ? f : (f.username || 'FRIEND');
+            return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono-num font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-400/35">✓ @${u} (+50 XP)</span>`;
+          }).join('');
+        } else {
+          friendsListEl.innerHTML = `<span>Share your link above — every friend who signs up awards you <strong class="text-amber-300">+50 XP</strong>!</span>`;
+        }
+      }
+    });
+
+    // Update Store sidebar XP badge if present
+    try {
+      const storeSub = document.getElementById('sideNavStoreSub');
+      if (storeSub && isRealUser(activeUser)) {
+        const wRaw = localStorage.getItem(WORLDWIDE_PLAYERS_KEY);
+        const wMap = wRaw ? JSON.parse(wRaw) : {};
+        const myRec = wMap[activeUser] || {};
+        const spent = parseInt(localStorage.getItem('oddandeven_spent_xp_' + activeUser) || '0', 10) || 0;
+        const mXp = ((myRec.totalRuns || 0) * 2) + ((myRec.wicketsTaken || 0) * 25) + ((myRec.wins || 0) * 50) + ((myRec.matches || 0) * 15);
+        const avail = Math.max(0, mXp + stats.xp - spent);
+        if (avail > 0) {
+          storeSub.textContent = `${avail.toLocaleString()} XP • Cards & Flex`;
+        }
+      }
+    } catch (e) {}
+  }
+
+  function captureUrlReferralParam() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const rawRef = params.get('ref') || params.get('referral') || params.get('invite');
+      if (rawRef) {
+        const parsed = parseReferrerFromCodeOrInput(rawRef);
+        if (parsed.referrer && parsed.code) {
+          localStorage.setItem(PENDING_REF_KEY, parsed.code);
+        }
+      }
+      const pendingCode = localStorage.getItem(PENDING_REF_KEY);
+      if (pendingCode) {
+        const modalRefInp = document.getElementById('modalInputReferralCode');
+        if (modalRefInp && !modalRefInp.value) {
+          modalRefInp.value = pendingCode;
+        }
+        document.querySelectorAll('[data-ref-redeem-input]').forEach((inp) => {
+          if (!inp.value) inp.value = pendingCode;
+        });
+      }
+    } catch (e) {}
+  }
+
+  function handleSignupReferral(newUsername, explicitCodeInput = '') {
+    let codeToUse = String(explicitCodeInput || '').trim();
+    if (!codeToUse) {
+      try {
+        codeToUse = localStorage.getItem(PENDING_REF_KEY) || '';
+      } catch (e) {}
     }
+    if (!codeToUse) return null;
+    const parsed = parseReferrerFromCodeOrInput(codeToUse);
+    if (!parsed.referrer) return null;
+    return awardReferralXpToReferrer(parsed.referrer, newUsername, parsed.code);
+  }
+
+  function bindReferralBannerEvents() {
+    document.addEventListener('click', (ev) => {
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-ref-action]') : null;
+      if (!btn) return;
+      const action = btn.getAttribute('data-ref-action');
+      const widget = btn.closest('[data-referral-widget]');
+      const activeUser = getActiveUsername();
+
+      if (action === 'generate') {
+        const newCode = getOrCreateUserReferralCode(activeUser, true);
+        const newUrl = buildShareableReferralUrl(newCode);
+        refreshAllBanners();
+        showWidgetFeedback(widget, `⚡ Generated new referral code ${newCode} & updated your invite URL!`, true);
+        return;
+      }
+
+      if (action === 'copy-code') {
+        const code = getOrCreateUserReferralCode(activeUser, false);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).catch(() => {});
+        }
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Copied!';
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+        showWidgetFeedback(widget, `📋 Referral code "${code}" copied! Share it with friends to earn +50 XP per signup.`, true);
+        return;
+      }
+
+      if (action === 'copy-url') {
+        const code = getOrCreateUserReferralCode(activeUser, false);
+        const url = buildShareableReferralUrl(code);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).catch(() => {});
+        }
+        const statusHint = widget ? widget.querySelector('[data-ref-status-hint]') : null;
+        if (statusHint) statusHint.textContent = '✓ Link Copied!';
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span>✓</span><span>Copied!</span>';
+        setTimeout(() => {
+          btn.innerHTML = orig;
+          if (statusHint) statusHint.textContent = 'Ready to share';
+        }, 2000);
+        showWidgetFeedback(widget, `🔗 Invite URL copied to clipboard! Send it to friends — you'll get +50 XP when they sign up!`, true);
+        return;
+      }
+
+      if (action === 'share-whatsapp') {
+        const code = getOrCreateUserReferralCode(activeUser, false);
+        const url = buildShareableReferralUrl(code);
+        const shareText = `🏏 Play Hand Cricket with me on OddAndEven.in! Sign up using my referral link (Code: ${code}) so we can play 1v1 & 2v2 matches: ${url}`;
+        if (navigator.share) {
+          navigator.share({
+            title: 'OddAndEven.in — Hand Cricket Invite',
+            text: shareText,
+            url: url
+          }).catch(() => {});
+        } else {
+          const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+          window.open(waUrl, '_blank', 'noopener,noreferrer');
+        }
+        showWidgetFeedback(widget, `📲 Opening share menu for your referral link (${code})!`, true);
+        return;
+      }
+
+      if (action === 'redeem-code') {
+        const inp = widget ? widget.querySelector('[data-ref-redeem-input]') : null;
+        const rawVal = inp ? inp.value.trim() : '';
+        if (!rawVal) {
+          showWidgetFeedback(widget, 'Please enter a friend\'s referral code or invite URL first.', false);
+          return;
+        }
+        const parsed = parseReferrerFromCodeOrInput(rawVal);
+        if (!parsed.referrer) {
+          showWidgetFeedback(widget, 'Invalid referral code format. Example: OAE-VIRAT_18-50XP', false);
+          return;
+        }
+        if (!isRealUser(activeUser)) {
+          try { localStorage.setItem(PENDING_REF_KEY, parsed.code); } catch (e) {}
+          const modalRefInp = document.getElementById('modalInputReferralCode');
+          if (modalRefInp) modalRefInp.value = parsed.code;
+          showWidgetFeedback(widget, `🎁 Code ${parsed.code} saved! Sign up now to award +50 XP to @${parsed.referrer}!`, true);
+          return;
+        }
+        const res = awardReferralXpToReferrer(parsed.referrer, activeUser, parsed.code);
+        showWidgetFeedback(widget, res.message, res.ok);
+        if (res.ok && inp) inp.value = '';
+      }
+    });
+  }
+
+  window.openVersion2Showcase = function() {};
+  window.closeVersion2Showcase = function() {};
+
+  window.OddAndEvenReferrals = {
+    getOrCreateUserReferralCode,
+    buildShareableReferralUrl,
+    parseReferrerFromCodeOrInput,
+    getReferralStatsForUser,
+    awardReferralXpToReferrer,
+    handleSignupReferral,
+    refreshAllBanners
   };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      captureUrlReferralParam();
+      bindReferralBannerEvents();
+      refreshAllBanners();
+    });
+  } else {
+    captureUrlReferralParam();
+    bindReferralBannerEvents();
+    refreshAllBanners();
+  }
+
+  window.addEventListener('storage', (ev) => {
+    if (!ev || !ev.key) return;
+    if (ev.key.startsWith('oddandeven_referral_') || ev.key.startsWith('oddandeven_referred_') || ev.key === LAST_USER_KEY || ev.key === SESSION_STORAGE_KEY || ev.key === 'oddandeven_store_bus') {
+      refreshAllBanners();
+    }
+  });
 })();

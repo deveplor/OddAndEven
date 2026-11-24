@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OddAndEven.in — Official Updates &amp; Changelog (Version 2)</title>
+  <title>OddAndEven.in — Official Updates &amp; Changelog (v2.5)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -45,6 +45,9 @@
       box-shadow: 0 20px 60px rgba(129, 182, 76, 0.14);
     }
   </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
 </head>
 <body class="antialiased selection:bg-[#81b64c] selection:text-slate-950">
 
@@ -59,9 +62,9 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="font-brand font-extrabold text-lg tracking-tight text-white group-hover:text-[#a3d96c] transition">OddAndEven.in</span>
-              <span class="px-2 py-0.5 text-[10px] font-mono-num font-bold uppercase tracking-wider bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40 rounded-full">Version 2 LIVE</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono-num font-bold uppercase tracking-wider bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40 rounded-full">v2.5 LIVE</span>
             </div>
-            <p class="text-[11px] text-zinc-400 hidden sm:block">Official Changelog &amp; Version 2 Patch Notes</p>
+            <p class="text-[11px] text-zinc-400 hidden sm:block">Official Changelog &amp; v2.5 Patch Notes</p>
           </div>
         </a>
       </div>
@@ -107,25 +110,25 @@
         <div class="space-y-3 max-w-2xl">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[#81b64c]/20 text-[#a3d96c] border border-[#81b64c]/40">
             <span class="w-2 h-2 rounded-full bg-[#a3d96c] animate-ping"></span>
-            <span>🚀 Latest Release: Version 2 — Roast Mode, 1-Tap Google Auth, Spectator TV &amp; Security 2.0</span>
+            <span>Latest release: v2.5 — Midnight Arena</span>
           </div>
           <h1 class="font-brand text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
             What's New in <span class="text-[#a3d96c]">OddAndEven.in</span>
           </h1>
           <p class="text-sm sm:text-base text-zinc-300 leading-relaxed">
-            Track every feature launch in <strong class="text-white">Version 2</strong> — including <strong class="text-rose-300">💀 Savage Roast Commentary</strong>, <strong class="text-amber-300">🔑 1-Tap Google Sign-In</strong> with first-time Username &amp; Country Code onboarding (now with Germany, France, Spain &amp; Canada), <strong class="text-cyan-300">📺 Live Tournament Split-Screen Spectator TV</strong> with a top Winning Probability Meter, <strong class="text-emerald-300">🛡️ Security 2.0 Complete Account Wipe</strong>, and <strong class="text-purple-300">🎖️ 30 Career Achievements</strong>.
-          </p>
+            A sharper stadium, a smarter opponent, and a smoother way back to the pitch. Explore v2.5 below, then revisit the complete release history.</p>
         </div>
 
         <!-- Quick Version Jump Box -->
         <div class="bg-black/35 border border-white/10 rounded-2xl p-4 min-w-[265px] space-y-2.5">
           <div class="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center justify-between">
             <span>Release Timeline</span>
-            <span class="text-[#a3d96c] font-mono-num">4 Releases</span>
+            <span class="text-[#a3d96c] font-mono-num">5 Releases</span>
           </div>
+          <a href="#v2-5" class="block rounded-xl border border-emerald-400/50 bg-emerald-400/10 px-3 py-3 text-sm font-bold text-emerald-200">v2.5 · Midnight Arena · Latest</a>
           <a href="#v2-0" class="flex items-center justify-between px-3 py-2 rounded-xl bg-[#81b64c]/15 border border-[#81b64c]/40 text-xs font-bold text-white hover:bg-[#81b64c]/25 transition">
             <span class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-[#81b64c] text-slate-950 font-mono-num font-black">v2</span> Roast, Google Auth &amp; TV</span>
-            <span class="text-[10px] text-[#a3d96c] font-mono-num">LATEST</span>
+            <span class="text-[10px] text-[#a3d96c] font-mono-num">Previous</span>
           </a>
           <a href="#v1-8" class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 transition">
             <span class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-white/10 text-zinc-200 font-mono-num font-bold">v1.8</span> Season 1, Weekly Elo &amp; Bot</span>
@@ -146,15 +149,29 @@
 
   <!-- Main Changelog Feed -->
   <main class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 space-y-8">
+    <article id="v2-5" class="release-notes" aria-labelledby="v25-title">
+      <p class="arena-release">Latest release · <time datetime="2026-11-23">23 November 2026</time></p>
+      <h2 id="v25-title">v2.5 — Midnight Arena</h2>
+      <p>A new look. A tougher Grandmaster. Your next innings starts here.</p>
+      <ul>
+        <li><strong>A more focused stadium</strong>Midnight-blue surfaces, emerald actions, clearer score panels, and tactile number controls across desktop and mobile.</li>
+        <li><strong>Grandmaster learns your game</strong>Adaptive sequence prediction, repetition detection, separate batting and bowling memory, and risk-aware chasing. Decisions use completed turns only.</li>
+        <li><strong>Smoother sign-in</strong>Google identities stay with Google. Cloud lookups allow time to finish, blocked popups explain how to retry, and account creation checks online availability.</li>
+        <li><strong>Reliable across devices</strong>Fixed mobile current-pick leakage, preserved saved profiles and scores, removed the duplicate desktop engine, and stopped background account switching.</li>
+        <li><strong>More accessible play</strong>Visible keyboard focus, larger touch controls, improved text contrast, and support for reduced motion.</li>
+        <li><strong>Honest match information</strong>Connection status reflects initialization, PIN previews stay masked, and bot descriptions no longer promise impossible prediction accuracy.</li>
+      </ul>
+    </article>
+
 
     <!-- ==========================================
          VERSION 2 (LATEST RELEASE)
          ========================================== -->
-    <article id="v2-0" class="version-card version-card-latest rounded-3xl p-6 sm:p-8 space-y-6">
+    <article id="v2-0" class="version-card rounded-3xl p-6 sm:p-8 space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div class="space-y-1">
           <div class="flex flex-wrap items-center gap-2.5">
-            <span class="px-3 py-1 rounded-full text-xs font-mono-num font-black bg-[#81b64c] text-slate-950">✨ CURRENT VERSION</span>
+            <span class="px-3 py-1 rounded-full text-xs font-mono-num font-black bg-[#81b64c] text-slate-950">ARCHIVED RELEASE</span>
             <span class="px-3 py-1 rounded-full text-xs font-mono-num font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30">Version 2 (v2.0)</span>
             <span class="px-3 py-1 rounded-full text-xs font-mono-num font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">6 Major Arena Upgrades</span>
           </div>

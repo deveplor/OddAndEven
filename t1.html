@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OddAndEven.in — Tournament Live Spectator &amp; Split-Screen Broadcast (t1.html)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Firebase Compat SDKs for Live Room Code Spectating -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --card: #14131c;
+      --card-elev: #1b1a26;
+      --line: rgba(255, 255, 255, 0.09);
+      --lime: #a3d96c;
+      --amber: #f5b83d;
+      --cyan: #5ad1e6;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(90, 209, 230, 0.08), transparent 36%),
+        radial-gradient(circle at 82% 12%, rgba(245, 184, 61, 0.08), transparent 36%),
+        radial-gradient(circle at 50% 90%, rgba(163, 217, 108, 0.06), transparent 45%),
+        var(--bg);
+      color: #f4f4f5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .font-brand { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+    .font-mono-num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+    .glass-card {
+      background: rgba(20, 19, 28, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--line);
+    }
+
+    /* Split Screen Layout Modes */
+    .split-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (min-width: 1024px) {
+      .split-grid[data-layout="split"] { grid-template-columns: 1fr 1fr; }
+      .split-grid[data-layout="p1-focus"] { grid-template-columns: 1.65fr 0.75fr; }
+      .split-grid[data-layout="p2-focus"] { grid-template-columns: 0.75fr 1.65fr; }
+      .split-grid[data-layout="studio"] { grid-template-columns: 1fr 1fr; }
+    }
+
+    .viewport-p1 {
+      border: 1px solid rgba(90, 209, 230, 0.32);
+      box-shadow: 0 12px 36px -14px rgba(90, 209, 230, 0.18);
+    }
+    .viewport-p2 {
+      border: 1px solid rgba(245, 184, 61, 0.32);
+      box-shadow: 0 12px 36px -14px rgba(245, 184, 61, 0.18);
+    }
+    .viewport-batting {
+      box-shadow: 0 0 0 1px rgba(163, 217, 108, 0.45), 0 16px 40px -12px rgba(163, 217, 108, 0.24) !important;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(1.22); }
+    }
+    .live-dot { animation: pulseDot 1.5s infinite ease-in-out; }
+
+    @keyframes floatUpEmoji {
+      0% { transform: translateY(0) scale(0.75) rotate(0deg); opacity: 0; }
+      15% { opacity: 1; transform: translateY(-18px) scale(1.12) rotate(-6deg); }
+      80% { opacity: 0.95; }
+      100% { transform: translateY(-190px) scale(1.25) rotate(8deg); opacity: 0; }
+    }
+    .floating-emoji {
+      position: absolute;
+      bottom: 16px;
+      pointer-events: none;
+      z-index: 40;
+      font-size: 1.65rem;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.65));
+      animation: floatUpEmoji 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .num-heat-cell {
+      transition: all 0.15s ease;
+    }
+    .num-heat-cell:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 14, 22, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(163, 217, 108, 0.45); }
+  </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
+</head>
+<body class="flex flex-col min-h-screen selection:bg-[#a3d96c] selection:text-slate-950">
+
+  <!-- TOP BROADCAST HEADER -->
+  <header class="w-full bg-[#0b0b10]/95 border-b border-white/10 px-3 sm:px-6 py-2.5 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-2.5">
+      <!-- Brand + Live Broadcast Indicator -->
+      <div class="flex items-center gap-2.5">
+        <a href="events.html" class="flex items-center gap-2.5 group" aria-label="Back to Events Hub">
+          <div class="w-10 h-10 rounded-xl bg-[#16151c] border border-amber-400/40 flex items-center justify-center text-lg shadow-inner group-hover:border-[#a3d96c] transition">
+            📺
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-brand font-extrabold text-base sm:text-lg tracking-tight leading-none">
+                <span class="text-[#a3d96c]">Odd</span><span class="text-amber-400 italic">And</span><span class="text-cyan-400">Even</span><span class="font-mono-num text-xs text-[#a3d96c]">.in</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                <span class="w-2 h-2 rounded-full bg-rose-500 live-dot"></span>
+                <span>T1 LIVE SPECTATOR</span>
+              </span>
+            </div>
+            <p class="text-[11px] text-zinc-400 font-medium mt-0.5">
+              Season 1 Championship Split-Screen Broadcast • <span id="viewerCountDisplay" class="text-amber-300 font-mono-num font-bold">1,482 Watching</span>
+            </p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Center: Live Court / Match Selector Pills -->
+      <div class="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full" role="tablist" aria-label="Tournament Courts">
+        <button type="button" data-court="0" class="court-tab px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold font-mono-num border transition shrink-0 bg-amber-400/20 text-amber-300 border-amber-400/50">
+          👑 Grand Final (Court 1)
+        </button>
+        <button type="button" data-court="1" class="court-tab px-2.5 py-1.5 rounded-xl text-[11px] font-bold font-mono-num border transition shrink-0 bg-[#16151c] text-zinc-300 border-white/10 hover:border-white/25">
+          🔥 Semi-Final #1
+        </button>
+        <button type="button" data-court="2" class="court-tab px-2.5 py-1.5 rounded-xl text-[11px] font-bold font-mono-num border transition shrink-0 bg-[#16151c] text-zinc-300 border-white/10 hover:border-white/25">
+          ⚡ Semi-Final #2
+        </button>
+        <button type="button" data-court="3" class="court-tab px-2.5 py-1.5 rounded-xl text-[11px] font-bold font-mono-num border transition shrink-0 bg-[#16151c] text-zinc-300 border-white/10 hover:border-white/25">
+          🏟️ Quarter-Final Feature
+        </button>
+      </div>
+
+      <!-- Right: Spectator Identity, Audio & Navigation -->
+      <div class="flex items-center gap-1.5 flex-wrap justify-end">
+        <div id="spectatorProfileBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-mono-num font-bold bg-[#16151c] text-emerald-300 border border-white/10">
+          <span id="specUserFlag">🇮🇳</span>
+          <span id="specUsername">SPECTATOR</span>
+          <span class="text-amber-300">• <span id="specXpVal">120</span> XP</span>
+        </div>
+        <button id="btnToggleSound" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[#16151c] hover:bg-zinc-800 text-zinc-200 border border-white/10 transition" title="Toggle Stadium Audio SFX">
+          🔊 SFX
+        </button>
+        <button id="btnToggleVoice" type="button" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[#16151c] hover:bg-zinc-800 text-zinc-300 border border-white/10 transition" title="Toggle Live Voice Commentary (TTS)">
+          🎙️ TTS: OFF
+        </button>
+        <a href="events.html" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-400 hover:bg-amber-300 text-slate-950 transition shadow">
+          🎟️ Events Hub
+        </a>
+        <a href="hand_cricket.html" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 transition shadow">
+          🏏 Play Arena
+        </a>
+        <a href="mobile.html" class="hidden sm:inline-flex px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[#81b64c]/15 hover:bg-[#81b64c]/25 text-[#a3d96c] border border-[#81b64c]/35 transition">
+          📱 Mobile
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN BROADCAST CONTAINER -->
+  <main class="max-w-[1440px] w-full mx-auto flex-1 px-3 sm:px-6 py-4 space-y-4">
+
+    <!-- 0. TOP WINNING PROBABILITY METER (BAR TYPE ABOVE SCORECARD) -->
+    <section id="topWinProbMeterSection" class="glass-card rounded-2xl p-3.5 sm:p-4 border border-cyan-400/30 shadow-2xl space-y-2.5" aria-label="Winning Probability Meter">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- Left: Player 1 Win Probability -->
+        <div class="flex items-center gap-2">
+          <span id="topMeterP1Flag" class="text-lg sm:text-xl">🇮🇳</span>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span id="topMeterP1Name" class="font-brand font-extrabold text-xs sm:text-sm text-white">AARAV_STRIKER</span>
+              <span class="text-[10px] font-mono-num uppercase px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">P1 Win</span>
+            </div>
+          </div>
+          <span id="topMeterP1Pct" class="font-mono-num text-base sm:text-xl font-black text-cyan-300 ml-1">48%</span>
+        </div>
+
+        <!-- Center: Meter Title, Tie/Draw % & Momentum Status -->
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <span class="font-brand text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-zinc-200 flex items-center gap-1.5">
+            <span>📊</span>
+            <span>Winning Probability Meter</span>
+          </span>
+          <span id="topMeterMomentumBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono-num font-extrabold bg-white/10 text-amber-300 border border-amber-400/30">
+            ⚖️ Balanced Contest
+          </span>
+          <span class="px-2 py-0.5 rounded-lg text-[10px] font-mono-num font-bold bg-amber-500/15 text-amber-300 border border-amber-400/30">
+            🤝 Tie / Draw: <strong id="topMeterDrawPct">4%</strong>
+          </span>
+        </div>
+
+        <!-- Right: Player 2 Win Probability -->
+        <div class="flex items-center gap-2">
+          <span id="topMeterP2Pct" class="font-mono-num text-base sm:text-xl font-black text-amber-300 mr-1">48%</span>
+          <div class="text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              <span class="text-[10px] font-mono-num uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-400/30">P2 Win</span>
+              <span id="topMeterP2Name" class="font-brand font-extrabold text-xs sm:text-sm text-white">MASTER_VORTEX</span>
+            </div>
+          </div>
+          <span id="topMeterP2Flag" class="text-lg sm:text-xl">🇮🇳</span>
+        </div>
+      </div>
+
+      <!-- Bar-Type Probability Track -->
+      <div class="relative w-full h-5 sm:h-6 rounded-xl bg-[#0d0c12] p-0.5 border border-white/15 overflow-hidden shadow-inner">
+        <!-- 50% Center Equilibrium Marker -->
+        <div class="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-white/40 z-20" title="50% Even Odds Marker"></div>
+
+        <div class="w-full h-full rounded-lg overflow-hidden flex font-mono-num text-[10px] font-black leading-none">
+          <div id="topMeterP1Bar" class="h-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-start pl-2 transition-all duration-500 overflow-hidden whitespace-nowrap" style="width: 48%">
+            <span id="topMeterP1BarLabel">48%</span>
+          </div>
+          <div id="topMeterDrawBar" class="h-full bg-amber-300 text-slate-950 flex items-center justify-center transition-all duration-500 overflow-hidden whitespace-nowrap" style="width: 4%" title="Tie / Match Drawn Probability"></div>
+          <div id="topMeterP2Bar" class="h-full bg-gradient-to-l from-amber-500 via-orange-400 to-rose-400 text-slate-950 flex items-center justify-end pr-2 transition-all duration-500 overflow-hidden whitespace-nowrap" style="width: 48%">
+            <span id="topMeterP2BarLabel">48%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scale Ticks & Match Equation Summary -->
+      <div class="flex items-center justify-between text-[10px] font-mono-num text-zinc-400 px-0.5">
+        <span>0%</span>
+        <span>25%</span>
+        <span id="topMeterSubCaption" class="text-zinc-300 font-bold text-center">50% EVEN ODDS</span>
+        <span>75%</span>
+        <span>100%</span>
+      </div>
+    </section>
+
+    <!-- 1. TELEVISION SCOREBUG & CONTROLS RIBBON -->
+    <section class="glass-card rounded-2xl p-3.5 sm:p-4 border border-white/15 shadow-2xl space-y-3" aria-label="Live Match Broadcast Scorebug">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+        <!-- Match Stage & Room Info -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="bugRoundBadge" class="px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-extrabold bg-amber-400/20 text-amber-300 border border-amber-400/40">
+            🏆 GRAND FINAL · 7 NOV CHAMPIONSHIP
+          </span>
+          <span id="bugInningsBadge" class="px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            2ND INNINGS CHASE
+          </span>
+          <span id="bugRoomBadge" class="px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-bold bg-white/5 text-zinc-300 border border-white/10">
+            ROOM: <strong id="bugRoomCodeText" class="text-cyan-300">T1-FINAL</strong>
+          </span>
+          <span class="text-[11px] font-mono-num text-zinc-400 hidden md:inline">
+            Rule: <strong class="text-amber-300">Equal Scores = Match Drawn 🤝</strong>
+          </span>
+        </div>
+
+        <!-- View Layout & Live Room Connector -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Layout Switcher -->
+          <div class="inline-flex items-center rounded-xl bg-[#0d0c12] p-1 border border-white/10 text-[11px] font-bold">
+            <button type="button" data-layout-btn="split" class="layout-btn px-2.5 py-1 rounded-lg bg-[#81b64c] text-slate-950 font-extrabold transition">
+              ⚡ Split 50/50
+            </button>
+            <button type="button" data-layout-btn="p1-focus" class="layout-btn px-2.5 py-1 rounded-lg text-zinc-300 hover:text-white transition">
+              🎥 P1 View
+            </button>
+            <button type="button" data-layout-btn="p2-focus" class="layout-btn px-2.5 py-1 rounded-lg text-zinc-300 hover:text-white transition">
+              🎥 P2 View
+            </button>
+            <button type="button" data-layout-btn="dual-pad" id="btnToggleDualControl" class="px-2.5 py-1 rounded-lg text-amber-300 hover:bg-amber-400/15 transition" title="Take manual control of both players' hand pads in split screen!">
+              🕹️ Manual Pads: OFF
+            </button>
+          </div>
+
+          <!-- X-Ray Peek Toggle -->
+          <button id="btnToggleXray" type="button" class="px-2.5 py-1.5 rounded-xl text-[11px] font-mono-num font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/35 hover:bg-cyan-500/25 transition" title="Peek at each player's locked hand choice before reveal">
+            👁️ Spectator X-Ray: ON
+          </button>
+
+          <!-- Live Room Code Input -->
+          <div class="flex items-center gap-1 bg-[#0d0c12] rounded-xl p-1 border border-white/10">
+            <input id="inputSpectateRoom" type="text" maxlength="10" placeholder="Room Code (HC1234)" class="w-32 sm:w-36 px-2.5 py-1 rounded-lg bg-transparent text-xs font-mono-num font-bold text-white uppercase focus:outline-none" />
+            <button id="btnConnectRoom" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-cyan-400 hover:bg-cyan-300 text-slate-950 transition">
+              📡 Spectate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Scorebug Strip: P1 vs Target/Equation vs P2 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+        <!-- P1 Summary Box -->
+        <div class="lg:col-span-4 flex items-center justify-between p-3 rounded-xl bg-cyan-500/10 border border-cyan-400/30">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span id="bugP1Flag" class="text-2xl shrink-0">🇮🇳</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span id="bugP1Name" class="font-brand font-extrabold text-sm sm:text-base text-white truncate">AARAV_STRIKER</span>
+                <span id="bugP1RolePill" class="px-1.5 py-0.5 rounded text-[9px] font-mono-num font-extrabold bg-[#a3d96c] text-slate-950">🏏 BAT</span>
+              </div>
+              <div class="text-[11px] font-mono-num text-cyan-200/80">
+                Seed #1 • <span id="bugP1Elo">1840</span> Elo • SR: <span id="bugP1Sr">0.0</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <div id="bugP1Score" class="font-mono-num text-2xl sm:text-3xl font-black text-white leading-none">0/0</div>
+            <div id="bugP1Balls" class="text-[10px] font-mono-num text-zinc-400 mt-1">(0 balls)</div>
+          </div>
+        </div>
+
+        <!-- Center Broadcast Status & Equation -->
+        <div class="lg:col-span-4 flex flex-col items-center justify-center p-3 rounded-xl bg-[#0d0c12] border border-white/10 text-center space-y-1.5">
+          <div class="flex items-center gap-2 text-xs font-mono-num font-bold">
+            <span class="text-zinc-400">TARGET: <strong id="bugTargetVal" class="text-amber-300">--</strong></span>
+            <span class="text-zinc-600">|</span>
+            <span class="text-zinc-400">CRR: <strong id="bugCrrVal" class="text-[#a3d96c]">0.00</strong></span>
+            <span class="text-zinc-600">|</span>
+            <span class="text-zinc-400">BALL: <strong id="bugBallCount" class="text-white">#0</strong></span>
+          </div>
+          <div id="bugEquationText" class="text-xs sm:text-sm font-extrabold text-amber-300 tracking-tight">
+            1st Innings underway — Setting the tournament target!
+          </div>
+          <!-- Win Probability Bar -->
+          <div class="w-full space-y-1 pt-0.5">
+            <div class="flex justify-between text-[10px] font-mono-num font-bold">
+              <span class="text-cyan-300">P1 Win: <span id="probP1Text">48%</span></span>
+              <span class="text-amber-300">Draw: <span id="probDrawText">4%</span></span>
+              <span class="text-amber-400">P2 Win: <span id="probP2Text">48%</span></span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-zinc-800 overflow-hidden flex">
+              <div id="probP1Bar" class="h-full bg-cyan-400 transition-all duration-300" style="width: 48%"></div>
+              <div id="probDrawBar" class="h-full bg-amber-300 transition-all duration-300" style="width: 4%"></div>
+              <div id="probP2Bar" class="h-full bg-amber-500 transition-all duration-300" style="width: 48%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- P2 Summary Box -->
+        <div class="lg:col-span-4 flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-400/30">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span id="bugP2Flag" class="text-2xl shrink-0">🇮🇳</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span id="bugP2Name" class="font-brand font-extrabold text-sm sm:text-base text-white truncate">MASTER_VORTEX</span>
+                <span id="bugP2RolePill" class="px-1.5 py-0.5 rounded text-[9px] font-mono-num font-extrabold bg-cyan-400 text-slate-950">⚾ BOWL</span>
+              </div>
+              <div class="text-[11px] font-mono-num text-amber-200/80">
+                Seed #2 • <span id="bugP2Elo">1815</span> Elo • SR: <span id="bugP2Sr">0.0</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <div id="bugP2Score" class="font-mono-num text-2xl sm:text-3xl font-black text-white leading-none">0/0</div>
+            <div id="bugP2Balls" class="text-[10px] font-mono-num text-zinc-400 mt-1">(0 balls)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. SPLIT-SCREEN DUAL PLAYER VIEWPORTS (P1 VIEW LEFT + P2 VIEW RIGHT) -->
+    <section aria-label="Split-Screen Player Views" class="relative">
+      <!-- Floating Crowd Emoji Container -->
+      <div id="floatingEmojiStage" class="pointer-events-none absolute inset-0 overflow-hidden z-30"></div>
+
+      <div id="splitScreenContainer" class="split-grid" data-layout="split">
+
+        <!-- ================= LEFT VIEWPORT: PLAYER 1 PERSPECTIVE ================= -->
+        <article id="viewportP1" class="glass-card viewport-p1 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between space-y-3 relative overflow-hidden">
+          <!-- Top Cam Header -->
+          <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-black uppercase bg-cyan-400 text-slate-950">
+                🎥 CAM 1 · P1 POV
+              </span>
+              <span id="p1CamTitle" class="font-brand font-extrabold text-sm sm:text-base text-white truncate">
+                🇮🇳 AARAV_STRIKER
+              </span>
+              <span id="p1RoleBadge" class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-extrabold bg-[#a3d96c]/20 text-[#a3d96c] border border-[#a3d96c]/40">
+                🏏 BATTING
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="p1LockBadge" class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30">
+                ⏳ Thinking...
+              </span>
+              <span id="p1ClockText" class="font-mono-num text-xs font-extrabold text-cyan-300 bg-[#0d0c12] px-2 py-0.5 rounded border border-white/10">
+                15.0s
+              </span>
+            </div>
+          </div>
+
+          <!-- P1 Live Hand Canvas Viewport -->
+          <div class="relative rounded-xl overflow-hidden bg-[#0a0d14] border border-cyan-400/25 h-56 sm:h-64 flex items-center justify-center">
+            <canvas id="canvasP1" class="w-full h-full block"></canvas>
+
+            <!-- Overlay HUD inside P1 Camera -->
+            <div class="absolute top-2.5 left-2.5 flex flex-col gap-1 pointer-events-none">
+              <div class="px-2.5 py-1 rounded-lg bg-slate-950/85 border border-white/10 text-[11px] font-mono-num">
+                <span class="text-zinc-400">INNINGS:</span>
+                <strong id="p1HudScore" class="text-white text-sm ml-1">0/0</strong>
+                <span id="p1HudBalls" class="text-zinc-400 text-[10px] ml-1">(0b)</span>
+              </div>
+              <div class="px-2.5 py-0.5 rounded-lg bg-slate-950/85 border border-white/10 text-[10px] font-mono-num text-cyan-300">
+                Mindset: <strong id="p1TacticLabel">Aggressive Strokeplay</strong>
+              </div>
+            </div>
+
+            <!-- Big Hand Choice Readout Pill -->
+            <div class="absolute top-2.5 right-2.5 pointer-events-none text-right">
+              <div class="px-3 py-1.5 rounded-xl bg-slate-950/90 border border-cyan-400/40 shadow-lg">
+                <span class="block text-[9px] font-mono-num uppercase text-zinc-400">P1 Hand Choice</span>
+                <strong id="p1BigChoiceVal" class="font-mono-num text-2xl sm:text-3xl font-black text-cyan-300">?</strong>
+              </div>
+            </div>
+
+            <!-- Shot Clock Progress Bar at bottom of canvas -->
+            <div class="absolute bottom-0 inset-x-0 h-1.5 bg-slate-900">
+              <div id="p1TimerBar" class="h-full bg-gradient-to-r from-cyan-400 to-[#a3d96c] transition-all duration-100" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- P1 Live Telemetry & Stats Grid -->
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Strike Rate</span>
+              <strong id="p1StatSr" class="font-mono-num text-xs sm:text-sm font-extrabold text-white">0.0</strong>
+            </div>
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Boundaries</span>
+              <strong id="p1StatBoundaries" class="font-mono-num text-xs sm:text-sm font-extrabold text-[#a3d96c]">0×6 | 0×10</strong>
+            </div>
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Fav Hand</span>
+              <strong id="p1StatFav" class="font-mono-num text-xs sm:text-sm font-extrabold text-cyan-300">#7</strong>
+            </div>
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Last Ball</span>
+              <strong id="p1StatLast" class="font-mono-num text-xs sm:text-sm font-extrabold text-amber-300">-</strong>
+            </div>
+          </div>
+
+          <!-- P1 Hand Distribution Mini-Heatmap & Manual Pad (1-10) -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[10px] font-mono-num">
+              <span class="text-zinc-400 font-bold uppercase">P1 Hand Pattern Heatmap (1–10) <span id="p1PadHint" class="text-cyan-300 hidden">• Tap to Lock P1 Hand!</span></span>
+              <span id="p1RecentStrip" class="text-zinc-300 truncate max-w-[200px]">Recent: -</span>
+            </div>
+            <div id="p1HeatmapGrid" class="grid grid-cols-10 gap-1"></div>
+          </div>
+        </article>
+
+        <!-- ================= RIGHT VIEWPORT: PLAYER 2 PERSPECTIVE ================= -->
+        <article id="viewportP2" class="glass-card viewport-p2 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between space-y-3 relative overflow-hidden">
+          <!-- Top Cam Header -->
+          <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-black uppercase bg-amber-400 text-slate-950">
+                🎥 CAM 2 · P2 POV
+              </span>
+              <span id="p2CamTitle" class="font-brand font-extrabold text-sm sm:text-base text-white truncate">
+                🇮🇳 MASTER_VORTEX
+              </span>
+              <span id="p2RoleBadge" class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-extrabold bg-cyan-400/20 text-cyan-300 border border-cyan-400/40">
+                ⚾ BOWLING
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="p2LockBadge" class="px-2 py-0.5 rounded-md text-[10px] font-mono-num font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30">
+                ⏳ Thinking...
+              </span>
+              <span id="p2ClockText" class="font-mono-num text-xs font-extrabold text-amber-300 bg-[#0d0c12] px-2 py-0.5 rounded border border-white/10">
+                15.0s
+              </span>
+            </div>
+          </div>
+
+          <!-- P2 Live Hand Canvas Viewport -->
+          <div class="relative rounded-xl overflow-hidden bg-[#120d16] border border-amber-400/25 h-56 sm:h-64 flex items-center justify-center">
+            <canvas id="canvasP2" class="w-full h-full block"></canvas>
+
+            <!-- Overlay HUD inside P2 Camera -->
+            <div class="absolute top-2.5 left-2.5 flex flex-col gap-1 pointer-events-none">
+              <div class="px-2.5 py-1 rounded-lg bg-slate-950/85 border border-white/10 text-[11px] font-mono-num">
+                <span class="text-zinc-400">INNINGS:</span>
+                <strong id="p2HudScore" class="text-white text-sm ml-1">0/0</strong>
+                <span id="p2HudBalls" class="text-zinc-400 text-[10px] ml-1">(0b)</span>
+              </div>
+              <div class="px-2.5 py-0.5 rounded-lg bg-slate-950/85 border border-white/10 text-[10px] font-mono-num text-amber-300">
+                Mindset: <strong id="p2TacticLabel">Predictive Mind-Read</strong>
+              </div>
+            </div>
+
+            <!-- Big Hand Choice Readout Pill -->
+            <div class="absolute top-2.5 right-2.5 pointer-events-none text-right">
+              <div class="px-3 py-1.5 rounded-xl bg-slate-950/90 border border-amber-400/40 shadow-lg">
+                <span class="block text-[9px] font-mono-num uppercase text-zinc-400">P2 Hand Choice</span>
+                <strong id="p2BigChoiceVal" class="font-mono-num text-2xl sm:text-3xl font-black text-amber-300">?</strong>
+              </div>
+            </div>
+
+            <!-- Shot Clock Progress Bar at bottom of canvas -->
+            <div class="absolute bottom-0 inset-x-0 h-1.5 bg-slate-900">
+              <div id="p2TimerBar" class="h-full bg-gradient-to-r from-amber-400 to-rose-500 transition-all duration-100" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- P2 Live Telemetry & Stats Grid -->
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Strike Rate</span>
+              <strong id="p2StatSr" class="font-mono-num text-xs sm:text-sm font-extrabold text-white">0.0</strong>
+            </div>
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Boundaries</span>
+              <strong id="p2StatBoundaries" class="font-mono-num text-xs sm:text-sm font-extrabold text-[#a3d96c]">0×6 | 0×10</strong>
+            </div>
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Fav Hand</span>
+              <strong id="p2StatFav" class="font-mono-num text-xs sm:text-sm font-extrabold text-amber-300">#6</strong>
+            </div>
+            <div class="p-2 rounded-xl bg-[#0d0c12] border border-white/10">
+              <span class="text-[9px] font-mono-num text-zinc-400 uppercase block">Last Ball</span>
+              <strong id="p2StatLast" class="font-mono-num text-xs sm:text-sm font-extrabold text-cyan-300">-</strong>
+            </div>
+          </div>
+
+          <!-- P2 Hand Distribution Mini-Heatmap & Manual Pad (1-10) -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[10px] font-mono-num">
+              <span class="text-zinc-400 font-bold uppercase">P2 Hand Pattern Heatmap (1–10) <span id="p2PadHint" class="text-amber-300 hidden">• Tap to Lock P2 Hand!</span></span>
+              <span id="p2RecentStrip" class="text-zinc-300 truncate max-w-[200px]">Recent: -</span>
+            </div>
+            <div id="p2HeatmapGrid" class="grid grid-cols-10 gap-1"></div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- 3. LIVE BALL CLASH TICKER & DIRECTOR QUICK-BAR -->
+    <section class="glass-card rounded-2xl p-3.5 border border-white/15 flex flex-col lg:flex-row items-center justify-between gap-3">
+      <!-- Live Commentary & Clash Banner -->
+      <div class="flex items-center gap-3 w-full lg:w-auto min-w-0 flex-1">
+        <div id="clashBadgePill" class="px-3 py-2 rounded-xl font-mono-num text-xs sm:text-sm font-black bg-gradient-to-r from-cyan-500/20 via-emerald-500/20 to-amber-500/20 border border-white/15 text-white shrink-0">
+          ⚡ LIVE CLASH
+        </div>
+        <div class="min-w-0 flex-1">
+          <div id="liveClashHeadline" class="text-xs sm:text-sm font-extrabold text-white truncate">
+            Players are stepping onto the crease — live split-screen broadcast active!
+          </div>
+          <div id="liveCommentaryLine" class="text-[11px] sm:text-xs text-zinc-300 italic truncate mt-0.5">
+            "Welcome to T1 Broadcast Center! Watch both players' hand selections unfold side-by-side."
+          </div>
+        </div>
+      </div>
+
+      <!-- Commentary Style + Broadcast Transport Controls -->
+      <div class="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto justify-between lg:justify-end">
+        <!-- 4 Commentary Styles -->
+        <div class="inline-flex items-center rounded-xl bg-[#0d0c12] p-1 border border-white/10 text-[10px] font-mono-num font-bold">
+          <button type="button" data-comm="hype" class="comm-btn px-2 py-1 rounded-lg bg-[#81b64c] text-slate-950 font-extrabold">🔥 Hype</button>
+          <button type="button" data-comm="tactical" class="comm-btn px-2 py-1 rounded-lg text-zinc-300 hover:text-white">🧠 Tactical</button>
+          <button type="button" data-comm="classic" class="comm-btn px-2 py-1 rounded-lg text-zinc-300 hover:text-white">📻 Classic</button>
+          <button type="button" data-comm="roast" class="comm-btn px-2 py-1 rounded-lg text-rose-300 hover:text-white">💀 Roast</button>
+        </div>
+
+        <!-- Playback Speed & Step Controls -->
+        <div class="inline-flex items-center gap-1 bg-[#0d0c12] p-1 rounded-xl border border-white/10">
+          <button id="btnPlayPause" type="button" class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+            ⏸️ Pause
+          </button>
+          <button id="btnStepBall" type="button" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-white transition" title="Simulate Next Ball Immediately">
+            ⏭️ Next Ball
+          </button>
+          <select id="selectSimSpeed" aria-label="Broadcast Simulation Speed" class="bg-zinc-900 text-zinc-200 text-[11px] font-mono-num font-bold px-2 py-1 rounded-lg border border-white/10 focus:outline-none">
+            <option value="3200">🐢 0.5x Slow</option>
+            <option value="2100" selected>▶️ 1.0x Live</option>
+            <option value="1100">⏩ 2.0x Fast</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. INTERACTIVE SCORES, BRACKET, PREDICTOR & DIRECTOR TABS -->
+    <section class="glass-card rounded-2xl border border-white/15 overflow-hidden">
+      <!-- Tab Navigation Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-[#0d0c12]/90 px-4 py-2.5 border-b border-white/10">
+        <div class="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Spectator Interactive Options">
+          <button type="button" data-tab="scorecard" class="spec-tab px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#81b64c] text-slate-950 transition flex items-center gap-1.5">
+            <span>📊</span>
+            <span>Interactive Scorecard &amp; Worm Chart</span>
+          </button>
+          <button type="button" data-tab="bracket" class="spec-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-[#16151c] text-zinc-300 hover:text-white border border-white/10 transition flex items-center gap-1.5">
+            <span>🏆</span>
+            <span>Tournament Bracket (8-Player)</span>
+          </button>
+          <button type="button" data-tab="engage" class="spec-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-[#16151c] text-zinc-300 hover:text-white border border-white/10 transition flex items-center gap-1.5">
+            <span>🎯</span>
+            <span>Predict Next Ball, Polls &amp; Crowd Chat</span>
+          </button>
+          <button type="button" data-tab="director" class="spec-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-[#16151c] text-zinc-300 hover:text-white border border-white/10 transition flex items-center gap-1.5">
+            <span>🎛️</span>
+            <span>Broadcast Director &amp; Scenarios</span>
+          </button>
+        </div>
+
+        <!-- Quick Reaction Emoji Bar -->
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] font-mono-num text-zinc-400 mr-1 hidden sm:inline">Crowd Cheer:</span>
+          <button type="button" data-react="🔥" class="react-btn px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-sm transition" title="Send Fire Cheer">🔥</button>
+          <button type="button" data-react="🚀" class="react-btn px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-sm transition" title="Send 10 Blast">🚀</button>
+          <button type="button" data-react="💀" class="react-btn px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-sm transition" title="Send Roast Skull">💀</button>
+          <button type="button" data-react="👑" class="react-btn px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-sm transition" title="Send Crown">👑</button>
+          <button type="button" data-react="😱" class="react-btn px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-sm transition" title="Send Clutch Shock">😱</button>
+          <button type="button" data-react="🤝" class="react-btn px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-sm transition" title="Send Match Drawn Respect">🤝</button>
+        </div>
+      </div>
+
+      <!-- TAB PANEL 1: INTERACTIVE SCORECARD & WORM CHART -->
+      <div id="tabPanelScorecard" class="p-4 sm:p-5 space-y-5">
+        <!-- Scorecard Top Winning Probability Bar Meter -->
+        <div class="p-3.5 rounded-xl bg-[#0d0c12] border border-white/10 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono-num font-bold">
+            <span class="text-cyan-300"><span id="scProbP1Name">AARAV_STRIKER</span> Win: <strong id="scProbP1Text">48%</strong></span>
+            <span class="text-zinc-300 uppercase tracking-wider text-[11px]">📊 Scorecard Winning Probability Meter (Tie/Draw: <strong id="scProbDrawText" class="text-amber-300">4%</strong>)</span>
+            <span class="text-amber-300"><span id="scProbP2Name">MASTER_VORTEX</span> Win: <strong id="scProbP2Text">48%</strong></span>
+          </div>
+          <div class="relative w-full h-3.5 rounded-full bg-zinc-900 overflow-hidden flex border border-white/10">
+            <div class="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-white/40 z-10"></div>
+            <div id="scProbP1Bar" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500" style="width: 48%"></div>
+            <div id="scProbDrawBar" class="h-full bg-amber-300 transition-all duration-500" style="width: 4%"></div>
+            <div id="scProbP2Bar" class="h-full bg-gradient-to-l from-amber-500 to-rose-400 transition-all duration-500" style="width: 48%"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Left 7 Cols: Interactive Innings Scorecards + Ball-by-Ball Filter -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-brand font-bold text-base text-white flex items-center gap-2">
+                <span>📋 Live Match Scorecard</span>
+                <span id="scorecardMatchTitle" class="text-xs font-mono-num text-amber-300">(Grand Final)</span>
+              </h3>
+              <!-- Ball Filter Pills -->
+              <div class="inline-flex items-center gap-1 bg-[#0d0c12] p-1 rounded-xl border border-white/10 text-[10px] font-mono-num font-bold">
+                <button type="button" data-ball-filter="all" class="ball-filter-btn px-2 py-1 rounded-lg bg-[#81b64c] text-slate-950 font-extrabold">All Balls</button>
+                <button type="button" data-ball-filter="boundaries" class="ball-filter-btn px-2 py-1 rounded-lg text-zinc-300 hover:text-white">6s &amp; 10s</button>
+                <button type="button" data-ball-filter="wickets" class="ball-filter-btn px-2 py-1 rounded-lg text-zinc-300 hover:text-white">Wickets</button>
+              </div>
+            </div>
+
+            <!-- Innings 1 & Innings 2 Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-3.5 rounded-xl bg-[#0d0c12] border border-cyan-400/25 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono-num font-extrabold uppercase text-cyan-300">1st Innings Summary</span>
+                  <span id="scInn1Status" class="text-[10px] font-mono-num text-zinc-400">In Progress</span>
+                </div>
+                <div class="flex items-baseline justify-between">
+                  <strong id="scInn1Batter" class="font-brand text-sm text-white">AARAV_STRIKER</strong>
+                  <span id="scInn1Score" class="font-mono-num text-xl font-black text-cyan-300">0/0 (0b)</span>
+                </div>
+                <div id="scInn1Meta" class="text-[11px] font-mono-num text-zinc-400">
+                  SR: 0.0 • 10s: 0 • 6s: 0 • High Ball: -
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-[#0d0c12] border border-amber-400/25 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono-num font-extrabold uppercase text-amber-300">2nd Innings Chase</span>
+                  <span id="scInn2Status" class="text-[10px] font-mono-num text-zinc-400">Waiting</span>
+                </div>
+                <div class="flex items-baseline justify-between">
+                  <strong id="scInn2Batter" class="font-brand text-sm text-white">MASTER_VORTEX</strong>
+                  <span id="scInn2Score" class="font-mono-num text-xl font-black text-amber-300">0/0 (0b)</span>
+                </div>
+                <div id="scInn2Meta" class="text-[11px] font-mono-num text-zinc-400">
+                  SR: 0.0 • 10s: 0 • 6s: 0 • Target: --
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Ball-by-Ball Table -->
+            <div class="rounded-xl bg-[#0d0c12] border border-white/10 overflow-hidden">
+              <div class="px-3.5 py-2 bg-white/[0.03] border-b border-white/10 flex items-center justify-between text-[11px] font-mono-num font-bold text-zinc-400">
+                <span>BALL-BY-BALL TELEMETRY LOG</span>
+                <span id="ballLogCountLabel">0 Deliveries</span>
+              </div>
+              <div class="max-h-60 overflow-y-auto divide-y divide-white/5" id="ballByBallLogContainer">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right 5 Cols: Interactive Run Worm Chart & H2H Analytics -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="p-3.5 rounded-xl bg-[#0d0c12] border border-white/10 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <h4 class="font-brand font-bold text-sm text-white">📈 Interactive Run Worm Comparison</h4>
+                <div class="flex items-center gap-3 text-[10px] font-mono-num font-bold">
+                  <span class="flex items-center gap-1 text-cyan-300"><span class="w-2.5 h-2.5 rounded-sm bg-cyan-400 inline-block"></span> 1st Inn</span>
+                  <span class="flex items-center gap-1 text-amber-300"><span class="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span> 2nd Inn</span>
+                </div>
+              </div>
+              <div class="h-44 w-full bg-[#13121b] rounded-lg border border-white/5 overflow-hidden relative">
+                <canvas id="wormCanvas" class="w-full h-full block"></canvas>
+              </div>
+            </div>
+
+            <!-- Head-to-Head Player Comparison Bars -->
+            <div class="p-3.5 rounded-xl bg-[#0d0c12] border border-white/10 space-y-3">
+              <h4 class="font-brand font-bold text-sm text-white">⚔️ Head-to-Head Matchup Telemetry</h4>
+              <div id="h2hComparisonBars" class="space-y-2.5 text-xs">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANEL 2: INTERACTIVE 8-PLAYER TOURNAMENT BRACKET -->
+      <div id="tabPanelBracket" class="hidden p-4 sm:p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div>
+            <h3 class="font-brand font-bold text-base sm:text-lg text-white">
+              🏆 Season 1 Solo Elimination Bracket — 7 November Championship
+            </h3>
+            <p class="text-xs text-zinc-400">
+              Click any fixture below to load that match into the Live Split-Screen Viewports above! Winner claims the Champion Crown &amp; +2000 XP.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnSimBracketRound" type="button" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-400 hover:bg-amber-300 text-slate-950 transition shadow">
+              ⚡ Simulate Bracket Outcomes
+            </button>
+            <button id="btnResetBracket" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-white/10 transition">
+              🔄 Reset Bracket
+            </button>
+          </div>
+        </div>
+
+        <div id="bracketGridContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Quarterfinals, Semifinals, Grand Final rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB PANEL 3: SPECTATOR PREDICT, POLLS & CROWD CHAT -->
+      <div id="tabPanelEngage" class="hidden p-4 sm:p-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Next Ball Predictor & Match Winner Poll (7 Cols) -->
+          <div class="lg:col-span-7 space-y-4">
+            <!-- Next Ball Predictor Card -->
+            <div class="p-4 rounded-2xl bg-[#0d0c12] border border-[#a3d96c]/35 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] font-mono-num font-extrabold uppercase text-[#a3d96c]">🎯 Live Spectator Mini-Game (+25 XP)</span>
+                  <h4 class="font-brand font-bold text-base text-white">Predict the Very Next Delivery!</h4>
+                </div>
+                <span id="predictStatusBadge" class="px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-bold bg-white/5 text-zinc-300 border border-white/10">
+                  No active pick
+                </span>
+              </div>
+              <p class="text-xs text-zinc-400">
+                Lock your call before the next ball resolves. Correct predictions award <strong class="text-amber-300">+25 Spectator XP</strong>!
+              </p>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button type="button" data-predict="low" class="predict-btn p-2.5 rounded-xl bg-[#16151c] hover:bg-white/10 border border-white/10 text-left transition">
+                  <span class="block text-[10px] font-mono-num text-cyan-300 font-bold">SAFE SINGLE</span>
+                  <strong class="text-xs text-white">1 to 4 Runs</strong>
+                </button>
+                <button type="button" data-predict="mid" class="predict-btn p-2.5 rounded-xl bg-[#16151c] hover:bg-white/10 border border-white/10 text-left transition">
+                  <span class="block text-[10px] font-mono-num text-emerald-300 font-bold">MIDDLE STROKE</span>
+                  <strong class="text-xs text-white">5 to 7 Runs</strong>
+                </button>
+                <button type="button" data-predict="high" class="predict-btn p-2.5 rounded-xl bg-[#16151c] hover:bg-white/10 border border-white/10 text-left transition">
+                  <span class="block text-[10px] font-mono-num text-amber-300 font-bold">MAX BOUNDARY</span>
+                  <strong class="text-xs text-white">8 to 10 Runs 🚀</strong>
+                </button>
+                <button type="button" data-predict="wicket" class="predict-btn p-2.5 rounded-xl bg-[#16151c] hover:bg-white/10 border border-white/10 text-left transition">
+                  <span class="block text-[10px] font-mono-num text-rose-400 font-bold">MIND READ!</span>
+                  <strong class="text-xs text-white">💥 WICKET OUT!</strong>
+                </button>
+              </div>
+            </div>
+
+            <!-- Crowd Match Winner Poll -->
+            <div class="p-4 rounded-2xl bg-[#0d0c12] border border-white/10 space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-brand font-bold text-sm text-white">📊 Live Spectator Crowd Poll — Who Takes the Match?</h4>
+                <span id="pollTotalVotes" class="text-[11px] font-mono-num text-zinc-400">842 Votes</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" data-vote="p1" class="vote-btn py-2 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-xs font-extrabold text-cyan-200 transition">
+                  Vote <span id="voteBtnP1Name">P1</span> (<span id="votePctP1">49%</span>)
+                </button>
+                <button type="button" data-vote="draw" class="vote-btn py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-xs font-extrabold text-amber-200 transition">
+                  Vote Draw 🤝 (<span id="votePctDraw">6%</span>)
+                </button>
+                <button type="button" data-vote="p2" class="vote-btn py-2 px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-400/40 text-xs font-extrabold text-purple-200 transition">
+                  Vote <span id="voteBtnP2Name">P2</span> (<span id="votePctP2">45%</span>)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Spectator Chat & Play-by-Play Feed (5 Cols) -->
+          <div class="lg:col-span-5 flex flex-col rounded-2xl bg-[#0d0c12] border border-white/10 overflow-hidden h-80">
+            <div class="px-3.5 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
+              <span class="font-brand font-bold text-xs text-white flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#a3d96c] live-dot"></span>
+                <span>Live Stadium Spectator Chat</span>
+              </span>
+              <span class="text-[10px] font-mono-num text-zinc-400">Synced with Commentary</span>
+            </div>
+            <div id="spectatorChatList" class="flex-1 overflow-y-auto p-3 space-y-2 text-xs">
+              <!-- Populated dynamically -->
+            </div>
+            <form id="spectatorChatForm" class="p-2 border-t border-white/10 flex gap-1.5 bg-[#14131c]">
+              <input id="spectatorChatInput" type="text" maxlength="120" placeholder="Send a live cheer or roast to the stadium..." class="flex-1 px-3 py-1.5 rounded-xl bg-[#0d0c12] border border-white/10 text-xs text-white focus:outline-none focus:border-[#a3d96c]" />
+              <button type="submit" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#81b64c] hover:bg-[#95c95e] text-slate-950 transition">
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANEL 4: BROADCAST DIRECTOR & SCENARIOS -->
+      <div id="tabPanelDirector" class="hidden p-4 sm:p-5 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl bg-[#0d0c12] border border-white/10 space-y-3">
+            <h4 class="font-brand font-bold text-sm text-white">🎬 Instant Broadcast Scenario Triggers</h4>
+            <p class="text-xs text-zinc-400">
+              Test how the split-screen broadcast reacts to high-drama tournament moments:
+            </p>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btnForceTen" type="button" class="p-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 text-xs font-extrabold text-emerald-300 text-left transition">
+                🚀 Force 10-Run Blast Next Ball
+              </button>
+              <button id="btnForceWicket" type="button" class="p-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/40 text-xs font-extrabold text-rose-300 text-left transition">
+                💥 Force Wicket (Same Hand)
+              </button>
+              <button id="btnForceDrawScenario" type="button" class="p-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-xs font-extrabold text-amber-300 text-left transition">
+                🤝 Trigger Match Drawn Tie Demo
+              </button>
+              <button id="btnRestartMatch" type="button" class="p-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-xs font-extrabold text-cyan-300 text-left transition">
+                🔄 Restart Current Court Match
+              </button>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#0d0c12] border border-white/10 space-y-3">
+            <h4 class="font-brand font-bold text-sm text-white">📡 Live Multiplayer Room Bridge (`HCxxxx`)</h4>
+            <p class="text-xs text-zinc-400">
+              Spectate any active 2-player room created in <code class="text-[#a3d96c] font-mono-num">hand_cricket.html</code> or <code class="text-[#a3d96c] font-mono-num">mobile.html</code> via Firebase Cloud + Local Room Bus:
+            </p>
+            <div class="flex gap-2">
+              <input id="directorRoomInput" type="text" maxlength="10" placeholder="Enter Room Code (e.g. HC4821)" class="flex-1 px-3 py-2 rounded-xl bg-[#16151c] border border-white/15 text-xs font-mono-num font-bold text-white uppercase focus:outline-none focus:border-cyan-400" />
+              <button id="btnDirectorConnectRoom" type="button" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-cyan-400 hover:bg-cyan-300 text-slate-950 transition">
+                Connect Live Feed
+              </button>
+            </div>
+            <div id="directorRoomStatus" class="text-[11px] font-mono-num text-zinc-400">
+              Status: Currently broadcasting Tournament Court Simulation.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="w-full border-t border-white/10 px-4 sm:px-6 py-3.5 mt-auto bg-[#0b0b10]">
+    <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
+      <span><strong class="font-brand text-zinc-300">OddAndEven.in</strong> — Official Tournament Split-Screen Broadcast (`t1.html`)</span>
+      <div class="flex items-center gap-4 font-mono-num text-[11px]">
+        <a href="events.html" class="text-amber-300 hover:underline">events.html</a>
+        <a href="hand_cricket.html" class="text-[#a3d96c] hover:underline">hand_cricket.html</a>
+        <a href="mobile.html" class="text-cyan-300 hover:underline">mobile.html</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- TOURNAMENT SPECTATOR ENGINE SCRIPT -->
+  <script>
+    (function () {
+      'use strict';
+
+      const SESSION_KEY = 'oddandeven_active_session_v1';
+      const SIGNED_OUT_KEY = 'oddandeven_signed_out_v1';
+      const WORLD_PLAYERS_KEY = 'oddandeven_worldwide_players_v1';
+      const SPEC_XP_KEY = 'oddandeven_spectator_xp_v1';
+      const SECRET_SALT = 'OddAndEven.in::HandCricketVault::2026::v1';
+
+      function fnv1aHash(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(16).padStart(8, '0');
+      }
+
+      function decryptPayload(cipherText) {
+        if (!cipherText || typeof cipherText !== 'string' || !cipherText.startsWith('OAE1.')) return null;
+        try {
+          const parts = cipherText.split('.');
+          if (parts.length !== 3) return null;
+          const sig = parts[1];
+          const raw = decodeURIComponent(escape(atob(parts[2])));
+          const key = SECRET_SALT + '::' + fnv1aHash(SECRET_SALT);
+          const chars = [];
+          for (let i = 0; i < raw.length; i++) {
+            chars.push(String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length) ^ ((i * 31) & 0xff)));
+          }
+          const json = chars.join('');
+          if (fnv1aHash(json + '::' + SECRET_SALT) !== sig) return null;
+          return JSON.parse(json);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function getActivePlayer() {
+        try {
+          if (localStorage.getItem(SIGNED_OUT_KEY) === '1') return null;
+          const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+          if (!raw) return null;
+          const dec = decryptPayload(raw);
+          if (dec && dec.username) return dec;
+          return null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      // Web Audio Stadium Synthesizer
+      const SoundFX = {
+        enabled: true,
+        voiceEnabled: false,
+        ctx: null,
+        init() {
+          if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new Ctx();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+        },
+        tone(freq, dur, type = 'sine', gainVal = 0.08) {
+          if (!this.enabled) return;
+          try {
+            this.init();
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + dur);
+          } catch (e) {}
+        },
+        boundary() {
+          this.tone(523.25, 0.12, 'triangle', 0.11);
+          setTimeout(() => this.tone(659.25, 0.14, 'triangle', 0.11), 90);
+          setTimeout(() => this.tone(783.99, 0.24, 'triangle', 0.13), 180);
+        },
+        wicket() {
+          this.tone(280, 0.18, 'sawtooth', 0.12);
+          setTimeout(() => this.tone(165, 0.35, 'sawtooth', 0.14), 140);
+        },
+        tap() {
+          this.tone(440, 0.06, 'sine', 0.06);
+        },
+        speak(text) {
+          if (!this.voiceEnabled || !('speechSynthesis' in window)) return;
+          try {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 1.08;
+            u.pitch = 1.02;
+            window.speechSynthesis.speak(u);
+          } catch (e) {}
+        }
+      };
+
+      // Commentary Banks (Hype, Tactical, Classic, Roast)
+      const COMMENTARY_BANKS = {
+        hype: {
+          boundary: [
+            "🚀 UNBELIEVABLE POWER! Both cameras shook on that massive strike!",
+            "🔥 MAXIMUM CARNAGE! That ball is into the top tier of the Championship arena!",
+            "⚡ LIGHTNING HANDS! The bowler had zero answer in the split-screen clash!"
+          ],
+          wicket: [
+            "💥 DIRECT HIT! Identical fingers on both screens — HUGE TOURNAMENT WICKET!",
+            "🎯 GOT HIM! Mind-read of the century! The stadium erupts!",
+            "⚡ OUT! Both players threw the exact same number under pressure!"
+          ],
+          normal: [
+            "Crisp rotation of strike — keeping the scoreboard ticking in the championship!",
+            "Smart placement! P1 and P2 playing high-IQ cat and mouse on the split screen.",
+            "Quick runs added to the total as the shot clock winds down!"
+          ],
+          draw: [
+            "🤝 UNREAL SCENES! Dead level on runs — it's an official MATCH DRAWN in the Championship!"
+          ]
+        },
+        tactical: {
+          boundary: [
+            "📊 High-value risk: Batter exploited the bowler's avoidance of high finger counts.",
+            "🧠 Pattern breaker! Switching from low numbers to a sudden 10 caught the bowler cold.",
+            "📈 Huge spike on the Win Probability curve after that boundary conversion!"
+          ],
+          wicket: [
+            "🧠 Frequency trap worked! Bowler tracked the batter's favorite finger zone and matched it.",
+            "📉 Classic Markov read — the batter repeated their preferred quadrant once too often.",
+            "🎯 Perfect defensive convergence by the bowler to close the innings."
+          ],
+          normal: [
+            "Low-variance accumulation — minimizing wicket collision probability.",
+            "Controlled tempo: rotating numbers outside the bowler's primary heat zone.",
+            "Calculated strike rotation keeping the Required Run Rate manageable."
+          ],
+          draw: [
+            "🤝 Equilibrium reached: Both innings terminated at identical run totals. Match Drawn!"
+          ]
+        },
+        classic: {
+          boundary: [
+            "📻 Glorious stroke! Timed to perfection all the way to the boundary rope.",
+            "📻 What a clean connection under the floodlights here at OddAndEven.in!",
+            "📻 Magnificent batting display — the crowd rises to applaud that maximum."
+          ],
+          wicket: [
+            "📻 And he's gone! The finger goes up as both players show identical numbers!",
+            "📻 Clean bowled in the mind game! A vital breakthrough for the bowling side.",
+            "📻 That is the end of a fine innings — outsmarted at the crease."
+          ],
+          normal: [
+            "Pushed calmly into the gap for steady runs.",
+            "Good sensible cricket from both contenders in this championship tie.",
+            "Ticking the scoreboard over nicely as the innings progresses."
+          ],
+          draw: [
+            "🤝 Honours even! Nothing to separate these two fine contenders — Match Drawn!"
+          ]
+        },
+        roast: {
+          boundary: [
+            "💀 Bowler's GPS is completely broken — just served up a free buffet delivery!",
+            "🔥 That ball was hit so hard the bowler's Elo rating just asked for witness protection!",
+            "😂 Imagine bowling that number in a championship match — pure charity work!"
+          ],
+          wicket: [
+            "💀 EMOTIONAL DAMAGE! Read like a kindergarten picture book on live split-screen TV!",
+            "🤡 Walk back to the pavilion! Millions watching on T1 TV just saw that predictable finger pick!",
+            "🗑️ Deleted from the crease! Did you leave your batting brain in the lobby?!"
+          ],
+          normal: [
+            "Surviving by the skin of their teeth — pure panic finger tapping right now.",
+            "Running singles like they're scared of the bright stadium lights!",
+            "Neither player wants to get roasted on live TV — cautious pokes all around."
+          ],
+          draw: [
+            "💀 Both players sweated all match just to tie the exact same score — poetic chaos! Match Drawn!"
+          ]
+        }
+      };
+
+      // Build Featured Contenders (including active user if signed in)
+      const activeUser = getActivePlayer();
+      const userContender = activeUser && activeUser.username
+        ? { name: activeUser.username.toUpperCase(), flag: activeUser.countryFlag || '🇮🇳', elo: activeUser.elo || 1860, seed: 1, style: 'Clutch Striker' }
+        : { name: 'AARAV_STRIKER', flag: '🇮🇳', elo: 1865, seed: 1, style: 'Power Striker' };
+
+      const COURTS = [
+        {
+          id: 0,
+          round: '🏆 GRAND FINAL · 7 NOV CHAMPIONSHIP',
+          roomCode: 'T1-FINAL',
+          p1: userContender,
+          p2: { name: 'MASTER_VORTEX', flag: '🇮🇳', elo: 1890, seed: 2, style: 'Predictive Mastermind' }
+        },
+        {
+          id: 1,
+          round: '🔥 SEMI-FINAL #1 · SOLO BRACKET',
+          roomCode: 'T1-SEMI1',
+          p1: { name: 'ROHAN_BLITZ', flag: '🇮🇳', elo: 1825, seed: 3, style: 'High-Tempo Smasher' },
+          p2: { name: 'DHRUV_TITAN', flag: '🇬🇧', elo: 1805, seed: 4, style: 'Counter-Read Tactician' }
+        },
+        {
+          id: 2,
+          round: '⚡ SEMI-FINAL #2 · SOLO BRACKET',
+          roomCode: 'T1-SEMI2',
+          p1: { name: 'KABIR_10X', flag: '🇦🇺', elo: 1795, seed: 5, style: 'Boundary Hunter' },
+          p2: { name: 'VIHAAN_PRO', flag: '🇮🇳', elo: 1780, seed: 6, style: 'Pattern Breaker' }
+        },
+        {
+          id: 3,
+          round: '🏟️ QUARTER-FINAL FEATURE',
+          roomCode: 'T1-QF1',
+          p1: { name: 'REYANSH_ACE', flag: '🇺🇸', elo: 1760, seed: 7, style: 'Calculated Accumulator' },
+          p2: { name: 'ARJUN_NOVA', flag: '🇮🇳', elo: 1745, seed: 8, style: 'Aggressive Bowler' }
+        }
+      ];
+
+      // Main Spectator Broadcast State
+      const STATE = {
+        activeCourtIdx: 0,
+        layout: 'split',
+        xray: true,
+        manualDualPad: false,
+        commentaryMode: 'hype',
+        isPlaying: true,
+        simSpeedMs: 2100,
+        ballFilter: 'all',
+        spectatorXp: Number(localStorage.getItem(SPEC_XP_KEY) || 120),
+        activePrediction: null,
+        pollVotes: { p1: 412, draw: 54, p2: 376 },
+        userVoted: false,
+        liveRoomCode: null,
+        liveRoomChannel: null,
+        firebaseUnsub: null,
+        match: null,
+        bracket: []
+      };
+
+      function createFreshMatch(court) {
+        return {
+          roundTitle: court.round,
+          roomCode: court.roomCode,
+          p1: Object.assign({}, court.p1),
+          p2: Object.assign({}, court.p2),
+          innings: 1, // 1 or 2
+          phase: 'PLAYING', // 'PLAYING' | 'FINISHED'
+          resultText: '',
+          isDrawn: false,
+          winner: null,
+          target: null,
+          shotClock: 15.0,
+          subStep: 'LOCKING', // 'LOCKING' -> 'REVEAL'
+          pendingP1: null,
+          pendingP2: null,
+          lastP1: null,
+          lastP2: null,
+          lastOutcome: null,
+          forceNext: null, // 'ten' | 'wicket' | 'draw'
+          inn1: {
+            batter: 'P1',
+            runs: 0,
+            wickets: 0,
+            balls: 0,
+            sixes: 0,
+            tens: 0,
+            history: []
+          },
+          inn2: {
+            batter: 'P2',
+            runs: 0,
+            wickets: 0,
+            balls: 0,
+            sixes: 0,
+            tens: 0,
+            history: []
+          },
+          p1Heat: { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0 },
+          p2Heat: { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0 },
+          allDeliveries: []
+        };
+      }
+
+      function initBracket() {
+        STATE.bracket = [
+          { id: 'qf1', stage: 'Quarterfinal 1', courtIdx: 0, p1: COURTS[0].p1.name, p2: COURTS[3].p2.name, s1: '68/1', s2: '54/1', winner: COURTS[0].p1.name },
+          { id: 'qf2', stage: 'Quarterfinal 2', courtIdx: 1, p1: COURTS[1].p1.name, p2: COURTS[1].p2.name, s1: '74/0', s2: '71/1', winner: COURTS[1].p1.name },
+          { id: 'qf3', stage: 'Quarterfinal 3', courtIdx: 2, p1: COURTS[2].p1.name, p2: COURTS[2].p2.name, s1: '62/1', s2: '62/1 (2nd TB)', winner: COURTS[2].p1.name },
+          { id: 'qf4', stage: 'Quarterfinal 4', courtIdx: 3, p1: COURTS[0].p2.name, p2: COURTS[3].p1.name, s1: '82/0', s2: '60/1', winner: COURTS[0].p2.name },
+          { id: 'sf1', stage: 'Semifinal 1', courtIdx: 1, p1: COURTS[0].p1.name, p2: COURTS[1].p1.name, s1: '79/1', s2: '72/1', winner: COURTS[0].p1.name },
+          { id: 'sf2', stage: 'Semifinal 2', courtIdx: 2, p1: COURTS[2].p1.name, p2: COURTS[0].p2.name, s1: '65/1', s2: '69/0', winner: COURTS[0].p2.name },
+          { id: 'final', stage: '👑 Grand Final (7 Nov)', courtIdx: 0, p1: COURTS[0].p1.name, p2: COURTS[0].p2.name, s1: 'LIVE ON T1', s2: 'SPLIT-SCREEN', winner: 'LIVE NOW' }
+        ];
+      }
+
+      // Smart realistic hand choice generator for simulated tournament contenders
+      function pickContenderHand(isBatting, heatMap) {
+        const weights = [1, 1, 1.1, 1.2, 1.35, 1.6, 1.5, 1.4, 1.3, 1.65];
+        if (!isBatting) {
+          // Bowler slightly favors numbers batter has used or high-value zones
+          for (let n = 1; n <= 10; n++) {
+            weights[n - 1] += (heatMap[n] || 0) * 0.35;
+          }
+        }
+        const total = weights.reduce((a, b) => a + b, 0);
+        let r = Math.random() * total;
+        for (let i = 0; i < 10; i++) {
+          r -= weights[i];
+          if (r <= 0) return i + 1;
+        }
+        return 7;
+      }
+
+      function prepareNextHands() {
+        const m = STATE.match;
+        if (!m || m.phase === 'FINISHED') return;
+        const p1Batting = m.innings === 1;
+        if (!STATE.manualDualPad) {
+          m.pendingP1 = pickContenderHand(p1Batting, m.p2Heat);
+          m.pendingP2 = pickContenderHand(!p1Batting, m.p1Heat);
+        } else {
+          if (!m.pendingP1) m.pendingP1 = pickContenderHand(p1Batting, m.p2Heat);
+          if (!m.pendingP2) m.pendingP2 = pickContenderHand(!p1Batting, m.p1Heat);
+        }
+
+        if (m.forceNext === 'ten') {
+          if (p1Batting) { m.pendingP1 = 10; m.pendingP2 = 4; }
+          else { m.pendingP2 = 10; m.pendingP1 = 4; }
+          m.forceNext = null;
+        } else if (m.forceNext === 'wicket') {
+          const same = Math.floor(Math.random() * 6) + 5;
+          m.pendingP1 = same;
+          m.pendingP2 = same;
+          m.forceNext = null;
+        } else if (m.forceNext === 'draw') {
+          // Set up an instant equal-score tie finish
+          m.innings = 2;
+          if (m.inn1.runs < 24) {
+            m.inn1.runs = 42;
+            m.inn1.balls = 6;
+          }
+          m.target = m.inn1.runs + 1;
+          m.inn2.runs = m.inn1.runs;
+          m.inn2.balls = Math.max(1, m.inn1.balls);
+          m.pendingP1 = 7;
+          m.pendingP2 = 7;
+          m.forceNext = null;
+        }
+      }
+
+      function pickCommentary(type) {
+        const bank = COMMENTARY_BANKS[STATE.commentaryMode] || COMMENTARY_BANKS.hype;
+        const list = bank[type] || bank.normal;
+        return list[Math.floor(Math.random() * list.length)];
+      }
+
+      function resolveBall() {
+        const m = STATE.match;
+        if (!m || m.phase === 'FINISHED') return;
+
+        if (!m.pendingP1 || !m.pendingP2) prepareNextHands();
+        const h1 = m.pendingP1;
+        const h2 = m.pendingP2;
+        m.lastP1 = h1;
+        m.lastP2 = h2;
+        m.p1Heat[h1] = (m.p1Heat[h1] || 0) + 1;
+        m.p2Heat[h2] = (m.p2Heat[h2] || 0) + 1;
+
+        const isInn1 = m.innings === 1;
+        const activeInn = isInn1 ? m.inn1 : m.inn2;
+        const batterHand = isInn1 ? h1 : h2;
+        const bowlerHand = isInn1 ? h2 : h1;
+        const batterName = isInn1 ? m.p1.name : m.p2.name;
+        const bowlerName = isInn1 ? m.p2.name : m.p1.name;
+
+        activeInn.balls += 1;
+        const isOut = batterHand === bowlerHand;
+        let commText = '';
+
+        if (isOut) {
+          activeInn.wickets = 1;
+          activeInn.history.push('W');
+          m.lastOutcome = 'WICKET';
+          commText = pickCommentary('wicket');
+          SoundFX.wicket();
+          spawnFloatingReaction('💥');
+          if (STATE.commentaryMode === 'roast') spawnFloatingReaction('💀');
+        } else {
+          activeInn.runs += batterHand;
+          if (batterHand === 6) activeInn.sixes += 1;
+          if (batterHand === 10) activeInn.tens += 1;
+          activeInn.history.push(String(batterHand));
+          m.lastOutcome = batterHand >= 6 ? 'BOUNDARY' : 'RUNS';
+          commText = pickCommentary(batterHand >= 6 ? 'boundary' : 'normal');
+          if (batterHand >= 6) {
+            SoundFX.boundary();
+            spawnFloatingReaction(batterHand === 10 ? '🚀' : '🔥');
+          } else {
+            SoundFX.tap();
+          }
+        }
+
+        // Check Spectator Prediction
+        evaluateSpectatorPrediction(isOut, batterHand);
+
+        // Log delivery
+        const ballNum = activeInn.balls;
+        const headline = isOut
+          ? `💥 OUT! ${batterName} [${batterHand}] matched ${bowlerName} [${bowlerHand}]!`
+          : `${batterName} played [${batterHand}] vs ${bowlerName} [${bowlerHand}] → +${batterHand} Runs!`;
+
+        m.allDeliveries.unshift({
+          innings: m.innings,
+          ball: ballNum,
+          p1Hand: h1,
+          p2Hand: h2,
+          batterName,
+          bowlerName,
+          runs: isOut ? 0 : batterHand,
+          isOut,
+          totalRuns: activeInn.runs,
+          wickets: activeInn.wickets,
+          headline,
+          commText
+        });
+
+        // Check Innings / Match Transitions (including Match Drawn rule!)
+        const maxBallsPerInnings = 12;
+        if (isInn1) {
+          if (isOut || activeInn.balls >= maxBallsPerInnings) {
+            m.innings = 2;
+            m.target = m.inn1.runs + 1;
+            addChatLog('SYSTEM', `📣 1st Innings complete! ${m.p1.name} posted ${m.inn1.runs}/${m.inn1.wickets}. Target for ${m.p2.name}: ${m.target} runs (Tie = ${m.inn1.runs} for Match Drawn 🤝).`, 'text-amber-300');
+          }
+        } else {
+          // 2nd Innings Chase checks
+          if (m.inn2.runs >= m.target) {
+            m.phase = 'FINISHED';
+            m.winner = 'P2';
+            m.resultText = `🏆 ${m.p2.name} chased down ${m.target} to WIN the Championship match!`;
+            SoundFX.boundary();
+            spawnFloatingReaction('👑');
+            addChatLog('BROADCAST', m.resultText, 'text-emerald-300');
+          } else if (isOut || m.inn2.balls >= maxBallsPerInnings) {
+            m.phase = 'FINISHED';
+            if (m.inn2.runs === m.inn1.runs) {
+              m.isDrawn = true;
+              m.winner = 'DRAW';
+              commText = pickCommentary('draw');
+              m.resultText = `🤝 MATCH DRAWN! Both ${m.p1.name} and ${m.p2.name} finished dead level on ${m.inn1.runs} runs!`;
+              spawnFloatingReaction('🤝');
+              addChatLog('BROADCAST', m.resultText, 'text-amber-300');
+            } else {
+              m.winner = 'P1';
+              const margin = m.inn1.runs - m.inn2.runs;
+              m.resultText = `🏆 ${m.p1.name} defended the target and WON by ${margin} run${margin === 1 ? '' : 's'}!`;
+              SoundFX.boundary();
+              spawnFloatingReaction('👑');
+              addChatLog('BROADCAST', m.resultText, 'text-cyan-300');
+            }
+          }
+        }
+
+        document.getElementById('liveClashHeadline').textContent = m.phase === 'FINISHED' ? m.resultText : headline;
+        document.getElementById('liveCommentaryLine').textContent = `"${commText}"`;
+        SoundFX.speak(m.phase === 'FINISHED' ? m.resultText : commText);
+
+        // Occasional simulated spectator chat reaction
+        if (isOut || batterHand >= 8 || m.phase === 'FINISHED') {
+          triggerCrowdBotChat(isOut, batterHand, m);
+        }
+
+        m.subStep = 'REVEAL';
+        renderAll();
+      }
+
+      function evaluateSpectatorPrediction(isOut, batterHand) {
+        const badge = document.getElementById('predictStatusBadge');
+        if (!STATE.activePrediction) return;
+        const pick = STATE.activePrediction;
+        let won = false;
+        if (pick === 'wicket' && isOut) won = true;
+        else if (!isOut && pick === 'low' && batterHand >= 1 && batterHand <= 4) won = true;
+        else if (!isOut && pick === 'mid' && batterHand >= 5 && batterHand <= 7) won = true;
+        else if (!isOut && pick === 'high' && batterHand >= 8 && batterHand <= 10) won = true;
+
+        if (won) {
+          STATE.spectatorXp += 25;
+          localStorage.setItem(SPEC_XP_KEY, String(STATE.spectatorXp));
+          badge.textContent = '✅ Spot On! +25 XP Earned!';
+          badge.className = 'px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40';
+          spawnFloatingReaction('🎉');
+        } else {
+          badge.textContent = `❌ Missed (${isOut ? 'Wicket' : batterHand + ' runs'}) — Pick again!`;
+          badge.className = 'px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-bold bg-rose-500/20 text-rose-300 border border-rose-400/40';
+        }
+        STATE.activePrediction = null;
+        document.querySelectorAll('.predict-btn').forEach((b) => b.classList.remove('ring-2', 'ring-[#a3d96c]'));
+      }
+
+      // Render HTML5 Canvas POV for P1 and P2
+      function drawPlayerViewportCanvas(canvasId, isP1) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        const dpr = window.devicePixelRatio || 1;
+        if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+          canvas.width = Math.floor(rect.width * dpr);
+          canvas.height = Math.floor(rect.height * dpr);
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        const w = rect.width;
+        const h = rect.height;
+
+        const m = STATE.match;
+        const isBatting = (m.innings === 1 && isP1) || (m.innings === 2 && !isP1);
+        const accent = isP1 ? '#5ad1e6' : '#f5b83d';
+
+        // Stadium turf & perspective lines
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, isP1 ? '#09131c' : '#18101c');
+        grad.addColorStop(0.58, '#0f1f18');
+        grad.addColorStop(1, '#142b1d');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Mown pitch stripes
+        ctx.strokeStyle = 'rgba(163, 217, 108, 0.09)';
+        ctx.lineWidth = 1;
+        for (let i = -3; i <= 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(w / 2 + i * 28, h * 0.42);
+          ctx.lineTo(w / 2 + i * 75, h);
+          ctx.stroke();
+        }
+
+        // Stadium horizon glow
+        const glow = ctx.createRadialGradient(w / 2, h * 0.45, 8, w / 2, h * 0.45, w * 0.52);
+        glow.addColorStop(0, isP1 ? 'rgba(90, 209, 230, 0.20)' : 'rgba(245, 184, 61, 0.20)');
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, w, h);
+
+        // Determine displayed number on this player's screen
+        const revealedHand = isP1 ? m.lastP1 : m.lastP2;
+        const pendingHand = isP1 ? m.pendingP1 : m.pendingP2;
+        const showRevealed = m.subStep === 'REVEAL' && revealedHand !== null;
+        const displayNum = showRevealed ? revealedHand : (STATE.xray ? pendingHand : null);
+
+        // Center 3D Hand Gesture Medal / Circle
+        const cx = w / 2;
+        const cy = h * 0.52;
+        const radius = Math.min(w, h) * 0.25;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius + 8, 0, Math.PI * 2);
+        ctx.strokeStyle = showRevealed
+          ? (m.lastOutcome === 'WICKET' ? '#f43f5e' : '#a3d96c')
+          : accent;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(13, 12, 18, 0.88)';
+        ctx.fill();
+
+        // Draw Finger Pip Rays around the circle if displayNum is known
+        if (displayNum) {
+          for (let i = 0; i < 10; i++) {
+            const angle = -Math.PI / 2 + (i * (Math.PI * 2)) / 10;
+            const x1 = cx + Math.cos(angle) * (radius + 13);
+            const y1 = cy + Math.sin(angle) * (radius + 13);
+            const x2 = cx + Math.cos(angle) * (radius + 23);
+            const y2 = cy + Math.sin(angle) * (radius + 23);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = i < displayNum ? accent : 'rgba(255,255,255,0.12)';
+            ctx.lineWidth = i < displayNum ? 5 : 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+          }
+        }
+
+        // Main Number or Lock Icon inside the POV circle
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 32px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const centerLabel = showRevealed
+          ? `#${displayNum}`
+          : (STATE.xray && displayNum ? `👁️ ${displayNum}` : '🔒');
+        ctx.fillText(centerLabel, cx, cy - 4);
+
+        ctx.font = '700 10px "Inter", sans-serif';
+        ctx.fillStyle = isBatting ? '#a3d96c' : '#5ad1e6';
+        ctx.fillText(isBatting ? '🏏 BATTING POV' : '⚾ BOWLING POV', cx, cy + 20);
+
+        // Outcome Banner at bottom of canvas
+        if (showRevealed) {
+          ctx.fillStyle = m.lastOutcome === 'WICKET'
+            ? 'rgba(244, 63, 94, 0.9)'
+            : (m.lastOutcome === 'BOUNDARY' ? 'rgba(163, 217, 108, 0.92)' : 'rgba(24, 24, 34, 0.88)');
+          ctx.fillRect(w / 2 - 95, h - 34, 190, 22);
+          ctx.fillStyle = m.lastOutcome === 'BOUNDARY' ? '#0b0b10' : '#ffffff';
+          ctx.font = '800 11px "JetBrains Mono", monospace';
+          const tag = m.lastOutcome === 'WICKET'
+            ? '💥 MATCHED FINGERS — OUT!'
+            : (isBatting ? `+${revealedHand} RUNS SCORED!` : `BOWLED #${revealedHand}`);
+          ctx.fillText(tag, w / 2, h - 23);
+        }
+
+        ctx.restore();
+      }
+
+      // Draw Interactive Run Worm Chart
+      function drawWormChart() {
+        const canvas = document.getElementById('wormCanvas');
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.floor(rect.width * dpr);
+        canvas.height = Math.floor(rect.height * dpr);
+        const ctx = canvas.getContext('2d');
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        const w = rect.width;
+        const h = rect.height;
+
+        ctx.fillStyle = '#13121b';
+        ctx.fillRect(0, 0, w, h);
+
+        const padL = 34, padR = 16, padT = 16, padB = 24;
+        const plotW = Math.max(10, w - padL - padR);
+        const plotH = Math.max(10, h - padT - padB);
+
+        // Grid lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = padT + (plotH * i) / 4;
+          ctx.beginPath();
+          ctx.moveTo(padL, y);
+          ctx.lineTo(w - padR, y);
+          ctx.stroke();
+        }
+
+        const m = STATE.match;
+        const buildCumulative = (hist) => {
+          const pts = [0];
+          let sum = 0;
+          hist.forEach((item) => {
+            if (item !== 'W') sum += Number(item) || 0;
+            pts.push(sum);
+          });
+          return pts;
+        };
+
+        const c1 = buildCumulative(m.inn1.history);
+        const c2 = buildCumulative(m.inn2.history);
+        const maxRuns = Math.max(30, ...c1, ...c2);
+        const maxBalls = 12;
+
+        // Y-axis labels
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '600 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(String(maxRuns), padL - 5, padT + 4);
+        ctx.fillText(String(Math.round(maxRuns / 2)), padL - 5, padT + plotH / 2 + 3);
+        ctx.fillText('0', padL - 5, padT + plotH);
+
+        const drawLine = (pts, color) => {
+          if (pts.length < 1) return;
+          ctx.beginPath();
+          pts.forEach((val, idx) => {
+            const x = padL + (idx / maxBalls) * plotW;
+            const y = padT + plotH - (val / maxRuns) * plotH;
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          pts.forEach((val, idx) => {
+            const x = padL + (idx / maxBalls) * plotW;
+            const y = padT + plotH - (val / maxRuns) * plotH;
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+          });
+        };
+
+        drawLine(c1, '#5ad1e6');
+        if (m.innings === 2 || m.inn2.history.length > 0) {
+          drawLine(c2, '#f5b83d');
+        }
+
+        ctx.restore();
+      }
+
+      function getFavHand(heat) {
+        let bestN = 7, bestC = -1;
+        for (let n = 1; n <= 10; n++) {
+          if ((heat[n] || 0) > bestC) {
+            bestC = heat[n] || 0;
+            bestN = n;
+          }
+        }
+        return bestC > 0 ? `#${bestN} (${bestC}×)` : '#7';
+      }
+
+      function renderHeatmaps() {
+        const m = STATE.match;
+        const renderGrid = (elId, heat, isP1) => {
+          const container = document.getElementById(elId);
+          if (!container) return;
+          const pending = isP1 ? m.pendingP1 : m.pendingP2;
+          let html = '';
+          for (let n = 1; n <= 10; n++) {
+            const count = heat[n] || 0;
+            const isSelected = STATE.manualDualPad && pending === n;
+            const bgCls = isSelected
+              ? 'bg-[#a3d96c] text-slate-950 border-[#a3d96c] font-black'
+              : (count > 0
+                  ? (isP1 ? 'bg-cyan-500/20 text-cyan-200 border-cyan-400/40' : 'bg-amber-500/20 text-amber-200 border-amber-400/40')
+                  : 'bg-[#0d0c12] text-zinc-400 border-white/10');
+            html += `
+              <button type="button" data-pad-side="${isP1 ? 'P1' : 'P2'}" data-pad-num="${n}"
+                class="num-heat-cell py-1.5 rounded-lg border text-center font-mono-num transition ${bgCls}">
+                <div class="text-xs font-extrabold">${n}</div>
+                <div class="text-[9px] opacity-75">${count}×</div>
+              </button>
+            `;
+          }
+          container.innerHTML = html;
+        };
+        renderGrid('p1HeatmapGrid', m.p1Heat, true);
+        renderGrid('p2HeatmapGrid', m.p2Heat, false);
+      }
+
+      function renderScorecardAndH2H() {
+        const m = STATE.match;
+        document.getElementById('scorecardMatchTitle').textContent = `(${m.p1.name} vs ${m.p2.name})`;
+
+        const sr1 = m.inn1.balls > 0 ? ((m.inn1.runs / m.inn1.balls) * 100).toFixed(1) : '0.0';
+        const sr2 = m.inn2.balls > 0 ? ((m.inn2.runs / m.inn2.balls) * 100).toFixed(1) : '0.0';
+
+        document.getElementById('scInn1Batter').textContent = `${m.p1.flag} ${m.p1.name}`;
+        document.getElementById('scInn1Score').textContent = `${m.inn1.runs}/${m.inn1.wickets} (${m.inn1.balls}b)`;
+        document.getElementById('scInn1Status').textContent = m.innings === 1 && m.phase !== 'FINISHED' ? '🟢 Batting Live' : 'Completed';
+        document.getElementById('scInn1Meta').textContent = `SR: ${sr1} • 10s: ${m.inn1.tens} • 6s: ${m.inn1.sixes}`;
+
+        document.getElementById('scInn2Batter').textContent = `${m.p2.flag} ${m.p2.name}`;
+        document.getElementById('scInn2Score').textContent = `${m.inn2.runs}/${m.inn2.wickets} (${m.inn2.balls}b)`;
+        document.getElementById('scInn2Status').textContent = m.phase === 'FINISHED' ? 'Finished' : (m.innings === 2 ? '🟢 Chasing Live' : 'Waiting');
+        document.getElementById('scInn2Meta').textContent = `SR: ${sr2} • 10s: ${m.inn2.tens} • 6s: ${m.inn2.sixes} • Target: ${m.target || '--'}`;
+
+        // Filtered Ball-by-Ball log
+        const filtered = m.allDeliveries.filter((d) => {
+          if (STATE.ballFilter === 'boundaries') return !d.isOut && d.runs >= 6;
+          if (STATE.ballFilter === 'wickets') return d.isOut;
+          return true;
+        });
+
+        document.getElementById('ballLogCountLabel').textContent = `${filtered.length} Deliveries`;
+        const logEl = document.getElementById('ballByBallLogContainer');
+        if (filtered.length === 0) {
+          logEl.innerHTML = `<div class="p-4 text-center text-xs text-zinc-500 font-mono-num">No deliveries matching filter yet — watch the split-screen live!</div>`;
+        } else {
+          logEl.innerHTML = filtered.slice(0, 24).map((d) => {
+            const badgeCls = d.isOut
+              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+              : (d.runs >= 6 ? 'bg-[#a3d96c]/20 text-[#a3d96c] border-[#a3d96c]/40' : 'bg-white/5 text-zinc-300 border-white/10');
+            const badgeTxt = d.isOut ? 'OUT W' : `+${d.runs}`;
+            return `
+              <div class="px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs hover:bg-white/[0.02]">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="font-mono-num text-[10px] text-zinc-400 shrink-0">Inn ${d.innings} · B${d.ball}</span>
+                  <span class="px-2 py-0.5 rounded font-mono-num text-[10px] font-extrabold border shrink-0 ${badgeCls}">${badgeTxt}</span>
+                  <div class="truncate">
+                    <span class="font-bold text-white">${d.headline}</span>
+                    <span class="block text-[11px] text-zinc-400 italic truncate">${d.commText}</span>
+                  </div>
+                </div>
+                <span class="font-mono-num text-xs font-extrabold text-amber-300 shrink-0">${d.totalRuns}/${d.wickets}</span>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // H2H Comparison Bars
+        const p1Bound = m.inn1.sixes + m.inn1.tens;
+        const p2Bound = m.inn2.sixes + m.inn2.tens;
+        const metrics = [
+          { label: 'Total Runs', v1: m.inn1.runs, v2: m.inn2.runs },
+          { label: 'Strike Rate', v1: parseFloat(sr1), v2: parseFloat(sr2) },
+          { label: 'Boundaries (6s + 10s)', v1: p1Bound, v2: p2Bound },
+          { label: 'Contender Elo Rating', v1: m.p1.elo, v2: m.p2.elo }
+        ];
+        document.getElementById('h2hComparisonBars').innerHTML = metrics.map((row) => {
+          const sum = (row.v1 + row.v2) || 1;
+          const pct1 = Math.max(12, Math.min(88, Math.round((row.v1 / sum) * 100)));
+          const pct2 = 100 - pct1;
+          return `
+            <div class="space-y-1">
+              <div class="flex justify-between font-mono-num text-[11px]">
+                <span class="text-cyan-300 font-bold">${row.v1}</span>
+                <span class="text-zinc-400">${row.label}</span>
+                <span class="text-amber-300 font-bold">${row.v2}</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-zinc-800 overflow-hidden flex">
+                <div class="h-full bg-cyan-400" style="width:${pct1}%"></div>
+                <div class="h-full bg-amber-400" style="width:${pct2}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        drawWormChart();
+      }
+
+      function renderBracket() {
+        const container = document.getElementById('bracketGridContainer');
+        if (!container) return;
+        const qfs = STATE.bracket.filter((b) => b.id.startsWith('qf'));
+        const sfs = STATE.bracket.filter((b) => b.id.startsWith('sf'));
+        const fin = STATE.bracket.filter((b) => b.id === 'final');
+
+        const renderCol = (title, items) => `
+          <div class="p-3.5 rounded-2xl bg-[#0d0c12] border border-white/10 space-y-3">
+            <h4 class="font-brand font-bold text-xs uppercase tracking-wider text-[#a3d96c]">${title}</h4>
+            <div class="space-y-2.5">
+              ${items.map((item) => `
+                <div class="p-3 rounded-xl bg-[#16151c] border border-white/10 hover:border-amber-400/50 transition space-y-2">
+                  <div class="flex items-center justify-between text-[10px] font-mono-num text-zinc-400">
+                    <span>${item.stage}</span>
+                    <span class="text-amber-300 font-bold">${item.winner === 'LIVE NOW' ? '🔴 LIVE' : '✓ ' + item.winner}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs font-bold text-white">
+                    <span>${item.p1}</span>
+                    <span class="font-mono-num text-cyan-300">${item.s1}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs font-bold text-white">
+                    <span>${item.p2}</span>
+                    <span class="font-mono-num text-amber-300">${item.s2}</span>
+                  </div>
+                  <button type="button" data-watch-court="${item.courtIdx}" class="w-full py-1.5 rounded-lg text-[11px] font-extrabold bg-white/5 hover:bg-[#81b64c] hover:text-slate-950 text-zinc-200 border border-white/10 transition">
+                    📺 Spectate on Split-Screen
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+
+        container.innerHTML =
+          renderCol('Quarter-Finals (8 Contenders)', qfs) +
+          renderCol('Semi-Finals (Final 4)', sfs) +
+          renderCol('👑 Championship Final (2000 XP Crown)', fin);
+      }
+
+      function renderAll() {
+        const m = STATE.match;
+        if (!m) return;
+
+        // Spectator identity
+        const p = getActivePlayer();
+        document.getElementById('specUserFlag').textContent = (p && p.countryFlag) || '🇮🇳';
+        document.getElementById('specUsername').textContent = (p && p.username) ? p.username.toUpperCase() : 'SPECTATOR';
+        document.getElementById('specXpVal').textContent = String(STATE.spectatorXp);
+
+        // Scorebug Top Badges
+        document.getElementById('bugRoundBadge').textContent = m.roundTitle;
+        document.getElementById('bugRoomCodeText').textContent = m.roomCode;
+        document.getElementById('bugInningsBadge').textContent = m.phase === 'FINISHED'
+          ? (m.isDrawn ? '🤝 MATCH DRAWN' : '🏆 MATCH FINISHED')
+          : (m.innings === 1 ? '1ST INNINGS' : '2ND INNINGS CHASE');
+
+        const p1Batting = m.innings === 1;
+        document.getElementById('bugP1Flag').textContent = m.p1.flag;
+        document.getElementById('bugP1Name').textContent = m.p1.name;
+        document.getElementById('bugP1Elo').textContent = String(m.p1.elo);
+        document.getElementById('bugP1RolePill').textContent = p1Batting ? '🏏 BAT' : '⚾ BOWL';
+        document.getElementById('bugP1RolePill').className = p1Batting
+          ? 'px-1.5 py-0.5 rounded text-[9px] font-mono-num font-extrabold bg-[#a3d96c] text-slate-950'
+          : 'px-1.5 py-0.5 rounded text-[9px] font-mono-num font-extrabold bg-cyan-400 text-slate-950';
+
+        const sr1 = m.inn1.balls > 0 ? ((m.inn1.runs / m.inn1.balls) * 100).toFixed(1) : '0.0';
+        const sr2 = m.inn2.balls > 0 ? ((m.inn2.runs / m.inn2.balls) * 100).toFixed(1) : '0.0';
+        document.getElementById('bugP1Sr').textContent = sr1;
+        document.getElementById('bugP1Score').textContent = `${m.inn1.runs}/${m.inn1.wickets}`;
+        document.getElementById('bugP1Balls').textContent = `(${m.inn1.balls}/12 balls)`;
+
+        document.getElementById('bugP2Flag').textContent = m.p2.flag;
+        document.getElementById('bugP2Name').textContent = m.p2.name;
+        document.getElementById('bugP2Elo').textContent = String(m.p2.elo);
+        document.getElementById('bugP2RolePill').textContent = !p1Batting ? '🏏 BAT' : '⚾ BOWL';
+        document.getElementById('bugP2RolePill').className = !p1Batting
+          ? 'px-1.5 py-0.5 rounded text-[9px] font-mono-num font-extrabold bg-[#a3d96c] text-slate-950'
+          : 'px-1.5 py-0.5 rounded text-[9px] font-mono-num font-extrabold bg-cyan-400 text-slate-950';
+        document.getElementById('bugP2Sr').textContent = sr2;
+        document.getElementById('bugP2Score').textContent = `${m.inn2.runs}/${m.inn2.wickets}`;
+        document.getElementById('bugP2Balls').textContent = `(${m.inn2.balls}/12 balls)`;
+
+        // Target, CRR & Equation
+        const activeInn = m.innings === 1 ? m.inn1 : m.inn2;
+        const crr = activeInn.balls > 0 ? ((activeInn.runs / activeInn.balls) * 6).toFixed(2) : '0.00';
+        document.getElementById('bugTargetVal').textContent = m.target ? String(m.target) : '--';
+        document.getElementById('bugCrrVal').textContent = crr;
+        document.getElementById('bugBallCount').textContent = `#${activeInn.balls}`;
+
+        let eqText = '';
+        if (m.phase === 'FINISHED') {
+          eqText = m.resultText;
+        } else if (m.innings === 1) {
+          eqText = `${m.p1.name} batting 1st Innings (${12 - m.inn1.balls} balls remaining)`;
+        } else {
+          const need = Math.max(0, m.target - m.inn2.runs);
+          const ballsLeft = Math.max(0, 12 - m.inn2.balls);
+          eqText = `${m.p2.name} needs ${need} run${need === 1 ? '' : 's'} in ${ballsLeft} ball${ballsLeft === 1 ? '' : 's'} (${need - 1} to Tie/Draw 🤝)`;
+        }
+        document.getElementById('bugEquationText').textContent = eqText;
+
+        // Win Probability Calculation
+        let p1Prob = 48, drawProb = 4, p2Prob = 48;
+        if (m.phase === 'FINISHED') {
+          if (m.isDrawn) { p1Prob = 0; drawProb = 100; p2Prob = 0; }
+          else if (m.winner === 'P1') { p1Prob = 100; drawProb = 0; p2Prob = 0; }
+          else { p1Prob = 0; drawProb = 0; p2Prob = 100; }
+        } else if (m.innings === 1) {
+          p1Prob = Math.min(82, Math.max(20, 45 + Math.round((m.inn1.runs - m.inn1.balls * 4.5) * 1.4)));
+          drawProb = 5;
+          p2Prob = 100 - p1Prob - drawProb;
+        } else {
+          const need = Math.max(0, m.target - m.inn2.runs);
+          const ballsLeft = Math.max(1, 12 - m.inn2.balls);
+          const rpb = need / ballsLeft;
+          p2Prob = Math.min(88, Math.max(12, Math.round(78 - rpb * 8)));
+          drawProb = Math.abs(m.inn1.runs - m.inn2.runs) <= 6 ? 8 : 4;
+          p1Prob = 100 - p2Prob - drawProb;
+        }
+        document.getElementById('probP1Text').textContent = `${p1Prob}%`;
+        document.getElementById('probDrawText').textContent = `${drawProb}%`;
+        document.getElementById('probP2Text').textContent = `${p2Prob}%`;
+        document.getElementById('probP1Bar').style.width = `${p1Prob}%`;
+        document.getElementById('probDrawBar').style.width = `${drawProb}%`;
+        document.getElementById('probP2Bar').style.width = `${p2Prob}%`;
+
+        // Sync Top Winning Probability Meter (Bar Type Above Scorecard)
+        document.getElementById('topMeterP1Flag').textContent = m.p1.flag;
+        document.getElementById('topMeterP1Name').textContent = m.p1.name;
+        document.getElementById('topMeterP1Pct').textContent = `${p1Prob}%`;
+        document.getElementById('topMeterDrawPct').textContent = `${drawProb}%`;
+        document.getElementById('topMeterP2Flag').textContent = m.p2.flag;
+        document.getElementById('topMeterP2Name').textContent = m.p2.name;
+        document.getElementById('topMeterP2Pct').textContent = `${p2Prob}%`;
+        document.getElementById('topMeterP1Bar').style.width = `${p1Prob}%`;
+        document.getElementById('topMeterDrawBar').style.width = `${drawProb}%`;
+        document.getElementById('topMeterP2Bar').style.width = `${p2Prob}%`;
+        document.getElementById('topMeterP1BarLabel').textContent = p1Prob >= 12 ? `${p1Prob}%` : '';
+        document.getElementById('topMeterP2BarLabel').textContent = p2Prob >= 12 ? `${p2Prob}%` : '';
+
+        let momentumText = '⚖️ Balanced Contest';
+        if (m.phase === 'FINISHED') {
+          if (m.isDrawn) momentumText = '🤝 Match Drawn (Dead Level)';
+          else if (m.winner === 'P1') momentumText = `🏆 ${m.p1.name} Won!`;
+          else momentumText = `🏆 ${m.p2.name} Won!`;
+        } else if (p1Prob - p2Prob >= 18) {
+          momentumText = `🔥 ${m.p1.name} Dominating`;
+        } else if (p1Prob - p2Prob >= 7) {
+          momentumText = `📈 ${m.p1.name} Slight Edge`;
+        } else if (p2Prob - p1Prob >= 18) {
+          momentumText = `⚡ ${m.p2.name} Dominating`;
+        } else if (p2Prob - p1Prob >= 7) {
+          momentumText = `📈 ${m.p2.name} Slight Edge`;
+        }
+        document.getElementById('topMeterMomentumBadge').textContent = momentumText;
+        document.getElementById('topMeterSubCaption').textContent = eqText;
+
+        // Sync Scorecard Tab Winning Probability Bar
+        document.getElementById('scProbP1Name').textContent = m.p1.name;
+        document.getElementById('scProbP1Text').textContent = `${p1Prob}%`;
+        document.getElementById('scProbDrawText').textContent = `${drawProb}%`;
+        document.getElementById('scProbP2Name').textContent = m.p2.name;
+        document.getElementById('scProbP2Text').textContent = `${p2Prob}%`;
+        document.getElementById('scProbP1Bar').style.width = `${p1Prob}%`;
+        document.getElementById('scProbDrawBar').style.width = `${drawProb}%`;
+        document.getElementById('scProbP2Bar').style.width = `${p2Prob}%`;
+
+        // Left & Right Viewport Headers & Telemetry
+        document.getElementById('viewportP1').classList.toggle('viewport-batting', p1Batting && m.phase !== 'FINISHED');
+        document.getElementById('viewportP2').classList.toggle('viewport-batting', !p1Batting && m.phase !== 'FINISHED');
+
+        document.getElementById('p1CamTitle').textContent = `${m.p1.flag} ${m.p1.name}`;
+        document.getElementById('p2CamTitle').textContent = `${m.p2.flag} ${m.p2.name}`;
+
+        document.getElementById('p1RoleBadge').textContent = p1Batting ? '🏏 BATTING' : '⚾ BOWLING';
+        document.getElementById('p2RoleBadge').textContent = !p1Batting ? '🏏 BATTING' : '⚾ BOWLING';
+
+        const showRev = m.subStep === 'REVEAL' && m.lastP1 !== null;
+        document.getElementById('p1LockBadge').textContent = showRev ? `💥 Played #${m.lastP1}` : '🔒 Hand Locked';
+        document.getElementById('p2LockBadge').textContent = showRev ? `💥 Played #${m.lastP2}` : '🔒 Hand Locked';
+
+        document.getElementById('p1BigChoiceVal').textContent = showRev ? `#${m.lastP1}` : (STATE.xray && m.pendingP1 ? `#${m.pendingP1}` : '🔒');
+        document.getElementById('p2BigChoiceVal').textContent = showRev ? `#${m.lastP2}` : (STATE.xray && m.pendingP2 ? `#${m.pendingP2}` : '🔒');
+
+        document.getElementById('p1HudScore').textContent = `${m.inn1.runs}/${m.inn1.wickets}`;
+        document.getElementById('p1HudBalls').textContent = `(${m.inn1.balls}b)`;
+        document.getElementById('p2HudScore').textContent = `${m.inn2.runs}/${m.inn2.wickets}`;
+        document.getElementById('p2HudBalls').textContent = `(${m.inn2.balls}b)`;
+
+        document.getElementById('p1StatSr').textContent = sr1;
+        document.getElementById('p1StatBoundaries').textContent = `${m.inn1.sixes}×6 | ${m.inn1.tens}×10`;
+        document.getElementById('p1StatFav').textContent = getFavHand(m.p1Heat);
+        document.getElementById('p1StatLast').textContent = m.lastP1 ? `#${m.lastP1}` : '-';
+        document.getElementById('p1RecentStrip').textContent = `Balls: ${m.inn1.history.slice(-6).join(' · ') || '-'}`;
+
+        document.getElementById('p2StatSr').textContent = sr2;
+        document.getElementById('p2StatBoundaries').textContent = `${m.inn2.sixes}×6 | ${m.inn2.tens}×10`;
+        document.getElementById('p2StatFav').textContent = getFavHand(m.p2Heat);
+        document.getElementById('p2StatLast').textContent = m.lastP2 ? `#${m.lastP2}` : '-';
+        document.getElementById('p2RecentStrip').textContent = `Balls: ${m.inn2.history.slice(-6).join(' · ') || '-'}`;
+
+        // Poll button names
+        document.getElementById('voteBtnP1Name').textContent = m.p1.name;
+        document.getElementById('voteBtnP2Name').textContent = m.p2.name;
+
+        renderHeatmaps();
+        drawPlayerViewportCanvas('canvasP1', true);
+        drawPlayerViewportCanvas('canvasP2', false);
+        renderScorecardAndH2H();
+      }
+
+      // Floating Crowd Emoji Reactions
+      function spawnFloatingReaction(emoji) {
+        const stage = document.getElementById('floatingEmojiStage');
+        if (!stage) return;
+        for (let i = 0; i < 2; i++) {
+          const span = document.createElement('span');
+          span.className = 'floating-emoji';
+          span.textContent = emoji;
+          const leftPct = i === 0 ? (15 + Math.random() * 28) : (58 + Math.random() * 28);
+          span.style.left = `${leftPct}%`;
+          stage.appendChild(span);
+          setTimeout(() => span.remove(), 2200);
+        }
+      }
+
+      // Spectator Chat Feed
+      function addChatLog(user, text, colorCls = 'text-cyan-300') {
+        const list = document.getElementById('spectatorChatList');
+        if (!list) return;
+        const div = document.createElement('div');
+        div.className = 'p-2 rounded-xl bg-white/[0.03] border border-white/5 flex items-start gap-2';
+        div.innerHTML = `
+          <span class="font-mono-num text-[10px] font-extrabold ${colorCls} shrink-0">${user}:</span>
+          <span class="text-zinc-200 leading-snug">${text}</span>
+        `;
+        list.prepend(div);
+        while (list.children.length > 30) {
+          list.removeChild(list.lastChild);
+        }
+      }
+
+      function triggerCrowdBotChat(isOut, batterHand, m) {
+        const fans = ['CRICKET_KING99', 'ROAST_MASTER', 'DELHI_SMASHER', 'MUMBAI_PRO', 'EAGLE_EYE'];
+        const fan = fans[Math.floor(Math.random() * fans.length)];
+        if (m.phase === 'FINISHED') {
+          addChatLog(fan, m.isDrawn ? 'NO WAY!! An actual Match Drawn tie in the Championship!! 🤝🔥' : `GG! What a finish on the split screen! 👑`, 'text-amber-300');
+        } else if (isOut) {
+          addChatLog(fan, `GOT HIM!! Both players locked the exact same finger on camera! 💀💥`, 'text-rose-300');
+        } else if (batterHand === 10) {
+          addChatLog(fan, `10 RUN BLAST!! Look at that Strike Rate climb! 🚀🔥`, 'text-[#a3d96c]');
+        }
+      }
+
+      // Live Room Code Spectating Bridge (BroadcastChannel + localStorage + Firebase)
+      function connectToLiveRoom(rawCode) {
+        const code = (rawCode || '').trim().toUpperCase();
+        if (!code) return;
+        STATE.liveRoomCode = code;
+        STATE.match = createFreshMatch({
+          round: `📡 LIVE MULTIPLAYER SPECTATOR · ROOM ${code}`,
+          roomCode: code,
+          p1: { name: 'HOST (P1)', flag: '🇮🇳', elo: 1650, seed: 1, style: 'Live Host' },
+          p2: { name: 'CHALLENGER (P2)', flag: '🇮🇳', elo: 1650, seed: 2, style: 'Live Challenger' }
+        });
+
+        document.getElementById('directorRoomStatus').textContent = `📡 Connected to Room ${code} — Listening via BroadcastChannel, Local Bus & Firebase Cloud...`;
+        addChatLog('ROOM-BRIDGE', `Connected live spectator feed to Room ${code}!`, 'text-cyan-300');
+
+        // 1. BroadcastChannel listener
+        if (STATE.liveRoomChannel) {
+          try { STATE.liveRoomChannel.close(); } catch (e) {}
+        }
+        if ('BroadcastChannel' in window) {
+          STATE.liveRoomChannel = new BroadcastChannel('hc_arena_room_' + code);
+          STATE.liveRoomChannel.onmessage = (ev) => {
+            if (ev && ev.data) applyRoomPacket(ev.data);
+          };
+        }
+
+        // 2. Check existing localStorage room bus state
+        try {
+          const busRaw = localStorage.getItem('oddandeven_room_bus_' + code);
+          if (busRaw) applyRoomPacket(JSON.parse(busRaw));
+        } catch (e) {}
+
+        renderAll();
+      }
+
+      function applyRoomPacket(pkt) {
+        if (!pkt || !STATE.match) return;
+        const m = STATE.match;
+        if (pkt.hostName) m.p1.name = pkt.hostName.toUpperCase();
+        if (pkt.guestName) m.p2.name = pkt.guestName.toUpperCase();
+        if (pkt.p1Move && pkt.p2Move) {
+          m.pendingP1 = Number(pkt.p1Move);
+          m.pendingP2 = Number(pkt.p2Move);
+          resolveBall();
+        } else {
+          renderAll();
+        }
+      }
+
+      // Simulation Loop & Shot Clock Ticker
+      let simStepAccum = 0;
+      setInterval(() => {
+        // Fluctuate live viewer count slightly for realism
+        const vEl = document.getElementById('viewerCountDisplay');
+        if (vEl && Math.random() < 0.3) {
+          const base = 1480 + Math.floor(Math.random() * 45);
+          vEl.textContent = `${base.toLocaleString()} Watching`;
+        }
+
+        const m = STATE.match;
+        if (!m || !STATE.isPlaying || m.phase === 'FINISHED') return;
+
+        m.shotClock = Math.max(0, m.shotClock - 0.15);
+        const pct = Math.max(0, Math.min(100, (m.shotClock / 15) * 100));
+        document.getElementById('p1ClockText').textContent = `${m.shotClock.toFixed(1)}s`;
+        document.getElementById('p2ClockText').textContent = `${m.shotClock.toFixed(1)}s`;
+        document.getElementById('p1TimerBar').style.width = `${pct}%`;
+        document.getElementById('p2TimerBar').style.width = `${pct}%`;
+
+        simStepAccum += 150;
+        if (simStepAccum >= STATE.simSpeedMs) {
+          simStepAccum = 0;
+          if (m.subStep === 'LOCKING') {
+            resolveBall();
+          } else {
+            m.subStep = 'LOCKING';
+            m.shotClock = 15.0;
+            prepareNextHands();
+            renderAll();
+          }
+        }
+      }, 150);
+
+      // UI Event Listeners
+      function bindEvents() {
+        // Court Selector Tabs
+        document.querySelectorAll('.court-tab').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.dataset.court || 0);
+            loadCourt(idx);
+          });
+        });
+
+        // Layout Mode Switcher
+        document.querySelectorAll('.layout-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const layout = btn.dataset.layoutBtn;
+            STATE.layout = layout;
+            document.getElementById('splitScreenContainer').setAttribute('data-layout', layout);
+            document.querySelectorAll('.layout-btn').forEach((b) => {
+              b.className = b === btn
+                ? 'layout-btn px-2.5 py-1 rounded-lg bg-[#81b64c] text-slate-950 font-extrabold transition'
+                : 'layout-btn px-2.5 py-1 rounded-lg text-zinc-300 hover:text-white transition';
+            });
+            setTimeout(() => renderAll(), 40);
+          });
+        });
+
+        // Manual Dual-Pad Toggle
+        document.getElementById('btnToggleDualControl').addEventListener('click', (e) => {
+          STATE.manualDualPad = !STATE.manualDualPad;
+          e.currentTarget.textContent = STATE.manualDualPad ? '🕹️ Manual Pads: ON' : '🕹️ Manual Pads: OFF';
+          e.currentTarget.className = STATE.manualDualPad
+            ? 'px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-extrabold transition'
+            : 'px-2.5 py-1 rounded-lg text-amber-300 hover:bg-amber-400/15 transition';
+          document.getElementById('p1PadHint').classList.toggle('hidden', !STATE.manualDualPad);
+          document.getElementById('p2PadHint').classList.toggle('hidden', !STATE.manualDualPad);
+          renderAll();
+        });
+
+        // Click on P1 or P2 Heatmap Cells to manually lock hand in Dual-Pad mode
+        document.addEventListener('click', (e) => {
+          const padBtn = e.target.closest('[data-pad-side]');
+          if (padBtn) {
+            const side = padBtn.dataset.padSide;
+            const num = Number(padBtn.dataset.padNum);
+            STATE.manualDualPad = true;
+            document.getElementById('btnToggleDualControl').textContent = '🕹️ Manual Pads: ON';
+            document.getElementById('p1PadHint').classList.remove('hidden');
+            document.getElementById('p2PadHint').classList.remove('hidden');
+            if (side === 'P1') STATE.match.pendingP1 = num;
+            else STATE.match.pendingP2 = num;
+            STATE.match.subStep = 'LOCKING';
+            SoundFX.tap();
+            renderAll();
+            return;
+          }
+
+          const watchBtn = e.target.closest('[data-watch-court]');
+          if (watchBtn) {
+            const idx = Number(watchBtn.dataset.watchCourt || 0);
+            loadCourt(idx);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        });
+
+        // X-Ray Toggle
+        document.getElementById('btnToggleXray').addEventListener('click', (e) => {
+          STATE.xray = !STATE.xray;
+          e.currentTarget.textContent = STATE.xray ? '👁️ Spectator X-Ray: ON' : '🔒 Spectator X-Ray: OFF';
+          renderAll();
+        });
+
+        // Sound & TTS Toggles
+        document.getElementById('btnToggleSound').addEventListener('click', (e) => {
+          SoundFX.enabled = !SoundFX.enabled;
+          e.currentTarget.textContent = SoundFX.enabled ? '🔊 SFX' : '🔇 Muted';
+        });
+
+        document.getElementById('btnToggleVoice').addEventListener('click', (e) => {
+          SoundFX.voiceEnabled = !SoundFX.voiceEnabled;
+          e.currentTarget.textContent = SoundFX.voiceEnabled ? '🎙️ TTS: ON' : '🎙️ TTS: OFF';
+        });
+
+        // Commentary Mode Buttons
+        document.querySelectorAll('.comm-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            STATE.commentaryMode = btn.dataset.comm;
+            document.querySelectorAll('.comm-btn').forEach((b) => {
+              b.className = b === btn
+                ? 'comm-btn px-2 py-1 rounded-lg bg-[#81b64c] text-slate-950 font-extrabold'
+                : 'comm-btn px-2 py-1 rounded-lg text-zinc-300 hover:text-white';
+            });
+          });
+        });
+
+        // Play/Pause & Step Ball
+        document.getElementById('btnPlayPause').addEventListener('click', (e) => {
+          STATE.isPlaying = !STATE.isPlaying;
+          e.currentTarget.textContent = STATE.isPlaying ? '⏸️ Pause' : '▶️ Resume';
+        });
+
+        document.getElementById('btnStepBall').addEventListener('click', () => {
+          if (STATE.match.phase === 'FINISHED') {
+            STATE.match = createFreshMatch(COURTS[STATE.activeCourtIdx]);
+            prepareNextHands();
+          } else {
+            resolveBall();
+            prepareNextHands();
+          }
+          renderAll();
+        });
+
+        document.getElementById('selectSimSpeed').addEventListener('change', (e) => {
+          STATE.simSpeedMs = Number(e.target.value) || 2100;
+        });
+
+        // Bottom Interactive Tabs
+        document.querySelectorAll('.spec-tab').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.spec-tab').forEach((b) => {
+              b.className = b === btn
+                ? 'spec-tab px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#81b64c] text-slate-950 transition flex items-center gap-1.5'
+                : 'spec-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-[#16151c] text-zinc-300 hover:text-white border border-white/10 transition flex items-center gap-1.5';
+            });
+            document.getElementById('tabPanelScorecard').classList.toggle('hidden', tab !== 'scorecard');
+            document.getElementById('tabPanelBracket').classList.toggle('hidden', tab !== 'bracket');
+            document.getElementById('tabPanelEngage').classList.toggle('hidden', tab !== 'engage');
+            document.getElementById('tabPanelDirector').classList.toggle('hidden', tab !== 'director');
+            if (tab === 'scorecard') setTimeout(drawWormChart, 30);
+          });
+        });
+
+        // Ball Filter Buttons
+        document.querySelectorAll('.ball-filter-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            STATE.ballFilter = btn.dataset.ballFilter;
+            document.querySelectorAll('.ball-filter-btn').forEach((b) => {
+              b.className = b === btn
+                ? 'ball-filter-btn px-2 py-1 rounded-lg bg-[#81b64c] text-slate-950 font-extrabold'
+                : 'ball-filter-btn px-2 py-1 rounded-lg text-zinc-300 hover:text-white';
+            });
+            renderScorecardAndH2H();
+          });
+        });
+
+        // Crowd Emoji Reactions
+        document.querySelectorAll('.react-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            SoundFX.tap();
+            spawnFloatingReaction(btn.dataset.react);
+          });
+        });
+
+        // Next Ball Predictor Buttons
+        document.querySelectorAll('.predict-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            STATE.activePrediction = btn.dataset.predict;
+            document.querySelectorAll('.predict-btn').forEach((b) => b.classList.remove('ring-2', 'ring-[#a3d96c]'));
+            btn.classList.add('ring-2', 'ring-[#a3d96c]');
+            const badge = document.getElementById('predictStatusBadge');
+            badge.textContent = `🎯 Locked: ${btn.dataset.predict.toUpperCase()} (Waiting for ball...)`;
+            badge.className = 'px-2.5 py-1 rounded-lg text-[11px] font-mono-num font-bold bg-[#a3d96c]/20 text-[#a3d96c] border border-[#a3d96c]/40';
+          });
+        });
+
+        // Crowd Poll Voting
+        document.querySelectorAll('.vote-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const side = btn.dataset.vote;
+            STATE.pollVotes[side] = (STATE.pollVotes[side] || 0) + 1;
+            const total = STATE.pollVotes.p1 + STATE.pollVotes.draw + STATE.pollVotes.p2;
+            document.getElementById('pollTotalVotes').textContent = `${total.toLocaleString()} Votes`;
+            document.getElementById('votePctP1').textContent = `${Math.round((STATE.pollVotes.p1 / total) * 100)}%`;
+            document.getElementById('votePctDraw').textContent = `${Math.round((STATE.pollVotes.draw / total) * 100)}%`;
+            document.getElementById('votePctP2').textContent = `${Math.round((STATE.pollVotes.p2 / total) * 100)}%`;
+            spawnFloatingReaction('🗳️');
+          });
+        });
+
+        // Spectator Chat Form
+        document.getElementById('spectatorChatForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const input = document.getElementById('spectatorChatInput');
+          const msg = (input.value || '').trim();
+          if (!msg) return;
+          const p = getActivePlayer();
+          const uname = (p && p.username) ? p.username.toUpperCase() : 'YOU (SPECTATOR)';
+          addChatLog(uname, msg, 'text-[#a3d96c]');
+          input.value = '';
+          spawnFloatingReaction('💬');
+        });
+
+        // Director Scenario Triggers
+        document.getElementById('btnForceTen').addEventListener('click', () => {
+          STATE.match.forceNext = 'ten';
+          resolveBall();
+        });
+        document.getElementById('btnForceWicket').addEventListener('click', () => {
+          STATE.match.forceNext = 'wicket';
+          resolveBall();
+        });
+        document.getElementById('btnForceDrawScenario').addEventListener('click', () => {
+          STATE.match.forceNext = 'draw';
+          resolveBall();
+        });
+        document.getElementById('btnRestartMatch').addEventListener('click', () => {
+          loadCourt(STATE.activeCourtIdx);
+        });
+
+        // Bracket Sim & Reset
+        document.getElementById('btnSimBracketRound').addEventListener('click', () => {
+          STATE.bracket.forEach((b) => {
+            const r1 = 48 + Math.floor(Math.random() * 44);
+            const r2 = 48 + Math.floor(Math.random() * 44);
+            b.s1 = `${r1}/1`;
+            b.s2 = `${r2}/1`;
+            b.winner = r1 >= r2 ? b.p1 : b.p2;
+          });
+          renderBracket();
+          spawnFloatingReaction('🏆');
+        });
+        document.getElementById('btnResetBracket').addEventListener('click', () => {
+          initBracket();
+          renderBracket();
+        });
+
+        // Room Connect Buttons
+        document.getElementById('btnConnectRoom').addEventListener('click', () => {
+          connectToLiveRoom(document.getElementById('inputSpectateRoom').value);
+        });
+        document.getElementById('btnDirectorConnectRoom').addEventListener('click', () => {
+          connectToLiveRoom(document.getElementById('directorRoomInput').value);
+        });
+
+        window.addEventListener('resize', () => renderAll());
+      }
+
+      function loadCourt(idx) {
+        STATE.activeCourtIdx = idx;
+        const court = COURTS[idx] || COURTS[0];
+        STATE.match = createFreshMatch(court);
+        prepareNextHands();
+        document.querySelectorAll('.court-tab').forEach((btn) => {
+          const isCur = Number(btn.dataset.court) === idx;
+          btn.className = isCur
+            ? 'court-tab px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold font-mono-num border transition shrink-0 bg-amber-400/20 text-amber-300 border-amber-400/50'
+            : 'court-tab px-2.5 py-1.5 rounded-xl text-[11px] font-bold font-mono-num border transition shrink-0 bg-[#16151c] text-zinc-300 border-white/10 hover:border-white/25';
+        });
+        addChatLog('BROADCAST', `Switched live split-screen cameras to ${court.round}: ${court.p1.name} vs ${court.p2.name}!`, 'text-amber-300');
+        renderAll();
+      }
+
+      // Initialize Broadcast
+      initBracket();
+      renderBracket();
+      bindEvents();
+      loadCourt(0);
+      // Seed 2 initial balls so scoreboard & worm chart immediately have live telemetry
+      resolveBall();
+      prepareNextHands();
+      resolveBall();
+      prepareNextHands();
+      renderAll();
+    })();
+  </script>
+</body>
+</html>

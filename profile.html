@@ -86,6 +86,9 @@
       background: #81b64c;
     }
   </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
 </head>
 <body class="min-h-screen flex flex-col bg-[#121110] text-slate-100 antialiased pb-16">
 
@@ -870,11 +873,11 @@
       'use strict';
 
       // Storage keys aligned with OddAndEven.in ecosystem
-      
+
       // =========================================================================
       // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
       // =========================================================================
-      
+
       // Smart Arena Return Link (Desktop hand_cricket.html vs Mobile mobile.html)
       (function() {
         try {
@@ -2372,7 +2375,7 @@
         const userActiveStreak = document.getElementById('userActiveStreak');
         if (userActiveStreak) userActiveStreak.textContent = `🔥 ${data.activeDays} Day${data.activeDays > 1 ? 's' : ''}`;
 
-        
+
         // Populate Dedicated Account Information Section
         if (document.getElementById('accInfoUsernameText')) {
           document.getElementById('accInfoUsernameText').textContent = data.username;

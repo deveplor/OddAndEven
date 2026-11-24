@@ -99,6 +99,10 @@
       border-radius: 9999px;
     }
   </style>
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="application-version" content="2.5" />
+  <link rel="stylesheet" href="arena-theme.css?v=2.5" />
+  <script src="grandmaster.js?v=2.5"></script>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-3 sm:p-5 lg:p-6">
 
@@ -269,7 +273,7 @@
                   Play Bot
                 </h3>
                 <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Face 4 Elo tiers — from friendly Basic (450) & Intermediate (1100) to mind-reading Advanced (1850) & Grandmaster Oracle (2650).
+                  Face 4 Elo tiers — from friendly Basic (450) & Intermediate (1100) to adaptive Advanced (1850) & Grandmaster Oracle (2650).
                 </p>
               </div>
               <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-extrabold text-emerald-300">
@@ -325,7 +329,7 @@
                   <span class="text-xs font-extrabold text-white">Live Commentary</span>
                   <span id="commentaryMoodChip" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">HYPE</span>
                 </div>
-                <p class="text-[11px] text-slate-400 mt-0.5">Click to cycle Hype, Tactical & Classic broadcast styles.</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Click to cycle Hype, Tactical, Classic & Roast broadcast styles.</p>
               </div>
             </button>
           </div>
@@ -410,7 +414,7 @@
               </div>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-              Deep 2nd-order N-gram and delta-shift sequence predictor with over 90% accuracy, dynamic EV survival batting, and lethal bowling traps.
+              Deep 2nd-order N-gram and delta-shift sequence predictor that adapts to your past moves, dynamic EV survival batting, and lethal bowling traps.
             </p>
           </button>
 
@@ -425,12 +429,12 @@
             <div class="flex items-center gap-2.5">
               <span class="text-2xl">👑</span>
               <div>
-                <div class="font-extrabold text-sm text-white">Apex "Grandmaster" Oracle (Unbeatable)</div>
-                <div class="text-[11px] text-rose-300/90 font-medium">100% Unbeatable • Mind-Reading Oracle Foresight</div>
+                <div class="font-extrabold text-sm text-white">Apex "Grandmaster" Bot</div>
+                <div class="text-[11px] text-rose-300/90 font-medium">Grandmaster Tier • Predictive Pattern AI</div>
               </div>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-              Unbeatable Grandmaster! Uses real-time predictive foresight to anticipate your exact next move, evades all bowling deliveries, and dismisses batters with mathematical certainty.
+              Grandmaster Bot! Uses advanced deep sequence prediction, Markov analysis, and situational tactics. A formidable, master-level challenge with fair, predictive play.
             </p>
           </button>
         </div>
@@ -446,6 +450,7 @@
               <option value="HYPE">🔥 Stadium Hype Broadcast (Energetic)</option>
               <option value="TACTICAL">🧠 Pro Analyst & Mind-Games</option>
               <option value="CLASSIC">📻 Classic Crisp Cricket Feed</option>
+              <option value="ROAST">💀 Roast Commentary (Humiliates on Wicket)</option>
             </select>
           </div>
         </div>
@@ -1034,6 +1039,10 @@
           <h3 class="font-bold text-amber-300 mb-1">3. 2nd Innings (The Chase)</h3>
           <p>Roles swap! The chasing side bats to reach the <strong>Target</strong>. If their accumulated score meets or surpasses the Target, they <strong>instantly win</strong>. If the bowler matches the batter's number before the Target is reached, the chasing side is <strong>OUT</strong> and the defending side wins!</p>
         </div>
+        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
+          <h3 class="font-bold text-yellow-300 mb-1">4. Match Drawn (Tie) Rules</h3>
+          <p>If the chasing side in the 2nd Innings is <strong>bowled OUT</strong> when their score is <strong>exactly equal</strong> to the 1st Innings score (e.g. 42 vs 42, just 1 run short of the target 43), the match ends as an official <strong>MATCH DRAWN (TIE)</strong>! In Multiplayer, both players' Elo ratings remain unchanged (<strong>0 Elo delta</strong>). In Bot matches, the match is recorded as a Draw with ratings frozen.</p>
+        </div>
       </div>
 
       <div class="pt-2 flex justify-end">
@@ -1585,13 +1594,13 @@
           badge: 'VIKRAM • 1850 ELO (PREDICTOR)'
         },
         WALL: {
-          name: 'Apex Oracle (Master Unbeatable)',
-          shortName: 'Apex Oracle',
+          name: 'Apex Grandmaster (Predictive AI)',
+          shortName: 'Apex Grandmaster',
           elo: 2650,
           bracket: '2200–2800 ELO',
           tier: 'Master Tier',
           icon: '👑',
-          badge: 'ORACLE • 2650 ELO (UNBEATABLE)'
+          badge: 'GRANDMASTER • 2650 ELO'
         }
       };
       // Helper: Predict user's next number probabilities using Frequency + 1st-order Markov + 2nd-order N-gram + Delta shifts + Parity habits
@@ -1658,6 +1667,14 @@
       // Smart AI number selection across the 4 Elo Tiers (250-700, 700-1400, 1400-2200, 2200-2800)
       function generateBotNumber(isBotBatting, userNum) {
         const diff = STATE.botDifficulty || 'TACTICIAN';
+        if (diff === 'WALL' && window.OAEGrandmaster) {
+          const roleHistory = isBotBatting ? STATE.userBowlingHistory : STATE.userBattingHistory;
+          return window.OAEGrandmaster.choose({
+            history: roleHistory || [],
+            batting: isBotBatting,
+            runsNeeded: STATE.currentInnings === 2 ? STATE.target - (isBotBatting ? STATE.aiScore : STATE.userScore) : null
+          });
+        }
         const hist = STATE.userNumHistory;
         const patternScores = analyzeUserPatterns(hist);
         const rankedUserNums = Object.keys(patternScores).map(Number).sort((a, b) => patternScores[b] - patternScores[a]);
@@ -1714,114 +1731,7 @@
           }
         }
 
-                // TIER 4: MASTER BOT (2650 ELO, 2200-2800) — APEX ORACLE: 100% UNBEATABLE & PREDICTS NEXT MOVES OF USER!
-        if (diff === 'WALL') {
-          if (!STATE.masterBotRecentPicks) {
-            STATE.masterBotRecentPicks = [];
-          }
 
-          if (typeof userNum === 'number' && userNum >= 1 && userNum <= 10) {
-            if (!isBotBatting) {
-              // Master Bot is BOWLING (User is Batting):
-              // Clean-bowls user with 100% predictive foresight so user CANNOT win!
-              if (STATE.currentInnings === 2) {
-                // In 2nd Innings: User is chasing target.
-                // Master Bot NEVER allows user to reach target!
-                const currentScore = STATE.userScore || 0;
-                const target = STATE.target || 999;
-                // If user would reach target or on ball 2+: 100% clean bowl!
-                if (currentScore + userNum >= target || STATE.userBalls >= 1) {
-                  return userNum; // CLEAN BOWLED! Target defended, Master Bot wins!
-                }
-                // On ball 1 only if userNum is small (<= 4): 40% chance hoverNum for suspense, else clean bowl
-                if (STATE.userBalls === 0 && userNum <= 4 && Math.random() < 0.4) {
-                  return userNum === 1 ? 2 : userNum - 1;
-                }
-                return userNum; // Instant dismissal
-              } else {
-                // In 1st Innings: User is setting target.
-                // Master Bot allows at most 1 delivery of small score (if userNum <= 5), then clean-bowls on ball 2!
-                const currentScore = STATE.userScore || 0;
-                if (STATE.userBalls === 0 && currentScore < 10 && userNum <= 5 && Math.random() < 0.5) {
-                  return userNum === 1 ? 2 : userNum - 1;
-                }
-                // Dismiss user immediately! User is bowled out for a very low target!
-                return userNum;
-              }
-            } else {
-              // Master Bot is BATTING (User is Bowling):
-              // User bowled userNum. Master Bot predicts bowling and NEVER matches userNum!
-              const target = STATE.target || 999;
-              const need = STATE.currentInnings === 2 ? Math.max(1, target - (STATE.aiScore || 0)) : 999;
-
-              // In 2nd Innings: Winning shot logic
-              if (STATE.currentInnings === 2) {
-                if (need <= 10) {
-                  // Find all numbers >= need that are != userNum
-                  const winningShots = [];
-                  for (let n = need; n <= 10; n++) {
-                    if (n !== userNum) winningShots.push(n);
-                  }
-                  if (winningShots.length > 0) {
-                    // Win immediately on this delivery!
-                    const pick = winningShots.includes(need) ? need : winningShots[0];
-                    STATE.masterBotRecentPicks.push(pick);
-                    return pick;
-                  }
-                  // If need is 10 and userNum is 10, hit 9 so need becomes 1 (won on next ball)
-                  const safeCloser = [9, 8, 7].find(n => n !== userNum) || 8;
-                  STATE.masterBotRecentPicks.push(safeCloser);
-                  return safeCloser;
-                }
-              }
-
-              // In 1st Innings: Bot sets a dominating target of 65-75 runs.
-              // Once it has scored 65+ runs and faced at least 7 balls, conclude innings on userNum
-              if (STATE.currentInnings === 1 && (STATE.aiScore || 0) >= 65 && (STATE.aiBalls || 0) >= 7) {
-                STATE.masterBotRecentPicks.push(userNum);
-                return userNum; // Innings declared with 65-75 runs! User will be bowled out in 1-2 balls in Innings 2!
-              }
-
-              // Natural, varied, high-scoring boundary selection (NO 10 or 9 repetitive loop!)
-              // Candidate high-scoring runs:
-              let candidates = [10, 8, 7, 9, 6, 5, 4].filter(n => n !== userNum && n !== STATE.lastAiNum);
-
-              // Check recent picks to prevent 10/9 ping-pong:
-              const rec = STATE.masterBotRecentPicks;
-              const rLen = rec.length;
-              if (rLen >= 2 && rec[rLen - 1] >= 9 && rec[rLen - 2] >= 9) {
-                // If last two were 9 or 10, exclude both 9 and 10 to force 8, 7, 6, or 5!
-                const nonTenNine = candidates.filter(n => n < 9);
-                if (nonTenNine.length > 0) {
-                  candidates = nonTenNine;
-                }
-              }
-
-              // Variety selection among top available candidates
-              let chosen;
-              if (candidates.length >= 3) {
-                // Randomly pick among the top 3 available numbers (e.g. mix of 8, 7, 10 or 7, 6, 8)
-                const topPicks = candidates.slice(0, 3);
-                chosen = topPicks[Math.floor(Math.random() * topPicks.length)];
-              } else if (candidates.length > 0) {
-                chosen = candidates[0];
-              } else {
-                chosen = [8, 7, 6, 5, 4, 3, 2, 1].find(n => n !== userNum) || (userNum === 10 ? 8 : 10);
-              }
-
-              STATE.masterBotRecentPicks.push(chosen);
-              if (STATE.masterBotRecentPicks.length > 10) {
-                STATE.masterBotRecentPicks.shift();
-              }
-              return chosen;
-            }
-          }
-
-          // Fallback if userNum not provided
-          return !isBotBatting ? (rankedUserNums[0] || 7) : 8;
-        }
-
-        // Default fallback
         return randomInt1To10();
       }
 
@@ -1830,6 +1740,12 @@
         const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
         if (eventType === 'TOSS') {
+          if (style === 'ROAST') {
+            return {
+              tag: '💀 ROAST TOSS',
+              quote: `"${ctx.p1} threw ${ctx.u} and ${ctx.p2} threw ${ctx.a} (Sum: ${ctx.sum}). ${ctx.winner} wins the toss — let's see who embarrasses themselves first at the crease!"`
+            };
+          }
           if (style === 'TACTICAL') {
             return {
               tag: 'TOSS ANALYSIS',
@@ -1843,11 +1759,43 @@
         }
 
         if (eventType === 'WICKET') {
-          if (STATE.botDifficulty === 'WALL') {
+          if (style === 'ROAST') {
+            const duckRoasts = [
+              `"🦆 GOLDEN DUCK HUMILIATION! ${ctx.batter} walked in, threw ${ctx.u}, and speedran straight back to the pavilion for ZERO runs! Even the scoreboard operator is laughing!"`,
+              `"💀 0 RUNS?! ${ctx.batter} spent more time walking to the crease than actually batting! Read like a toddler's picture book by ${ctx.bowler} on ${ctx.u}!"`,
+              `"🤡 CERTIFIED DUCK! ${ctx.batter} really thought ${ctx.u} was a 200-IQ opening move and got deleted for 0! Pack your bags and don't look back!"`
+            ];
+            const lowScoreRoasts = [
+              `"💀 ABSOLUTE EMBARRASSMENT ON ${ctx.u}! ${ctx.batter} scraped together a pitiful ${ctx.score} runs before ${ctx.bowler} exposed that predictable pattern!"`,
+              `"😂 BLINK AND YOU MISSED IT! ${ctx.batter} lasted ${ctx.balls} ball${ctx.balls === 1 ? '' : 's'} for a measly ${ctx.score} runs! ${ctx.bowler} didn't even break a sweat on ${ctx.u}!"`,
+              `"🤡 CAUGHT IN 4K ON ${ctx.u}! ${ctx.batter} telegraphed that shot from a mile away! Dismissed for ${ctx.score} — walk of shame back to the dugout!"`
+            ];
+            const generalRoasts = [
+              `"💀 SAVAGE HUMILIATION ON ${ctx.u}! ${ctx.bowler} lived rent-free inside ${ctx.batter}'s head and sent them packing for ${ctx.score}! That dismissal goes straight to the blooper reel!"`,
+              `"🪦 RIP INNINGS! ${ctx.batter} really flashed ${ctx.u} right into ${ctx.bowler}'s obvious trap! Out for ${ctx.score} — somebody check if their controller disconnected!"`,
+              `"💀 COOKED AT THE CREASE! ${ctx.bowler} read ${ctx.batter}'s ${ctx.u} like morning newspaper! Out for ${ctx.score} in ${ctx.balls} balls — pure humiliation!"`,
+              `"🤡 FREE WICKET DELIVERY! ${ctx.batter} gift-wrapped ${ctx.u} with a ribbon on top for ${ctx.bowler}! Sent back to the pavilion on ${ctx.score}!"`
+            ];
+            const roastQuote = ctx.score === 0
+              ? pick(duckRoasts)
+              : (ctx.score < 15 ? pick(lowScoreRoasts) : pick(generalRoasts));
             return {
-              tag: '🔮 ORACLE FORESIGHT!',
-              quote: `"MIND-READING DISMISSAL! Master Oracle predicted ${ctx.batter}'s exact next move of ${ctx.u} before the hand was even thrown! Clean bowled — completely unbeatable!"`
+              tag: ctx.score === 0 ? '🦆 DUCK ROAST!' : '💀 ROASTED & HUMILIATED!',
+              quote: roastQuote
             };
+          }
+          if (STATE.botDifficulty === 'WALL') {
+            if (ctx.bowler === 'AI' || ctx.bowler === 'Apex Oracle' || ctx.bowler === 'Apex Grandmaster' || ctx.batter === 'YOU' || (typeof getP1Label === 'function' && ctx.batter === getP1Label())) {
+              return {
+                tag: '🔮 GRANDMASTER READ!',
+                quote: `"TACTICAL MASTERCLASS! Master Bot anticipated ${ctx.batter}'s shot pattern and delivered ${ctx.u}! Clean bowled by pure prediction!"`
+              };
+            } else {
+              return {
+                tag: '💥 MASSIVE BREAKTHROUGH!',
+                quote: `"UNBELIEVABLE BOWLING! ${ctx.bowler} outsmarted Master Bot on ${ctx.u}! The Grandmaster is clean bowled for ${ctx.score}!"`
+              };
+            }
           }
           const hypeWickets = [
             `"HOWZAT?! CLEAN BOWLED ON ${ctx.u}! ${ctx.bowler} read ${ctx.batter}'s mind like an open book! The stumps go cartwheeling!"`,
@@ -1868,8 +1816,8 @@
           const r = ctx.runs;
           if (STATE.botDifficulty === 'WALL' && STATE.currentBatter === 'AI') {
             return {
-              tag: `🔮 ORACLE EVASION +${r}`,
-              quote: `"UNBEATABLE FORESIGHT! Master Oracle predicted ${ctx.bowler}'s delivery (${ctx.bowlerNum}) in advance, effortlessly evading the wicket and smashing +${r} runs!"`
+              tag: `⚡ MASTER STROKE +${r}`,
+              quote: `"SUPERB TIMING! Master Bot reads the field, avoids the trap, and crunches +${r} runs through the gap!"`
             };
           }
           const diff = Math.abs(ctx.u - ctx.a);
@@ -2390,21 +2338,6 @@
         }
         stopTurnTimer();
         let aiNum = randomInt1To10();
-        if (STATE.botDifficulty === 'WALL') {
-          // Master Oracle foresight: predicts user's toss call & hand to win the toss
-          const userCall = STATE.tossCall || 'ODD';
-          const wantSumEven = userCall === 'ODD';
-          const candidateOdds = [1, 3, 5, 7, 9];
-          const candidateEvens = [2, 4, 6, 8, 10];
-          const isUserNumEven = userNum % 2 === 0;
-          if (wantSumEven) {
-            const pool = isUserNumEven ? candidateEvens : candidateOdds;
-            aiNum = pool[Math.floor(Math.random() * pool.length)];
-          } else {
-            const pool = isUserNumEven ? candidateOdds : candidateEvens;
-            aiNum = pool[Math.floor(Math.random() * pool.length)];
-          }
-        }
         resolveTossNumbers(userNum, aiNum);
       }
 
@@ -2466,7 +2399,7 @@
           STATE.lastOutcomeText = `${p2} Won Toss! ${userNum} + ${aiNum} = ${sum} (${sumParity})`;
           triggerCanvasReveal(`${p2.toUpperCase()} WON TOSS!`, `Sum is ${sum} (${sumParity}) — ${p2} chooses Bat or Bowl`, '#38bdf8', true);
         } else {
-          const aiChoosesBat = STATE.botDifficulty === 'WALL' ? true : (Math.random() < 0.5);
+          const aiChoosesBat = Math.random() < 0.6;
           STATE.firstBatter = aiChoosesBat ? 'AI' : 'USER';
           SoundFX.click();
           STATE.lastOutcomeText = `${p2} Won Toss (${userNum} + ${aiNum} = ${sum}) & chose to ${aiChoosesBat ? 'BAT' : 'BOWL'} first!`;
@@ -2537,8 +2470,10 @@
           return;
         }
         const isBotBatting = STATE.currentBatter === 'AI';
-        const botNum = generateBotNumber(isBotBatting, userNum);
+        const botNum = generateBotNumber(isBotBatting);
         STATE.userNumHistory.push(userNum);
+        const roleKey = isBotBatting ? 'userBowlingHistory' : 'userBattingHistory';
+        (STATE[roleKey] ||= []).push(userNum);
         resolveGameplayNumbers(userNum, botNum);
       }
 
@@ -2606,15 +2541,22 @@
               true
             );
           } else {
-            // End of 2nd Innings -> Chasing side is All Out before reaching target! Defending side wins!
-            const defendingWinner = isUserBatting ? 'AI' : 'USER';
-            const runsShort = STATE.target - (isUserBatting ? STATE.userScore : STATE.aiScore) - 1;
-            finishMatch(
-              defendingWinner,
-              runsShort === 0
-                ? `What a thriller! Matched on ${userNum} with scores level — ${defendingWinner === 'USER' ? 'You defended' : 'AI defended'} the target of ${STATE.target} by 1 run!`
-                : `OUT on ${userNum}! ${defendingWinner === 'USER' ? 'You bowled out the AI' : 'AI bowled you out'} and won by ${runsShort} run${runsShort === 1 ? '' : 's'}!`
-            );
+            const firstInningsScore = STATE.target - 1;
+            const secondInningsScore = isUserBatting ? STATE.userScore : STATE.aiScore;
+            const runsShort = firstInningsScore - secondInningsScore;
+            if (runsShort === 0) {
+              // Match drawn! Both sides bowled out on the exact same score
+              finishMatch(
+                'DRAW',
+                `🤝 What a thriller! Both players were bowled out on ${firstInningsScore} runs (${firstInningsScore} vs ${secondInningsScore}) — Match is Drawn!`
+              );
+            } else {
+              const defendingWinner = isUserBatting ? 'AI' : 'USER';
+              finishMatch(
+                defendingWinner,
+                `OUT on ${userNum}! ${defendingWinner === 'USER' ? 'You bowled out the AI' : 'AI bowled you out'} and won by ${runsShort} run${runsShort === 1 ? '' : 's'}!`
+              );
+            }
           }
 
           renderAll();
@@ -2730,58 +2672,94 @@
         const p1 = getP1Label();
         const p2 = getP2Label();
         const mpMatch = isMultiplayer();
+        const isDraw = (winner === 'DRAW');
 
         if (mpMatch) {
           const p1Rec = ensureHumanPlayerRecord(p1, STATE.eloRating);
           const p2Rec = ensureHumanPlayerRecord(p2, STATE.friendEloRating);
 
-          const p1Delta = winner === 'USER' ? 8 : -8;
-          const p2Delta = winner === 'USER' ? -8 : 8;
+          if (isDraw) {
+            p1Rec.matches += 1;
+            p2Rec.matches += 1;
+            STATE.lastEloDelta = 0;
+            STATE.eloHistory.unshift({
+              id: Date.now() + Math.random(),
+              opponent: p2,
+              p1Name: p1,
+              mode: STATE.mode === 'ONLINE_2P' ? 'Online Multiplayer' : '2P Multiplayer',
+              result: 'DRAW',
+              delta: '0',
+              newElo: STATE.eloRating,
+              friendDelta: '0',
+              friendNewElo: STATE.friendEloRating
+            });
+            STATE.winMarginText = `${marginDescription} • Multiplayer: Match Drawn (Ratings Unchanged: ${STATE.eloRating} ELO)`;
+            STATE.lastOutcomeText = `🤝 Match Drawn! (${STATE.eloRating} ELO unchanged)`;
+          } else {
+            const p1Delta = winner === 'USER' ? 8 : -8;
+            const p2Delta = winner === 'USER' ? -8 : 8;
 
-          const prevP1Elo = p1Rec.elo;
-          p1Rec.elo = Math.max(100, p1Rec.elo + p1Delta);
-          if (p1Rec.elo > p1Rec.peak) p1Rec.peak = p1Rec.elo;
-          p1Rec.matches += 1;
-          if (winner === 'USER') p1Rec.wins += 1;
-          else p1Rec.losses += 1;
+            const prevP1Elo = p1Rec.elo;
+            p1Rec.elo = Math.max(100, p1Rec.elo + p1Delta);
+            if (p1Rec.elo > p1Rec.peak) p1Rec.peak = p1Rec.elo;
+            p1Rec.matches += 1;
+            if (winner === 'USER') p1Rec.wins += 1;
+            else p1Rec.losses += 1;
 
-          p2Rec.elo = Math.max(100, p2Rec.elo + p2Delta);
-          if (p2Rec.elo > p2Rec.peak) p2Rec.peak = p2Rec.elo;
-          p2Rec.matches += 1;
-          if (winner === 'AI') p2Rec.wins += 1;
-          else p2Rec.losses += 1;
+            p2Rec.elo = Math.max(100, p2Rec.elo + p2Delta);
+            if (p2Rec.elo > p2Rec.peak) p2Rec.peak = p2Rec.elo;
+            p2Rec.matches += 1;
+            if (winner === 'AI') p2Rec.wins += 1;
+            else p2Rec.losses += 1;
 
-          STATE.eloRating = p1Rec.elo;
-          STATE.peakElo = p1Rec.peak;
-          STATE.friendEloRating = p2Rec.elo;
-          STATE.lastEloDelta = p1Delta;
+            STATE.eloRating = p1Rec.elo;
+            STATE.peakElo = p1Rec.peak;
+            STATE.friendEloRating = p2Rec.elo;
+            STATE.lastEloDelta = p1Delta;
 
-          const eloSign = p1Delta > 0 ? `+${p1Delta}` : `${p1Delta}`;
-          const p2Sign = p2Delta > 0 ? `+${p2Delta}` : `${p2Delta}`;
+            const eloSign = p1Delta > 0 ? `+${p1Delta}` : `${p1Delta}`;
+            const p2Sign = p2Delta > 0 ? `+${p2Delta}` : `${p2Delta}`;
 
-          STATE.eloHistory.unshift({
-            id: Date.now() + Math.random(),
-            opponent: p2,
-            p1Name: p1,
-            mode: STATE.mode === 'ONLINE_2P' ? 'Online Multiplayer' : '2P Multiplayer',
-            result: winner === 'USER' ? 'WIN' : 'LOSS',
-            delta: eloSign,
-            newElo: STATE.eloRating,
-            friendDelta: p2Sign,
-            friendNewElo: STATE.friendEloRating
-          });
+            STATE.eloHistory.unshift({
+              id: Date.now() + Math.random(),
+              opponent: p2,
+              p1Name: p1,
+              mode: STATE.mode === 'ONLINE_2P' ? 'Online Multiplayer' : '2P Multiplayer',
+              result: winner === 'USER' ? 'WIN' : 'LOSS',
+              delta: eloSign,
+              newElo: STATE.eloRating,
+              friendDelta: p2Sign,
+              friendNewElo: STATE.friendEloRating
+            });
 
-          STATE.winMarginText = `${marginDescription} •Multiplayer Elo: ${p1} ${prevP1Elo} → ${STATE.eloRating} (${eloSign}), ${p2} → ${STATE.friendEloRating} (${p2Sign})`;
-          STATE.lastOutcomeText = winner === 'USER'
-            ? `🏆 ${p1} Wins! (${eloSign} ELO → ${STATE.eloRating})`
-            : `🏆 ${p2} Wins! (${p2Sign} ELO → ${STATE.friendEloRating})`;
+            STATE.winMarginText = `${marginDescription} •Multiplayer Elo: ${p1} ${prevP1Elo} → ${STATE.eloRating} (${eloSign}), ${p2} → ${STATE.friendEloRating} (${p2Sign})`;
+            STATE.lastOutcomeText = winner === 'USER'
+              ? `🏆 ${p1} Wins! (${eloSign} ELO → ${STATE.eloRating})`
+              : `🏆 ${p2} Wins! (${p2Sign} ELO → ${STATE.friendEloRating})`;
+          }
         } else {
           STATE.winMarginText = marginDescription;
-          STATE.lastOutcomeText = winner === 'USER' ? `VICTORY! You defeated ${p2}!` : `${p2} won the match!`;
+          if (isDraw) {
+            STATE.eloHistory.unshift({
+              id: Date.now() + Math.random(),
+              opponent: p2,
+              p1Name: p1,
+              mode: 'vs Bot (Rating Frozen)',
+              result: 'DRAW',
+              delta: 'FROZEN',
+              newElo: STATE.eloRating
+            });
+            STATE.lastOutcomeText = `🤝 Match Drawn vs ${p2}! (Ratings Frozen: ${STATE.eloRating} ELO)`;
+          } else {
+            STATE.lastOutcomeText = winner === 'USER' ? `VICTORY! You defeated ${p2}!` : `${p2} won the match!`;
+          }
         }
 
         STATE.sessionStats.matches += 1;
-        if (winner === 'USER') {
+        if (isDraw) {
+          SoundFX.runScored(6);
+          triggerCanvasReveal('MATCH DRAWN! 🤝', STATE.winMarginText, '#f59e0b', true);
+        } else if (winner === 'USER') {
           STATE.sessionStats.userWins += 1;
           SoundFX.victory();
           triggerCanvasReveal(`${p1.toUpperCase()} WINS! 🏆`, STATE.winMarginText, '#81b64c', true);
@@ -2794,11 +2772,11 @@
 
         STATE.history.unshift({
           id: Date.now() + Math.random(),
-          tag: isTimeoutForfeit ? 'TIMEOUT' : 'RESULT',
-          title: winner === 'USER' ? `🏆 ${p1.toUpperCase()} WON THE MATCH!` : `🏆 ${p2.toUpperCase()} WON THE MATCH!`,
+          tag: isTimeoutForfeit ? 'TIMEOUT' : (isDraw ? 'DRAW' : 'RESULT'),
+          title: isDraw ? `🤝 MATCH DRAWN (${p1} vs ${p2})` : (winner === 'USER' ? `🏆 ${p1.toUpperCase()} WON THE MATCH!` : `🏆 ${p2.toUpperCase()} WON THE MATCH!`),
           detail: STATE.winMarginText,
-          badge: 'FINAL',
-          badgeColor: winner === 'USER' ? 'emerald' : 'rose'
+          badge: isDraw ? 'DRAW' : 'FINAL',
+          badgeColor: isDraw ? 'amber' : (winner === 'USER' ? 'emerald' : 'rose')
         });
       }
 
@@ -2836,6 +2814,8 @@
         STATE.history = [];
         STATE.currentStreak = 0;
         STATE.userNumHistory = [];
+        STATE.userBattingHistory = [];
+        STATE.userBowlingHistory = [];
         STATE.liveBroadcastQuote = `"New match underway! ${getP1Label()} vs ${getP2Label()} — step up to the toss and make your call!"`;
         STATE.liveExcitementLabel = 'FRESH MATCH';
 
@@ -2870,7 +2850,7 @@
           ? `<span>👥</span><span>${p2Name}</span>`
           : `<span>${botProf.icon}</span><span>${botProf.name}</span>`;
 
-        const styleNames = { HYPE: '🎙️ Hype Broadcast', TACTICAL: '🧠 Tactical Analyst', CLASSIC: '📻 Classic Feed' };
+        const styleNames = { HYPE: '🎙️ Hype Broadcast', TACTICAL: '🧠 Tactical Analyst', CLASSIC: '📻 Classic Feed', ROAST: '💀 Roast Broadcast' };
         el.sidebarCommentaryStyleBadge.textContent = styleNames[STATE.commentaryStyle] || styleNames.HYPE;
         el.commentaryMoodChip.textContent = STATE.commentaryStyle + ' MODE';
 
@@ -3709,7 +3689,7 @@
         el.cardQuickMp.addEventListener('click', () => switchCenterScreen('MP_SETUP'));
         el.cardQuickCommentary.addEventListener('click', () => {
           SoundFX.click();
-          const order = ['HYPE', 'TACTICAL', 'CLASSIC'];
+          const order = ['HYPE', 'TACTICAL', 'CLASSIC', 'ROAST'];
           const next = order[(order.indexOf(STATE.commentaryStyle) + 1) % order.length];
           STATE.commentaryStyle = next;
           el.botSetupCommentaryStyle.value = next;
