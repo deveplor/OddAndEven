@@ -1432,7 +1432,7 @@
         }
       }
 
-      // BRIDGE: core + best-effort anonymous session + cloud account sync. Every step is time-boxed
+      // BRIDGE: restore the explicit identity and sync public account data. Every step is time-boxed
       // so a slow/blocked Firestore can never hang the UI.
       function initFirebaseAuthBridge() {
         if (fbInitPromise) return fbInitPromise;
@@ -1443,21 +1443,8 @@
             if (typeof fbAuth.authStateReady === 'function') await withTimeout(fbAuth.authStateReady(), 1200, 'auth-ready-timeout');
           } catch (e) {}
 
-          if (!fbAuth.currentUser && !googleFlowActive && !authBusy) {
-            try {
-              const authMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
-              if (!fbAuth.currentUser && !googleFlowActive && !authBusy) {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                  await withTimeout(authMod.signInWithCustomToken(fbAuth, __initial_auth_token), 1500, 'anon-timeout');
-                } else {
-                  await withTimeout(authMod.signInAnonymously(fbAuth), 1500, 'anon-timeout');
-                }
-              }
-            } catch (e) {
-              console.warn('Anonymous session unavailable (continuing)', e);
-            }
-          }
-
+          // Public account reads do not need an anonymous login. Starting one in
+          // the background can overwrite an explicit sign-in that finishes first.
           fbUser = fbAuth.currentUser || null;
           try {
             // Flush any pending account deletions first so removed accounts are 100% deleted from artifacts/accounts & artifacts/leaderboard
@@ -1506,7 +1493,8 @@
           if (!isNewSignup || error.code !== 'auth/email-already-in-use') throw error;
           credential = await fbSignInWithEmailAndPassword(fbAuth, authEmail, authPassword);
         }
-        if (fbUpdateProfile) await fbUpdateProfile(credential.user, { displayName: clean });
+        // A cosmetic display-name update must not invalidate a successful sign-in.
+        if (fbUpdateProfile) await fbUpdateProfile(credential.user, { displayName: clean }).catch(() => {});
         return credential.user;
       }
 
@@ -1926,8 +1914,19 @@
 
       async function finalizePlayerSession(activeProf) {
         const uname = String(activeProf.username || '').trim().toUpperCase();
+        // Authenticate before saving a session or navigating. A local PIN match is
+        // not proof of a Firebase session, and navigation cancels pending requests.
+        const isGoogle = activeProf.authProvider === 'google' || Boolean(activeProf.googleUid);
+        const authUser = isGoogle ? fbAuth.currentUser : await ensureUserRegisteredInFirebaseAuth(
+          uname, activeProf.pin5 || el.inputAuthPin5.value, false
+        );
+        if (!authUser || authUser.isAnonymous || (isGoogle && authUser.uid !== activeProf.googleUid)) {
+          throw Object.assign(new Error('Please sign in again.'), { code: 'auth/invalid-credential' });
+        }
+        activeProf.firebaseUid = authUser.uid;
         const sessObj = {
           username: uname,
+          firebaseUid: authUser.uid,
           countryCode: activeProf.countryCode || '+91',
           countryName: activeProf.countryName || 'India',
           countryFlag: activeProf.countryFlag || '🇮🇳',
@@ -1943,7 +1942,9 @@
           localStorage.removeItem(SIGNED_OUT_FLAG_KEY);
           localStorage.setItem('oddandeven_just_logged_in', '1');
           localStorage.setItem('oddandeven_last_user_v1', uname);
-        } catch (e) {}
+        } catch (e) {
+          throw Object.assign(new Error('Session storage is unavailable'), { code: 'storage-unavailable' });
+        }
 
         const worldMap = loadWorldwidePlayersMap();
         if (!worldMap[uname]) {
@@ -2036,50 +2037,10 @@
           localStorage.setItem('hc_arena_elo_v2', JSON.stringify(desktopObj));
         } catch (e) {}
 
-        if (activeProf.authProvider === 'google' || activeProf.googleUid) {
-          await withTimeout(Promise.allSettled([
-            pushAccountToFirebase(activeProf, fbAuth.currentUser),
-            pushLeaderboardSeedToFirebase(uname, activeProf)
-          ]), 6000, 'profile-sync-timeout').catch(() => {});
-          navigateToHandCricketArena('?from=login&screen=PITCH');
-          return;
-        }
-        const rawPin = activeProf.pin5 || (el.inputAuthPin5 ? el.inputAuthPin5.value : '');
-        try {
-          localStorage.setItem('oddandeven_pending_cloud_sync_v1', JSON.stringify(Object.assign({}, activeProf, {
-            username: uname,
-            pin5: rawPin,
-            isNewSignup: false,
-            queuedAt: Date.now()
-          })));
-        } catch (e) {}
-
-        // The Firebase SDK owns authentication; do not race it with REST sign-up.
-
-        // 2. Run SDK Auth + Firestore write in parallel with a fast 400ms max bound so redirect is instant
-        const sdkSyncTask = (async () => {
-          try {
-            const authUser = await ensureUserRegisteredInFirebaseAuth(uname, rawPin, false);
-            if (authUser && authUser.uid) {
-              activeProf.firebaseUid = authUser.uid;
-              sessObj.firebaseUid = authUser.uid;
-              try {
-                localStorage.setItem(SESSION_STORAGE_KEY, encryptPayload(sessObj));
-                sessionStorage.setItem(SESSION_STORAGE_KEY, encryptPayload(sessObj));
-              } catch (e) {}
-            }
-            await Promise.allSettled([
-              pushAccountToFirebase(activeProf, authUser),
-              pushLeaderboardSeedToFirebase(uname, activeProf)
-            ]);
-          } catch (e) {}
-        })();
-
-        await Promise.race([
-          sdkSyncTask,
-          new Promise((resolve) => setTimeout(resolve, 400))
-        ]);
-
+        await withTimeout(Promise.allSettled([
+          pushAccountToFirebase(activeProf, authUser),
+          pushLeaderboardSeedToFirebase(uname, activeProf)
+        ]), 6000, 'profile-sync-timeout').catch(() => {});
         navigateToHandCricketArena('?from=login&screen=PITCH');
       }
 
@@ -2133,6 +2094,53 @@
         if (el.btnSubmitAuth) el.btnSubmitAuth.disabled = busy;
         [el.tabAuthLogin, el.tabAuthSignup].forEach(button => { if (button) button.disabled = busy; });
         if (el.btnSubmitAuth) el.btnSubmitAuth.setAttribute('aria-busy', String(busy));
+      }
+
+      function authErrorMessage(error, provider = 'PIN') {
+        const code = error && error.code || '';
+        const detail = JSON.stringify(error && error.customData || {}) + ' ' + String(error && error.message || '');
+        if (/API_KEY_SERVICE_BLOCKED|Requests to this API.*blocked/i.test(detail)) {
+          return 'Sign-in is temporarily unavailable because the website authentication service is misconfigured. Please contact support.';
+        }
+        if (/API_KEY_HTTP_REFERRER_BLOCKED|Requests from referer.*blocked/i.test(detail) || code === 'auth/app-not-authorized') {
+          return 'Sign-in is not enabled for this website address. Please contact support.';
+        }
+        if (/API_KEY_INVALID|API key expired/i.test(detail) || code === 'auth/invalid-api-key') {
+          return 'The website authentication configuration needs updating. Please contact support.';
+        }
+        if (code === 'username-taken') return 'Username already created';
+        if (code === 'auth/email-already-in-use') return 'This username is already registered. Choose Login.';
+        if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-login-credentials'].includes(code)) {
+          return 'Username or password is wrong. If your signup was interrupted, retry Sign Up with the same username and PIN.';
+        }
+        if (code === 'auth/operation-not-allowed') return provider + ' sign-in is not enabled for this website. Please contact support.';
+        if (code === 'auth/too-many-requests') return 'Too many sign-in attempts. Please wait a few minutes and try again.';
+        if (code === 'auth/user-disabled') return 'This account has been disabled. Please contact support.';
+        if (code === 'permission-denied' || code === 'firestore/permission-denied') {
+          return 'The server denied access to your account profile. Please contact support; this is not an internet connection problem.';
+        }
+        if (code === 'storage-unavailable') return 'Your browser could not save the login. Enable site storage and try again.';
+        if (/timeout|unavailable/.test(code || detail)) return 'The account service did not respond in time. Please retry; an interrupted signup can be resumed with the same details.';
+        if (code === 'auth/network-request-failed') return 'Could not reach the sign-in service. Check your connection or browser blockers and retry.';
+        return provider === 'Google' ? googleErrorMessage(error) : 'Could not verify this account online. Please retry.';
+      }
+
+      async function describeAuthError(error, provider) {
+        // Firebase may collapse a backend 403 into network-request-failed. This
+        // read-only config request distinguishes a blocked API from lost internet.
+        if (['auth/network-request-failed', 'auth/internal-error'].includes(error && error.code)) {
+          try {
+            const response = await withTimeout(fetch('https://identitytoolkit.googleapis.com/v1/projects?key=' + encodeURIComponent(FIREBASE_CONFIG.apiKey)), 5000, 'diagnostic-timeout');
+            if (!response.ok) {
+              const body = await response.json();
+              const detail = JSON.stringify(body.error || {});
+              if (/API_KEY_SERVICE_BLOCKED|API_KEY_HTTP_REFERRER_BLOCKED|API_KEY_INVALID/.test(detail)) {
+                return authErrorMessage({ message: detail }, provider);
+              }
+            }
+          } catch (_) {}
+        }
+        return authErrorMessage(error, provider);
       }
 
       function googleErrorMessage(e) {
@@ -2205,6 +2213,7 @@
             }
           }
         }
+        if (localCandidate && localCandidate.googleUid !== googleUid) localCandidate = null;
         if (localCandidate && localCandidate.username) {
           const cleanLocal = String(localCandidate.username).trim().toUpperCase();
           if (purgedLocal.includes(cleanLocal) && !isRecentSignup(cleanLocal)) {
@@ -2277,6 +2286,7 @@
             }
 
             const a = (inA1 ? accSnap1.data() : null) || (inA2 ? accSnap2.data() : null) || profData || localCandidate || {};
+            if ((inA1 || inA2) && a.googleUid !== googleUid) throw Object.assign(new Error('Account ownership mismatch'), { code: 'username-taken' });
             const resolvedAcct = {
               username: candidateUname,
               countryCode: a.countryCode || (profData && profData.countryCode) || (localCandidate && localCandidate.countryCode) || '+91',
@@ -2291,7 +2301,8 @@
             saveGoogleUidMapEntry(googleUid, googleEmail, resolvedAcct);
             return resolvedAcct;
           } catch (e) {
-            if (localCandidate) return localCandidate;
+            if (e.code === 'username-taken') throw e;
+            if (localCandidate && localCandidate.googleUid === googleUid) return localCandidate;
           }
         }
 
@@ -2303,9 +2314,10 @@
           const q2 = (fbQueryFn && fbWhereFn) ? fbQueryFn(colRef2, fbWhereFn('googleUid', '==', googleUid)) : colRef2;
           const [s1, s2] = await withTimeout(
             Promise.allSettled([fbGetDocs(q1), fbGetDocs(q2)]),
-            3000,
+            12000,
             'query-lookup-timeout'
           );
+          if (s1.status !== 'fulfilled') throw s1.reason;
           let found = null;
           const inspectSnap = (res) => {
             if (!res || res.status !== 'fulfilled' || !res.value) return;
@@ -2336,9 +2348,12 @@
             saveGoogleUidMapEntry(googleUid, googleEmail, found);
             return found;
           }
-        } catch (e) {}
+        } catch (e) {
+          if (localCandidate && localCandidate.googleUid === googleUid) return localCandidate;
+          throw e;
+        }
 
-        return localCandidate || null; // null => genuinely first-time Google user
+        return localCandidate || null; // null only after a successful canonical lookup
       }
 
       // Best-effort: refresh lastLoginAt (and backfill the private profile for legacy accounts).
@@ -2459,73 +2474,45 @@
         return null;
       }
 
-      // Atomically claims the username + country code in Firestore and stores the user's private profile.
+      // Commit the username and UID lookup together; retrying the same UID is safe.
       async function reserveGoogleUsername(name, gUser, country) {
         const local = loadEncryptedUsersMap()[name];
-        if (local && (local.googleUid !== gUser.uid || !local.googleUid)) {
+        const cached = local || (cloudAuthoritativeAccounts && cloudAuthoritativeAccounts[name]);
+        if (cached && cached.googleUid !== gUser.uid) {
           return { ok: false, error: 'Username already created' };
-        }
-        if (cloudAuthoritativeAccounts && cloudAuthoritativeAccounts[name]) {
-          const ca = cloudAuthoritativeAccounts[name];
-          if (ca.googleUid !== gUser.uid || !ca.googleUid) {
-            return { ok: false, error: 'Username already created' };
-          }
         }
         const createdAt = new Date().toISOString();
         const accountPayload = {
-          username: name,
-          countryCode: country.dial,
-          countryName: country.cName,
-          countryFlag: country.cFlag,
-          encryptedAuth: null,
-          googleUid: gUser.uid,
-          googleEmail: null,
-          authProvider: 'google',
-          createdAt: createdAt,
-          migratedAt: Date.now()
+          username: name, countryCode: country.dial, countryName: country.cName,
+          countryFlag: country.cFlag, encryptedAuth: null, googleUid: gUser.uid,
+          firebaseUid: gUser.uid, googleEmail: null, authProvider: 'google',
+          createdAt, updatedAt: Date.now()
         };
-
-        await ensureFirebaseReady(800);
-        if (fbReady && fbDb) {
-          try {
-            const taken = await usernameIsTaken(name, gUser.uid);
-            if (taken) {
-              return { ok: false, error: 'Username already created' };
+        try {
+          if (!await ensureFirebaseReady(12000)) throw new Error('cloud-unavailable');
+          await withTimeout(fbRunTransaction(fbDb, async transaction => {
+            const accountRef = fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', name);
+            const snapshot = await transaction.get(accountRef);
+            if (snapshot.exists() && snapshot.data().googleUid !== gUser.uid) {
+              throw Object.assign(new Error('Username already created'), { code: 'username-taken' });
             }
-            const profilePayload = {
-              uid: gUser.uid,
-              username: name,
-              email: gUser.email || null,
-              emailVerified: Boolean(gUser.emailVerified),
-              displayName: gUser.displayName || null,
-              photoURL: gUser.photoURL || null,
-              countryCode: country.dial,
-              countryName: country.cName,
-              countryFlag: country.cFlag,
-              authProvider: 'google',
-              createdAt: createdAt,
-              lastLoginAt: createdAt
-            };
-            await withTimeout(
-              Promise.allSettled([
-                fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'public', 'data', 'accounts', name), accountPayload, { merge: true }),
-                fbSetDoc(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), profilePayload, { merge: true }),
-                pushLeaderboardSeedToFirebase(name, accountPayload)
-              ]),
-              2500,
-              'reserve-google-timeout'
-            );
-          } catch (e) {
-            if (e && e.code === 'username-taken') return { ok: false, error: 'Username already created' };
-            console.warn('Cloud reservation notice (continuing with local + background sync):', e);
-          }
+            if (snapshot.exists()) accountPayload.createdAt = snapshot.data().createdAt || createdAt;
+            transaction.set(accountRef, accountPayload, { merge: true });
+            transaction.set(fbDoc(fbDb, 'artifacts', FIREBASE_APP_ID, 'users', gUser.uid, 'profile', 'main'), {
+              uid: gUser.uid, username: name, authProvider: 'google',
+              countryCode: country.dial, countryName: country.cName, countryFlag: country.cFlag,
+              createdAt: accountPayload.createdAt, lastLoginAt: createdAt
+            }, { merge: true });
+          }), 15000, 'profile-save-timeout');
+          saveGoogleUidMapEntry(gUser.uid, gUser.email, accountPayload);
+          return { ok: true };
+        } catch (error) {
+          return { ok: false, error: await describeAuthError(error, 'Google') };
         }
-        saveGoogleUidMapEntry(gUser.uid, gUser.email, accountPayload);
-        return { ok: true };
       }
 
       function chooseGoogleUsername(suggestion, gUser, initialCountry) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           const modal = document.getElementById('usernameModal');
           const input = document.getElementById('inputChooseUsername');
           const countrySelect = document.getElementById('selectGoogleCountry');
@@ -2533,8 +2520,8 @@
           const errEl = document.getElementById('usernameModalError');
           const btnOk = document.getElementById('btnUsernameConfirm');
           const btnCancel = document.getElementById('btnUsernameCancel');
-          if (!modal || !input || !btnOk || !btnCancel) {
-            resolve({ username: suggestion, country: initialCountry || readCountrySelection() });
+          if (!modal || !input || !btnOk || !btnCancel || !errEl) {
+            reject(new Error('The signup form could not load. Reload the page and retry.'));
             return;
           }
 
@@ -2578,12 +2565,17 @@
             working = true;
             btnOk.disabled = true;
             btnOk.textContent = 'Saving Profile…';
-            const res = await reserveGoogleUsername(name, gUser, selectedCountry);
-            working = false;
-            btnOk.disabled = false;
-            btnOk.textContent = okLabel;
-            if (res.ok) close({ username: name, country: selectedCountry });
-            else errEl.textContent = res.error;
+            try {
+              const res = await reserveGoogleUsername(name, gUser, selectedCountry);
+              if (res.ok) close({ username: name, country: selectedCountry });
+              else errEl.textContent = res.error;
+            } catch (error) {
+              errEl.textContent = await describeAuthError(error, 'Google');
+            } finally {
+              working = false;
+              btnOk.disabled = false;
+              btnOk.textContent = okLabel;
+            }
           }
 
           input.value = clean(suggestion);
@@ -2645,7 +2637,7 @@
           if (e && e.code === 'popup-timeout') {
             showBanner('Google window did not respond. Allow popups for this site and try again.', false);
           } else {
-            showBanner(googleErrorMessage(e), (e && e.code) === 'auth/popup-closed-by-user');
+            showBanner(await describeAuthError(e, 'Google'), false);
           }
         } finally {
           googleFlowActive = false;
@@ -2669,7 +2661,7 @@
           if (fbRedirectError) {
             const err = fbRedirectError;
             fbRedirectError = null;
-            showBanner(googleErrorMessage(err), false);
+            showBanner(await describeAuthError(err, 'Google'), false);
             return;
           }
           const result = fbRedirectResult;
@@ -2678,7 +2670,7 @@
           await completeGoogleSignIn(result.user, sel);
         } catch (e) {
           console.warn('Redirect result handling error', e);
-          showBanner(googleErrorMessage(e), false);
+          showBanner(await describeAuthError(e, 'Google'), false);
         } finally {
           try { sessionStorage.removeItem(GOOGLE_PENDING_KEY); } catch (e) {}
           googleFlowActive = false;
@@ -2785,7 +2777,9 @@
               const snapPurgeArt = rPurgeArt && rPurgeArt.status === 'fulfilled' ? rPurgeArt.value : null;
               const snapPurgeRoot = rPurgeRoot && rPurgeRoot.status === 'fulfilled' ? rPurgeRoot.value : null;
 
-              accountLookupComplete = rArt.status === 'fulfilled' && rRoot.status === 'fulfilled';
+              // Root collections are legacy and may be disabled by Firestore rules.
+              accountLookupComplete = rArt.status === 'fulfilled';
+              if (!accountLookupComplete && !(snapRoot && snapRoot.exists())) throw rArt.reason;
               const inArt = Boolean(snapArt && snapArt.exists());
               const inRoot = Boolean(snapRoot && snapRoot.exists());
               const isPurgedInCloud = ((snapPurgeArt && snapPurgeArt.exists()) || (snapPurgeRoot && snapPurgeRoot.exists())) && !isRecentSignup(uname);
@@ -2817,7 +2811,7 @@
                 updateCloudSyncedColsForUser(uname, { artAcc: inArt, rootAcc: inRoot });
               }
             } catch (e) {
-              console.warn('Account lookup unavailable', e);
+              throw e;
             }
           }
 
@@ -2859,8 +2853,8 @@
               delete publicProfile.pin5;
               transaction.set(ref, publicProfile);
             });
-            const saved = await pushAccountToFirebase(profile, registered);
-            if (!saved) throw new Error('profile-save-failed');
+            // The transaction above is the authoritative save. Optional mirrors
+            // are refreshed after login and must not turn a committed signup into failure.
             stampRecentSignup(uname);
             unmarkAccountPurgedLocal(uname);
             unpurgeCloudAccount(uname).catch(() => {});
@@ -2899,7 +2893,7 @@
 
         } catch (e) {
           console.warn('Auth submit error', e);
-          showBanner(e.code === 'auth/email-already-in-use' ? 'This username is already registered. Choose Login.' : 'Could not finish signing in online. Check your connection and try again.', false);
+          showBanner(await describeAuthError(e, 'PIN'), false);
         } finally {
           setAuthBusy(false);
         }
@@ -2941,7 +2935,7 @@
         initFirebaseCore().then((ok) => { if (ok) checkRedirectResult(); });
 
         const usersMap = loadEncryptedUsersMap();
-        setMode('LOGIN');
+        setMode(params.get('mode') === 'signup' ? 'SIGNUP' : 'LOGIN');
 
         if (removedParam) {
           showBanner('Username not found! That account was removed. You can create it again in the Sign Up option.', false);

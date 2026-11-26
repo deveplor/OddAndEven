@@ -10595,6 +10595,12 @@
         };
 
         const openMobileAuthModal = (showRemoveConfirm = false, preferredMode = null) => {
+          if (!showRemoveConfirm) {
+            const mode = preferredMode === 'SIGNUP' || (!preferredMode && isGuestPlayerActive()) ? 'signup' : 'login';
+            window.location.href = 'index.html?stay=1&view=mobile&mode=' + mode;
+            return;
+          }
+
           SoundFX.click();
           toggleDrawer(false);
           const gwModal = document.getElementById('guestWarningModal');

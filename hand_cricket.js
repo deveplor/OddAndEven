@@ -10897,6 +10897,11 @@
         window.populateDesktopModalSavedAccounts = populateModalSavedAccounts;
 
         const openAuthModal = (showRemoveConfirm = false) => {
+          if (!showRemoveConfirm) {
+            window.location.href = 'index.html?stay=1&view=desktop&mode=' + (STATE.isAuthenticated ? 'login' : 'signup');
+            return;
+          }
+
           SoundFX.click();
           if (!el.authModal) return;
           populateModalSavedAccounts();
@@ -12122,7 +12127,7 @@
           if (inArt || inRoot) {
             return { checked: true, exists: true, deleted: false, data: (inArt ? sArt.data() : null) || (inRoot ? sRoot.data() : null) };
           }
-          return { checked: true, exists: false, deleted: false, data: null };
+          return { checked: rArt.status === 'fulfilled', exists: false, deleted: false, data: null };
         } catch (e) {
           return { checked: false, exists: false, deleted: false, data: null };
         }

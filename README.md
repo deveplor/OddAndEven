@@ -11,7 +11,7 @@ Run `npm test` for deterministic bot, gameplay, and login regression tests. Run 
 - Shared midnight theme, larger number controls, visible keyboard focus, reduced-motion support, clearer score panels, and responsive headers.
 - One Grandmaster implementation across desktop, mobile, and the standalone bot arena. It learns recency, repeated sequences, and modular number patterns; batting weighs runs against dismissal risk. It cannot inspect the current player pick. Independent random choices remain unpredictable.
 - Mobile records a player's choice only after the bot commits its choice. Batting and bowling histories reset for a new match and remain separate.
-- Google login bypasses synthetic PIN registration. Firebase identities restore before anonymous fallback, and background sync no longer signs in as every cached player.
+- Google login bypasses synthetic PIN registration. The login page restores Firebase identities without starting a competing anonymous sign-in, and background sync no longer signs in as every cached player.
 - Slower account lookups distinguish unavailable service from a missing username. PIN signup checks the shared username namespace and waits for cloud persistence. Failed profile creation can be retried with the same credentials.
 - Removed destructive release-time storage clearing, duplicate desktop engine embedding, duplicate Enter submission handlers, exposed PIN previews, and the hardcoded administrator login shortcut.
 - Fixed mobile toss/break phase labels and made the closed navigation drawer inaccessible to keyboard focus.
@@ -27,3 +27,19 @@ The inherited five-digit PIN and OAE1 local storage format remain for account co
 ## Verification scope
 
 Automated tests cover learned patterns, random-opponent fairness, chase decisions, cross-view turn ordering, cached-account lookup, wrong PIN, offline lookup, and Google/PIN separation. Browser checks covered the desktop arena, a complete mobile Grandmaster match, popup-blocked recovery, release notes, and 390px mobile layout using isolated local Firebase stubs with cloud writes disabled. Real Google account consent, production Firebase rules, and two-device multiplayer require live integration verification.
+
+
+## Authentication hotfix — 26 November 2026
+
+Login now completes Firebase authentication before writing a session or navigating. Google signup commits the public account and private UID profile in one transaction, refuses username ownership conflicts, and permits safe retries. Desktop and mobile login/signup entry points share `index.html`. Legacy root collection permission failures no longer block a successful canonical signup lookup. Profile save failures keep the signup form open.
+
+A read-only production diagnostic with the site's referrer returned HTTP 403 `API_KEY_SERVICE_BLOCKED` from Identity Toolkit. The older key in the project notes returned `API_KEY_INVALID` / expired, so neither swapping keys nor frontend code can resolve this deployment setting. No API keys were changed by this hotfix.
+
+To restore production authentication:
+
+1. Open [Google Cloud credentials for this project](https://console.cloud.google.com/apis/credentials?project=oddeven-1c742) and edit the current website key.
+2. Keep website restrictions, including `https://oddeven-two.vercel.app/*` and any other actual production origin. Under API restrictions allow **Identity Toolkit API** (`identitytoolkit.googleapis.com`), **Token Service API** (`securetoken.googleapis.com`), and the Firebase APIs the app uses, including Cloud Firestore. Ensure those APIs are enabled in the same project.
+3. In Firebase Authentication, enable Google and Email/Password sign-in and authorize `oddeven-two.vercel.app` (plus any other actual production hostname).
+4. After propagation, test new Google signup, returning Google login, new PIN signup, and returning PIN login in a fresh browser session. Confirm the account and private UID profile persist after reload. Client regression tests use mocked Firebase responses and do not substitute for this live check.
+
+See [Firebase's API restrictions troubleshooting](https://firebase.google.com/docs/projects/api-keys#api-key-service-blocked). The client distinguishes backend configuration/permission errors from network failures and never falls back to anonymous authentication to report a successful login.
