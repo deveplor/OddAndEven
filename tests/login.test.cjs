@@ -221,3 +221,22 @@ test('desktop account verification does not report a failed read as a missing ac
   vm.createContext(ctx); vm.runInContext(desktop.slice(start, end), ctx);
   assert.equal((await ctx.window.__verifyCloudAccount('TESTER')).checked, false);
 });
+
+
+test('disabled Email/Password reports that the PIN has not been checked', () => {
+  const c = googleContext();
+  assert.match(c.ctx.authErrorMessage({ code: 'auth/operation-not-allowed' }, 'PIN'), /PIN has not been checked/);
+  assert.match(c.ctx.authErrorMessage({ message: 'PASSWORD_LOGIN_DISABLED' }, 'PIN'), /disabled by the website/);
+});
+test('invalid Google credentials are never described as a wrong username or PIN', () => {
+  const c = googleContext();
+  const message = c.ctx.authErrorMessage({ code: 'auth/invalid-credential' }, 'Google');
+  assert.match(message, /Continue with Google/);
+  assert.doesNotMatch(message, /Username or password|PIN/);
+});
+test('Google OAuth configuration errors are distinct from account credentials', () => {
+  const c = googleContext();
+  for (const error of [{ code: 'auth/invalid-oauth-client-id' }, { message: 'redirect_uri_mismatch' }]) {
+    assert.match(c.ctx.authErrorMessage(error, 'Google'), /Google configuration needs updating/);
+  }
+});

@@ -2110,6 +2110,15 @@
         }
         if (code === 'username-taken') return 'Username already created';
         if (code === 'auth/email-already-in-use') return 'This username is already registered. Choose Login.';
+        if (/PASSWORD_LOGIN_DISABLED/.test(detail) || (code === 'auth/operation-not-allowed' && provider === 'PIN')) {
+          return 'Username/PIN sign-in is disabled by the website. Your PIN has not been checked. Please contact support.';
+        }
+        if (provider === 'Google' && (['auth/invalid-oauth-client-id', 'auth/invalid-oauth-provider', 'auth/invalid-continue-uri'].includes(code) || /redirect_uri_mismatch|invalid_client|INVALID_OAUTH_CLIENT_ID/.test(detail))) {
+          return 'Google sign-in is unavailable because the website Google configuration needs updating. Please contact support.';
+        }
+        if (provider === 'Google' && code === 'auth/invalid-credential') {
+          return 'Google could not verify the sign-in response. Close the sign-in window and retry Continue with Google.';
+        }
         if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-login-credentials'].includes(code)) {
           return 'Username or password is wrong. If your signup was interrupted, retry Sign Up with the same username and PIN.';
         }

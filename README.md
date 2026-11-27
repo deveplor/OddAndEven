@@ -43,3 +43,15 @@ To restore production authentication:
 4. After propagation, test new Google signup, returning Google login, new PIN signup, and returning PIN login in a fresh browser session. Confirm the account and private UID profile persist after reload. Client regression tests use mocked Firebase responses and do not substitute for this live check.
 
 See [Firebase's API restrictions troubleshooting](https://firebase.google.com/docs/projects/api-keys#api-key-service-blocked). The client distinguishes backend configuration/permission errors from network failures and never falls back to anonymous authentication to report a successful login.
+
+
+## Provider configuration follow-up — 27 November 2026
+
+The Identity Toolkit API restriction was corrected: the production project configuration now returns HTTP 200. Two independent deployment issues were then confirmed:
+
+- PIN login returns `PASSWORD_LOGIN_DISABLED`. Enable **Email/Password** (the password option, not just email-link sign-in) in [Firebase Authentication > Sign-in method](https://console.firebase.google.com/project/oddeven-1c742/authentication/providers). Username/PIN accounts use this Firebase provider internally; enabling the Cloud APIs does not enable the sign-in provider.
+- Google authorization succeeds when requested from the Vercel origin, but fails with `API_KEY_HTTP_REFERRER_BLOCKED` from the Firebase popup origin. In the current key's website restrictions, keep `https://oddeven-two.vercel.app/*` and add **`https://oddeven-1c742.firebaseapp.com/*`**. This is the configured `authDomain`; the popup makes its own Authentication requests from that origin. Keep API restrictions and the exact website allowlist rather than making the key unrestricted.
+
+Run `npm run check:auth` after saving. It checks the production domain, password provider, and Google authorization from both origins without creating accounts or printing API keys, tokens, or OAuth URLs. A successful check confirms those configuration paths only; complete real signup/login and refresh checks afterward. This command is intentionally separate from offline `npm test` and `npm run check`.
+
+The Google OAuth authorization endpoint reached the account sign-in page with the configured Firebase callback during this diagnostic; no client ID or callback was changed. If Google still reports `redirect_uri_mismatch` after fixing the allowlist, verify that its web OAuth client permits `https://oddeven-1c742.firebaseapp.com/__/auth/handler`. See [Firebase password setup](https://firebase.google.com/docs/auth/web/password-auth) and [Google sign-in troubleshooting](https://firebase.google.com/docs/auth/faq-and-troubleshooting).
