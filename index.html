@@ -1398,6 +1398,9 @@
             fbAuth = getAuth(fbApp);
             fbDb = getFirestore(fbApp);
             await fbAuth.authStateReady();
+            if (new URLSearchParams(location.search).get('signedout') === '1') {
+              await signOut(fbAuth);
+            }
 
             // Only await getRedirectResult if a Google redirect was actually initiated
             let hasGooglePending = false;

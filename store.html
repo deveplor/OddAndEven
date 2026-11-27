@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#121110">
   <title>XP Store &amp; Marketplace | OddAndEven.in</title>
 
@@ -160,8 +160,12 @@
   <meta name="theme-color" content="#080f1c" />
   <meta name="application-version" content="2.5" />
   <link rel="stylesheet" href="arena-theme.css?v=2.5" />
+  <link rel="stylesheet" href="hub-ui.css?v=2.5" />
+  <script src="account-session.js?v=2.5"></script>
+  <script src="hub-ui.js?v=2.5"></script>
+  <script src="store-transactions.js?v=2.5"></script>
 </head>
-<body class="min-h-screen flex flex-col bg-[#121110] text-slate-100 antialiased pb-20">
+<body class="store-hub min-h-screen flex flex-col bg-[#121110] text-slate-100 antialiased pb-20">
 
   <!-- TOP APP HEADER -->
   <header class="w-full bg-[#181715]/95 backdrop-blur-md border-b border-[#36332e] px-3.5 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-lg">
@@ -396,9 +400,9 @@
       <div class="flex items-center justify-between px-1">
         <h3 class="font-brand font-black text-sm sm:text-base text-white flex items-center gap-1.5">
           <span>🏆</span>
-          <span>Valuable Items, Banners &amp; Badges Catalog</span>
+          <span>Explore the collection</span>
         </h3>
-        <span class="text-[10px] font-mono-num text-amber-300 font-bold">17 High-Tier Items (From 5,000 XP)</span>
+        <span class="text-[10px] font-mono-num text-amber-300 font-bold">19 Cosmetics · From 5,000 XP</span>
       </div>
 
       <!-- Category Filter Pills -->
@@ -422,7 +426,7 @@
         <span>← Return to Hand Cricket Mobile Pitch</span>
       </a>
       <div class="text-[9px] text-slate-500">
-        OddAndEven.in • All purchases sync locally &amp; across multiplayer profiles.
+        OddAndEven.in • Cosmetics and XP purchases are saved in this browser.
       </div>
     </div>
   </main>
@@ -574,7 +578,7 @@
       // Storage Keys aligned with OddAndEven ecosystem
 
       // =========================================================================
-      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // SAVED PLAYER PROGRESS COMPATIBILITY
       // =========================================================================
 
       // Smart Arena Return Link (Desktop hand_cricket.html vs Mobile mobile.html)
@@ -596,121 +600,13 @@
       })();
 
       const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
-      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
-
+      // Preserve saved progress across releases. The epoch labels ranked records;
+      // loading a page must never reset purchases, cosmetics, history, or stats.
       function sanitizeRecordForFreshEpoch(rec) {
-        if (!rec || typeof rec !== 'object') return rec;
-        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
-        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
-          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
-          rec.matches = mpM;
-          rec.rankedMatches = mpM;
-          rec.v2Matches = mpM;
-          return rec;
-        }
-        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
-        return Object.assign({}, rec, {
-          statsEpoch: STATS_RESET_EPOCH,
-          cloudMatchesFloor: legacyCloudMatches,
-          v2Matches: 0,
-          elo: 1500,
-          peak: 1500,
-          wins: 0,
-          losses: 0,
-          matches: 0,
-          rankedMatches: 0,
-          totalRuns: 0,
-          totalBalls: 0,
-          highScore: 0,
-          centuriesCount: 0,
-          sr500Count: 0,
-          wicketsTaken: 0,
-          wicketsLost: 0,
-          ballsBowled: 0,
-          weeklyEloGain: 0,
-          weeklyWins: 0,
-          weeklyLosses: 0,
-          weeklyMatches: 0,
-          weeklyRuns: 0,
-          weeklyWickets: 0,
-          tournamentWins: 0,
-          xp: 0,
-          maxWinStreak: 0,
-          currentWinStreak: 0,
-          maxBoundariesInMatch: 0,
-          defendedMatches: 0,
-          updatedAt: Date.now()
-        });
+        return rec && typeof rec === 'object' ? Object.assign({}, rec) : rec;
       }
       try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
 
-      (function executeAuthoritativeV2FreshReset() {
-        try {
-          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
-            const prefixesToRemove = [
-              'oddandeven_store_inventory_',
-              'oddandeven_spent_xp_',
-              'oddandeven_equipped_card_',
-              'oddandeven_equipped_theme_',
-              'oddandeven_equipped_vfx_',
-              'oddandeven_equipped_bat_',
-              'oddandeven_custom_card_',
-              'oddandeven_active_days_',
-              'oddandeven_tourney_wins_',
-              'oddandeven_number_frequency_',
-              'oddandeven_ai_tier_stats_'
-            ];
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-              const k = localStorage.key(i);
-              if (!k) continue;
-              if (prefixesToRemove.some((p) => k.startsWith(p))) {
-                keysToRemove.push(k);
-              }
-            }
-            keysToRemove.forEach((k) => localStorage.removeItem(k));
-            localStorage.removeItem('hc_arena_match_scorecards_v1');
-            localStorage.removeItem('hc_arena_stats_v1');
-            localStorage.removeItem('oddandeven_event_regs_v1');
-            localStorage.removeItem('oddandeven_event_regs_map_v1');
-
-            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
-              try {
-                const raw = localStorage.getItem(mapKey);
-                if (raw) {
-                  const parsed = JSON.parse(raw);
-                  if (parsed && typeof parsed === 'object') {
-                    Object.keys(parsed).forEach((u) => {
-                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
-                    });
-                    localStorage.setItem(mapKey, JSON.stringify(parsed));
-                  }
-                }
-              } catch (e) {}
-            });
-
-            try {
-              const rawElo = localStorage.getItem('hc_arena_elo_v2');
-              if (rawElo) {
-                const parsedElo = JSON.parse(rawElo);
-                if (parsedElo && typeof parsedElo === 'object') {
-                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
-                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
-                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
-                    });
-                  }
-                  parsedElo.eloRating = 1500;
-                  parsedElo.peakElo = 1500;
-                  parsedElo.eloHistory = [];
-                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
-                }
-              }
-            } catch (e) {}
-
-            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
-          }
-        } catch (e) {}
-      })();
 
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
       const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
@@ -1487,6 +1383,12 @@
 
       // Render Store Items Grid
       function renderStoreCatalog() {
+        const categories = [['btnTabAll', 'All', 'ALL'], ['btnTabBanners', 'Banners & Badges', 'BANNERS'], ['btnTabCards', 'Cards', 'CARDS'], ['btnTabCustom', 'Custom', 'CUSTOM'], ['btnTabCosmetics', 'VFX & Pitch', 'COSMETICS']];
+        categories.forEach(([id, title, category]) => {
+          const button = document.getElementById(id);
+          const count = STORE_CATALOG.filter(item => category === 'ALL' || item.category === category).length;
+          if (button) button.textContent = `${title} (${count})`;
+        });
         const clean = activeUser || 'PLAYER';
         const isGuest = isPlaceholderUsername(clean);
         const inventory = getUserInventory(clean);
@@ -1523,7 +1425,7 @@
           let actionBtnHtml = '';
           if (isGuest) {
             actionBtnHtml = `
-              <a href="mobile.html" class="w-full py-2 rounded-xl text-center font-brand font-black text-xs bg-[#24221f] text-amber-300 border border-amber-500/30 flex items-center justify-center gap-1">
+              <a href="index.html?stay=1&amp;mode=login" class="w-full py-2 rounded-xl text-center font-brand font-black text-xs bg-[#24221f] text-amber-300 border border-amber-500/30 flex items-center justify-center gap-1">
                 <span>🔐</span><span>Login to Unlock (${item.price.toLocaleString()} XP)</span>
               </a>
             `;
@@ -1559,7 +1461,7 @@
               <div class="flex items-start justify-between gap-2">
                 <div class="flex items-center gap-2.5 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-[#262420] border border-[#3d3a34] flex items-center justify-center text-xl shrink-0 shadow-sm">
-                    ${item.icon}
+                    ${OAEIcons.item(item)}
                   </div>
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -1578,7 +1480,7 @@
                 </div>
               </div>
 
-              <!-- Lore & Storytelling -->
+              <details class="store-item-details"><summary>Design &amp; perks</summary>
               <p class="text-[11px] text-slate-300 leading-relaxed bg-black/20 p-2.5 rounded-xl border border-white/5">
                 ${item.lore}
               </p>
@@ -1588,6 +1490,7 @@
                 ${item.perks.map((p) => `<div class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span><span>${p}</span></div>`).join('')}
               </div>
 
+              </details>
               <!-- Action Button -->
               <div class="pt-1 border-t border-[#262420]">
                 ${actionBtnHtml}
@@ -1628,13 +1531,23 @@
         });
       }
 
-      function handlePurchase(itemId, price, name) {
-        const clean = activeUser;
+      async function handlePurchase(itemId) {
+        const buyer = activeUser;
+        const perform = async () => {
+        const product = STORE_CATALOG.find(item => item.id === itemId);
+        if (!product) return;
+        const price = product.price, name = product.name;
+        const clean = buyer;
         if (!clean || isPlaceholderUsername(clean)) {
           alert('Please sign in to OddAndEven.in to purchase items.');
           return;
         }
 
+        if (OAEAccountSession.active(localStorage, sessionStorage)?.username !== clean) {
+          alert('Your active account changed. Reload the store before purchasing.'); return;
+        }
+        if (getUserInventory(clean).includes(itemId)) { refreshAllStoreData(); return; }
+        activeXpInfo = computeTotalUserXp(clean, activeRec);
         if (activeXpInfo.availableXp < price) {
           SoundFX.error();
           alert(`You need ${price.toLocaleString()} XP to unlock this item. Grind achievements and career matches to earn more!`);
@@ -1643,16 +1556,10 @@
 
         const confirmBuy = confirm(`Unlock "${name}" for ${price.toLocaleString()} XP?`);
         if (!confirmBuy) return;
+        if (OAEAccountSession.active(localStorage, sessionStorage)?.username !== clean) throw Error('Your active account changed. Reload the store before purchasing.');
 
-        // Deduct XP & Add to Inventory
-        const inventory = getUserInventory(clean);
-        if (!inventory.includes(itemId)) {
-          inventory.push(itemId);
-          saveUserInventory(clean, inventory);
-        }
-
-        const spent = getUserSpentXp(clean) + price;
-        saveUserSpentXp(clean, spent);
+        const purchase = OAEStore.purchase(localStorage, clean, product, activeXpInfo.totalEarnedXp);
+        if (purchase.alreadyOwned) { refreshAllStoreData(); return; }
 
         // Auto-equip newly purchased item to active loadout
         const boughtItemObj = STORE_CATALOG.find((x) => x.id === itemId);
@@ -1697,6 +1604,11 @@
         if (itemId === 'card_custom_divine') {
           dom.customCardModal.classList.remove('hidden');
         }
+        };
+        try {
+          if (navigator.locks) await navigator.locks.request('oae-store-' + buyer, perform);
+          else await perform();
+        } catch (error) { alert(error.message); refreshAllStoreData(); }
       }
 
       function handleEquipToggle(itemId, action) {
@@ -1704,6 +1616,7 @@
         if (!clean) return;
 
         const itemObj = STORE_CATALOG.find((x) => x.id === itemId);
+        if (!itemObj || !getUserInventory(clean).includes(itemId)) { alert('Unlock this item before equipping it.'); return; }
         if (action === 'equip') {
           if (itemId.startsWith('card_')) {
             setEquippedCardId(clean, itemId);

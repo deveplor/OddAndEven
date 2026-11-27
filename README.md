@@ -55,3 +55,20 @@ The Identity Toolkit API restriction was corrected: the production project confi
 Run `npm run check:auth` after saving. It checks the production domain, password provider, and Google authorization from both origins without creating accounts or printing API keys, tokens, or OAuth URLs. A successful check confirms those configuration paths only; complete real signup/login and refresh checks afterward. This command is intentionally separate from offline `npm test` and `npm run check`.
 
 The Google OAuth authorization endpoint reached the account sign-in page with the configured Firebase callback during this diagnostic; no client ID or callback was changed. If Google still reports `redirect_uri_mismatch` after fixing the allowlist, verify that its web OAuth client permits `https://oddeven-1c742.firebaseapp.com/__/auth/handler`. See [Firebase password setup](https://firebase.google.com/docs/auth/web/password-auth) and [Google sign-in troubleshooting](https://firebase.google.com/docs/auth/faq-and-troubleshooting).
+
+
+## Player hub and multiplayer rooms — 27 November 2026
+
+Desktop and mobile Rooms, Profile, and Store navigation now use shared pages, including `?screen=` deep links. Profile account removal means **remove the saved login from this device**, matching the control's label. It does not set deletion tombstones or delete a Firebase account. Sign-out restores then signs out the Firebase SDK on the login page. Signup and account-switch links include `stay=1` and the requested mode.
+
+The profile/store share a quieter layout, collapsible detail panels, an SVG icon set, and responsive navigation. Store purchases use catalog prices, reject duplicate ownership, re-read spending, serialize across tabs with Web Locks when available, and roll back XP on a failed inventory save. These remain local XP cosmetics, not a server-authoritative wallet.
+
+`rooms.html` replaces the legacy room-start paths. `room-engine.js` is the shared match state machine; `room-network.js` connects one host with up to three independent guests over PeerJS. The room requires two or four connected, ready players, assigns two balanced teams, permits only the active batter/bowler to submit, hides choices until both lock, rejects stale rounds and duplicate moves, alternates bowlers every six balls, and pauses on disconnect. The same tab can reconnect with its private reconnect token. The host keeps the authoritative state in memory and must keep the page open. Host migration and a managed TURN relay are not included; restrictive networks may require another connection.
+
+Room games are explicitly **friendly**, with results saved locally and shown on the profile. They do not write unverified ranked XP or cloud leaderboard scores. Invite links replace the old simulated friend-name squad list. Existing legacy room codes should be replaced with new `OAE-` codes.
+
+Regression tests cover room capacity/readiness, actor authorization, private choices, stale/repeated inputs, bowler/batter rotation, innings/chase/draw results, reconnect pauses, and a complete four-client protocol match. Account/store tests cover device-only removal, idempotent spending, and write rollback. Real browser checks exercise the local pages using isolated test identities; no Firebase accounts are created or deleted for room QA.
+
+Validation for this update: 47 automated tests passed; all 27 scripts and local dependencies checked. Separate browser clients completed both a 1v1 win and a four-player 2v2 draw through real PeerJS signaling. These clients used one browser/network; cross-network NAT/firewall behavior and real Google consent remain outside that check. Mobile profile/store layouts were inspected at 390px.
+
+Removed the inherited first-load epoch reset from every affected page. Opening Profile, Store, or either arena now preserves saved inventory, XP spending, match history, event registrations, and historical player statistics. Legacy record normalization also preserves statistics instead of zeroing them.

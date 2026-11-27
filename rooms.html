@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1220"><meta name="application-version" content="2.5">
+  <title>Multiplayer Rooms · Odd &amp; Even</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="rooms.css?v=2.5"><link rel="stylesheet" href="hub-ui.css?v=2.5">
+  <script defer src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+  <script defer src="account-session.js?v=2.5"></script><script defer src="room-engine.js?v=2.5"></script>
+  <script defer src="room-network.js?v=2.5"></script><script defer src="rooms.js?v=2.5"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to rooms</a>
+  <header class="room-header"><a class="room-brand" href="index.html"><svg class="hub-icon" aria-hidden="true"><use href="arena-icons.svg#brand"></use></svg>ODD &amp; EVEN</a><nav aria-label="Main navigation"><a href="profile.html">Profile</a><a href="store.html">Store</a><a id="backArena" href="hand_cricket.html">Arena ↗</a></nav></header>
+  <main id="main">
+    <section class="room-intro"><p class="eyebrow">MULTIPLAYER / FRIEND ROOMS</p><h1>Better with a rival.<br><span>Even better with a team.</span></h1><p>One code. Two or four players. Play a quick hand-cricket match together.</p><span class="player-chip" id="playerName">Checking player…</span></section>
+    <div id="guestGate" class="notice" hidden><strong>Sign in to join your friends.</strong><p>Your room identity uses your player account.</p><a class="primary" href="index.html?stay=1&mode=login">Log in</a> <a class="secondary" href="index.html?stay=1&mode=signup">Create account</a></div>
+    <p id="connectionStatus" class="status" role="status" aria-live="polite">Create a room or enter an invite code.</p>
+    <section id="roomSetup" class="setup-grid" aria-label="Create or join a room">
+      <form id="createForm" class="panel"><div class="section-label"><svg class="hub-icon" aria-hidden="true"><use href="arena-icons.svg#rooms"></use></svg>HOST A MATCH</div><h2>Your room, your squad.</h2><p>Share the invite link. Keep this page open while your friends join.</p><label for="format">Match format</label><select id="format"><option value="1V1">1v1 · Two players</option><option value="2V2">2v2 · Four players</option></select><label for="overs">Overs per innings</label><select id="overs"><option value="6">1 over · Quick match</option><option value="12" selected>2 overs · Standard</option><option value="18">3 overs</option><option value="30">5 overs</option></select><button id="createRoom" class="primary" type="submit">Create room <span>↗</span></button></form>
+      <form id="joinForm" class="panel"><div class="section-label"><svg class="hub-icon" aria-hidden="true"><use href="arena-icons.svg#arrow"></use></svg>JOIN YOUR FRIENDS</div><h2>Got an invite?</h2><p>Ask the host for the code. Desktop and mobile players can share the same room.</p><label for="joinCode">Room code</label><input id="joinCode" autocomplete="off" spellcheck="false" maxlength="10" placeholder="OAE-ABC234" required pattern="OAE-[A-Z2-9]{6}"><button id="joinRoom" type="submit" class="secondary">Join room <span>→</span></button><div class="join-note">Only connected players fill a place. A 2v2 match starts when all four players are ready.</div></form>
+    </section>
+    <section id="liveRoom" hidden>
+      <div class="room-toolbar panel"><div><p class="eyebrow" id="formatLabel">YOUR ROOM</p><h2 id="roomCode">—</h2></div><div class="toolbar-actions"><button id="copyInvite" class="secondary">Copy invite</button><button id="reconnect" class="secondary" hidden>Reconnect</button><button id="leaveRoom" class="quiet">Leave room</button></div></div>
+      <div class="teams"><section class="panel team team-a"><p class="eyebrow">TEAM A</p><div class="score" id="scoreA">0 <small>/ 0</small></div><p id="oversA" class="muted">0.0 overs</p><ul id="teamA" class="roster"></ul></section><section class="panel team team-b"><p class="eyebrow">TEAM B</p><div class="score" id="scoreB">0 <small>/ 0</small></div><p id="oversB" class="muted">0.0 overs</p><ul id="teamB" class="roster"></ul></section></div>
+      <section class="panel play-panel" aria-labelledby="phaseTitle"><p class="eyebrow" id="roundLabel">LOBBY</p><h2 id="phaseTitle">Waiting for players</h2><p id="phaseHint">Share the room code with your friends.</p><p id="lastBall" class="last-ball" aria-live="polite"></p><div id="lobbyControls" class="toolbar-actions"><button id="readyButton" class="secondary">Ready</button><button id="switchTeam" class="quiet">Switch team</button><button id="startMatch" class="primary" hidden>Start match</button></div><div id="tossControls" class="toolbar-actions" hidden><button id="chooseBat" class="primary">Bat first</button><button id="chooseBowl" class="secondary">Bowl first</button></div><div id="numberChoices" class="number-choices" hidden aria-label="Choose your hand number"><button data-number="1">1</button><button data-number="2">2</button><button data-number="3">3</button><button data-number="4">4</button><button data-number="5">5</button><button data-number="6">6</button></div><button id="nextInnings" class="primary" hidden>Start the chase</button><button id="rematch" class="primary" hidden>Back to lobby</button></section>
+    </section>
+    <details class="room-rules"><summary>How the match works</summary><p>Choose 1–6 when it is your turn. Matching numbers mean a wicket; otherwise the batter scores their number. Both choices lock before the ball is revealed. In 2v2, the second batter enters after a wicket and bowlers alternate every six balls. The toss-winning captain chooses bat or bowl. Chase the target before losing all wickets or using all overs.</p><p>These are friendly peer-to-peer matches, saved to your local room history. They do not award ranked XP. The host must keep the page open. Some restricted networks may block peer connections; a failed connection will never count as a joined player.</p></details>
+  </main><footer>ODD &amp; EVEN <span>v2.5 · Made for the next innings.</span></footer>
+</body></html>

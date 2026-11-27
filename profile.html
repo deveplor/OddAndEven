@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#121110">
   <title>Career Profile &amp; Stats Dashboard | OddAndEven.in</title>
 
@@ -89,8 +89,11 @@
   <meta name="theme-color" content="#080f1c" />
   <meta name="application-version" content="2.5" />
   <link rel="stylesheet" href="arena-theme.css?v=2.5" />
+  <link rel="stylesheet" href="hub-ui.css?v=2.5" />
+  <script src="account-session.js?v=2.5"></script>
+  <script src="hub-ui.js?v=2.5"></script>
 </head>
-<body class="min-h-screen flex flex-col bg-[#121110] text-slate-100 antialiased pb-16">
+<body class="profile-hub min-h-screen flex flex-col bg-[#121110] text-slate-100 antialiased pb-16">
 
   <!-- TOP APP HEADER -->
   <header class="w-full bg-[#181715]/95 backdrop-blur-md border-b border-[#36332e] px-3.5 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-lg">
@@ -151,7 +154,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2 pt-1">
-        <a href="index.html" class="flex-1 py-2 px-3 rounded-xl bg-[#81b64c] hover:bg-[#92cb57] text-slate-950 font-black text-xs text-center font-brand shadow transition">
+        <a href="index.html?stay=1&amp;mode=login" class="flex-1 py-2 px-3 rounded-xl bg-[#81b64c] hover:bg-[#92cb57] text-slate-950 font-black text-xs text-center font-brand shadow transition">
           🔐 Log In / Create Account
         </a>
         <a href="mobile.html" class="py-2 px-3 rounded-xl bg-[#262420] text-slate-300 hover:text-white font-bold text-xs border border-[#3d3a34] transition">
@@ -167,7 +170,7 @@
       <div class="absolute -left-10 -bottom-10 w-36 h-36 bg-[#81b64c]/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <!-- Avatar, Name & Country Header -->
-      <div class="flex items-start justify-between gap-3 relative z-10">
+      <div class="profile-identity-row flex items-start justify-between gap-3 relative z-10">
         <div class="flex items-center gap-3 min-w-0">
           <!-- Big Avatar with Flag Overlay -->
           <div class="relative shrink-0">
@@ -202,7 +205,7 @@
         </div>
 
         <!-- Rating Pill -->
-        <div class="text-right shrink-0">
+        <div class="profile-rating text-right shrink-0">
           <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Current Elo</div>
           <div id="userEloBadge" class="font-mono-num font-black text-lg text-amber-300">
             1500
@@ -826,11 +829,12 @@
     </section>
 
     <!-- SECTION 7: ACCOUNT SECURITY & ACTIONS -->
-    <section class="glass-card rounded-3xl p-4 space-y-3 border border-[#36332e]">
+    <section id="accountActions" class="glass-card rounded-3xl p-4 space-y-3 border border-[#36332e]">
       <h2 class="font-brand font-black text-sm text-white flex items-center gap-1.5">
-        <span>⚙️</span> Account &amp; Vault Controls
+        <span>⚙️</span> Your account
       </h2>
 
+      <div class="hub-account-links"><a href="index.html?stay=1&amp;mode=signup">Create a new account ↗</a><a href="rooms.html">Play with friends ↗</a></div>
       <div class="space-y-2 pt-1">
         <!-- Switch Account / Sign Out -->
         <div class="flex items-center gap-2">
@@ -838,7 +842,7 @@
             <span>🚪</span>
             <span>Sign Out Session</span>
           </button>
-          <a href="index.html" class="flex-1 py-2.5 px-3 rounded-xl bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+          <a href="index.html?stay=1&amp;mode=login" class="flex-1 py-2.5 px-3 rounded-xl bg-[#81b64c]/20 hover:bg-[#81b64c]/30 text-[#a3d96c] border border-[#81b64c]/40 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
             <span>🔄</span>
             <span>Switch Account</span>
           </a>
@@ -847,12 +851,12 @@
         <!-- Remove Account Danger Trigger -->
         <button id="btnDangerRemoveAccount" type="button" class="w-full py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
           <span>🗑️</span>
-          <span>Remove Account from Device Vault</span>
+          <span>Remove account from this device</span>
         </button>
       </div>
 
       <div class="text-[9px] text-slate-500 text-center pt-1 font-mono-num">
-        Client ID Hash: <span id="vaultHashIndicator">OAE-SEC-2026-v2</span> • Encrypted Salt Verified
+        <span id="vaultHashIndicator">Device storage</span> · Your cloud account stays available when removed here.
       </div>
     </section>
 
@@ -875,7 +879,7 @@
       // Storage keys aligned with OddAndEven.in ecosystem
 
       // =========================================================================
-      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // SAVED PLAYER PROGRESS COMPATIBILITY
       // =========================================================================
 
       // Smart Arena Return Link (Desktop hand_cricket.html vs Mobile mobile.html)
@@ -897,121 +901,13 @@
       })();
 
       const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
-      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
-
+      // Preserve saved progress across releases. The epoch labels ranked records;
+      // loading a page must never reset purchases, cosmetics, history, or stats.
       function sanitizeRecordForFreshEpoch(rec) {
-        if (!rec || typeof rec !== 'object') return rec;
-        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
-        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
-          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
-          rec.matches = mpM;
-          rec.rankedMatches = mpM;
-          rec.v2Matches = mpM;
-          return rec;
-        }
-        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
-        return Object.assign({}, rec, {
-          statsEpoch: STATS_RESET_EPOCH,
-          cloudMatchesFloor: legacyCloudMatches,
-          v2Matches: 0,
-          elo: 1500,
-          peak: 1500,
-          wins: 0,
-          losses: 0,
-          matches: 0,
-          rankedMatches: 0,
-          totalRuns: 0,
-          totalBalls: 0,
-          highScore: 0,
-          centuriesCount: 0,
-          sr500Count: 0,
-          wicketsTaken: 0,
-          wicketsLost: 0,
-          ballsBowled: 0,
-          weeklyEloGain: 0,
-          weeklyWins: 0,
-          weeklyLosses: 0,
-          weeklyMatches: 0,
-          weeklyRuns: 0,
-          weeklyWickets: 0,
-          tournamentWins: 0,
-          xp: 0,
-          maxWinStreak: 0,
-          currentWinStreak: 0,
-          maxBoundariesInMatch: 0,
-          defendedMatches: 0,
-          updatedAt: Date.now()
-        });
+        return rec && typeof rec === 'object' ? Object.assign({}, rec) : rec;
       }
       try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
 
-      (function executeAuthoritativeV2FreshReset() {
-        try {
-          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
-            const prefixesToRemove = [
-              'oddandeven_store_inventory_',
-              'oddandeven_spent_xp_',
-              'oddandeven_equipped_card_',
-              'oddandeven_equipped_theme_',
-              'oddandeven_equipped_vfx_',
-              'oddandeven_equipped_bat_',
-              'oddandeven_custom_card_',
-              'oddandeven_active_days_',
-              'oddandeven_tourney_wins_',
-              'oddandeven_number_frequency_',
-              'oddandeven_ai_tier_stats_'
-            ];
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-              const k = localStorage.key(i);
-              if (!k) continue;
-              if (prefixesToRemove.some((p) => k.startsWith(p))) {
-                keysToRemove.push(k);
-              }
-            }
-            keysToRemove.forEach((k) => localStorage.removeItem(k));
-            localStorage.removeItem('hc_arena_match_scorecards_v1');
-            localStorage.removeItem('hc_arena_stats_v1');
-            localStorage.removeItem('oddandeven_event_regs_v1');
-            localStorage.removeItem('oddandeven_event_regs_map_v1');
-
-            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
-              try {
-                const raw = localStorage.getItem(mapKey);
-                if (raw) {
-                  const parsed = JSON.parse(raw);
-                  if (parsed && typeof parsed === 'object') {
-                    Object.keys(parsed).forEach((u) => {
-                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
-                    });
-                    localStorage.setItem(mapKey, JSON.stringify(parsed));
-                  }
-                }
-              } catch (e) {}
-            });
-
-            try {
-              const rawElo = localStorage.getItem('hc_arena_elo_v2');
-              if (rawElo) {
-                const parsedElo = JSON.parse(rawElo);
-                if (parsedElo && typeof parsedElo === 'object') {
-                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
-                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
-                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
-                    });
-                  }
-                  parsedElo.eloRating = 1500;
-                  parsedElo.peakElo = 1500;
-                  parsedElo.eloHistory = [];
-                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
-                }
-              }
-            } catch (e) {}
-
-            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
-          }
-        } catch (e) {}
-      })();
 
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
       const SESSION_STORAGE_KEY = 'oddandeven_active_session_v1';
@@ -2828,38 +2724,21 @@
       });
 
       document.getElementById('btnSignOutAccount').addEventListener('click', () => {
-        if (confirm('Sign out from this device? Your stats are safely preserved in the encrypted vault.')) {
-          localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
-          sessionStorage.removeItem(SESSION_STORAGE_KEY);
-          localStorage.removeItem(SESSION_STORAGE_KEY);
-          window.location.href = 'index.html';
-        }
+        try {
+          OAEAccountSession.signOut(localStorage, sessionStorage);
+          window.location.href = 'index.html?stay=1&signedout=1';
+        } catch (error) { alert('Could not save sign-out: ' + error.message); }
       });
 
       document.getElementById('btnDangerRemoveAccount').addEventListener('click', () => {
-        const u = prompt('Type your EXACT USERNAME to confirm account removal from this device:');
-        if (!u) return;
-        const clean = u.trim().toUpperCase();
-        const activeSess = loadActiveAuthSession();
-        if (activeSess && activeSess.username.toUpperCase() === clean) {
-          try {
-            const rawP = localStorage.getItem(PURGED_ACCOUNTS_KEY);
-            const purgedList = rawP ? JSON.parse(rawP) : [];
-            if (!purgedList.includes(clean)) {
-              purgedList.push(clean);
-              localStorage.setItem(PURGED_ACCOUNTS_KEY, JSON.stringify(purgedList));
-            }
-            localStorage.setItem(SIGNED_OUT_FLAG_KEY, '1');
-            sessionStorage.removeItem(SESSION_STORAGE_KEY);
-            localStorage.removeItem(SESSION_STORAGE_KEY);
-            alert(`Account ${clean} has been purged from this device.`);
-            window.location.href = 'index.html';
-          } catch (e) {
-            alert('Failed to remove account: ' + e.message);
-          }
-        } else {
-          alert('Username does not match active logged in player.');
-        }
+        const current = OAEAccountSession.active(localStorage, sessionStorage);
+        if (!current) { window.location.href = 'index.html?stay=1&mode=login'; return; }
+        const typed = prompt('Remove this saved login from this device? Your cloud account and match history stay available. Type ' + current.username + ' to confirm:');
+        if (!typed) return;
+        try {
+          OAEAccountSession.removeFromDevice(typed, localStorage, sessionStorage);
+          window.location.href = 'index.html?stay=1&signedout=1';
+        } catch (error) { alert(error.message); }
       });
 
       // Initial Render

@@ -1,0 +1,44 @@
+.hub-icon { width: 24px; height: 24px; display: inline-block; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; flex-shrink: 0; }
+body.profile-hub, body.store-hub { background: #0b1220; background-image: radial-gradient(ellipse at top right, #17382f70, transparent 50%); }
+.profile-hub main, .store-hub main { max-width: 1100px; padding-top: 30px; }
+.hub-intro { padding: 12px 0 24px; }
+.hub-eyebrow { display: flex; align-items: center; gap: 10px; color: #80dcb7; font-size: 11px; letter-spacing: .14em; font-weight: 700; }
+.hub-eyebrow svg { width: 32px; height: 32px; }
+.hub-intro h1 { font: 700 clamp(28px,4.5vw,46px)/1.15 'Outfit',sans-serif; letter-spacing: -.035em; margin: 18px 0 10px; }
+.hub-intro p { color: #a6b6ca; line-height: 1.7; font-size: 14px; max-width: 600px; }
+.hub-intro nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.hub-intro nav a { display: flex; gap: 8px; align-items: center; padding: 10px 15px; border: 1px solid #2a394b; border-radius: 12px; font-size: 13px; color: #c1cddd; }
+.hub-intro nav a[aria-current] { color: #9ef1cb; background: #16392f; border-color: #40765f; }
+.profile-hub main > section, .store-hub .glass-card, .store-hub .glass-card-gold, .hub-details { border-radius: 18px !important; box-shadow: none !important; }
+.profile-hub .glass-card, .profile-hub .glass-card-glow, .store-hub .glass-card { background: #111e2d !important; border-color: #2a3a4c !important; }
+.profile-hub [class*="p-4.5"] { padding: 22px; }
+.hub-details { border: 1px solid #2a3a4c; background: #111e2d; overflow: hidden; }
+.hub-details summary { padding: 20px; cursor: pointer; font-size: 15px; font-weight: 650; }
+.hub-details > section { margin: 0; border: 0 !important; border-top: 1px solid #2a3a4c !important; border-radius: 0 !important; box-shadow: none !important; }
+#accountActions { background: #122338 !important; padding: 20px; }
+#accountActions .hub-account-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+#accountActions .hub-account-links a { border: 1px solid #36516b; padding: 10px 15px; border-radius: 10px; color: #bbdfd0; font-weight: 600; font-size: 13px; }
+#accountActions button:disabled { opacity: .4; cursor: not-allowed; }
+.hub-note { font-size: 12px; color: #9eafc2; line-height: 1.6; }
+.profile-identity-row > :first-child { flex: 1; }
+.profile-rating { flex: 0 1 280px; min-width: 0; }
+#userLeagueBadge { overflow-wrap: anywhere; line-height: 1.6; }
+@media(max-width: 640px) {
+  .profile-identity-row { flex-direction: column; gap: 20px; }
+  .profile-identity-row > :first-child { width: 100%; }
+  .profile-rating { flex: auto; width: 100%; text-align: left; padding-top: 16px; border-top: 1px solid #2a3a4c; }
+}
+.hub-room-history { padding: 22px; }
+.hub-room-history h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.hub-room-history p { padding: 12px 0; border-top: 1px solid #293b4f; font-size: 13px; line-height: 1.6; color: #bccdde; }
+#storeItemsContainer { gap: 18px; }
+#storeItemsContainer > div { padding: 20px; display: flex; flex-direction: column; }
+#storeItemsContainer > div > :last-child { margin-top: auto; padding-top: 16px; }
+#storeItemsContainer .hub-icon { width: 30px; height: 30px; color: #9de3c5; }
+#storeItemsContainer .font-brand { text-transform: none; letter-spacing: 0; }
+.store-item-details summary { cursor: pointer; padding: 10px 0; color: #99b1c8; font-size: 12px; }
+.store-item-details p { line-height: 1.7; color: #b1c0cf; font-size: 13px; margin-bottom: 12px; }
+.store-hub [class*="animate-"], .profile-hub [class*="animate-"] { animation: none !important; }
+.store-hub .mythic-glow { box-shadow: none; }
+@media(min-width: 900px) { #storeItemsContainer { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media(max-width: 520px) { .hub-intro nav a { padding: 9px 11px; } .hub-intro nav .hub-icon { width: 18px; height: 18px; } #accountActions .flex { flex-wrap: wrap; } }

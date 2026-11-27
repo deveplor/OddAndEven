@@ -109,128 +109,16 @@
       // =========================================================================
 
       // =========================================================================
-      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // SAVED PLAYER PROGRESS COMPATIBILITY
       // =========================================================================
       const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
-      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
-
+      // Preserve saved progress across releases. The epoch labels ranked records;
+      // loading a page must never reset purchases, cosmetics, history, or stats.
       function sanitizeRecordForFreshEpoch(rec) {
-        if (!rec || typeof rec !== 'object') return rec;
-        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
-        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
-          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
-          rec.matches = mpM;
-          rec.rankedMatches = mpM;
-          rec.v2Matches = mpM;
-          return rec;
-        }
-        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
-        return Object.assign({}, rec, {
-          statsEpoch: STATS_RESET_EPOCH,
-          cloudMatchesFloor: legacyCloudMatches,
-          v2Matches: 0,
-          elo: 1500,
-          peak: 1500,
-          wins: 0,
-          losses: 0,
-          matches: 0,
-          rankedMatches: 0,
-          totalRuns: 0,
-          totalBalls: 0,
-          highScore: 0,
-          centuriesCount: 0,
-          sr500Count: 0,
-          wicketsTaken: 0,
-          wicketsLost: 0,
-          ballsBowled: 0,
-          weeklyEloGain: 0,
-          weeklyWins: 0,
-          weeklyLosses: 0,
-          weeklyMatches: 0,
-          weeklyRuns: 0,
-          weeklyWickets: 0,
-          tournamentWins: 0,
-          xp: Number(rec.referralXp) || 0,
-          referralXp: Number(rec.referralXp) || 0,
-          referralCount: Number(rec.referralCount) || 0,
-          referredFriends: Array.isArray(rec.referredFriends) ? rec.referredFriends : [],
-          referralCode: rec.referralCode || null,
-          maxWinStreak: 0,
-          currentWinStreak: 0,
-          maxBoundariesInMatch: 0,
-          defendedMatches: 0,
-          updatedAt: Date.now()
-        });
+        return rec && typeof rec === 'object' ? Object.assign({}, rec) : rec;
       }
       try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
 
-      (function executeAuthoritativeV2FreshReset() {
-        try {
-          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
-            const prefixesToRemove = [
-              'oddandeven_store_inventory_',
-              'oddandeven_spent_xp_',
-              'oddandeven_equipped_card_',
-              'oddandeven_equipped_theme_',
-              'oddandeven_equipped_vfx_',
-              'oddandeven_equipped_bat_',
-              'oddandeven_custom_card_',
-              'oddandeven_active_days_',
-              'oddandeven_tourney_wins_',
-              'oddandeven_number_frequency_',
-              'oddandeven_ai_tier_stats_'
-            ];
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-              const k = localStorage.key(i);
-              if (!k) continue;
-              if (prefixesToRemove.some((p) => k.startsWith(p))) {
-                keysToRemove.push(k);
-              }
-            }
-            keysToRemove.forEach((k) => localStorage.removeItem(k));
-            localStorage.removeItem('hc_arena_match_scorecards_v1');
-            localStorage.removeItem('hc_arena_stats_v1');
-            localStorage.removeItem('oddandeven_event_regs_v1');
-            localStorage.removeItem('oddandeven_event_regs_map_v1');
-
-            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
-              try {
-                const raw = localStorage.getItem(mapKey);
-                if (raw) {
-                  const parsed = JSON.parse(raw);
-                  if (parsed && typeof parsed === 'object') {
-                    Object.keys(parsed).forEach((u) => {
-                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
-                    });
-                    localStorage.setItem(mapKey, JSON.stringify(parsed));
-                  }
-                }
-              } catch (e) {}
-            });
-
-            try {
-              const rawElo = localStorage.getItem('hc_arena_elo_v2');
-              if (rawElo) {
-                const parsedElo = JSON.parse(rawElo);
-                if (parsedElo && typeof parsedElo === 'object') {
-                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
-                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
-                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
-                    });
-                  }
-                  parsedElo.eloRating = 1500;
-                  parsedElo.peakElo = 1500;
-                  parsedElo.eloHistory = [];
-                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
-                }
-              }
-            } catch (e) {}
-
-            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
-          }
-        } catch (e) {}
-      })();
 
       const RELEASE_CLEAN_SLATE_KEY = 'oddandeven_release_v1_clean_slate';
       const AUTH_STORAGE_KEY = 'oddandeven_encrypted_users_v1';
@@ -3902,219 +3790,16 @@
         renderAll();
       }
 
-      function playWithFriend(friendUsername) {
-        if (!requireAccountAndPassword()) return;
-        SoundFX.click();
-        const target = (friendUsername || '').trim().toUpperCase();
-        const me = (STATE.myUsername || '').trim().toUpperCase();
-        if (!target || target === me) return;
-
-        // Check if this friend is already hosting an open room we can join & auto-start immediately!
-        const friendOpenRoom = STATE.activeOpenRooms && STATE.activeOpenRooms[target];
-        if (friendOpenRoom && friendOpenRoom.roomCode && (Date.now() - (friendOpenRoom.timestamp || 0) < 600000)) {
-          STATE.autoStartOnGuestJoin = true;
-          STATE.activeScreen = 'PITCH';
-          joinMultiplayerRoom(friendOpenRoom.roomCode, true);
-          return;
-        }
-
-        // Create a fresh Multiplayer Room as Host (P1), enable auto-start on join, and ring `target` with a large Match Call Banner!
-        createMultiplayerRoom();
-        STATE.autoStartOnGuestJoin = true;
-        const code = STATE.roomCode;
-        STATE.activeScreen = 'MP_SETUP';
-        updateNetStatusUI(`📞 Calling @${target} for a 1v1 Match (Room ${code})...`, false);
-        if (el.inlineLobbyWaitHint) {
-          el.inlineLobbyWaitHint.textContent = `📞 Calling @${target} (Room Code: ${code})! A large Match Call banner is now ringing on @${target}'s screen — as soon as they click Accept, the match will start automatically!`;
-        }
-
-        broadcastFriendEventPacket({
-          type: 'FRIEND_MATCH_INVITE',
-          fromUser: me,
-          fromFlag: STATE.myCountryFlag || '🇮🇳',
-          fromCode: STATE.myCountryCode || '+91',
-          fromElo: STATE.eloRating || 1500,
-          toUser: target,
-          roomCode: code,
-          autoStart: true,
-          timestamp: Date.now()
-        });
-
-        if (typeof window.__sendCloudFriendInvite === 'function') {
-          try {
-            window.__sendCloudFriendInvite(target, me, STATE.myCountryFlag || '🇮🇳', code);
-          } catch (e) {}
-        }
-
-        renderAll();
+      function playWithFriend(username) {
+        window.location.href = 'rooms.html?view=desktop&create=1';
       }
 
       function createMultiplayerRoom() {
-        if (!requireAccountAndPassword()) return;
-        SoundFX.click();
-        syncAuthAndPurgeFakeSeeds();
-        const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
-        STATE.mode = 'ONLINE_2P';
-        STATE.roomCode = code;
-        STATE.onlineRole = 'HOST';
-        STATE.onlineConnected = false;
-        STATE.p2Joined = false;
-        STATE.roomLocked = false;
-        STATE.p1Name = STATE.myUsername && !isPlaceholderUsername(STATE.myUsername) ? STATE.myUsername : 'HOST';
-        STATE.p1CountryFlag = STATE.myCountryFlag;
-        STATE.p1CountryCode = STATE.myCountryCode;
-        STATE.p2Name = 'WAITING...';
-
-        if (el.hostRoomCodeBox) el.hostRoomCodeBox.classList.remove('hidden');
-        if (el.hostRoomCodeText) el.hostRoomCodeText.textContent = code;
-        if (el.inlineHostCodeDisplay) el.inlineHostCodeDisplay.classList.remove('hidden');
-        if (el.inlineHostCodeValue) el.inlineHostCodeValue.textContent = code;
-
-        updateNetStatusUI(`⏳ Room ${code} Created • Waiting for Player 2...`, false);
-        setupBroadcastFallback(code);
-        bindCloudRoom(code);
-        STATE.activeOpenRooms[STATE.myUsername] = {
-          roomCode: code,
-          hostUser: STATE.myUsername,
-          timestamp: Date.now()
-        };
-        broadcastFriendEventPacket({
-          type: 'FRIEND_ROOM_OPENED',
-          hostUser: STATE.myUsername,
-          roomCode: code,
-          timestamp: Date.now()
-        });
-
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) STATE.peer.destroy();
-            if (STATE.legacyPeer) STATE.legacyPeer.destroy();
-
-            const attachHostPeer = (peerInstance) => {
-              peerInstance.on('connection', (conn) => {
-                // If room is already locked with a connected P2, reject extra connections
-                if (STATE.roomLocked && STATE.p2Joined && STATE.conn && STATE.conn.open) {
-                  conn.on('open', () => {
-                    try {
-                      conn.send({
-                        type: 'ROOM_LOCKED_REJECT',
-                        p1Name: STATE.p1Name,
-                        p2Name: STATE.p2Name
-                      });
-                    } catch (e) {}
-                  });
-                  return;
-                }
-                STATE.conn = conn;
-                conn.on('data', (data) => handleNetMessage(data));
-                conn.on('open', () => {
-                  STATE.onlineConnected = true;
-                });
-              });
-            };
-
-            STATE.peer = new Peer('handcricket-arena-' + code);
-            attachHostPeer(STATE.peer);
-
-            STATE.legacyPeer = new Peer('oae-room-' + code);
-            attachHostPeer(STATE.legacyPeer);
-          } catch (e) {}
-        }
-        renderAll();
+        window.location.href = 'rooms.html?view=desktop&create=1&format=' + (STATE.mpFormat === '2V2' ? '2V2' : '1V1');
       }
 
-      function joinMultiplayerRoom(customCodeInput = null, autoStart = false) {
-        if (!requireAccountAndPassword()) return;
-        SoundFX.click();
-        const raw = (customCodeInput || (el.inputJoinRoomCode && el.inputJoinRoomCode.value) || (el.inlineInputJoinCode && el.inlineInputJoinCode.value) || '').trim().toUpperCase();
-        if (!raw) return;
-
-        const previousHostName = (STATE.p1Name && STATE.p1Name !== STATE.myUsername && STATE.p1Name !== 'WAITING...') ? STATE.p1Name : null;
-
-        STATE.mode = 'ONLINE_2P';
-        STATE.roomCode = raw;
-        STATE.onlineRole = 'GUEST';
-        STATE.autoStartOnGuestJoin = Boolean(autoStart);
-        STATE.onlineConnected = false;
-        STATE.p2Joined = false;
-        STATE.roomLocked = false;
-
-        syncAuthAndPurgeFakeSeeds();
-
-        // Preserve Host as P1 and Guest as P2
-        STATE.p1Name = previousHostName || 'HOST';
-        STATE.p2Name = STATE.myUsername && STATE.myUsername !== STATE.p1Name ? STATE.myUsername : (STATE.myUsername ? (STATE.myUsername + ' (Guest)') : 'GUEST');
-        STATE.p2CountryFlag = STATE.myCountryFlag;
-        STATE.p2CountryCode = STATE.myCountryCode;
-
-        if (el.inputJoinRoomCode) el.inputJoinRoomCode.value = raw;
-        if (el.inlineInputJoinCode) el.inlineInputJoinCode.value = raw;
-
-        updateNetStatusUI(`Connecting to Room ${raw} as ${STATE.myUsername}...`, false);
-        setupBroadcastFallback(raw);
-        bindCloudRoom(raw);
-
-        const myRec = ensureHumanPlayerRecord(STATE.myUsername, 1500, {
-          countryCode: STATE.myCountryCode,
-          countryFlag: STATE.myCountryFlag,
-          countryName: STATE.myCountryName
-        }, true);
-
-        const joinPayload = {
-          type: 'JOIN_HELLO',
-          roomCode: raw,
-          p2Name: STATE.p2Name,
-          guestName: STATE.p2Name,
-          p2CountryFlag: STATE.myCountryFlag,
-          p2CountryCode: STATE.myCountryCode,
-          p2Elo: myRec.elo,
-          p2Record: myRec,
-          autoStart: Boolean(autoStart),
-          allPlayers: STATE.humanPlayers
-        };
-        sendNetMessage(joinPayload);
-
-        if (STATE.joinRetryTimerId) {
-          clearInterval(STATE.joinRetryTimerId);
-          STATE.joinRetryTimerId = null;
-        }
-        let joinAttempts = 0;
-        STATE.joinRetryTimerId = setInterval(() => {
-          joinAttempts += 1;
-          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 15 || STATE.onlineRole !== 'GUEST' || STATE.roomCode !== raw) {
-            clearInterval(STATE.joinRetryTimerId);
-            STATE.joinRetryTimerId = null;
-            return;
-          }
-          pollRoomLocalMessages(raw);
-          sendNetMessage(Object.assign({}, joinPayload, {
-            msgId: `${Date.now()}_retry_${joinAttempts}`
-          }));
-        }, 900);
-
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) STATE.peer.destroy();
-            STATE.peer = new Peer();
-            STATE.peer.on('open', () => {
-              const connectToHostId = (hostPeerId) => {
-                try {
-                  const conn = STATE.peer.connect(hostPeerId);
-                  conn.on('open', () => {
-                    STATE.conn = conn;
-                    sendNetMessage(Object.assign({}, joinPayload, {
-                      msgId: `${Date.now()}_peer_open_${hostPeerId}`
-                    }));
-                  });
-                  conn.on('data', (data) => handleNetMessage(data));
-                } catch (e) {}
-              };
-              connectToHostId('handcricket-arena-' + raw);
-              connectToHostId('oae-room-' + raw);
-            });
-          } catch (e) {}
-        }
-        renderAll();
+      function joinMultiplayerRoom(code = null) {
+        window.location.href = 'rooms.html?view=desktop&room=' + encodeURIComponent(typeof code === 'string' ? code : '');
       }
 
       function leaveMultiplayerRoom() {
@@ -4160,59 +3845,9 @@
       }
 
       function hostTriggerMultiplayerMatchStart() {
-        if (STATE.mpFormat === '2V2') {
-          if (!STATE.roomCode) createMultiplayerRoom();
-          const sq = sync2v2TeamsAndCaptains();
-          if (!sq.isSquadComplete) {
-            updateNetStatusUI(`⏳ Invite ${3 - sq.invitedCount} more friend${3 - sq.invitedCount === 1 ? '' : 's'} (or click Auto-Fill Squad) to start 2v2 Match!`, false);
-            renderAll();
-            return;
-          }
-          STATE.p1Name = sq.teamACaptain;
-          STATE.p2Name = sq.teamBCaptain;
-          STATE.p2Joined = true;
-          STATE.roomLocked = true;
-          STATE.onlineRole = STATE.onlineRole || 'HOST';
-        }
-        if (!isMultiplayerReadyToPlay() || (STATE.onlineRole !== 'HOST' && STATE.mpFormat !== '2V2')) {
-          updateNetStatusUI(`⏳ Cannot start yet! Waiting for Friend (Player 2) to join Room ${STATE.roomCode || ''}...`, false);
-          if (el.inlineLobbyWaitHint) {
-            el.inlineLobbyWaitHint.textContent = `⚠️ Match cannot start until your friend joins Room ${STATE.roomCode || ''}! Share the Room Code first.`;
-          }
-          renderAll();
-          return;
-        }
-        SoundFX.click();
-        STATE.mode = 'ONLINE_2P';
-        STATE.activeScreen = 'PITCH';
-        if (el.mpModal) {
-          el.mpModal.classList.add('hidden');
-          el.mpModal.classList.remove('flex');
-        }
-        sendNetMessage({
-          type: 'HOST_START_MATCH',
-          mpFormat: STATE.mpFormat,
-          mp2v2InvitedFriends: STATE.mp2v2InvitedFriends,
-          mp2v2Teammate: STATE.mp2v2Teammate,
-          mp2v2OppCaptain: STATE.mp2v2OppCaptain,
-          mp2v2TeamAOrderSwapped: STATE.mp2v2TeamAOrderSwapped,
-          mp2v2TeamBOrderSwapped: STATE.mp2v2TeamBOrderSwapped,
-          p1Name: getP1Label(),
-          p2Name: getP2Label(),
-          p1CountryFlag: STATE.p1CountryFlag,
-          p1CountryCode: STATE.p1CountryCode,
-          p2CountryFlag: STATE.p2CountryFlag,
-          p2CountryCode: STATE.p2CountryCode,
-          p1TossCall: 'ODD',
-          p2TossCall: 'EVEN'
-        });
-        resetGame(true);
-        setTimeout(resizeCanvas, 20);
+        window.location.href = 'rooms.html?view=desktop';
       }
 
-      // ==========================================
-      // 5. BUILD NUMBER BUTTON GRIDS (1 TO 10)
-      // ==========================================
       function buildNumberButtons() {
         el.tossNumberGrid.innerHTML = '';
         el.playNumberGrid.innerHTML = '';
@@ -10396,6 +10031,7 @@
         }
 
         const openMpModal = () => {
+          window.location.href = 'rooms.html?view=desktop'; return;
           if (!requireAccountAndPassword()) return;
           SoundFX.click();
           selectModalTab('ONLINE_2P');
@@ -10458,6 +10094,9 @@
 
         // Sidebar & Inline Setup Screen Navigation
         function switchCenterScreen(screenName) {
+          const sharedPages = { MP_SETUP: 'rooms.html', PROFILE: 'profile.html', STORE: 'store.html' };
+          if (sharedPages[screenName]) { window.location.href = sharedPages[screenName] + '?view=desktop'; return; }
+
           SoundFX.click();
           ['authModal', 'rulesModal', 'mpModal', 'esportsGamerCardModal'].forEach((mId) => {
             const mEl = document.getElementById(mId);

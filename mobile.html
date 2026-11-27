@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+  <script src="hub-router.js?v=2.5"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="google-site-verification" content="ClxrPShB46PFCfYNrHOBWlMxRk_KvOXx5sxsEDGtzxA" />
@@ -1870,128 +1871,16 @@
       const ELO_STORAGE_KEY = 'hc_arena_elo_v2';
 
       // =========================================================================
-      // AUTHORITATIVE V2 FRESH STATS, XP, ACHIEVEMENTS & STORE RESET
+      // SAVED PLAYER PROGRESS COMPATIBILITY
       // =========================================================================
       const STATS_RESET_EPOCH = 'v3_mp_only_leaderboard_2026_11_01';
-      const STATS_RESET_FLAG_KEY = 'oddandeven_stats_reset_epoch_v2';
-
+      // Preserve saved progress across releases. The epoch labels ranked records;
+      // loading a page must never reset purchases, cosmetics, history, or stats.
       function sanitizeRecordForFreshEpoch(rec) {
-        if (!rec || typeof rec !== 'object') return rec;
-        const hasVerifiedMp = Boolean(rec.statsEpoch === STATS_RESET_EPOCH && ((Number(rec.rankedMatches) || 0) > 0 || rec.mpStatsVerified === true));
-        if (rec.statsEpoch === STATS_RESET_EPOCH && hasVerifiedMp) {
-          const mpM = Math.max(Number(rec.rankedMatches) || 0, (Number(rec.wins) || 0) + (Number(rec.losses) || 0));
-          rec.matches = mpM;
-          rec.rankedMatches = mpM;
-          rec.v2Matches = mpM;
-          return rec;
-        }
-        const legacyCloudMatches = Math.max(Number(rec.matches) || 0, Number(rec.cloudMatchesFloor) || 0);
-        return Object.assign({}, rec, {
-          statsEpoch: STATS_RESET_EPOCH,
-          cloudMatchesFloor: legacyCloudMatches,
-          v2Matches: 0,
-          elo: 1500,
-          peak: 1500,
-          wins: 0,
-          losses: 0,
-          matches: 0,
-          rankedMatches: 0,
-          totalRuns: 0,
-          totalBalls: 0,
-          highScore: 0,
-          centuriesCount: 0,
-          sr500Count: 0,
-          wicketsTaken: 0,
-          wicketsLost: 0,
-          ballsBowled: 0,
-          weeklyEloGain: 0,
-          weeklyWins: 0,
-          weeklyLosses: 0,
-          weeklyMatches: 0,
-          weeklyRuns: 0,
-          weeklyWickets: 0,
-          tournamentWins: 0,
-          xp: Number(rec.referralXp) || 0,
-          referralXp: Number(rec.referralXp) || 0,
-          referralCount: Number(rec.referralCount) || 0,
-          referredFriends: Array.isArray(rec.referredFriends) ? rec.referredFriends : [],
-          referralCode: rec.referralCode || null,
-          maxWinStreak: 0,
-          currentWinStreak: 0,
-          maxBoundariesInMatch: 0,
-          defendedMatches: 0,
-          updatedAt: Date.now()
-        });
+        return rec && typeof rec === 'object' ? Object.assign({}, rec) : rec;
       }
       try { window.__sanitizeRecordForFreshEpoch = sanitizeRecordForFreshEpoch; } catch (e) {}
 
-      (function executeAuthoritativeV2FreshReset() {
-        try {
-          if (localStorage.getItem(STATS_RESET_FLAG_KEY) !== STATS_RESET_EPOCH) {
-            const prefixesToRemove = [
-              'oddandeven_store_inventory_',
-              'oddandeven_spent_xp_',
-              'oddandeven_equipped_card_',
-              'oddandeven_equipped_theme_',
-              'oddandeven_equipped_vfx_',
-              'oddandeven_equipped_bat_',
-              'oddandeven_custom_card_',
-              'oddandeven_active_days_',
-              'oddandeven_tourney_wins_',
-              'oddandeven_number_frequency_',
-              'oddandeven_ai_tier_stats_'
-            ];
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-              const k = localStorage.key(i);
-              if (!k) continue;
-              if (prefixesToRemove.some((p) => k.startsWith(p))) {
-                keysToRemove.push(k);
-              }
-            }
-            keysToRemove.forEach((k) => localStorage.removeItem(k));
-            localStorage.removeItem('hc_arena_match_scorecards_v1');
-            localStorage.removeItem('hc_arena_stats_v1');
-            localStorage.removeItem('oddandeven_event_regs_v1');
-            localStorage.removeItem('oddandeven_event_regs_map_v1');
-
-            ['oddandeven_worldwide_players_v1', 'oddandeven_global_leaderboard_v1'].forEach((mapKey) => {
-              try {
-                const raw = localStorage.getItem(mapKey);
-                if (raw) {
-                  const parsed = JSON.parse(raw);
-                  if (parsed && typeof parsed === 'object') {
-                    Object.keys(parsed).forEach((u) => {
-                      parsed[u] = sanitizeRecordForFreshEpoch(parsed[u]);
-                    });
-                    localStorage.setItem(mapKey, JSON.stringify(parsed));
-                  }
-                }
-              } catch (e) {}
-            });
-
-            try {
-              const rawElo = localStorage.getItem('hc_arena_elo_v2');
-              if (rawElo) {
-                const parsedElo = JSON.parse(rawElo);
-                if (parsedElo && typeof parsedElo === 'object') {
-                  if (parsedElo.humanPlayers && typeof parsedElo.humanPlayers === 'object') {
-                    Object.keys(parsedElo.humanPlayers).forEach((u) => {
-                      parsedElo.humanPlayers[u] = sanitizeRecordForFreshEpoch(parsedElo.humanPlayers[u]);
-                    });
-                  }
-                  parsedElo.eloRating = 1500;
-                  parsedElo.peakElo = 1500;
-                  parsedElo.eloHistory = [];
-                  localStorage.setItem('hc_arena_elo_v2', JSON.stringify(parsedElo));
-                }
-              }
-            } catch (e) {}
-
-            localStorage.setItem(STATS_RESET_FLAG_KEY, STATS_RESET_EPOCH);
-          }
-        } catch (e) {}
-      })();
 
       const PURGED_ACCOUNTS_KEY = 'oddandeven_purged_accounts_v1';
       const FRIENDS_STORAGE_KEY = 'oddandeven_friends_map_v1';
@@ -3325,66 +3214,8 @@
         scrubAccountFromMobileWebsite(remName, true, true);
       }
 
-      async function sendFriendInvite(targetUsername) {
-        SoundFX.click();
-        const cleanTarget = (targetUsername || '').trim().toUpperCase();
-        const myName = (STATE.myUsername || 'PLAYER').trim().toUpperCase();
-        if (!cleanTarget || cleanTarget === myName) return;
-
-        // Check if friend already has an open room we can join directly
-        const friendOpen = STATE.activeOpenRooms && STATE.activeOpenRooms[cleanTarget];
-        if (friendOpen && friendOpen.roomCode && (Date.now() - (friendOpen.timestamp || 0) < 600000)) {
-          STATE.autoStartOnGuestJoin = true;
-          switchScreen('PITCH');
-          joinMultiplayerRoom(friendOpen.roomCode, true);
-          return;
-        }
-
-        createMultiplayerRoom();
-        STATE.autoStartOnGuestJoin = true;
-        const code = STATE.roomCode;
-
-        const invitePayload = {
-          type: 'FRIEND_MATCH_INVITE',
-          fromUser: myName,
-          fromFlag: STATE.myCountryFlag || '🇮🇳',
-          fromCode: STATE.myCountryCode || '+91',
-          fromElo: STATE.eloRating || 1500,
-          toUser: cleanTarget,
-          roomCode: code,
-          autoStart: true,
-          timestamp: Date.now()
-        };
-
-        const gbc = getSharedGlobalBc();
-        if (gbc) {
-          try { gbc.postMessage(invitePayload); } catch (e) {}
-        }
-        if (STATE.globalHubConns && STATE.globalHubConns.length > 0) {
-          STATE.globalHubConns.forEach((c) => {
-            if (c && c.open) {
-              try { c.send(invitePayload); } catch (e) {}
-            }
-          });
-        }
-        try {
-          localStorage.setItem('oddandeven_friend_invite_bus', JSON.stringify(invitePayload));
-        } catch (e) {}
-
-        if (db) {
-          try {
-            await Promise.allSettled([
-              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', cleanTarget), invitePayload),
-              setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invites', 'GLOBAL_LATEST'), invitePayload)
-            ]);
-          } catch (e) {}
-        }
-
-        switchScreen('MP_SETUP');
-        updateNetStatusUI(`📨 Invited @${cleanTarget} to Room ${code} • Auto-starts on join!`, false);
-        if (dom.inlineLobbyWaitHint) {
-          dom.inlineLobbyWaitHint.textContent = `📨 Live Match Invite sent to @${cleanTarget} (Room ${code})! Match starts automatically when they accept.`;
-        }
+      function sendFriendInvite(username) {
+        window.location.href = 'rooms.html?view=mobile&create=1';
       }
 
       function handleIncomingMatchInvite(data) {
@@ -5694,267 +5525,15 @@
       }
 
       function createMultiplayerRoom() {
-        SoundFX.click();
-        cleanupRoomSession(Boolean(STATE.roomCode && STATE.p2Joined));
-        stopTurnTimer();
-        syncLeaderboardRegistry();
-
-        const code = 'HC' + Math.floor(1000 + Math.random() * 9000);
-        try {
-          localStorage.removeItem('oddandeven_room_bus_' + code);
-          localStorage.removeItem('oddandeven_room_msgs_' + code);
-        } catch (e) {}
-
-        STATE.roomCode = code;
-        STATE.onlineRole = 'HOST';
-        STATE.mode = 'ONLINE_2P';
-        STATE.onlineConnected = false;
-        STATE.roomLocked = false;
-        STATE.p2Joined = false;
-        STATE.peerConns = [];
-        STATE.p1Name = STATE.myUsername && !isPlaceholderUsername(STATE.myUsername) ? STATE.myUsername : 'HOST';
-        STATE.p1CountryFlag = STATE.myCountryFlag;
-        STATE.p1CountryCode = STATE.myCountryCode;
-        STATE.p2Name = 'WAITING...';
-
-        dom.inlineHostCodeDisplay.classList.remove('hidden');
-        dom.inlineHostCodeValue.textContent = code;
-        updateNetStatusUI(`⏳ Room ${code} • Waiting for P2...`, false);
-        dom.inlineLobbyP1Display.textContent = STATE.p1Name;
-        dom.inlineLobbyP2Display.textContent = '⏳ Waiting to join...';
-        dom.btnLaunchMpMatch.disabled = true;
-
-        setupBroadcastFallback(code);
-        bindCloudRoom(code);
-
-        STATE.activeOpenRooms[STATE.myUsername] = {
-          roomCode: code,
-          hostUser: STATE.myUsername,
-          timestamp: Date.now()
-        };
-        const openPacket = {
-          type: 'FRIEND_ROOM_OPENED',
-          hostUser: STATE.myUsername,
-          roomCode: code,
-          timestamp: Date.now()
-        };
-        const gbc = getSharedGlobalBc();
-        if (gbc) {
-          try { gbc.postMessage(openPacket); } catch (e) {}
-        }
-
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) { try { STATE.peer.destroy(); } catch (e) {} }
-            if (STATE.legacyPeer) { try { STATE.legacyPeer.destroy(); } catch (e) {} }
-
-            const attachHostPeer = (peerInstance) => {
-              peerInstance.on('connection', (c) => {
-                if (STATE.roomLocked && STATE.p2Joined && STATE.conn && STATE.conn.open) {
-                  c.on('open', () => {
-                    try {
-                      c.send({
-                        type: 'ROOM_LOCKED_REJECT',
-                        p1Name: STATE.p1Name,
-                        p2Name: STATE.p2Name
-                      });
-                    } catch (e) {}
-                  });
-                  return;
-                }
-                if (!STATE.peerConns) STATE.peerConns = [];
-                STATE.peerConns.push(c);
-                STATE.conn = c;
-                c.on('data', (data) => handleNetMessage(data));
-                c.on('open', () => {
-                  STATE.onlineConnected = true;
-                  if (STATE.roomLocked && STATE.p2Joined && STATE.p2Name && STATE.p2Name !== 'WAITING...') {
-                    const p1Rec = ensureHumanPlayerRecord(STATE.p1Name, STATE.eloRating, {
-                      countryCode: STATE.p1CountryCode,
-                      countryFlag: STATE.p1CountryFlag
-                    }, true);
-                    const p2Rec = ensureHumanPlayerRecord(STATE.p2Name, STATE.friendEloRating, {
-                      countryCode: STATE.p2CountryCode,
-                      countryFlag: STATE.p2CountryFlag
-                    }, true);
-                    try {
-                      c.send({
-                        type: 'HOST_WELCOME',
-                        roomCode: STATE.roomCode,
-                        hostName: STATE.p1Name,
-                        p1Name: STATE.p1Name,
-                        p1CountryFlag: STATE.p1CountryFlag,
-                        p1CountryCode: STATE.p1CountryCode,
-                        p1Elo: p1Rec.elo,
-                        p1Record: p1Rec,
-                        p2Name: STATE.p2Name,
-                        p2CountryFlag: STATE.p2CountryFlag,
-                        p2CountryCode: STATE.p2CountryCode,
-                        p2Elo: p2Rec.elo,
-                        p2Record: p2Rec,
-                        roomLocked: true,
-                        autoStartMatch: Boolean(STATE.autoStartOnGuestJoin),
-                        allPlayers: STATE.humanPlayers
-                      });
-                    } catch (e) {}
-                  }
-                });
-              });
-            };
-
-            STATE.peer = new Peer('handcricket-arena-' + code);
-            attachHostPeer(STATE.peer);
-
-            STATE.legacyPeer = new Peer('oae-room-' + code);
-            attachHostPeer(STATE.legacyPeer);
-          } catch (e) {}
-        }
-        renderView();
+        window.location.href = 'rooms.html?view=mobile&create=1&format=' + (STATE.mpFormat === '2V2' ? '2V2' : '1V1');
       }
 
-      function joinMultiplayerRoom(customCode = null, autoStart = false) {
-        SoundFX.click();
-        const code = String(customCode || (dom.inlineInputJoinCode && dom.inlineInputJoinCode.value) || '').trim().toUpperCase();
-        if (!code) {
-          updateNetStatusUI('⚠️ Enter a valid Room Code (e.g. HC1234)', false);
-          return;
-        }
-
-        cleanupRoomSession(Boolean(STATE.roomCode && STATE.roomCode !== code));
-        stopTurnTimer();
-
-        const previousHost = (STATE.p1Name && STATE.p1Name !== STATE.myUsername && STATE.p1Name !== 'WAITING...') ? STATE.p1Name : null;
-
-        STATE.roomCode = code;
-        STATE.onlineRole = 'GUEST';
-        STATE.mode = 'ONLINE_2P';
-        STATE.autoStartOnGuestJoin = Boolean(autoStart);
-        STATE.onlineConnected = false;
-        STATE.p2Joined = Boolean(autoStart);
-        STATE.roomLocked = Boolean(autoStart);
-        STATE.peerConns = [];
-
-        syncLeaderboardRegistry();
-
-        // Preserve Host as P1 and Guest as P2
-        STATE.p1Name = previousHost || 'HOST';
-        STATE.p2Name = STATE.myUsername && STATE.myUsername !== STATE.p1Name ? STATE.myUsername : (STATE.myUsername ? (STATE.myUsername + ' (Guest)') : 'GUEST');
-        STATE.p2CountryFlag = STATE.myCountryFlag;
-        STATE.p2CountryCode = STATE.myCountryCode;
-
-        if (dom.inlineHostCodeDisplay) dom.inlineHostCodeDisplay.classList.add('hidden');
-        if (dom.inlineInputJoinCode) dom.inlineInputJoinCode.value = code;
-
-        updateNetStatusUI('Connecting to Room ' + code + ' as ' + STATE.p2Name + '...', false);
-        setupBroadcastFallback(code);
-        bindCloudRoom(code);
-
-        const myRec = ensureHumanPlayerRecord(STATE.myUsername, STATE.eloRating, {
-          countryCode: STATE.myCountryCode,
-          countryFlag: STATE.myCountryFlag
-        }, true);
-
-        const joinPayload = {
-          type: 'JOIN_HELLO',
-          roomCode: code,
-          p2Name: STATE.p2Name,
-          guestName: STATE.p2Name,
-          p2CountryFlag: STATE.myCountryFlag,
-          p2CountryCode: STATE.myCountryCode,
-          p2Elo: myRec.elo,
-          p2Record: myRec,
-          autoStart: Boolean(autoStart),
-          allPlayers: STATE.humanPlayers
-        };
-        sendNetMessage(joinPayload);
-
-        let joinAttempts = 0;
-        STATE.joinRetryTimerId = setInterval(() => {
-          joinAttempts += 1;
-          if (STATE.roomLocked || STATE.p2Joined || joinAttempts > 15 || STATE.onlineRole !== 'GUEST' || STATE.roomCode !== code) {
-            clearInterval(STATE.joinRetryTimerId);
-            STATE.joinRetryTimerId = null;
-            return;
-          }
-          pollRoomLocalMessages(code);
-          sendNetMessage(Object.assign({}, joinPayload, {
-            msgId: `${Date.now()}_retry_${joinAttempts}`
-          }));
-        }, 900);
-
-        if (typeof Peer !== 'undefined') {
-          try {
-            if (STATE.peer) { try { STATE.peer.destroy(); } catch (e) {} }
-            STATE.peer = new Peer();
-            STATE.peer.on('open', () => {
-              const connectToHostId = (hostPeerId) => {
-                try {
-                  const c = STATE.peer.connect(hostPeerId);
-                  c.on('open', () => {
-                    if (!STATE.peerConns) STATE.peerConns = [];
-                    STATE.peerConns.push(c);
-                    STATE.conn = c;
-                    sendNetMessage(Object.assign({}, joinPayload, {
-                      msgId: `${Date.now()}_peer_open_${hostPeerId}`
-                    }));
-                  });
-                  c.on('data', (data) => handleNetMessage(data));
-                } catch (e) {}
-              };
-              connectToHostId('handcricket-arena-' + code);
-              connectToHostId('oae-room-' + code);
-            });
-          } catch (e) {}
-        }
-        renderView();
+      function joinMultiplayerRoom(code = null) {
+        window.location.href = 'rooms.html?view=mobile&room=' + encodeURIComponent(typeof code === 'string' ? code : '');
       }
 
       function hostTriggerMultiplayerMatchStart() {
-        if (STATE.mpFormat === '2V2') {
-          if (!STATE.roomCode) createMultiplayerRoom();
-          const sq = sync2v2TeamsAndCaptains();
-          if (!sq.isSquadComplete) {
-            updateNetStatusUI(`⏳ Invite ${3 - sq.invitedCount} more friend(s) or tap Auto-Fill!`, false);
-            renderView();
-            return;
-          }
-          STATE.p1Name = sq.teamACaptain;
-          STATE.p2Name = sq.teamBCaptain;
-          STATE.p2Joined = true;
-          STATE.roomLocked = true;
-          STATE.onlineRole = STATE.onlineRole || 'HOST';
-        }
-        if (!isMultiplayerReadyToPlay()) {
-          updateNetStatusUI(`⏳ Waiting for Player 2 to join Room ${STATE.roomCode || ''}...`, false);
-          renderView();
-          return;
-        }
-        SoundFX.click();
-        STATE.mode = 'ONLINE_2P';
-        STATE.activeScreen = 'PITCH';
-        STATE._lastMpAutoStartTs = Date.now();
-        dom.activePitchWrapper.classList.remove('hidden');
-        dom.screenMpSetup.classList.add('hidden');
-        sendNetMessage({
-          type: 'HOST_START_MATCH',
-          roomCode: STATE.roomCode,
-          mpFormat: STATE.mpFormat,
-          mp2v2InvitedFriends: STATE.mp2v2InvitedFriends,
-          mp2v2Teammate: STATE.mp2v2Teammate,
-          mp2v2OppCaptain: STATE.mp2v2OppCaptain,
-          mp2v2TeamAOrderSwapped: STATE.mp2v2TeamAOrderSwapped,
-          mp2v2TeamBOrderSwapped: STATE.mp2v2TeamBOrderSwapped,
-          p1Name: getP1Label(),
-          p2Name: getP2Label(),
-          p1CountryFlag: STATE.p1CountryFlag,
-          p1CountryCode: STATE.p1CountryCode,
-          p2CountryFlag: STATE.p2CountryFlag,
-          p2CountryCode: STATE.p2CountryCode,
-          p1TossCall: 'ODD',
-          p2TossCall: 'EVEN'
-        });
-        resetMatch(true);
-        setTimeout(resizeCanvas, 30);
+        window.location.href = 'rooms.html?view=mobile';
       }
 
       function toggleDrawer(open) {
@@ -7758,6 +7337,9 @@
       }
 
       function switchScreen(screenName) {
+          const sharedPages = { MP_SETUP: 'rooms.html', PROFILE: 'profile.html', STORE: 'store.html' };
+          if (sharedPages[screenName]) { window.location.href = sharedPages[screenName] + '?view=mobile'; return; }
+
         SoundFX.click();
         toggleDrawer(false);
         ['authModal', 'rulesModal', 'guestWarningModal', 'esportsGamerCardModal'].forEach((mId) => {
